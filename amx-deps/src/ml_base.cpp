@@ -18,6 +18,8 @@
 
 #include "StdInc.h"
 
+#include <locale.h>
+
 using namespace std;
 
 ILuaModuleManager10 *pModuleManager = NULL;
