@@ -535,16 +535,17 @@ Before you can call a function with [lua](#lua) or [pawn](#pawn)
 you need to define its prototype, which consists of the types of its
 arguments and return value. Each type corresponds to a single letter:
 
-  Letter   Type
-  -------- ----------------
-  **b**    boolean
-  **i**    integer
-  **f**    floating point
-  **s**    string
-  **p**    player
-  **v**    vehicle
-  **o**    object
-  **u**    pickup
+
+Letter       | Type
+-------------|---------------
+<kbd>b</kbd> | `boolean`
+<kbd>i</kbd> | `integer`
+<kbd>f</kbd> | `floating point`
+<kbd>s</kbd> | `string`
+<kbd>p</kbd> | `player`
+<kbd>v</kbd> | `vehicle`
+<kbd>o</kbd> | `object`
+<kbd>u</kbd> | `pickup`
 
 Pawn functions are registered with
 [amxRegisterPawnPrototypes](#amxRegisterPawnPrototypes), Lua
