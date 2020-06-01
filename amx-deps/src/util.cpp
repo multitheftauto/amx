@@ -1,9 +1,10 @@
 #include "StdInc.h"
 #include "UTF8.h"
 #include <cstdlib>
+#include <filesystem>
 
 using namespace std;
-using namespace boost::filesystem;
+namespace fs = std::filesystem;
 
 extern map < AMX *, AMXPROPS > loadedAMXs;
 
@@ -198,13 +199,13 @@ string getScriptFilePath(AMX *amx, const char *filename) {
 		return string();
 
 	// First check if it exists in the resource folder
-	path respath = loadedAMXs[amx].filePath;
-	respath = respath.remove_leaf() / filename;
+	fs::path respath = loadedAMXs[amx].filePath;
+	respath = respath.remove_filename() / filename;
 	if(exists(respath))
 		return respath.string();
 
 	// Then check if it exists in the main scriptfiles folder
-	path scriptfilespath = path("mods/deathmatch/resources/amx/scriptfiles") / filename;
+	fs::path scriptfilespath = fs::path("mods/deathmatch/resources/amx/scriptfiles") / filename;
 	if(exists(scriptfilespath))
 	{
 		return scriptfilespath.string();
@@ -212,8 +213,8 @@ string getScriptFilePath(AMX *amx, const char *filename) {
 
 	// Otherwise default to amx's resource folder - make sure the folder
 	// where the file is expected exists
-	path folder = respath;
-	folder.remove_leaf();
+	fs::path folder = respath;
+	folder.remove_filename();
 	create_directories(folder);
 	return respath.string();
 }

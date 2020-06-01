@@ -4,9 +4,9 @@
 *
 *  ml_base, External lua add-on module
 *
-*  Copyright © 2003-2008 MTA.  All Rights Reserved.
+*  Copyright Â© 2003-2008 MTA.  All Rights Reserved.
 *
-*  Grand Theft Auto is © 2002-2003 Rockstar North
+*  Grand Theft Auto is Â© 2002-2003 Rockstar North
 *
 *  THE FOLLOWING SOURCES ARE PART OF THE MULTI THEFT
 *  AUTO SOFTWARE DEVELOPMENT KIT AND ARE RELEASED AS
@@ -31,7 +31,7 @@ int AMXCallPublicFilterScript(char *fnName);
 int AMXCallPublicGameMode(char *fnName);
 
 typedef struct {
-	boost::filesystem::path filePath;
+	std::string filePath;
 	std::string resourceName;
 	lua_State *resourceVM;
 } AMXPROPS;

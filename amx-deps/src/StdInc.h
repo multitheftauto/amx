@@ -8,8 +8,6 @@
 	#include <dlfcn.h>
 #endif
 
-#include <boost/filesystem.hpp>
-
 #include <stdio.h>
 #include <cstdarg>
 #include <cstring>

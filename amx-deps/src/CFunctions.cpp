@@ -17,9 +17,10 @@
 *********************************************************/
 
 #include "StdInc.h"
+#include <filesystem>
 
 using namespace std;
-using namespace boost::filesystem;
+namespace fs = std::filesystem;
 
 extern ILuaModuleManager10 *pModuleManager;
 
@@ -104,11 +105,14 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 		return 1;
 	}
 
-	path amxPath = path("mods/deathmatch/resources/[gamemodes]/[amx]/") / resName / amxName;
+	char buff[256];
+	snprintf(buff, sizeof(buff), "%s/mods/deathmatch/resources/[gamemodes]/[amx]/%s/%s", fs::current_path().string().c_str(), resName, amxName);
+	fs::path amxPath = buff;
+	amxPath = fs::canonical(amxPath);
 
 	// Load .amx
 	AMX *amx = new AMX;
-	int err = aux_LoadProgram(amx, amxPath.string().c_str(), NULL);
+	int err = aux_LoadProgram(amx, buff, NULL);
 	if(err != AMX_ERR_NONE) {
 		delete amx;
 		lua_pushboolean(luaVM, 0);
@@ -145,7 +149,7 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 
 	// Save info about the amx
 	AMXPROPS props;
-	props.filePath = amxPath;
+	props.filePath = amxPath.string();
 	props.resourceName = resName;
 	props.resourceVM = pModuleManager->GetResourceFromName(resName);
 
