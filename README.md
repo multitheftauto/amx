@@ -65,13 +65,13 @@ features:
 -   **New native scripting functions** (include a\_amx.inc to use
     these):
 
-    -   [AddPlayerClothes](#pwn_AddPlayerClothes)
-    -   [GetPlayerClothes](#pwn_GetPlayerClothes)
-    -   [RemovePlayerClothes](#pwn_RemovePlayerClothes)
-    -   [ShowPlayerMarker](#pwn_ShowPlayerMarker)
-    -   [GetVehicleVelocity](#pwn_GetVehicleVelocity)
-    -   [SetVehicleVelocity](#pwn_SetVehicleVelocity)
-    -   [SetVehicleModel](#pwn_SetVehicleModel)
+    -   [AddPlayerClothes](#AddPlayerClothes)
+    -   [GetPlayerClothes](#GetPlayerClothes)
+    -   [RemovePlayerClothes](#RemovePlayerClothes)
+    -   [ShowPlayerMarker](#ShowPlayerMarker)
+    -   [GetVehicleVelocity](#GetVehicleVelocity)
+    -   [SetVehicleVelocity](#SetVehicleVelocity)
+    -   [SetVehicleModel](#SetVehicleModel)
 
 -   In addition to these new native functions, gamemodes run in *amx*
     can also **call Lua scripts**. Lua scripts can in turn call public
