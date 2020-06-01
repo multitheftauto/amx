@@ -10,13 +10,13 @@ binary for Windows is available.
 
 -   [License](#license)
 -   [Compatibility](#compatibility)
--   [Extra features](#extrafeatures)
+-   [Extra features](#extra-features)
 -   [Installation](#installation)
--   [Running gamemodes and filterscripts](#running)
--   [New Pawn scripting functions](#newpawn)
--   [New Lua scripting functions](#newlua)
--   [New MTA events](#newevents)
--   [Pawn-Lua interaction](#pawnluainteraction)
+-   [Running gamemodes and filterscripts](#running-gamemodes-and-filterscripts)
+-   [New Pawn scripting functions](#new-pawn-scripting-functions)
+-   [New Lua scripting functions](#new-lua-scripting-functions)
+-   [New MTA events](#new-mta-events)
+-   [Pawn-Lua interaction](#pawn-lua-interaction)
 -   [Limitations](#limitations)
 -   [Author and thanks](#credits)
 
@@ -49,7 +49,7 @@ Compatibility is quite high:
 See [Limitations](#limitations) for a list of features that are
 currently missing.
 
-Extra features {#extrafeatures}
+Extra features
 --------------
 
 Apart from being compatible, *amx* also offers a number of extra
@@ -104,7 +104,9 @@ Extract the \"mods\" folder into your MTA \"server\" directory.
 -   Open server/mods/deathmatch/mtaserver.conf in a text editor. Add the
     following line within the `<config>` node:
 
-    `<module src="king.dll"/>`{.block lang="xml"}
+    ```xml
+    <module src="king.dll"/>
+    ```
 
     (Use \"king.so\" on Linux systems). This will instruct the MTA
     server to load the module on startup.
@@ -113,7 +115,9 @@ Extract the \"mods\" folder into your MTA \"server\" directory.
     if you want. Doing this will allow you to use SA-MP style rcon
     commands in the server console as soon as the server is started.
 
-    `<resource src="amx" startup="1" protected="0"/>`{.block lang="xml"}
+    ```xml
+    <resource src="amx" startup="1" protected="0"/>
+    ```
 
     Save and close mtaserver.conf.
 
@@ -121,8 +125,17 @@ Extract the \"mods\" folder into your MTA \"server\" directory.
     server/mods/deathmatch/acl.xml and add the following within the root
     `<acl>` node:
 
-    `   <group name="AMX">      <acl name="AMX"/>      <object name="resource.amx"/>    </group>    <acl name="AMX">      <right name="general.ModifyOtherObjects" access="true"/>      <right name="function.startResource" access="true"/>      <right name="function.stopResource" access="true"/>    </acl>`{.block
-    lang="xml"}
+    ```xml
+    <group name="AMX">
+        <acl name="AMX"/>
+        <object name="resource.amx"/>
+    </group>
+    <acl name="AMX">
+        <right name="general.ModifyOtherObjects" access="true"/>
+        <right name="function.startResource" access="true"/>
+        <right name="function.stopResource" access="true"/>
+    </acl>
+    ```
 
     Save and close acl.xml.
 
@@ -195,8 +208,7 @@ Information about this is lined out below.
     \"filterscripts\" setting. Its value is a list of filterscript names
     separated by spaces. For example:
 
-    `<setting name="filterscripts" value="adminspec vactions"/>`{.block
-    lang="xml"}
+    `<setting name="filterscripts" value="adminspec vactions"/>`{.block     lang="xml"}
 
     This will start the resources amx-fs-adminspec and amx-fs-vactions.
 
@@ -206,7 +218,9 @@ Information about this is lined out below.
     the \"plugins\" setting. Its value consists of the names of the
     plugins to start, separated by spaces. For example:
 
-    `<setting name="plugins" value="irc sampmysql"/>`{.block lang="xml"}
+    ```xml
+    <setting name="plugins" value="irc sampmysql"/>
+    ```
 
     This will load irc.dll and sampmysql.dll on Windows, or .so on
     Linux.
@@ -216,7 +230,9 @@ Information about this is lined out below.
     server/mods/deathmatch/resources/mapcycler/mapcycle.xml. For each
     gamemode, add a line like this:
 
-    `<game mode="amx" map="amx-name" rounds="1"/>`{.block lang="xml"}
+    ```xml
+    <game mode="amx" map="amx-name" rounds="1"/>
+    ```
 
     By default, the gamemodes are run in the order in which they appear
     in the list; you can also opt to randomly select the next mode from
@@ -237,20 +253,27 @@ Information about this is lined out below.
 
 -   You are done!
 
-Running gamemodes and filterscripts {#running}
+Running gamemodes and filterscripts
 -----------------------------------
 
 Before you can run sa-mp modes or filterscripts, you need to start the
 *amx* resource. Type this command in the server console or as admin in
 the ingame console:
 
-`start amx`{.block lang="console"}
+```bash
+start amx
+```
 
 Alternatively you can add it to the autostart list of your server, in
 mtaserver.conf. Once *amx* is started you can use the following commands
 to start and stop gamemodes and filterscripts:
-`start amx-name stop amx-name start amx-fs-name stop amx-fs-name`{.block
-lang="console"}
+
+```bash
+start amx-name
+stop amx-name
+start amx-fs-name
+stop amx-fs-name
+```
 
 Alternatively, you can use the SA-MP style `changemode` and
 (`un`)`loadfs` commands. At most one gamemode can be running at any
@@ -259,24 +282,28 @@ time, the number of running filterscripts is unlimited.
 Go ahead and try starting the example gamemode (amx-test) and
 filterscript (amx-fs-test).
 
-New Pawn scripting functions {#newpawn}
+New Pawn scripting functions
 ----------------------------
 
 Here follows a quick reference for the new Pawn native functions *amx*
 introduces. To use them, `#include <a_amx>` in Pawno.
 
-### AddPlayerClothes {#pwn_AddPlayerClothes}
+### AddPlayerClothes
 
-`native AddPlayerClothes ( playerid, type, index );`{.block lang="pawn"}
+```pawn
+native AddPlayerClothes ( playerid, type, index );
+```
 
 Applies the specified clothing to a player. See the [clothes
 page](http://development.mtasa.com/index.php?title=CJ_Clothes) for a
 list of valid type and index ID\'s. *Note:* this function only has a
 visible effect on players with the CJ skin.
 
-### GetPlayerClothes {#pwn_GetPlayerClothes}
+### GetPlayerClothes
 
-`native GetPlayerClothes ( playerid, type );`{.block lang="pawn"}
+```pawn
+native GetPlayerClothes ( playerid, type );
+```
 
 Returns the clothes index of the specified type which the player is
 currently wearing. See the [clothes
@@ -284,64 +311,76 @@ page](http://development.mtasa.com/index.php?title=CJ_Clothes) for a
 list of valid type and index ID\'s. *Note:* the returned value is only
 relevant for players with the CJ skin.
 
-### RemovePlayerClothes {#pwn_RemovePlayerClothes}
+### RemovePlayerClothes
 
-`native RemovePlayerClothes ( playerid, type );`{.block lang="pawn"}
+```pawn
+native RemovePlayerClothes ( playerid, type );
+```
 
 Removes the specified clothing from a player. See the [clothes
 page](http://development.mtasa.com/index.php?title=CJ_Clothes) for a
 list of valid type ID\'s. *Note:* this function only has a visible
 effect on players with the CJ skin.
 
-### ShowPlayerMarker {#pwn_ShowPlayerMarker}
+### ShowPlayerMarker
 
-`native ShowPlayerMarker ( playerid, show );`{.block lang="pawn"}
+```pawn
+native ShowPlayerMarker ( playerid, show );
+```
 
 Shows or hides the blip of one specific player.
 
-### GetVehicleVelocity {#pwn_GetVehicleVelocity}
+### GetVehicleVelocity
 
-`native GetVehicleVelocity ( vehicleid, &Float:vx, &Float:vy, &Float:vz );`{.block
-lang="pawn"}
+```pawn
+native GetVehicleVelocity ( vehicleid, &Float:vx, &Float:vy, &Float:vz );
+```
 
 Returns the velocity of a vehicle along the x, y and z axes. No more
 manual speed calculation with timers.
 
-### SetVehicleVelocity {#pwn_SetVehicleVelocity}
+### SetVehicleVelocity
 
-`native SetVehicleVelocity ( vehicleid, Float:vx, Float:vy, Float:vz );`{.block
-lang="pawn"}
+```pawn
+native SetVehicleVelocity ( vehicleid, Float:vx, Float:vy, Float:vz );
+```
 
 Sets the velocity of a vehicle. Make it jump or suddenly come to a halt.
 
-### SetVehicleModel {#pwn_SetVehicleModel}
+### SetVehicleModel
 
-`native SetVehicleModel ( vehicleid, model )`{.block lang="pawn"}
+```pawn
+native SetVehicleModel ( vehicleid, model )
+```
 
 Changes the model of a vehicle; more practical than destroying and
 recreating it.
 
-### lua {#pwn_lua}
+### lua
 
-`native lua ( const fnName[], {Float,_}:... );`{.block lang="pawn"}
+```pawn
+native lua ( const fnName[], {Float,_}:... );
+```
 
 Calls a Lua function. The function must be defined in a .lua file in the
 same resource as the calling .amx, and must have been registered earlier
-with [amxRegisterLuaPrototypes](#lua_amxRegisterLuaPrototypes). See also
+with [amxRegisterLuaPrototypes](#amxRegisterLuaPrototypes). See also
 [Pawn-Lua interaction](#pawnluainteraction).
 
 Example:
 
-`new playerid = lua("luaTestfn1", 1.3, "Test string");`{.block
-lang="pawn"}
+```pawn
+new playerid = lua("luaTestfn1", 1.3, "Test string");
+```
 
-### amxRegisterPawnPrototypes {#pwn_amxRegisterPawnPrototypes}
+### amxRegisterPawnPrototypes
 
-`native amxRegisterPawnPrototypes ( const prototype[][] );`{.block
-lang="pawn"}
+```pawn
+native amxRegisterPawnPrototypes ( const prototype[][] );
+```
 
 Registers prototypes for public functions that can be subsequently
-called from Lua scripts with [pawn](#lua_pawn). The prototype list
+called from Lua scripts with [pawn](#pawn). The prototype list
 **must be terminated with an empty string**. See also [Pawn-Lua
 interaction](#pawnluainteraction).
 
@@ -349,109 +388,140 @@ This example code registers two functions. The first one takes a float
 and a string argument and returns a player ID, the second takes a player
 ID and returns nothing:
 
-`new prototypes[][] = {     "p:pawnTestfn1", { "f", "s" },     "pawnTestfn2", { "p" },     "" }; amxRegisterPawnPrototypes(prototypes);`{.block
-lang="pawn"}
+```pawn
+new prototypes[][] = {
+    "p:pawnTestfn1", { "f", "s" },
+    "pawnTestfn2", { "p" },
+    ""
+};
+amxRegisterPawnPrototypes(prototypes);
+```
 
-### amxVersion {#pwn_amxVersion}
+### amxVersion
 
-`native amxVersion ( &Float:ver );`{.block lang="pawn"}
+```pawn
+native amxVersion ( &Float:ver );
+```
 
 Retrieves the *amx* version as a floating point number, e.g. `1.3`.
 
-### amxVersionString {#pwn_amxVersionString}
+### amxVersionString
 
-`native amxVersionString ( buffer[], size );`{.block lang="pawn"}
+```pawn
+native amxVersionString ( buffer[], size );
+```
 
 Retrieves the complete *amx* version string.
 
-New Lua scripting functions {#newlua}
+New Lua scripting functions
 ---------------------------
 
 A number of new Lua functions were also introduced.
 
-### pawn {#lua_pawn}
+### pawn
 
-`variant pawn ( string fnName, ... )`{.block lang="lua"}
+```lua
+variant pawn ( string fnName, ... )
+```
 
 Calls a Pawn function. The function must be public, must be defined in
 an .amx file in the same resource as the calling .lua, and must have
 been registered earlier with
-[amxRegisterPawnPrototypes](#pwn_amxRegisterPawnPrototypes).
+[amxRegisterPawnPrototypes](#amxRegisterPawnPrototypes).
 
 Example:
 
-`local player = pawn('pawnTestfn1', 0.5, 'Test string')`{.block
-lang="lua"}
+```lua
+local player = pawn('pawnTestfn1', 0.5, 'Test string')
+```
 
-### amxIsPluginLoaded {#lua_amxIsPluginLoaded}
+### amxIsPluginLoaded
 
-`bool amxIsPluginLoaded ( string pluginName )`{.block lang="lua"}
+```lua
+bool amxIsPluginLoaded ( string pluginName )
+```
 
 Checks if a specific SA-MP server plugin is currently loaded. pluginName
 is the name of the plugin without a file extension.
 
-### amxRegisterLuaPrototypes {#lua_amxRegisterLuaPrototypes}
+### amxRegisterLuaPrototypes
 
-`bool amxRegisterLuaPrototypes ( table prototypes )`{.block lang="lua"}
+```lua
+bool amxRegisterLuaPrototypes ( table prototypes )
+```
 
 Registers prototypes of Lua functions that can subsequently be called
-from a Pawn script with [lua](#pwn_lua). See also [Pawn-Lua
+from a Pawn script with [lua](#lua). See also [Pawn-Lua
 interaction](#pawnluainteraction).
 
 The following example code registers two functions - the first one takes
 a float and a string argument and returns a player element, the second
 takes a player element and returns nothing:
 
-`amxRegisterLuaPrototypes(     {         ['p:luaTestfn1'] = { 'f', 's' },         ['luaTestfn2']   = { 'p' }     } )`{.block
-lang="lua"}
+```lua
+amxRegisterLuaPrototypes(
+    {
+        ['p:luaTestfn1'] = { 'f', 's' },
+        ['luaTestfn2']   = { 'p' }
+    }
+)
+```
 
-### amxVersion {#lua_amxVersion}
+### amxVersion
 
-`float amxVersion ( )`{.block lang="lua"}
+```lua
+float amxVersion ( )
+```
 
 Returns the *amx* version as a floating point number, for example `1.3`.
 
-### amxVersionString {#lua_amxVersionString}
+### amxVersionString
 
-`string amxVersionString ( )`{.block lang="lua"}
+```lua
+string amxVersionString ( )
+```
 
 Returns the complete *amx* version string.
 
-New MTA events {#newevents}
+New MTA events
 --------------
 
 *amx* also provides events for detecting when .amx files are loaded and
 unloaded.
 
-### onAMXStart {#lua_onAMXStart}
+### onAMXStart
 
-`onAMXStart ( resource res, string amxName )`{.block lang="lua"}
+```lua
+onAMXStart ( resource res, string amxName )
+```
 
 Triggered when an .amx file has just finished loading and initializing.
 The source of this event is the root element of the resource containing
 the .amx file. `res` is the resource pointer to this resource. `amxName`
 is the name of the .amx file minus the extension.
 
-You should only call [pawn](#lua_pawn) after this event has triggered;
+You should only call [pawn](#pawn) after this event has triggered;
 if you call it in the main body of a Lua script, .amx files won\'t have
 registered their functions yet.
 
-### onAMXStop {#lua_onAMXStop}
+### onAMXStop
 
-`onAMXStop ( resource res, string amxName )`{.block lang="lua"}
+```lua
+onAMXStop ( resource res, string amxName )
+```
 
 Triggered when an .amx file was unloaded. The source of this event is
 the root element of the resource containing the .amx file. `res` is the
 resource pointer to this resource. `amxName` is the name of the .amx
 file minus the extension.
 
-Pawn-Lua interaction {#pawnluainteraction}
+Pawn-Lua interaction
 --------------------
 
 *amx* allows developers to enrich their gamemodes and other scripts with
 Lua code, which is easier and more efficient to write than Pawn. To make
-this possible, a new Pawn function, [lua](#pwn_lua) was added to call
-Lua functions, and a Lua function called [pawn](#lua_pawn)
+this possible, a new Pawn function, [lua](#lua) was added to call
+Lua functions, and a Lua function called [pawn](#pawn)
 correspondingly calls public Pawn functions.
 
 A resource that uses the interaction functions will contain both one or
@@ -461,7 +531,7 @@ scripts that are in the same resource.
 
 ### Registering prototypes
 
-Before you can call a function with [lua](#pwn_lua) or [pawn](#lua_pawn)
+Before you can call a function with [lua](#lua) or [pawn](#pawn)
 you need to define its prototype, which consists of the types of its
 arguments and return value. Each type corresponds to a single letter:
 
@@ -477,9 +547,9 @@ arguments and return value. Each type corresponds to a single letter:
   **u**    pickup
 
 Pawn functions are registered with
-[amxRegisterPawnPrototypes](#pwn_amxRegisterPawnPrototypes), Lua
+[amxRegisterPawnPrototypes](#amxRegisterPawnPrototypes), Lua
 functions with
-[amxRegisterLuaPrototypes](#lua_amxRegisterLuaPrototypes). Both
+[amxRegisterLuaPrototypes](#amxRegisterLuaPrototypes). Both
 functions associate a number of function names with their argument types
 and (optionally) return type. To specify a return type, prepend the
 function name with the type letter followed by a colon (:), for example:
@@ -491,12 +561,12 @@ precise syntax to use.
 
 ### Calling other-language functions
 
-Use [lua](#pwn_lua) to call a Lua function from Pawn, and
-[pawn](#lua_pawn) to call a Pawn function from Lua. The functions have
+Use [lua](#lua) to call a Lua function from Pawn, and
+[pawn](#pawn) to call a Pawn function from Lua. The functions have
 the same syntax: a string containing the name of the function, followed
 by the arguments to the function. *amx* takes care of any necessary
 argument and return value conversions: for example an .amx vehicle ID
-passed to [lua](#pwn_lua) will arrive in the Lua function as an MTA
+passed to [lua](#lua) will arrive in the Lua function as an MTA
 vehicle element, and vice versa (provided the correct prototype was
 registered for the Lua function).
 
@@ -619,7 +689,7 @@ lua> arc_
 
 </details>
 
-Limitations {#limitations}
+Limitations
 -----------
 
 Even though *amx* offers a high level of compatibility, not everything
@@ -643,7 +713,7 @@ addressed in later versions of *amx* and Multi Theft Auto.
     available in MTA. *amx* will replace these by lookalike skins until
     they are added.
 
-Author and thanks {#credits}
+Credits
 -----------------
 
 *amx* was developed by arc\_. Special thanks go out to:
