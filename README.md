@@ -121,23 +121,21 @@ Extract the \"mods\" folder into your MTA \"server\" directory.
 
     Save and close mtaserver.conf.
 
--   Give *amx* the necessary permissions. Open
-    server/mods/deathmatch/acl.xml and add the following within the root
-    `<acl>` node:
+-   After starting the MTA server you should see the following output:
 
-    ```xml
-    <group name="AMX">
-        <acl name="AMX"/>
-        <object name="resource.amx"/>
-    </group>
-    <acl name="AMX">
-        <right name="general.ModifyOtherObjects" access="true"/>
-        <right name="function.startResource" access="true"/>
-        <right name="function.stopResource" access="true"/>
-    </acl>
-    ```
+    > Resource 'amx' requests some acl rights. Use the command 'aclrequest list amx'
 
-    Save and close acl.xml.
+    Run `aclrequest list amx` to see what ACL rights are needed, and
+    if you are happy with the request, type `aclrequest allow amx all`.
+
+    The following rights are used for the following purposes:
+
+    - `general.ModifyOtherObjects`: to access files of `amx-*` resources
+    - `function.startResource`  \
+      `function.stopResource`  \
+      `function.restartResource`:
+        - to automatically (re)start filterscripts when `amx` starts
+        - for rcon
 
 ### Migrating gamemodes, filterscripts, plugins from an SA-MP server
 
