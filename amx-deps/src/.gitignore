@@ -352,3 +352,5 @@ healthchecksdb
 MigrationBackup/
 
 # End of https://www.gitignore.io/api/visualstudio
+
+!amx/amxexec.obj
