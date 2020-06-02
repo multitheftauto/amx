@@ -2175,11 +2175,15 @@ function GetDistanceBetweenPoints3D(amx, x1, y1, z1, x2, y2, z2)
 end
 
 function AddScoreboardColumn(amx, column)
-	return exports.amxscoreboard:addScoreboardColumn('_' .. column)
+	outputDebugString("AddScoreboardColumn is being ignored!")
+	-- TODO(q): this needs to be added back later
+	-- return exports.amxscoreboard:addScoreboardColumn('_' .. column)
 end
 
 function RemoveScoreboardColumn(amx, column)
-	return exports.amxscoreboard:removeScoreboardColumn('_' .. column)
+	outputDebugString("RemoveScoreboardColumn is being ignored!")
+	-- TODO(q): this needs to be added back later
+	-- return exports.amxscoreboard:removeScoreboardColumn('_' .. column)
 end
 
 function SetScoreboardData(amx, player, column, data)

@@ -47,7 +47,8 @@ addEventHandler('onResourceStart', g_ResRoot,
 			end
 		end
 
-		exports.amxscoreboard:addScoreboardColumn('Score')
+		-- TODO(q): this needs to be added back later
+		-- exports.amxscoreboard:addScoreboardColumn('Score')
 	end,
 	false
 )
@@ -226,7 +227,8 @@ addEventHandler('onResourceStop', getRootElement(),
 
 addEventHandler('onResourceStop', g_ResRoot,
 	function()
-		exports.amxscoreboard:removeScoreboardColumn('Score')
+		-- TODO(q): this needs to be added back later
+		-- exports.amxscoreboard:removeScoreboardColumn('Score')
 		table.each(g_LoadedAMXs, unloadAMX, false)
 		amxUnloadAllPlugins()
 		for i=0,49 do
