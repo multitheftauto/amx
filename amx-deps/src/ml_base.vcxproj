@@ -48,12 +48,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IntDir>Debug\</IntDir>
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)..\..\..\..\..\modules</OutDir>
+    <OutDir>$(SolutionDir)..\..\..\..\..\modules\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IntDir>Release\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)..\..\..\..\..\modules</OutDir>
+    <OutDir>$(SolutionDir)..\..\..\..\..\modules\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>
@@ -81,7 +81,6 @@
     <Link>
       <AdditionalOptions>amx\amxexec.obj %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>./lib/lua5.1.lib;./lib/sqlite3.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)king.dll</OutputFile>
       <IgnoreSpecificDefaultLibraries>MSVCRT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile />
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -119,7 +118,6 @@
     <Link>
       <AdditionalOptions>amx\amxexec.obj %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>./lib/lua5.1.lib;./lib/sqlite3.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)mod_amx.dll</OutputFile>
       <ModuleDefinitionFile />
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -143,6 +141,7 @@
     <ClCompile Include="amx\float.c" />
     <ClCompile Include="CFunctions.cpp" />
     <ClCompile Include="ml_base.cpp" />
+    <ClCompile Include="StdInc.cpp" />
     <ClCompile Include="syscalls.cpp" />
     <ClCompile Include="util.cpp" />
   </ItemGroup>
@@ -153,14 +152,34 @@
     <ClInclude Include="CFunctions.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="include\ILuaModuleManager.h" />
+    <ClInclude Include="include\lapi.h" />
     <ClInclude Include="include\lauxlib.h" />
+    <ClInclude Include="include\lcode.h" />
+    <ClInclude Include="include\ldebug.h" />
+    <ClInclude Include="include\ldo.h" />
+    <ClInclude Include="include\lfunc.h" />
+    <ClInclude Include="include\lgc.h" />
+    <ClInclude Include="include\llex.h" />
+    <ClInclude Include="include\llimits.h" />
+    <ClInclude Include="include\lmem.h" />
+    <ClInclude Include="include\lobject.h" />
+    <ClInclude Include="include\lopcodes.h" />
+    <ClInclude Include="include\lparser.h" />
     <ClInclude Include="include\lstate.h" />
+    <ClInclude Include="include\lstring.h" />
+    <ClInclude Include="include\ltable.h" />
+    <ClInclude Include="include\ltm.h" />
     <ClInclude Include="include\lua.h" />
+    <ClInclude Include="include\lua.hpp" />
     <ClInclude Include="include\luaconf.h" />
     <ClInclude Include="include\lualib.h" />
+    <ClInclude Include="include\lundump.h" />
+    <ClInclude Include="include\lvm.h" />
+    <ClInclude Include="include\lzio.h" />
     <ClInclude Include="include\sqlite3.h" />
     <ClInclude Include="ml_base.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="StdInc.h" />
     <ClInclude Include="util.h" />
   </ItemGroup>
   <ItemGroup>
