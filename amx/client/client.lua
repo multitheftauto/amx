@@ -536,6 +536,15 @@ addEventHandler('onClientElementStreamOut', root,
 	end
 )
 
+-- emulate SA-MP behaviour: block enter attempts as driver to locked vehicles
+addEventHandler('onClientVehicleStartEnter', root,
+	function(player, seat, door)
+		if (player == g_Me and seat == 0 and isVehicleLocked(source)) then
+			cancelEvent()
+		end
+	end
+)
+
 function DestroyVehicle(amxName, vehID)
 	g_AMXs[amxName].vehicles[vehID] = nil
 end
