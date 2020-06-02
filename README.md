@@ -708,10 +708,6 @@ addressed in later versions of *amx* and Multi Theft Auto.
     ShowPlayerNameTagForPlayer, TextDrawSetProportional,
     UsePlayerPedAnims.
 
--   Story character skins (Big Smoke, Ten Penny etc.) are currently not
-    available in MTA. *amx* will replace these by lookalike skins until
-    they are added.
-
 Credits
 -----------------
 

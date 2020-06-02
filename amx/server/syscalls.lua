@@ -167,28 +167,6 @@ local skinReplace = {
 	[149] = 0,
 	[208] = 0,
 	[273] = 0,
-
-	-- story skins
-	[1] = 261,		-- The Truth
-	[2] = 37,		-- Mack
-	[265] = 284,	-- Police
-	[266] = 281,	--  "
-	[267] = 280,	--  "
-	[268] = 72,		-- Paul
-	[269] = 105,	-- Big Smoke
-	[270] = 107,	-- Sweet
-	[271] = 106,	-- Ryder
-	[272] = 112,	-- Black jacket, white pants
-	[290] = 57,		-- Rosenberg
-	[291] = 111,	-- Jeans jacket, black pants
-	[292] = 109,	-- Ese
-	[293] = 83,		-- O.G. LOC
-	[294] = 120,	-- Wuzi
-	[295] = 165,	-- Toreno
-	[296] = 249,	-- Pimp
-	[297] = 24,		-- Madd Dog
-	[298] = 192,	-- Cathalena
-	[299] = 124		-- Claude
 }
 
 function AddMenuItem(amx, menu, column, caption)
