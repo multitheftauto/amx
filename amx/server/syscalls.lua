@@ -1059,8 +1059,8 @@ function SetObjectPos(amx, object, x, y, z)
 
 	setElementPosition(object, x, y, z)
 
-	if(getElementType(object) == 'vehicle') then
-		setVehicleTurnVelocity(object, 0, 0, 0)
+	if getElementType(object) == 'vehicle' then
+		setElementAngularVelocity(object, 0, 0, 0)
 		setElementVelocity(object, 0, 0, 0)
 		setTimer(setElementFrozen, 500, 1, object, false)
 	end
@@ -1272,7 +1272,7 @@ end
 
 function SetVehicleVelocity(amx, vehicle, vx, vy, vz)
 	setElementVelocity(vehicle, vx, vy, vz)
-	setVehicleTurnVelocity(vehicle, vx, vy, vz)
+	setElementAngularVelocity(vehicle, vx, vy, vz)
 end
 
 function SetVehicleVirtualWorld(amx, vehicle, dimension)
