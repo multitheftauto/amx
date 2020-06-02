@@ -83,6 +83,8 @@ function joinHandler(player)
 	end
 	g_Players[playerID].updatetimer = setTimer(procCallOnAll, 100, 0, 'OnPlayerUpdate', playerID)
 
+	g_Players[playerID].pvars = {}
+
 
 	if playerJoined then
 		if getRunningGameMode() then
@@ -233,7 +235,9 @@ function spawnPlayerBySelectedClass(player, x, y, z, r)
 	end
 	spawnPlayer(player, unpack(spawninfo))
 	for i,weapon in ipairs(spawninfo.weapons) do
-		giveWeapon(player, weapon[1], weapon[2], true)
+		if weapon[1] ~= -1 then
+			giveWeapon(player, weapon[1], weapon[2], true)
+		end
 	end
 	clientCall(player, 'destroyClassSelGUI')
 	if playerdata.blip then

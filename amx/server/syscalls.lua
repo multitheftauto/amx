@@ -748,6 +748,38 @@ function GetPlayerWeapon(amx, player)
 	return getPedWeapon(player)
 end
 
+function GetPVarInt(amx, player, varname)
+	local playerdata = g_Players[getElemID(player)]
+	if playerdata then
+		if not playerdata.pvars then
+			playerdata.pvars = {}
+		end
+		return playerdata.pvars[varname] or 0
+	end
+	return 0
+end
+
+function SetPVarInt(amx, player, varname, value)
+	local playerdata = g_Players[getElemID(player)]
+	if playerdata then
+		if not playerdata.pvars then
+			playerdata.pvars = {}
+		end
+		playerdata.pvars[varname] = value
+		return 1
+	end
+	return 0
+end
+
+-- dummy todo
+function RemoveBuildingForPlayer(amx)
+	return 1; 
+end
+
+function EnableVehicleFriendlyFire(amx)
+	return 1; 
+end
+
 function GetPlayerWeaponData(amx, player, slot, refWeapon, refAmmo)
 	local playerdata = g_Players[getElemID(player)]
 	local weapon = playerdata.weapons and playerdata.weapons[slot]
@@ -1478,12 +1510,20 @@ function TogglePlayerSpectating(amx, player, enable)
 		fadeCamera(player, true)
 		setCameraMatrix(player, 75.461357116699, 64.600051879883, 51.685581207275, 149.75857543945, 131.53228759766, 40.597320556641)
 		setPlayerHudComponentVisible(player, 'radar', false)
+		setPlayerState(player, PLAYER_STATE_SPECTATING)
 	else
+		local playerdata = g_Players[getElemID(player)]
+		local spawninfo = playerdata.spawninfo or (g_PlayerClasses and g_PlayerClasses[playerdata.selectedclass])
+		if not spawninfo then
+			putPlayerInClassSelection(player)
+			return
+		end
 		if isPedDead(player) then
 			spawnPlayerBySelectedClass(player)
 		end
 		setCameraTarget(player, player)
 		setPlayerHudComponentVisible(player, 'radar', true)
+		setPlayerState(player, PLAYER_STATE_ONFOOT)
 	end
 end
 
@@ -2293,7 +2333,7 @@ end
 
 function IsPlayerInRangeOfPoint(amx, player, range, pX, pY, pZ)
 	x, y, z = getElementPosition(player)
-	return true
+	return getDistanceBetweenPoints3D(pX, pY, pZ, getElementPosition(player)) <= range
 end
 
 function GetPlayerSurfingVehicleID(amx, player)
@@ -2437,6 +2477,8 @@ g_SAMPSyscallPrototypes = {
 	GivePlayerMoney = {'p', 'i'},
 	GivePlayerWeapon = {'p', 'i', 'i'},
 
+	GetPVarInt = {'p', 's'},
+
 	HideMenuForPlayer = {'m', 'p'},
 
 	IsPlayerAdmin = {'p'},
@@ -2540,6 +2582,8 @@ g_SAMPSyscallPrototypes = {
 	SpawnPlayer = {'p'},
 	StopObject = {'o'},
 	StopPlayerObject = {'p', 'i'},
+
+	SetPVarInt = {'p', 's', 'i'},
 
 	TextDrawAlignment = {'x', 'i'},
 	TextDrawBackgroundColor = {'x', 'c'},
@@ -2782,4 +2826,8 @@ g_SAMPSyscallPrototypes = {
 	format = {'r', 'i', 's'},
 
 	memcpy = {'r', 'r', 'i', 'i', 'i'},
+
+	-- more dummies
+	EnableVehicleFriendlyFire = {},
+	RemoveBuildingForPlayer = {},
 }

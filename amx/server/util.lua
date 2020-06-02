@@ -346,6 +346,10 @@ function addElem(amx, listname, elem)
 		globList = _G['g_' .. listname:sub(1, 1):upper() .. listname:sub(2)]
 		if globList then
 			id = 0
+			-- vehicles in sa-mp start at ID 1
+			if listname == 'vehicles' then
+				id = 1
+			end
 			while globList[id] do
 				id = id + 1
 			end

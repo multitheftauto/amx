@@ -99,12 +99,12 @@ g_KeyMapping = setmetatable({
 }, controlMappingMT)
 
 g_LeftRightMapping = setmetatable({
-	[65408] = { 'left', 'vehicle_left' },
+	[-128] = { 'left', 'vehicle_left' },
 	[128] = { 'right', 'vehicle_right' }
 }, controlMappingMT)
 
 g_UpDownMapping = setmetatable({
-	[65408] = { 'forwards', 'accelerate' },
+	[-128] = { 'forwards', 'accelerate' },
 	[128] = { 'backwards', 'brake_reverse' }
 }, controlMappingMT)
 
