@@ -38,9 +38,10 @@ addEventHandler('onResourceStart', g_ResRoot,
 				local filterres = getResourceFromName('amx-fs-' .. filterscript)
 				if filterres then
 					if getResourceState(filterres) == 'running' then
-						stopResource(filterres)
+						restartResource(filterres)
+					else
+						startResource(filterres)
 					end
-					startResource(filterres)
 				else
 					outputDebugString('No filterscript named "' .. filterscript .. '" exists', 2)
 				end
