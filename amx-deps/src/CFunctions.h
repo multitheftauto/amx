@@ -19,6 +19,10 @@
 #ifndef __CFUNCTIONS_H
 #define __CFUNCTIONS_H
 
+typedef void (STDCALL ProcessTick_t)();
+
+extern vector<ProcessTick_t*> vecPfnProcessTick;
+
 class CFunctions
 {
 public:

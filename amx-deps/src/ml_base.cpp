@@ -180,6 +180,10 @@ MTAEXPORT void RegisterFunctions ( lua_State * luaVM )
 
 MTAEXPORT bool DoPulse ( void )
 {
+	for (const auto& ProcessTick : vecPfnProcessTick)
+	{
+		ProcessTick();
+	}
 	return true;
 }
 

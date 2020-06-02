@@ -26,22 +26,47 @@ extern ILuaModuleManager10 *pModuleManager;
 
 int amx_SAMPInit(AMX *amx);
 
-typedef int  (STDCALL AmxLoad_t)   (AMX *);
-typedef int  (STDCALL AmxUnload_t) (AMX *);
-typedef bool (STDCALL Load_t)      (void**);
+typedef unsigned int (STDCALL Supports_t) ();
+typedef int  (STDCALL AmxLoad_t)          (AMX *);
+typedef int  (STDCALL AmxUnload_t)        (AMX *);
+typedef bool (STDCALL Load_t)             (void**);
+typedef void (STDCALL Unload_t)           ();
+
+#define SAMP_PLUGIN_VERSION 0x0200
+
+enum SUPPORTS_FLAGS
+{
+	SUPPORTS_VERSION = SAMP_PLUGIN_VERSION,
+	SUPPORTS_VERSION_MASK = 0xffff,
+	SUPPORTS_AMX_NATIVES = 0x10000,
+	SUPPORTS_PROCESS_TICK = 0x20000
+};
+
+struct SampPlugin
+{
+	HMODULE pPluginPointer = nullptr;
+
+	SUPPORTS_FLAGS	dwSupportFlags = (SUPPORTS_FLAGS)0;
+
+	Unload_t		*Unload = nullptr;
+
+	AmxLoad_t		*AmxLoad = nullptr;
+	AmxUnload_t		*AmxUnload = nullptr;
+};
 
 extern void *pluginInitData[];
 extern lua_State *mainVM;
 
 map< AMX *, AMXPROPS > loadedAMXs;
 map< AMX *, map< int, sqlite3 * > > loadedDBs;		// amx => (dbID => db)
-map< string, HMODULE > loadedPlugins;
+map< string, SampPlugin* > loadedPlugins;
+vector<ProcessTick_t*> vecPfnProcessTick;
 
 AMX *suspendedAMX = NULL;
 
 // amxLoadPlugin(pluginName)
 int CFunctions::amxLoadPlugin(lua_State *luaVM) {
-	static const char *requiredExports[] = { "Load", "AmxLoad", "AmxUnload", "Unload", 0 };
+	static const char *requiredExports[] = { "Load", "Unload", "Supports", 0 };
 
 	const char *pluginName = luaL_checkstring(luaVM, 1);
 	if(!pluginName || loadedPlugins.find(pluginName) != loadedPlugins.end() || !isSafePath(pluginName)) {
@@ -58,6 +83,7 @@ int CFunctions::amxLoadPlugin(lua_State *luaVM) {
 	#endif
 
 	HMODULE hPlugin = loadLib(pluginPath.c_str());
+	
 	if(!hPlugin) {
 		lua_pushboolean(luaVM, 0);
 		return 1;
@@ -77,10 +103,29 @@ int CFunctions::amxLoadPlugin(lua_State *luaVM) {
 	}
 
 	printf("Loading plugin %s\n", pluginName);
-	Load_t *pfnLoad = (Load_t *)getProcAddr(hPlugin, "Load");
+
+	Load_t* pfnLoad = (Load_t *)getProcAddr(hPlugin, "Load");
+	Supports_t* pfnSupports = (Supports_t *)getProcAddr(hPlugin, "Supports");
+
+	SampPlugin* pSampPlugin = new SampPlugin;
+	pSampPlugin->pPluginPointer = hPlugin;
+	pSampPlugin->Unload = (Unload_t*)getProcAddr(hPlugin, "Unload");
+	pSampPlugin->dwSupportFlags = (SUPPORTS_FLAGS)pfnSupports();
+
+	if ((pSampPlugin->dwSupportFlags & SUPPORTS_AMX_NATIVES) != 0)
+	{
+		pSampPlugin->AmxLoad = (AmxLoad_t *)getProcAddr(hPlugin, "AmxLoad");
+		pSampPlugin->AmxUnload = (AmxUnload_t *)getProcAddr(hPlugin, "AmxUnload");
+	}
+
+	if ((pSampPlugin->dwSupportFlags & SUPPORTS_PROCESS_TICK) != 0)
+	{
+		vecPfnProcessTick.push_back((ProcessTick_t *)getProcAddr(hPlugin, "ProcessTick"));
+	}
+
 	pfnLoad(pluginInitData);
 
-	loadedPlugins[pluginName] = hPlugin;
+	loadedPlugins[pluginName] = pSampPlugin;
 
 	lua_pushboolean(luaVM, 1);
 	return 1;
@@ -127,9 +172,11 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 	amx_TimeInit(amx);
 	amx_FileInit(amx);
 	err = amx_SAMPInit(amx);
-	for(map< string, HMODULE >::iterator it = loadedPlugins.begin(); it != loadedPlugins.end(); it++) {
-		AmxLoad_t* pfnAmxLoad = (AmxLoad_t*)getProcAddr(it->second, "AmxLoad");
-		err = pfnAmxLoad(amx);
+	for(map< string, SampPlugin* >::iterator it = loadedPlugins.begin(); it != loadedPlugins.end(); it++) {
+		AmxLoad_t* pfnAmxLoad = it->second->AmxLoad;
+		if (pfnAmxLoad) {
+			err = pfnAmxLoad(amx);
+		}
 	}
 
 	if(err != AMX_ERR_NONE) {
@@ -318,9 +365,11 @@ int CFunctions::amxUnload(lua_State *luaVM) {
 		return 1;
 	}
 	// Call all plugins' AmxUnload function
-	for(map< string, HMODULE >::iterator piIt = loadedPlugins.begin(); piIt != loadedPlugins.end(); piIt++) {
-		AmxUnload_t *pfnAmxUnload = (AmxUnload_t*)getProcAddr(piIt->second, "AmxUnload");
-		pfnAmxUnload(amx);
+	for(map< string, SampPlugin* >::iterator piIt = loadedPlugins.begin(); piIt != loadedPlugins.end(); piIt++) {
+		AmxUnload_t *pfnAmxUnload = piIt->second->AmxUnload;
+		if (pfnAmxUnload) {
+			pfnAmxUnload(amx);
+		}
 	}
 	// Close any open databases
 	if(loadedDBs.find(amx) != loadedDBs.end()) {
@@ -341,9 +390,13 @@ int CFunctions::amxUnload(lua_State *luaVM) {
 
 // amxUnloadAllPlugins()
 int CFunctions::amxUnloadAllPlugins(lua_State *luaVM) {
-	for(map< string, HMODULE >::iterator it = loadedPlugins.begin(); it != loadedPlugins.end(); it++)
-		freeLib(it->second);
+	for (map< string, SampPlugin* >::iterator it = loadedPlugins.begin(); it != loadedPlugins.end(); it++) {
+		it->second->Unload();
+		freeLib(it->second->pPluginPointer);
+		delete it->second;
+	}
 	loadedPlugins.clear();
+	vecPfnProcessTick.clear();
 
 	lua_pushboolean(luaVM, 1);
 	return 1;
