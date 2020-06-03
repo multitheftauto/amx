@@ -150,14 +150,26 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 		return 1;
 	}
 
-	char buff[256];
-	snprintf(buff, sizeof(buff), "%s/mods/deathmatch/resources/[gamemodes]/[amx]/%s/%s", fs::current_path().string().c_str(), resName, amxName);
-	fs::path amxPath = buff;
-	amxPath = fs::canonical(amxPath);
+	lua_State* theirLuaVM = pModuleManager->GetResourceFromName(resName);
+	if (theirLuaVM == nullptr) {
+		using namespace std::string_literals;
+		std::string errMsg = "resource "s + resName + " does not exist!";
+		lua_pushboolean(luaVM, false);
+		lua_pushstring(luaVM, errMsg.c_str());
+		return 2;
+	}
+
+	char amxPath[256];
+	if (!pModuleManager->GetResourceFilePath(theirLuaVM, amxName, amxPath, 256))
+	{
+		lua_pushboolean(luaVM, false);
+		lua_pushstring(luaVM, "file not found");
+		return 2;
+	}
 
 	// Load .amx
 	AMX *amx = new AMX;
-	int err = aux_LoadProgram(amx, buff, NULL);
+	int  err = aux_LoadProgram(amx, amxPath, NULL);
 	if(err != AMX_ERR_NONE) {
 		delete amx;
 		lua_pushboolean(luaVM, 0);
@@ -196,9 +208,9 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 
 	// Save info about the amx
 	AMXPROPS props;
-	props.filePath = amxPath.string();
+	props.filePath = amxPath;
 	props.resourceName = resName;
-	props.resourceVM = pModuleManager->GetResourceFromName(resName);
+	props.resourceVM = theirLuaVM;
 
 	lua_register(props.resourceVM, "pawn", CFunctions::pawn);
 	loadedAMXs[amx] = props;
@@ -206,7 +218,7 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 	lua_getfield(luaVM, LUA_REGISTRYINDEX, "amx");
 	lua_getfield(luaVM, -1, resName);
 	if(lua_isnil(luaVM, -1)) {
-        lua_newtable(luaVM);
+		lua_newtable(luaVM);
 		lua_setfield(luaVM, -3, resName);
 	}
 
