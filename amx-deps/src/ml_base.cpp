@@ -116,12 +116,12 @@ void logprintf(char *fmt, ...) {
 int AMXCallPublicFilterScript(char *fnName) {
 	int fnIndex = -1;
 	cell ret = 0;
-	for(map< AMX *, AMXPROPS >::iterator it = loadedAMXs.begin(); it != loadedAMXs.end(); it++) {
-		if(amx_FindPublic(it->first, "OnFilterScriptInit", &fnIndex) != AMX_ERR_NONE)
+	for (const auto& it : loadedAMXs) {
+		if(amx_FindPublic(it.first, "OnFilterScriptInit", &fnIndex) != AMX_ERR_NONE)
 			continue;
-		if(amx_FindPublic(it->first, fnName, &fnIndex) != AMX_ERR_NONE)
+		if(amx_FindPublic(it.first, fnName, &fnIndex) != AMX_ERR_NONE)
 			continue;
-		amx_Exec(it->first, &ret, fnIndex);
+		amx_Exec(it.first, &ret, fnIndex);
 		return ret;
 	}
 	return 0;
@@ -130,12 +130,12 @@ int AMXCallPublicFilterScript(char *fnName) {
 int AMXCallPublicGameMode(char *fnName) {
 	int fnIndex = -1;
 	cell ret = 0;
-	for(map< AMX *, AMXPROPS >::iterator it = loadedAMXs.begin(); it != loadedAMXs.end(); it++) {
-		if(amx_FindPublic(it->first, "OnGameModeInit", &fnIndex) != AMX_ERR_NONE)
+	for(const auto& it : loadedAMXs) {
+		if(amx_FindPublic(it.first, "OnGameModeInit", &fnIndex) != AMX_ERR_NONE)
 			continue;
-		if(amx_FindPublic(it->first, fnName, &fnIndex) != AMX_ERR_NONE)
+		if(amx_FindPublic(it.first, fnName, &fnIndex) != AMX_ERR_NONE)
 			continue;
-		amx_Exec(it->first, &ret, fnIndex);
+		amx_Exec(it.first, &ret, fnIndex);
 		return ret;
 	}
 	return 0;
