@@ -63,7 +63,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_USRDLL;__WIN32__;AMX_DONT_RELOCATE;FLOATPOINT;ASM32;%(PreprocessorDefinitions);HAVE_INTTYPES_H;HAVE_MALLOC_H;HAVE_STDINT_H;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_USRDLL;__WIN32__;AMX_DONT_RELOCATE;FLOATPOINT;%(PreprocessorDefinitions);HAVE_INTTYPES_H;HAVE_MALLOC_H;HAVE_STDINT_H;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -79,7 +79,6 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalOptions>amx\amxexec.obj %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>./lib/lua5.1.lib;./lib/sqlite3.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>MSVCRT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile />
@@ -101,7 +100,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <AdditionalIncludeDirectories>.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_USRDLL;__WIN32__;AMX_DONT_RELOCATE;FLOATPOINT;ASM32;%(PreprocessorDefinitions);HAVE_INTTYPES_H;HAVE_MALLOC_H;HAVE_STDINT_H;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_USRDLL;__WIN32__;AMX_DONT_RELOCATE;FLOATPOINT;%(PreprocessorDefinitions);HAVE_INTTYPES_H;HAVE_MALLOC_H;HAVE_STDINT_H;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -116,7 +115,6 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalOptions>amx\amxexec.obj %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>./lib/lua5.1.lib;./lib/sqlite3.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile />
       <GenerateDebugInformation>true</GenerateDebugInformation>
