@@ -150,8 +150,9 @@ MTAEXPORT void RegisterFunctions ( lua_State * luaVM )
 		pModuleManager->RegisterFunction(luaVM, "amxVersion", CFunctions::amxVersion);
 		pModuleManager->RegisterFunction(luaVM, "amxVersionString", CFunctions::amxVersionString);
 
-		string resName;
-		if(!pModuleManager->GetResourceName(luaVM, resName) || resName.compare("amx"))
+		char resNameBuf[4];
+		bool ok = pModuleManager->GetResourceName(luaVM, resNameBuf, 4);
+		if (!ok || std::string(resNameBuf) != "amx")
 			return;
 
 		mainVM = luaVM;

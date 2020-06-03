@@ -407,15 +407,15 @@ int CFunctions::amxRegisterLuaPrototypes(lua_State *luaVM) {
 	luaL_checktype(luaVM, 1, LUA_TTABLE);
 	int mainTop = lua_gettop(mainVM);
 
-	string resName;
-	pModuleManager->GetResourceName(luaVM, resName);
+	char resName[255];
+	pModuleManager->GetResourceName(luaVM, resName, 255);
 	lua_getfield(mainVM, LUA_REGISTRYINDEX, "amx");
-	lua_getfield(mainVM, -1, resName.c_str());
+	lua_getfield(mainVM, -1, resName);
 	if(lua_isnil(mainVM, -1)) {
 		lua_pop(mainVM, 1);
 		lua_newtable(mainVM);
 		lua_pushvalue(mainVM, -1);
-		lua_setfield(mainVM, -3, resName.c_str());
+		lua_setfield(mainVM, -3, resName);
 	}
 
 	lua_newtable(mainVM);
@@ -488,18 +488,18 @@ int CFunctions::pawn(lua_State *luaVM) {
 
 	int mainTop = lua_gettop(mainVM);
 
-	string resName;
-	pModuleManager->GetResourceName(luaVM, resName);
+	char resName[255];
+	pModuleManager->GetResourceName(luaVM, resName, 255);
 	lua_getfield(mainVM, LUA_REGISTRYINDEX, "amx");
-	lua_getfield(mainVM, -1, resName.c_str());
+	lua_getfield(mainVM, -1, resName);
 	if(lua_isnil(mainVM, -1)) {
 		lua_settop(mainVM, mainTop);
-		return luaL_error(luaVM, "pawn: resource %s is not an amx resource", resName.c_str());
+		return luaL_error(luaVM, "pawn: resource %s is not an amx resource", resName);
 	}
 	lua_getfield(mainVM, -1, "pawnprototypes");
 	if(lua_isnil(mainVM, -1)) {
 		lua_settop(mainVM, mainTop);
-		return luaL_error(luaVM, "pawn: resource %s does not have any registered Pawn functions - see amxRegisterPawnPrototypes", resName.c_str());
+		return luaL_error(luaVM, "pawn: resource %s does not have any registered Pawn functions - see amxRegisterPawnPrototypes", resName);
 	}
 	lua_getfield(mainVM, -1, fnName);
 	if(lua_isnil(mainVM, -1)) {
