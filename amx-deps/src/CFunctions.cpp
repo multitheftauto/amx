@@ -218,7 +218,7 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 	lua_getfield(luaVM, LUA_REGISTRYINDEX, "amx");
 	lua_getfield(luaVM, -1, resName);
 	if(lua_isnil(luaVM, -1)) {
-        lua_newtable(luaVM);
+		lua_newtable(luaVM);
 		lua_setfield(luaVM, -3, resName);
 	}
 
