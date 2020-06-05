@@ -66,7 +66,7 @@ AMX *suspendedAMX = NULL;
 
 // amxLoadPlugin(pluginName)
 int CFunctions::amxLoadPlugin(lua_State *luaVM) {
-	static const char *requiredExports[] = { "Load", "Unload", "Supports", 0 };
+	static const char *requiredExports[] = { "Load", "Supports", 0 };
 
 	const char *pluginName = luaL_checkstring(luaVM, 1);
 	if(!pluginName || loadedPlugins.find(pluginName) != loadedPlugins.end() || !isSafePath(pluginName)) {
@@ -218,7 +218,7 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 	lua_getfield(luaVM, LUA_REGISTRYINDEX, "amx");
 	lua_getfield(luaVM, -1, resName);
 	if(lua_isnil(luaVM, -1)) {
-		lua_newtable(luaVM);
+        lua_newtable(luaVM);
 		lua_setfield(luaVM, -3, resName);
 	}
 
@@ -403,7 +403,10 @@ int CFunctions::amxUnload(lua_State *luaVM) {
 // amxUnloadAllPlugins()
 int CFunctions::amxUnloadAllPlugins(lua_State *luaVM) {
 	for (map< string, SampPlugin* >::iterator it = loadedPlugins.begin(); it != loadedPlugins.end(); it++) {
-		it->second->Unload();
+		Unload_t* Unload = it->second->Unload;
+		if (Unload) {
+			Unload();
+		}
 		freeLib(it->second->pPluginPointer);
 		delete it->second;
 	}
