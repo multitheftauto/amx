@@ -160,3 +160,10 @@ g_SpecialActions = {
 	[SPECIAL_ACTION_SITTING] = { 'attractors', 'stepsit_loop' },
 	[SPECIAL_ACTION_STOPUSECELLPHONE] = { 'ped', 'phone_out', -1, false, false }
 }
+
+PLAYER_VARTYPE_NONE = 0
+PLAYER_VARTYPE_INT = 1
+PLAYER_VARTYPE_STRING = 2
+PLAYER_VARTYPE_FLOAT = 3
+
+INVALID_ACTOR_ID = 0xFFFF

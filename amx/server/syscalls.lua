@@ -50,6 +50,8 @@ function argsToMTA(amx, prototype, ...)
 			val = amx.dbresults[val]
 		elseif vartype == 'a' then		-- 3D text label
 			val = amx.textlabels[val]
+		elseif vartype == 'y' then
+			val = g_Actors[val] and g_Actors[val].elem
 		end
 		if val == nil then
 			val = false
@@ -276,8 +278,9 @@ function AllowPlayerTeleport(amx, player, allow)
 
 end
 
-function ApplyAnimation(amx, player, animLib, animName, fS, opt1, opt2, opt3, opt4, op5)
-	setPedAnimation(player, animLib, animName, -1, opt1, opt2 or opt3)
+function ApplyAnimation(amx, player, animlib, animname, fDelta, loop, lockx, locky, freeze, time, forcesync)
+	setPedAnimation(actor, animlib, animname, time, loop, lockx or locky, false, freeze)
+	setPedAnimationSpeed(actor, animname, fDelta)
 end
 
 function AttachObjectToPlayer(amx, object, player, offsetX, offsetY, offsetZ, rX, rY, rZ)
@@ -392,6 +395,10 @@ end
 function DestroyVehicle(amx, vehicle)
 	clientCall(root, 'DestroyVehicle', amx.name, getElemID(vehicle))
 	removeElem(amx, 'vehicles', vehicle)
+	local vehicleID = getElemID(vehicle)
+	for i,playerdata in pairs(g_Players) do
+		playerdata.streamedVehicles[vehicleID] = nil
+	end
 	destroyElement(vehicle)
 end
 
@@ -540,6 +547,10 @@ function GangZoneStopFlashForAll(amx, zone)
 	setRadarAreaFlashing(zone, false)
 end
 
+GetConsoleVarAsBool = GetServerVarAsBool
+GetConsoleVarAsInt = GetServerVarAsInt
+GetConsoleVarAsString = GetServerVarAsString
+
 function GetMaxPlayers(amx)
 	return getMaxPlayers()
 end
@@ -564,6 +575,20 @@ end
 
 function GetPlayerArmour(amx, player, refArmor)
 	writeMemFloat(amx, refArmor, getPedArmor(player))
+end
+
+function GetPlayerCameraPos(amx, player, refX, refY, refZ)
+	local x, y, z = getCameraMatrix(player)
+	writeMemFloat(amx, refX, x)
+	writeMemFloat(amx, refY, y)
+	writeMemFloat(amx, refZ, z)
+end
+
+function GetPlayerCameraFrontVector(amx, player, refX, refY, refZ)
+	local x, y, z, lx, ly, lz = getCameraMatrix(player)
+	writeMemFloat(amx, refX, lx)
+	writeMemFloat(amx, refY, ly)
+	writeMemFloat(amx, refZ, lz)
 end
 
 function GetPlayerColor(amx, player)
@@ -727,26 +752,61 @@ function GetPlayerWeapon(amx, player)
 end
 
 function GetPVarInt(amx, player, varname)
-	local playerdata = g_Players[getElemID(player)]
-	if playerdata then
-		if not playerdata.pvars then
-			playerdata.pvars = {}
-		end
-		return playerdata.pvars[varname] or 0
+	local value = g_Players[getElemID(player)].pvars[varname]
+	if not value or value[1] ~= PLAYER_VARTYPE_INT then
+		return 0
 	end
-	return 0
+	return value[2]
 end
 
 function SetPVarInt(amx, player, varname, value)
-	local playerdata = g_Players[getElemID(player)]
-	if playerdata then
-		if not playerdata.pvars then
-			playerdata.pvars = {}
-		end
-		playerdata.pvars[varname] = value
-		return 1
+	g_Players[getElemID(player)].pvars[varname] = {PLAYER_VARTYPE_INT, value}
+	return 1
+end
+
+function GetPVarFloat(amx, player, varname)
+	local value = g_Players[getElemID(player)].pvars[varname]
+	if not value or value[1] ~= PLAYER_VARTYPE_FLOAT then
+		return 0
 	end
-	return 0
+	return float2cell(value[2])
+end
+
+function SetPVarFloat(amx, player, varname, value)
+	g_Players[getElemID(player)].pvars[varname] = {PLAYER_VARTYPE_FLOAT, value}
+	return 1
+end
+
+function GetPVarString(amx, player, varname, outbuf, length)
+	local value = g_Players[getElemID(player)].pvars[varname]
+	if not value or value[1] ~= PLAYER_VARTYPE_STRING then
+		return 0
+	end
+	
+	if #value[2] < maxlength then
+		writeMemString(amx, outbuf, value)
+	else
+		writeMemString(amx, outbuf, string.sub(value, 0, length - 1))
+	end
+	return 1
+end
+
+function SetPVarString(amx, player, varname, value)
+	g_Players[getElemID(player)].pvars[varname] = {PLAYER_VARTYPE_STRING, value}
+	return 1
+end
+
+function GetPVarType(amx, player, varname)
+	local value = g_Players[getElemID(player)].pvars[varname]
+	if value then
+		return value[1]
+	end
+	return PLAYER_VARTYPE_NONE
+end
+
+function DeletePVar(amx, player, varname)
+	g_Players[getElemID(player)].pvars[varname] = nil
+	return 1
 end
 
 -- dummy todo
@@ -891,6 +951,10 @@ end
 
 function IsValidPlayerObject(amx, player, objID)
 	return amx.playerobjects[player] and amx.playerobjects[player][objID] and true
+end
+
+function IsValidVehicle(amx, vehicleID)
+	return g_Vehicles[vehicleID] ~= nil
 end
 
 function Kick(amx, player)
@@ -1260,7 +1324,7 @@ function SetVehicleModel(amx, vehicle, model)
 end
 
 function SetVehicleNumberPlate(amx, vehicle, plate)
-
+	setVehiclePlateText(vehicle, plate)
 end
 
 function SetVehicleParamsForPlayer(amx, vehicle, player, isObjective, doorsLocked)
@@ -1509,7 +1573,107 @@ function UsePlayerPedAnims(amx)
 
 end
 
+-----------------------------------------------------
+-- Actor funcs
+function CreateActor(amx, model, x, y, z, rotation)
+	local actor = createPed(model, x, y, z, rotation, false)
+	setElementData(actor, 'amx.actorped', true)
+	return addElem(amx, 'actors', actor)
+end
 
+function IsValidActor(amx, actorId)
+	return g_Objects[actorId] ~= nil
+end
+
+function IsActorStreamedIn(amx, actorId, player)
+	return g_Players[getElemID(player)].streamedActors[actorId] ~= nil
+end
+
+function DestroyActor(amx, actor)
+	for i,playerdata in pairs(g_Players) do
+		playerdata.streamedActors[getElemID(actor)] = nil
+	end
+	
+	removeElem(amx, 'actors', actor)
+	destroyElement(actor)
+end
+
+function ApplyActorAnimation(amx, actor, animlib, animname, fDelta, loop, lockx, locky, freeze, time)
+	setPedAnimation(actor, animlib, animname, time, loop, lockx or locky, false, freeze)
+	setPedAnimationSpeed(actor, animname, fDelta)
+end
+
+function ClearActorAnimations(amx, actor)
+	setPedAnimation(actor, false)
+end
+
+function GetActorFacingAngle(amx, actor, refAng)
+	local rX, rY, rZ = getElementRotation(vehicle)
+	writeMemFloat(amx, refAng, rZ)
+end
+
+GetActorHealth = GetPlayerHealth
+
+function GetActorPoolSize(amx)
+	local highestId = 0
+	for id,v in pairs(g_Actors) do
+		if id > highestId then
+			highestId = id
+		end
+	end
+	return highestId
+end
+
+GetActorVirtualWorld = GetPlayerVirtualWorld
+
+-- new stuff
+
+function GetPlayerPoolSize(amx)
+	local highestId = 0
+	for id,v in pairs(g_Players) do
+		if id > highestId then
+			highestId = id
+		end
+	end
+	return highestId
+end
+
+-- stub
+function GetPlayerCameraTargetActor(amx)
+	return INVALID_ACTOR_ID
+end
+
+function GetPlayerTargetActor(amx, player)
+	local elem = getPedTarget(player)
+	
+	if getElementType(elem) == 'ped' and getElementData(elem, 'amx.actorped') then
+		return getElemID(elem)
+	end
+	return INVALID_ACTOR_ID
+end
+
+-- stub
+function IsActorInvulnerable(amx)
+	return 1
+end
+
+function SetActorFacingAngle(amx, actor, ang)
+	local rotX, rotY, rotZ = getElementRotation(actor) -- get the local players's rotation
+    setElementRotation(actor, rotX, rotY, ang, "default", true) -- turn the player 10 degrees clockwise
+end
+
+SetActorHealth = SetPlayerHealth
+
+-- stub
+function SetActorInvulnerable(amx)
+	return 1
+end
+
+SetActorPos = SetPlayerPos
+
+SetActorVirtualWorld = SetPlayerVirtualWorld
+
+-----------------------------------------------------
 
 function acos(amx, f)
 	return float2cell(math.acos(f))
@@ -1984,8 +2148,107 @@ function SetVehicleDoorState(amx, vehicle, door, state)
 	return setVehicleDoorState(vehicle, door, state)
 end
 
+function GetVehicleDamageStatus(amx, vehicle, refPanels, refDoors, refLights, refTires)
+	local panelsState = getVehiclePanelState(vehicle, 0)
+	panelsState = binor(panelsState, binshl(getVehiclePanelState(vehicle, 1), 4) )
+	panelsState = binor(panelsState, binshl(getVehiclePanelState(vehicle, 2), 8) )
+	panelsState = binor(panelsState, binshl(getVehiclePanelState(vehicle, 3), 12) )
+	panelsState = binor(panelsState, binshl(getVehiclePanelState(vehicle, 4), 16) )
+	panelsState = binor(panelsState, binshl(getVehiclePanelState(vehicle, 5), 20) )
+	panelsState = binor(panelsState, binshl(getVehiclePanelState(vehicle, 6), 24) )
+
+	local doorsState = getVehicleDoorState(vehicle, 0)
+	doorsState = binor(doorsState, binshl(getVehicleDoorState(vehicle, 1), 8) )
+	doorsState = binor(doorsState, binshl(getVehicleDoorState(vehicle, 2), 16) )
+	doorsState = binor(doorsState, binshl(getVehicleDoorState(vehicle, 3), 24) )
+
+	local lightsState = getVehicleLightState(vehicle, 0)
+	lightsState = binor(lightsState, binshl(getVehicleLightState(vehicle, 1), 2) )
+	lightsState = binor(lightsState, binshl(getVehicleLightState(vehicle, 2), 4) )
+	lightsState = binor(lightsState, binshl(getVehicleLightState(vehicle, 3), 6) )
+
+	local frontLeft, rearLeft, frontRight, rearRight = getVehicleWheelStates ( vehicle )
+
+	local tiresState = binor(rearRight, binor(binshl(frontRight, 1), binor(binshl(rearLeft, 2), binshl(frontLeft, 3))) )
+
+	amx.memDAT[refPanels] = panelsState
+	amx.memDAT[refDoors] = doorsState
+	amx.memDAT[refLights] = lightsState
+	amx.memDAT[refTires] = tiresState
+end
+
+function UpdateVehicleDamageStatus(amx, vehicle, panels, doors, lights, tires)
+	setVehiclePanelState(vehicle, 0, binand(panels, 15))
+	setVehiclePanelState(vehicle, 1, binand(binshr(panels, 4), 15))
+	setVehiclePanelState(vehicle, 2, binand(binshr(panels, 8), 15))
+	setVehiclePanelState(vehicle, 3, binand(binshr(panels, 12), 15))
+	setVehiclePanelState(vehicle, 4, binand(binshr(panels, 16), 15))
+	setVehiclePanelState(vehicle, 5, binand(binshr(panels, 20), 15))
+	setVehiclePanelState(vehicle, 6, binand(binshr(panels, 24), 15))
+
+	setVehicleDoorState(vehicle, 0, binand(panels, 7))
+	setVehicleDoorState(vehicle, 1, binand(binshr(panels, 8), 7))
+	setVehicleDoorState(vehicle, 2, binand(binshr(panels, 16), 7))
+	setVehicleDoorState(vehicle, 3, binand(binshr(panels, 24), 7))
+
+	setVehicleLightState(vehicle, 0, binand(lights, 1))
+	setVehicleLightState(vehicle, 2, binand(binshr(lights, 2), 1))
+	setVehicleLightState(vehicle, 3, binand(binshr(lights, 4), 1))
+	setVehicleLightState(vehicle, 4, binand(binshr(lights, 6), 1))
+
+	setVehicleWheelStates(vehicle, binand(binshr(tires, 3), 1), binand(binshr(tires, 2), 1), binand(binshr(tires, 1), 1), binand(tires, 1) )
+end
+
 function GetVehicleMaxPassengers(amx, vehicle)
 	return getVehicleMaxPassengers(vehicle)
+end
+
+function GetVehicleParamsCarDoors(amx, vehicle, refDriver, refPassenger, refBackleft, refBackright)
+	amx.memDAT[refDriver] = getVehicleDoorOpenRatio(vehicle, 2) > 0
+	amx.memDAT[refPassenger] = getVehicleDoorOpenRatio(vehicle, 3) > 0
+	amx.memDAT[refBackleft] = getVehicleDoorOpenRatio(vehicle, 4) > 0
+	amx.memDAT[refBackright] = getVehicleDoorOpenRatio(vehicle, 5) > 0
+	return 1
+end
+
+function SetVehicleParamsCarDoors(amx, vehicle, driver, passenger, backleft, backright)
+	setVehicleDoorOpenRatio(vehicle, 2, driver and 1 or 0) -- bonnet
+	setVehicleDoorOpenRatio(vehicle, 3, passenger and 1 or 0) -- bonnet
+	setVehicleDoorOpenRatio(vehicle, 4, backleft and 1 or 0) -- bonnet
+	setVehicleDoorOpenRatio(vehicle, 5, backright and 1 or 0) -- bonnet
+end
+
+function GetVehicleParamsEx(amx, vehicle, refEngine, refLights, refAlarm, refDoors, refBonnet, refBoot, refObjective)
+	local vehicleID = getElemID(vehicle)
+
+	amx.memDAT[refEngine] = getVehicleEngineState(vehicle)
+	amx.memDAT[refLights] = getVehicleOverrideLights(vehicle) == 2 and true or false
+	amx.memDAT[refAlarm] = g_Vehicles[vehicleID].alarm
+	amx.memDAT[refDoors] = isVehicleLocked(vehicle)
+	amx.memDAT[refBonnet] = getVehicleDoorOpenRatio(vehicle, 0) > 0
+	amx.memDAT[refBoot] = getVehicleDoorOpenRatio(vehicle, 1) > 0
+	amx.memDAT[refObjective] = g_Vehicles[vehicleID].objective or false
+
+	return 1
+end
+
+function SetVehicleParamsEx(amx, vehicle, engine, lights, alarm, doors, bonnet, boot, objective)
+	setVehicleEngineState(vehicle, engine)
+	setVehicleOverrideLights(vehicle, lights and 2 or 1)
+	-- TODO: implement alarm
+	setVehicleLocked(vehicle, doors)
+	setVehicleDoorOpenRatio(vehicle, 0, bonnet and 1 or 0) -- bonnet
+	setVehicleDoorOpenRatio(vehicle, 1, boot and 1 or 0) -- boot
+
+	for i, playerdata in pairs(g_Players) do
+		clientCall(playerdata.elem, 'SetVehicleParamsForPlayer', vehicle, objective, doors)
+	end
+
+	local vehicleID = getElemID(vehicle)
+	g_Vehicles[vehicleID].alarm = alarm;
+	g_Vehicles[vehicleID].objective = objective;
+
+	return 1
 end
 
 function GetVehicleLightState(amx, vehicle, light)
@@ -2034,6 +2297,16 @@ end
 
 function GetVehicleSirensOn(amx, vehicle)
 	return getVehicleSirensOn(vehicle)
+end
+
+function GetVehiclePoolSize(amx)
+	local highestId = 0
+	for id,v in pairs(g_Vehicles) do
+		if id > highestId then
+			highestId = id
+		end
+	end
+	return highestId
 end
 
 function SetVehicleSirensOn(amx, vehicle, state)
@@ -2218,7 +2491,11 @@ function IsPlayerNPC(amx, player)
 end
 
 function IsVehicleStreamedIn(amx, vehicle, player)
-	return true
+	return g_Players[getElemID(player)].streamedVehicles[getElemID(vehicle)] == true
+end
+
+function IsPlayerStreamedIn(amx, otherPlayer, player)
+	return g_Players[getElemID(player)].streamedPlayers[getElemID(otherPlayer)] == true
 end
 
 function SetPlayerChatBubble(amx, player, text, color, dist, exptime)
@@ -2310,9 +2587,14 @@ function PlayCrimeReportForPlayer(amx, player, suspectid, crimeid)
 end
 
 function IsPlayerInRangeOfPoint(amx, player, range, pX, pY, pZ)
-	x, y, z = getElementPosition(player)
 	return getDistanceBetweenPoints3D(pX, pY, pZ, getElementPosition(player)) <= range
 end
+
+function GetPlayerDistanceFromPoint(amx, player, pX, pY, pZ)
+	return float2cell(getDistanceBetweenPoints3D(pX, pY, pZ, getElementPosition(player)))
+end
+
+GetVehicleDistanceFromPoint = GetPlayerDistanceFromPoint
 
 function GetPlayerSurfingVehicleID(amx, player)
 	return -1
@@ -2337,9 +2619,13 @@ function AttachElementToElement(amx, elem, toelem, xPos, yPos, zPos, xRot, yRot,
 end
 
 function Dummy(amx, text)
-	return 0;
+	return 0
 end
 Broadcast = Dummy
+
+function VectorSize(amx, x, y, z)
+	return float2cell(math.sqrt( (x^2) + (y^2) + (z^2)))
+end
 
 -----------------------------------------------------
 -- List of the functions and their argument types
@@ -2389,14 +2675,14 @@ g_SAMPSyscallPrototypes = {
 	DisableMenuRow = {'i', 'i'},
 	DisablePlayerCheckpoint = {'p'},
 	DisablePlayerRaceCheckpoint = {'p'},
-
+	
 	EnableStuntBonusForAll = {'b'},
 	EnableStuntBonusForPlayer = {'p', 'b'},
 	EnableTirePopping = {'b'},
 	EnableZoneNames = {'b'},
-
+	
 	ForceClassSelection = {'i'},
-
+	
 	GameModeExit = {},
 	GameTextForAll = {'s', 'i', 'i'},
 	GameTextForPlayer = {'p', 's', 'i', 'i'},
@@ -2410,11 +2696,16 @@ g_SAMPSyscallPrototypes = {
 	GangZoneFlashForAll = {'g', 'c'},
 	GangZoneStopFlashForPlayer = {'p', 'g'},
 	GangZoneStopFlashForAll = {'g'},
+	GetConsoleVarAsBool = {'s'},
+	GetConsoleVarAsInt = {'s'},
+	GetConsoleVarAsString = {'s', 'r', 'i'},
 	GetMaxPlayers = {},
 	GetObjectPos = {'o', 'r', 'r', 'r'},
 	GetObjectRot = {'o', 'r', 'r', 'r'},
 	GetPlayerAmmo = {'p'},
 	GetPlayerArmour = {'p', 'r'},
+	GetPlayerCameraPos = {'p', 'r', 'r', 'r'},
+	GetPlayerCameraFrontVector = {'p', 'r', 'r', 'r'},
 	GetPlayerColor = {'p'},
 	GetPlayerClothes = {'p', 'i'},
 	GetPlayerFacingAngle = {'p', 'r'},
@@ -2456,6 +2747,11 @@ g_SAMPSyscallPrototypes = {
 	GivePlayerWeapon = {'p', 'i', 'i'},
 
 	GetPVarInt = {'p', 's'},
+	GetPVarFloat = {'p', 's'},
+	GetPVarString = {'p', 's', 'r', 'i'},
+	GetPVarType = {'p', 's'},
+
+	DeletePVar = {'p', 's'},
 
 	HideMenuForPlayer = {'m', 'p'},
 
@@ -2470,6 +2766,7 @@ g_SAMPSyscallPrototypes = {
 	IsValidMenu = {'i'},
 	IsValidObject = {'i'},
 	IsValidPlayerObject = {'p', 'i'},
+	IsValidVehicle = {'i'},
 
 	Kick = {'p'},
 	KillTimer = {'i'},
@@ -2562,6 +2859,8 @@ g_SAMPSyscallPrototypes = {
 	StopPlayerObject = {'p', 'i'},
 
 	SetPVarInt = {'p', 's', 'i'},
+	SetPVarFloat = {'p', 's', 'f'},
+	SetPVarString = {'p', 's', 's'},
 
 	TextDrawAlignment = {'x', 'i'},
 	TextDrawBackgroundColor = {'x', 'c'},
@@ -2665,7 +2964,13 @@ g_SAMPSyscallPrototypes = {
 	SetVehicleEngineState = {'v', 'b'},
 	GetVehicleDoorState = {'v', 'i'},
 	SetVehicleDoorState = {'v', 'i', 'i'},
+	GetVehicleDamageStatus = {'v', 'r', 'r', 'r', 'r'},
+	UpdateVehicleDamageStatus = {'v', 'i', 'i', 'i', 'i'},
 	GetVehicleMaxPassengers = {'v'},
+	GetVehicleParamsCarDoors = {'v', 'r', 'r', 'r', 'r'},
+	SetVehicleParamsCarDoors = {'v', 'b', 'b', 'b', 'b'},
+	GetVehicleParamsEx = {'v', 'r', 'r', 'r', 'r', 'r', 'r', 'r'},
+	SetVehicleParamsEx = {'v', 'b', 'b', 'b', 'b', 'b', 'b', 'b'},
 	GetVehicleLightState = {'v', 'i'},
 	SetVehicleLightState = {'v', 'i', 'i'},
 	GetVehicleOverrideLights = {'v'},
@@ -2749,8 +3054,8 @@ g_SAMPSyscallPrototypes = {
 	-- dummy
 	ConnectNPC = {'s', 's'},
 	IsPlayerNPC = {'p'},
-	IsVehicleStreamedIn = {'v', 'p'},
 	SetPlayerChatBubble = {'p', 's', 'i', 'f', 'i'},
+
 	Create3DTextLabel = {'s', 'c', 'f', 'f', 'f', 'f', 'i', 'i'},
 	CreatePlayer3DTextLabel = {'p', 's', 'c', 'f', 'f', 'f', 'f', 'i', 'i'},
 	Delete3DTextLabel = {'a'},
@@ -2759,9 +3064,9 @@ g_SAMPSyscallPrototypes = {
 	Attach3DTextLabelToVehicle = {'a', 'v', 'f', 'f', 'f'},
 	Update3DTextLabelText = {'a', 'c', 's'},
 	UpdatePlayer3DTextLabelText = {'p', 'a', 'c', 's'},
+
 	PlayCrimeReportForPlayer  = {'p', 'i', 'i'},
 
-	IsPlayerInRangeOfPoint = {'p', 'f', 'f', 'f', 'f'},
 	GetPlayerSurfingVehicleID = {'p'},
 
 	-- player data
@@ -2808,4 +3113,39 @@ g_SAMPSyscallPrototypes = {
 	-- more dummies
 	EnableVehicleFriendlyFire = {},
 	RemoveBuildingForPlayer = {},
+
+	-- new imp
+	IsVehicleStreamedIn = {'v', 'p'},
+	IsPlayerStreamedIn = {'p', 'p'},
+
+	GetVehiclePoolSize = {},
+	GetPlayerPoolSize = {},
+
+	GetPlayerDistanceFromPoint = {'p', 'f', 'f', 'f'},
+	GetVehicleDistanceFromPoint = {'v', 'f', 'f', 'f'},
+
+	IsPlayerInRangeOfPoint = {'p', 'f', 'f', 'f', 'f'},
+
+	VectorSize = {'f', 'f', 'f'},
+
+	-- actors
+	CreateActor = {'i', 'f', 'f', 'f', 'f'},
+
+	IsValidActor = {'i'},
+	IsActorStreamedIn = {'i'},
+	DestroyActor = {'y'},
+	ApplyActorAnimation = {'y', 's', 's', 'f', 'b', 'b', 'b', 'b', 'i'},
+	ClearActorAnimations = {'y'},
+	GetActorFacingAngle = {'y', 'r'},
+	GetActorHealth = {'y', 'r'},
+	GetActorPoolSize = {},
+	GetActorVirtualWorld = {'y'},
+	GetPlayerCameraTargetActor = {},
+	GetPlayerTargetActor = {'p'},
+	IsActorInvulnerable = {},
+	SetActorFacingAngle = {'y', 'f'},
+	SetActorHealth = {'y', 'f'},
+	SetActorInvulnerable = {},
+	SetActorPos = {'y', 'f', 'f', 'f'},
+	SetActorVirtualWorld = {'y', 'i'},
 }

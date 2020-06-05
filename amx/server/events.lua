@@ -21,6 +21,10 @@ function gameModeInit(player)
 	toggleAllControls(player, false, true, false)
 	clientCall(player, 'showIntroScene')
 	clientCall(player, 'TogglePlayerClock', false, false)
+	g_Players[playerID].pvars = {}
+	g_Players[playerID].streamedActors = {}
+	g_Players[playerID].streamedVehicles = {}
+	g_Players[playerID].streamedPlayers = {}
 	if g_PlayerClasses[0] then
 		g_Players[playerID].viewingintro = true
 		g_Players[playerID].doingclasssel = true
@@ -82,9 +86,6 @@ function joinHandler(player)
 		bindKey(player, v, 'both', mtaKeyStateChange)
 	end
 	g_Players[playerID].updatetimer = setTimer(procCallOnAll, 100, 0, 'OnPlayerUpdate', playerID)
-
-	g_Players[playerID].pvars = {}
-
 
 	if playerJoined then
 		if getRunningGameMode() then
@@ -315,7 +316,17 @@ addEventHandler('onPlayerWasted', root,
 		procCallOnAll('OnPlayerDeath', playerID, killerID, weapon)
 		if g_Players[playerID].returntoclasssel then
 			g_Players[playerID].returntoclasssel = nil
-			setTimer(putPlayerInClassSelection, 3000, 1, source)
+			--setTimer(putPlayerInClassSelection, 3000, 1, source)
+			setTimer(
+				function()
+					g_Players[playerID].spawninfo = nil
+					g_Players[playerID].selectedclass = nil
+					
+					if procCallOnAll('OnPlayerRequestClass', playerID, 0) then
+						putPlayerInClassSelection(player)
+					end
+				end, 3000, 1, source
+			)
 		else
 			setTimer(spawnPlayerBySelectedClass, 3000, 1, source, false)
 		end
@@ -339,6 +350,11 @@ addEventHandler('onPlayerQuit', root,
 			amx.playerobjects[source] = nil
 		end
 		local playerID = getElemID(source)
+
+		for i,playerdata in pairs(g_Players) do
+			playerdata.streamedPlayers[playerID] = nil
+		end
+
 		procCallOnAll('OnPlayerDisconnect', playerID, quitReasons[reason])
 		if g_Players[playerID].blip then
 			destroyElement(g_Players[playerID].blip)
@@ -383,18 +399,33 @@ addEventHandler('onVehicleEnter', root,
 			local pedID = getElemID(player)
 			g_Bots[pedID].vehicle = source
 			setBotState(player, seat == 0 and PLAYER_STATE_DRIVER or PLAYER_STATE_PASSENGER)
-			procCallOnAll('OnBotEnterVehicle', pedID, vehID, seat ~= 0 and 1 or 0)
 			return
 		end
 		local playerID = getElemID(player)
 		g_Players[playerID].vehicle = source
 		setPlayerState(player, seat == 0 and PLAYER_STATE_DRIVER or PLAYER_STATE_PASSENGER)
-		procCallInternal(amx, 'OnPlayerEnterVehicle', playerID, vehID, seat ~= 0 and 1 or 0)
 
 		if amx.vehicles[vehID] and amx.vehicles[vehID].respawntimer then
 			killTimer(amx.vehicles[vehID].respawntimer)
 			amx.vehicles[vehID].respawntimer = nil
 		end
+	end
+)
+
+addEventHandler('onVehicleStartEnter', root,
+	function(player, seat, jacked)
+		local vehID = getElemID(source)
+		local amx = getElemAMX(source)
+		if not amx then
+			return
+		end
+		if isPed(player) then
+			local pedID = getElemID(player)
+			procCallOnAll('OnBotEnterVehicle', pedID, vehID, seat ~= 0 and 1 or 0)
+			return
+		end
+		local playerID = getElemID(player)
+		procCallInternal(amx, 'OnPlayerEnterVehicle', playerID, vehID, seat ~= 0 and 1 or 0)
 	end
 )
 
@@ -410,13 +441,11 @@ addEventHandler('onVehicleExit', root,
 			local pedID = getElemID(player)
 			g_Bots[pedID].vehicle = nil
 			setBotState(player, PLAYER_STATE_ONFOOT)
-			procCallOnAll('OnBotExitVehicle', pedID, vehID)
 			return
 		end
 
 		local playerID = getElemID(player)
 		g_Players[playerID].vehicle = nil
-		procCallOnAll('OnPlayerExitVehicle', playerID, vehID)
 		setPlayerState(player, PLAYER_STATE_ONFOOT)
 
 		for i=0,getVehicleMaxPassengers(source) do
@@ -433,10 +462,26 @@ addEventHandler('onVehicleExit', root,
 )
 
 addEventHandler('onVehicleStartExit', root,
-	function()
+	function(player, seat, jacked, door)
+		local amx = getElemAMX(source)
+		local vehID = getElemID(source)
+		if not amx then
+			return
+		end
+
 		if g_RCVehicles[getElementModel(source)] then
 			cancelEvent()
+			return
 		end
+
+		if isPed(player) then
+			local pedID = getElemID(player)
+			procCallOnAll('OnBotExitVehicle', pedID, vehID)
+			return
+		end
+
+		local playerID = getElemID(player)
+		procCallOnAll('OnPlayerExitVehicle', playerID, vehID)
 	end
 )
 
@@ -592,5 +637,50 @@ addEventHandler('onPlayerClick', root,
 addEventHandler('onPlayerChangeNick', root,
 	function()
 		cancelEvent()
+	end
+)
+
+-- Actors
+addEvent('onAmxClientActorStream', true)
+addEventHandler('onAmxClientActorStream', root,
+	function(actorId, streamed)
+		local playerID = getElemID(source)
+		if streamed then
+			g_Players[playerID].streamedActors[actorId] = true
+			procCallOnAll('OnActorStreamIn', actorId, playerID)
+		else
+			g_Players[playerID].streamedActors[actorId] = nil
+			procCallOnAll('OnActorStreamOut', actorId, playerID)
+		end
+	end
+)
+
+-- Players
+addEvent('onAmxClientPlayerStream', true)
+addEventHandler('onAmxClientPlayerStream', root,
+	function(otherId, streamed)
+		local playerID = getElemID(source)
+		if streamed then
+			g_Players[playerID].streamedPlayers[otherId] = true
+			procCallOnAll('OnPlayerStreamIn', otherId, playerID)
+		else
+			g_Players[playerID].streamedPlayers[otherId] = nil
+			procCallOnAll('OnPlayerStreamOut', otherId, playerID)
+		end
+	end
+)
+
+-- Vehicles
+addEvent('onAmxClientVehicleStream', true)
+addEventHandler('onAmxClientVehicleStream', root,
+	function(vehicleID, streamed)
+		local playerID = getElemID(source)
+		if streamed then
+			g_Players[playerID].streamedVehicles[vehicleID] = true
+			procCallOnAll('OnVehicleStreamIn', vehicleID, playerID)
+		else
+			g_Players[playerID].streamedVehicles[vehicleID] = nil
+			procCallOnAll('OnVehicleStreamOut', vehicleID, playerID)
+		end
 	end
 )
