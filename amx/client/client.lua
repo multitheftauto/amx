@@ -1466,11 +1466,12 @@ function ShowPlayerDialog(amxName, dialogid, dialogtype, caption, info, button1,
 		guiSetVisible(msgWindow, true)
 		msgDialog = dialogid
 		showCursor(true)
-	elseif dialogtype == 1 then
+	elseif dialogtype == 1 or dialogtype == 3 then
 		guiSetText(inputButton1, button1)
 		guiSetText(inputButton2, button2)
 		guiSetText(inputWindow, caption)
 		guiSetText(inputEdit, "")
+		guiEditSetMasked(inputEdit, dialogtype == 3)
 		guiSetText(inputLabel, info)
 		guiSetVisible(inputWindow, true)
 		inputDialog = dialogid
