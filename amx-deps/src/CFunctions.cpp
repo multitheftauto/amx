@@ -66,7 +66,7 @@ AMX *suspendedAMX = NULL;
 
 // amxLoadPlugin(pluginName)
 int CFunctions::amxLoadPlugin(lua_State *luaVM) {
-	static const char *requiredExports[] = { "Load", "Unload", "Supports", 0 };
+	static const char *requiredExports[] = { "Load", "Supports", 0 };
 
 	const char *pluginName = luaL_checkstring(luaVM, 1);
 	if(!pluginName || loadedPlugins.find(pluginName) != loadedPlugins.end() || !isSafePath(pluginName)) {
@@ -83,7 +83,7 @@ int CFunctions::amxLoadPlugin(lua_State *luaVM) {
 	#endif
 
 	HMODULE hPlugin = loadLib(pluginPath.c_str());
-	
+
 	if(!hPlugin) {
 		lua_pushboolean(luaVM, 0);
 		return 1;
@@ -150,14 +150,26 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 		return 1;
 	}
 
-	char buff[256];
-	snprintf(buff, sizeof(buff), "%s/mods/deathmatch/resources/[gamemodes]/[amx]/%s/%s", fs::current_path().string().c_str(), resName, amxName);
-	fs::path amxPath = buff;
-	amxPath = fs::canonical(amxPath);
+	lua_State* theirLuaVM = pModuleManager->GetResourceFromName(resName);
+	if (theirLuaVM == nullptr) {
+		using namespace std::string_literals;
+		std::string errMsg = "resource "s + resName + " does not exist!";
+		lua_pushboolean(luaVM, false);
+		lua_pushstring(luaVM, errMsg.c_str());
+		return 2;
+	}
+
+	char amxPath[256];
+	if (!pModuleManager->GetResourceFilePath(theirLuaVM, amxName, amxPath, 256))
+	{
+		lua_pushboolean(luaVM, false);
+		lua_pushstring(luaVM, "file not found");
+		return 2;
+	}
 
 	// Load .amx
 	AMX *amx = new AMX;
-	int err = aux_LoadProgram(amx, buff, NULL);
+	int  err = aux_LoadProgram(amx, amxPath, NULL);
 	if(err != AMX_ERR_NONE) {
 		delete amx;
 		lua_pushboolean(luaVM, 0);
@@ -196,9 +208,9 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 
 	// Save info about the amx
 	AMXPROPS props;
-	props.filePath = amxPath.string();
+	props.filePath = amxPath;
 	props.resourceName = resName;
-	props.resourceVM = pModuleManager->GetResourceFromName(resName);
+	props.resourceVM = theirLuaVM;
 
 	lua_register(props.resourceVM, "pawn", CFunctions::pawn);
 	loadedAMXs[amx] = props;
@@ -391,9 +403,12 @@ int CFunctions::amxUnload(lua_State *luaVM) {
 // amxUnloadAllPlugins()
 int CFunctions::amxUnloadAllPlugins(lua_State *luaVM) {
 	for (const auto& plugin : loadedPlugins) {
-		plugin.second->Unload();
-		freeLib(plugin.second->pPluginPointer);
-		delete plugin.second;
+		Unload_t* Unload = it.second->Unload;
+		if (Unload) {
+			Unload();
+		}
+		freeLib(it.second->pPluginPointer);
+		delete it.second;
 	}
 	loadedPlugins.clear();
 	vecPfnProcessTick.clear();
@@ -407,15 +422,15 @@ int CFunctions::amxRegisterLuaPrototypes(lua_State *luaVM) {
 	luaL_checktype(luaVM, 1, LUA_TTABLE);
 	int mainTop = lua_gettop(mainVM);
 
-	string resName;
-	pModuleManager->GetResourceName(luaVM, resName);
+	char resName[255];
+	pModuleManager->GetResourceName(luaVM, resName, 255);
 	lua_getfield(mainVM, LUA_REGISTRYINDEX, "amx");
-	lua_getfield(mainVM, -1, resName.c_str());
+	lua_getfield(mainVM, -1, resName);
 	if(lua_isnil(mainVM, -1)) {
 		lua_pop(mainVM, 1);
 		lua_newtable(mainVM);
 		lua_pushvalue(mainVM, -1);
-		lua_setfield(mainVM, -3, resName.c_str());
+		lua_setfield(mainVM, -3, resName);
 	}
 
 	lua_newtable(mainVM);
@@ -488,18 +503,18 @@ int CFunctions::pawn(lua_State *luaVM) {
 
 	int mainTop = lua_gettop(mainVM);
 
-	string resName;
-	pModuleManager->GetResourceName(luaVM, resName);
+	char resName[255];
+	pModuleManager->GetResourceName(luaVM, resName, 255);
 	lua_getfield(mainVM, LUA_REGISTRYINDEX, "amx");
-	lua_getfield(mainVM, -1, resName.c_str());
+	lua_getfield(mainVM, -1, resName);
 	if(lua_isnil(mainVM, -1)) {
 		lua_settop(mainVM, mainTop);
-		return luaL_error(luaVM, "pawn: resource %s is not an amx resource", resName.c_str());
+		return luaL_error(luaVM, "pawn: resource %s is not an amx resource", resName);
 	}
 	lua_getfield(mainVM, -1, "pawnprototypes");
 	if(lua_isnil(mainVM, -1)) {
 		lua_settop(mainVM, mainTop);
-		return luaL_error(luaVM, "pawn: resource %s does not have any registered Pawn functions - see amxRegisterPawnPrototypes", resName.c_str());
+		return luaL_error(luaVM, "pawn: resource %s does not have any registered Pawn functions - see amxRegisterPawnPrototypes", resName);
 	}
 	lua_getfield(mainVM, -1, fnName);
 	if(lua_isnil(mainVM, -1)) {

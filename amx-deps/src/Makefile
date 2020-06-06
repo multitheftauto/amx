@@ -10,7 +10,7 @@ CPP = gcc
 # Compiler flags
 # NOTE: add -g for debug, remove for release!
 ASMFLAGS = -O1 -f elf -I./amx/
-CPPFLAGS = -MD -O2 -Wall -I./ -I/usr/local/include/boost-1_35 -I./amx -I./include -I./linux -DAMX_DONT_RELOCATE -DFLOATPOINT -DASM32
+CPPFLAGS = -MD -O2 -Wall -I./ -I/usr/local/include/boost-1_35 -I./amx -I./include -I./linux -DAMX_DONT_RELOCATE -DFLOATPOINT
 LDFLAGS = -fPIC -s -shared -Wl,-soname,$(PROG).1,-R./
 LIBS = -lpthread -lstdc++ -llua5.1 -lsqlite3 -lboost_filesystem-gcc41-mt-s -lboost_system-gcc41-mt-s
 

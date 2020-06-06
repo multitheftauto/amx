@@ -511,9 +511,11 @@ addEventHandler('onClientElementStreamIn', root,
 				vehInfo.blip = createBlipAttachedTo(source, 0, 1, 136, 136, 136, 150, 0, 500)
 				setElementParent(vehInfo.blip, source)
 			end
-			serverAMXEvent('OnVehicleStreamIn', getElemID(source), getElemID(getLocalPlayer()))
+			triggerServerEvent('onAmxClientVehicleStream', g_Me, getElemID(source), true)
 		elseif getElementType(source) == 'player' then
-			serverAMXEvent('OnPlayerStreamIn', getElemID(source), getElemID(getLocalPlayer()))
+			triggerServerEvent('onAmxClientPlayerStream', g_Me, getElemID(source), true)
+		elseif getElementType(source) == 'ped' and getElementData(source, 'amx.actorped') then
+			triggerServerEvent('onAmxClientActorStream', g_Me, getElemID(source), true)
 		end
 	end
 )
@@ -529,9 +531,11 @@ addEventHandler('onClientElementStreamOut', root,
 				end
 				vehInfo.blip = nil
 			end
-			serverAMXEvent('OnVehicleStreamOut', getElemID(source), getElemID(getLocalPlayer()))
+			triggerServerEvent('onAmxClientVehicleStream', g_Me, getElemID(source), false)
 		elseif getElementType(source) == 'player' then
-			serverAMXEvent('OnPlayerStreamOut', getElemID(source), getElemID(getLocalPlayer()))
+			triggerServerEvent('onAmxClientPlayerStream', g_Me, getElemID(source), false)
+		elseif getElementType(source) == 'ped' and getElementData(source, 'amx.actorped') then
+			triggerServerEvent('onAmxClientActorStream', g_Me, getElemID(source), false)
 		end
 	end
 )
@@ -1466,11 +1470,12 @@ function ShowPlayerDialog(amxName, dialogid, dialogtype, caption, info, button1,
 		guiSetVisible(msgWindow, true)
 		msgDialog = dialogid
 		showCursor(true)
-	elseif dialogtype == 1 then
+	elseif dialogtype == 1 or dialogtype == 3 then
 		guiSetText(inputButton1, button1)
 		guiSetText(inputButton2, button2)
 		guiSetText(inputWindow, caption)
 		guiSetText(inputEdit, "")
+		guiEditSetMasked(inputEdit, dialogtype == 3)
 		guiSetText(inputLabel, info)
 		guiSetVisible(inputWindow, true)
 		inputDialog = dialogid

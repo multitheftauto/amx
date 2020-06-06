@@ -194,7 +194,6 @@ g_EventNames = {
 	OnPlayerExitVehicle = true,
 	OnVehicleDeath = true,
 	OnVehicleDamage = true,
-	OnPlayerExitVehicle = true,
 	OnMarkerHit = true,
 	OnMarkerLeave = true,
 	OnBotDeath = true,
