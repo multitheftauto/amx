@@ -83,7 +83,7 @@ int CFunctions::amxLoadPlugin(lua_State *luaVM) {
 	#endif
 
 	HMODULE hPlugin = loadLib(pluginPath.c_str());
-	
+
 	if(!hPlugin) {
 		lua_pushboolean(luaVM, 0);
 		return 1;
@@ -184,8 +184,8 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 	amx_TimeInit(amx);
 	amx_FileInit(amx);
 	err = amx_SAMPInit(amx);
-	for(map< string, SampPlugin* >::iterator it = loadedPlugins.begin(); it != loadedPlugins.end(); it++) {
-		AmxLoad_t* pfnAmxLoad = it->second->AmxLoad;
+	for (const auto& plugin : loadedPlugins) {
+		AmxLoad_t* pfnAmxLoad = plugin.second->AmxLoad;
 		if (pfnAmxLoad) {
 			err = pfnAmxLoad(amx);
 		}
@@ -290,8 +290,8 @@ int CFunctions::amxCall(lua_State *luaVM) {
 	cell ret;
 	int err = amx_Exec(amx, &ret, fnIndex);
 	// Release string arguments
-	for(vector<cell>::iterator it = stringsToRelease.begin(); it != stringsToRelease.end(); it++) {
-		amx_Release(amx, *it);
+	for (const auto& amxStringAddr : stringsToRelease) {
+		amx_Release(amx, amxStringAddr);
 	}
 	if(err != AMX_ERR_NONE) {
 		if(err == AMX_ERR_SLEEP)
@@ -377,16 +377,16 @@ int CFunctions::amxUnload(lua_State *luaVM) {
 		return 1;
 	}
 	// Call all plugins' AmxUnload function
-	for(map< string, SampPlugin* >::iterator piIt = loadedPlugins.begin(); piIt != loadedPlugins.end(); piIt++) {
-		AmxUnload_t *pfnAmxUnload = piIt->second->AmxUnload;
+	for (const auto& plugin : loadedPlugins) {
+		AmxUnload_t *pfnAmxUnload = plugin.second->AmxUnload;
 		if (pfnAmxUnload) {
 			pfnAmxUnload(amx);
 		}
 	}
 	// Close any open databases
 	if(loadedDBs.find(amx) != loadedDBs.end()) {
-		for(map< int, sqlite3 * >::iterator dbIt = loadedDBs[amx].begin(); dbIt != loadedDBs[amx].end(); dbIt++)
-			sqlite3_close(dbIt->second);
+		for (const auto& db : loadedDBs[amx])
+			sqlite3_close(db.second);
 		loadedDBs.erase(amx);
 	}
 	// Unload
@@ -402,13 +402,13 @@ int CFunctions::amxUnload(lua_State *luaVM) {
 
 // amxUnloadAllPlugins()
 int CFunctions::amxUnloadAllPlugins(lua_State *luaVM) {
-	for (map< string, SampPlugin* >::iterator it = loadedPlugins.begin(); it != loadedPlugins.end(); it++) {
-		Unload_t* Unload = it->second->Unload;
+	for (const auto& plugin : loadedPlugins) {
+		Unload_t* Unload = it.second->Unload;
 		if (Unload) {
 			Unload();
 		}
-		freeLib(it->second->pPluginPointer);
-		delete it->second;
+		freeLib(it.second->pPluginPointer);
+		delete it.second;
 	}
 	loadedPlugins.clear();
 	vecPfnProcessTick.clear();
@@ -492,9 +492,9 @@ int CFunctions::pawn(lua_State *luaVM) {
 
 	int fnIndex;
 	AMX *amx = NULL;
-	for(vector<AMX *>::iterator it = amxs.begin(); it != amxs.end(); it++) {
-		if(amx_FindPublic(*it, fnName, &fnIndex) == AMX_ERR_NONE) {
-			amx = *it;
+	for (const auto& it : amxs) {
+		if(amx_FindPublic(it, fnName, &fnIndex) == AMX_ERR_NONE) {
+			amx = it;
 			break;
 		}
 	}

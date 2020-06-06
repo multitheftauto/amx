@@ -187,9 +187,9 @@ void lua_pushremotevalues(lua_State *localVM, lua_State *remoteVM, int num) {
 
 vector<AMX *> getResourceAMXs(lua_State *luaVM) {
 	vector<AMX *> amxs;
-	for(map< AMX *, AMXPROPS >::iterator it = loadedAMXs.begin(); it != loadedAMXs.end(); it++) {
-		if(it->second.resourceVM == luaVM)
-			amxs.push_back(it->first);
+	for (const auto& it : loadedAMXs) {
+		if (it.second.resourceVM == luaVM)
+			amxs.push_back(it.first);
 	}
 	return amxs;
 }
