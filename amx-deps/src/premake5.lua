@@ -1,14 +1,3 @@
-local amxfiles = {
-	"amx/amx.c",
-	"amx/amxaux.c",
-	"amx/amxcons.c",
-	"amx/amxcore.c",
-	"amx/amxfile.c",
-	"amx/amxstring.c",
-	"amx/amxtime.c",
-	"amx/float.c",
-}
-
 solution "king"
 	configurations { "Debug", "Release" }
 	platforms { "x86", "x64" }
@@ -23,20 +12,18 @@ solution "king"
 	defines {
 		"_CRT_SECURE_NO_WARNINGS",
 		"HAVE_STDINT_H",
-
-		-- From original project, but causes crashes?
-		-- "AMX_DONT_RELOCATE"
 	}
 
 	filter "system:windows"
-		-- "__WIN32__" needed for amx
-		defines { "WINDOWS", "WIN32", "__WIN32__" }
+		defines { "WINDOWS", "WIN32" }
 
 	filter "configurations:Debug"
 		defines { "DEBUG" }
 
 	filter "configurations:Release"
 		optimize "Speed"
+
+	include "amx"
 
 	project "ml_base"
 		language "C++"
@@ -47,8 +34,8 @@ solution "king"
 		libdirs { "lib" }
 
 		vpaths {
-			["Headers/*"] = "**.h",
-			["Sources/*"] = {"**.cpp", amxfiles},
+			["Headers/*"] = {"*.h", "include/*.h", "linux/*.h"},
+			["Sources/*"] = {"**.cpp"},
 			["Resources/*"] = "king.rc",
 
 			["*"] = "premake5.lua",
@@ -57,10 +44,14 @@ solution "king"
 		files {
 			"premake5.lua",
 			"**.cpp",
-			"**.h",
+			"*.h",
+			"include/*.h",
+			"linux/*.h",
 			"king.rc",
-			amxfiles
 		}
+
+		include "amx"
+		links "amx"
 
 		filter {"system:linux", "platforms:x86" }
 			linkoptions { "-Wl,-rpath=mods/deathmatch" }
@@ -74,5 +65,5 @@ solution "king"
 		filter "system:windows"
 			links { "lua5.1", "sqlite3" }
 
-			-- for amx
-			links { "winmm" }
+		filter {}
+			links "amx"
