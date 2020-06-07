@@ -782,7 +782,7 @@ function GetPVarString(amx, player, varname, outbuf, length)
 	if not value or value[1] ~= PLAYER_VARTYPE_STRING then
 		return 0
 	end
-	
+
 	if #value[2] < maxlength then
 		writeMemString(amx, outbuf, value)
 	else
@@ -811,11 +811,11 @@ end
 
 -- dummy todo
 function RemoveBuildingForPlayer(amx)
-	return 1; 
+	return 1;
 end
 
 function EnableVehicleFriendlyFire(amx)
-	return 1; 
+	return 1;
 end
 
 function GetPlayerWeaponData(amx, player, slot, refWeapon, refAmmo)
@@ -1593,7 +1593,7 @@ function DestroyActor(amx, actor)
 	for i,playerdata in pairs(g_Players) do
 		playerdata.streamedActors[getElemID(actor)] = nil
 	end
-	
+
 	removeElem(amx, 'actors', actor)
 	destroyElement(actor)
 end
@@ -1645,7 +1645,7 @@ end
 
 function GetPlayerTargetActor(amx, player)
 	local elem = getPedTarget(player)
-	
+
 	if getElementType(elem) == 'ped' and getElementData(elem, 'amx.actorped') then
 		return getElemID(elem)
 	end
@@ -1999,7 +1999,7 @@ SetBotPos = SetObjectPos
 -----------------------------------------------------
 -- Native Markers
 function CreateMarker(amx, x, y, z, typeid, size, r, g, b, a)
-	local marker = createMarker(x, y, z, typeid, size, r, g, b, a, getRootElement())
+	local marker = createMarker(x, y, z, typeid, size, r, g, b, a, root)
 	local markerID = addElem(amx, 'markers', marker)
 	procCallOnAll('OnMarkerCreate', markerID)
 	return markerID
@@ -2675,14 +2675,14 @@ g_SAMPSyscallPrototypes = {
 	DisableMenuRow = {'i', 'i'},
 	DisablePlayerCheckpoint = {'p'},
 	DisablePlayerRaceCheckpoint = {'p'},
-	
+
 	EnableStuntBonusForAll = {'b'},
 	EnableStuntBonusForPlayer = {'p', 'b'},
 	EnableTirePopping = {'b'},
 	EnableZoneNames = {'b'},
-	
+
 	ForceClassSelection = {'i'},
-	
+
 	GameModeExit = {},
 	GameTextForAll = {'s', 'i', 'i'},
 	GameTextForPlayer = {'p', 's', 'i', 'i'},

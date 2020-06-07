@@ -1,5 +1,3 @@
-g_ResRoot = getResourceRootElement(getThisResource())
-
 --[[
 local function fndebug(...)
 	local args = { ... }
@@ -44,7 +42,7 @@ fndebug(
 --]]
 
 function clientCall(player, fnName, ...)
-	triggerClientEvent(player, 'onClientCall', g_ResRoot, fnName, ...)
+	triggerClientEvent(player, 'onClientCall', resourceRoot, fnName, ...)
 end
 
 g_Keys = {
@@ -226,7 +224,7 @@ local allowedRPC = {
 }
 
 addEvent('onCall', true)
-addEventHandler('onCall', g_ResRoot,
+addEventHandler('onCall', resourceRoot,
 	function(fnName, ...)
 		if allowedRPC[fnName] and _G[fnName] then
 			_G[fnName](...)
