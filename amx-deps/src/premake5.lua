@@ -9,7 +9,7 @@ local amxfiles = {
 	"amx/float.c",
 }
 
-solution "ml_base"
+solution "king"
 	configurations { "Debug", "Release" }
 	platforms { "x86", "x64" }
 	location ( "Build" )
@@ -41,7 +41,7 @@ solution "ml_base"
 	project "ml_base"
 		language "C++"
 		kind "SharedLib"
-		targetname "ml_base"
+		targetname "king"
 
 		includedirs { "include" }
 		libdirs { "lib" }
