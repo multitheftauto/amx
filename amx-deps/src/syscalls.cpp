@@ -10,12 +10,7 @@ extern map < string, HMODULE > loadedPlugins;
 
 AMX_NATIVE_INFO *sampNatives = NULL;
 
-static cell AMX_NATIVE_CALL n_samp(AMX *amx, const cell *params) {
-	char fnName[128];
-	*fnName = 0;
-	if(amx_GetNative(amx, *(cell *)(amx->code + amx->cip - sizeof(cell)), fnName) != AMX_ERR_NONE)
-		return 0;
-
+static cell AMX_NATIVE_CALL n_samp(AMX *amx, const cell *params, const char* fnName) {
 	int mainTop = lua_gettop(mainVM);
 
 	lua_getglobal(mainVM, "syscall");
@@ -65,6 +60,36 @@ static cell AMX_NATIVE_CALL n_samp(AMX *amx, const cell *params) {
 		return result;
 	}
 }
+
+
+
+constexpr size_t MAX_SAMP_NATIVES = 700; // Should be enough for now
+
+const char** boundNativeNames[MAX_SAMP_NATIVES];
+AMX_NATIVE boundNatives[MAX_SAMP_NATIVES];
+
+template<size_t index>
+struct NativeGenerator {
+	static const char* BoundNativeName;
+
+	static cell AMX_NATIVE_CALL DoNative(AMX* amx, const cell* params) {
+		return n_samp(amx, params, BoundNativeName);
+	}
+
+	static void Generate() {
+		boundNativeNames[index] = &BoundNativeName;
+		boundNatives[index] = reinterpret_cast<AMX_NATIVE>(&DoNative);
+
+		NativeGenerator<index + 1>::Generate();
+	}
+};
+
+template<> struct NativeGenerator<MAX_SAMP_NATIVES> {
+	static void Generate() {}
+};
+
+template<size_t index>
+const char* NativeGenerator<index>::BoundNativeName = nullptr;
 
 int callLuaMTRead(lua_State *luaVM) {
 	luaL_checktype(luaVM, 1, LUA_TTABLE);
@@ -438,6 +463,8 @@ void initSAMPSyscalls() {
 	if(!mainVM || sampNatives)
 		return;
 
+	NativeGenerator<0>::Generate();
+
 	lua_getglobal(mainVM, "g_SAMPSyscallPrototypes");
 	int numNatives = 0;
 	lua_pushnil(mainVM);
@@ -450,8 +477,14 @@ void initSAMPSyscalls() {
 	int i = 0;
 	lua_pushnil(mainVM);
 	while(lua_next(mainVM, -2)) {
+		if (i >= MAX_SAMP_NATIVES) {
+			pModuleManager->ErrorPrintf("syscall count exceeded MAX_SAMP_NATIVES (%d) definition - Recompile with higher value");
+			break;
+		}
+
+		*boundNativeNames[i] = strdup(lua_tostring(mainVM, -2));
 		sampNatives[i].name = strdup(lua_tostring(mainVM, -2));
-		sampNatives[i].func = n_samp;
+		sampNatives[i].func = boundNatives[i];
 		lua_pop(mainVM, 1);
 		i++;
 	}
