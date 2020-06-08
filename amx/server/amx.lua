@@ -18,7 +18,7 @@ function initGameModeGlobals()
 	g_GlobalChatRadius = false
 end
 
-addEventHandler('onResourceStart', g_ResRoot,
+addEventHandler('onResourceStart', resourceRoot,
 	function()
 		if not amxVersion then
 			outputDebugString('The amx module (king.dll/so) isn\'t loaded. It is required for amx to function. Please add it to your server config and restart your server.', 1)
@@ -213,7 +213,7 @@ function unloadAMX(amx, notifyClient)
 end
 addEvent('onAMXStop')
 
-addEventHandler('onResourceStop', getRootElement(),
+addEventHandler('onResourceStop', root,
 	function(res)
 		local amxs = getResourceAMXFiles(res)
 		if not amxs then
@@ -228,7 +228,7 @@ addEventHandler('onResourceStop', getRootElement(),
 	end
 )
 
-addEventHandler('onResourceStop', g_ResRoot,
+addEventHandler('onResourceStop', resourceRoot,
 	function()
 		-- TODO(q): this needs to be added back later
 		-- exports.amxscoreboard:removeScoreboardColumn('Score')

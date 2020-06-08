@@ -2,13 +2,13 @@ local VehicleBars = false
 
 players = getElementsByType ( "player" )
 
-addEventHandler( "onClientRender", getRootElement(),
+addEventHandler( "onClientRender", root,
 	function(  )
 	for k, player in pairs( getElementsByType("player") ) do
-		local px, py, pz = getElementPosition( getLocalPlayer() )
+		local px, py, pz = getElementPosition(localPlayer)
 		local x, y, z = getPedBonePosition(player, 2)
-		local cx,cy,cz = getCameraMatrix(getLocalPlayer())
-		if isElementOnScreen( player ) and getDistanceBetweenPoints2D(px, py, x, y) < 45 and isLineOfSightClear(cx,cy,cz, x,y,z, true, true, false, true, true, false, false) and player ~= getLocalPlayer() and getElementHealth(player) > 0 then
+		local cx,cy,cz = getCameraMatrix(localPlayer)
+		if isElementOnScreen( player ) and getDistanceBetweenPoints2D(px, py, x, y) < 45 and isLineOfSightClear(cx,cy,cz, x,y,z, true, true, false, true, true, false, false) and player ~= localPlayer and getElementHealth(player) > 0 then
 			local X, Y = getScreenFromWorldPosition( x, y, z )
 			if X then
 				local arm = getPedArmor( player );
@@ -29,7 +29,7 @@ addEventHandler( "onClientRender", getRootElement(),
 	for k, myPed in pairs( getElementsByType("ped") ) do
 		local state = getElementData(myPed, "amx.shownametag")
 		if state == true then
-			local px, py, pz = getElementPosition( getLocalPlayer() )
+			local px, py, pz = getElementPosition(localPlayer)
 			local x, y, z = getPedBonePosition(myPed, 2)
 			if isElementOnScreen( myPed ) and getDistanceBetweenPoints2D(px, py, x, y) < 45 and getElementHealth(myPed) > 0 then
 				local X, Y = getScreenFromWorldPosition( x, y, z )
@@ -54,9 +54,9 @@ addEventHandler( "onClientRender", getRootElement(),
 	end
 	if VehicleBars == true then
 		for k, vehicle in pairs( getElementsByType("vehicle") ) do
-			local px, py, pz = getElementPosition( getLocalPlayer() )
+			local px, py, pz = getElementPosition(localPlayer)
 			local x, y, z = getElementPosition( vehicle )
-			local cx,cy,cz = getCameraMatrix(getLocalPlayer())
+			local cx,cy,cz = getCameraMatrix(localPlayer)
 			if isElementOnScreen( vehicle ) and getDistanceBetweenPoints2D(px, py, x, y) < 50 and isLineOfSightClear(cx,cy,cz, x,y,z, true, false, false, true, true, false, false) and getElementHealth(vehicle) > 0  then
 				local X, Y = getScreenFromWorldPosition( x, y, z )
 				if X then

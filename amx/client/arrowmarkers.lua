@@ -18,7 +18,7 @@ local function setMarkerZ(marker, angle)
 	setElementPosition(marker, baseX, baseY, baseZ + sin(angle))
 end
 
-addEventHandler('onClientElementStreamIn', getRootElement(),
+addEventHandler('onClientElementStreamIn', root,
 	function()
 		if getElementType(source) ~= 'marker' or getMarkerType(source) ~= 'arrow' then
 			return
@@ -36,7 +36,7 @@ addEventHandler('onClientElementStreamIn', getRootElement(),
 	end
 )
 
-addEventHandler('onClientElementStreamOut', getRootElement(),
+addEventHandler('onClientElementStreamOut', root,
 	function()
 		if getElementType(source) ~= 'marker' or getMarkerType(source) ~= 'arrow' then
 			return

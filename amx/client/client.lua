@@ -1,6 +1,3 @@
-resourceRoot = getResourceRootElement(getThisResource())
-g_Me = getLocalPlayer()
-
 local dxDrawText = dxDrawText
 local tocolor = tocolor
 local SPEED_EPSILON = 0.005
@@ -31,7 +28,7 @@ local screenWidth, screenHeight = guiGetScreenSize()
 
 addEventHandler('onClientResourceStart', resourceRoot,
 	function()
-		triggerServerEvent('onLoadedAtClient', resourceRoot, g_Me)
+		triggerServerEvent('onLoadedAtClient', resourceRoot, localPlayer)
 		InitDialogs()
 		setTimer(checkTextLabels, 500, 0)
 	end,
@@ -96,7 +93,7 @@ function removeAMX(amxName)
 		DestroyMenu(amxName, id)
 	end
 	table.each(amx.blips, destroyElement)
-	setElementAlpha(g_Me, 255)
+	setElementAlpha(localPlayer, 255)
 	g_AMXs[amxName] = nil
 end
 
@@ -124,7 +121,7 @@ function startClassSelection(classInfo)
 		g_StartWeather = nil
 	end
 	setGravity(0)
-	setElementCollisionsEnabled(g_Me, false)
+	setElementCollisionsEnabled(localPlayer, false)
 
 	-- interaction
 	setPlayerHudComponentVisible('radar', false)
@@ -145,15 +142,15 @@ function startClassSelection(classInfo)
 end
 
 function ClassSelLeft ()
-	server.requestClass(getLocalPlayer(), false, false, -1)
+	server.requestClass(localPlayer, false, false, -1)
 end
 
 function ClassSelRight ()
-	server.requestClass(getLocalPlayer(), false, false, 1)
+	server.requestClass(localPlayer, false, false, 1)
 end
 
 function ClassSelSpawn ()
-	server.requestSpawn(getLocalPlayer(), false, false)
+	server.requestSpawn(localPlayer, false, false)
 end
 
 function renderClassSelText()
@@ -196,9 +193,9 @@ function destroyClassSelGUI()
 		removeEventHandler('onClientRender', root, renderClassSelText)
 	end
 	setPlayerHudComponentVisible('radar', true)
-	setCameraTarget(g_Me)
+	setCameraTarget(localPlayer)
 	setGravity(0.008)
-	setElementCollisionsEnabled(g_Me, true)
+	setElementCollisionsEnabled(localPlayer, true)
 	showCursor(false)
 	if g_ClassSelectionInfo then
 		removeEventHandler ( "onClientGUIClick", g_ClassSelectionInfo.gui.btnLeft, ClassSelLeft )
@@ -216,12 +213,12 @@ addEventHandler('onClientResourceStop', resourceRoot,
 )
 
 function requestSpawn()
-	triggerServerEvent('onRequestSpawn', g_Me, g_ClassSelectionInfo.selectedclass)
+	triggerServerEvent('onRequestSpawn', localPlayer, g_ClassSelectionInfo.selectedclass)
 end
 
 addEventHandler('onClientPlayerWeaponFire', resourceRoot,
 	function(weapon, ammo, ammoInClip, hitX, hitY, hitZ)
-		--if getLocalPlayer() ~= source then return end
+		--if localPlayer ~= source then return end
 		serverAMXEvent('OnPlayerShoot', getElemID(source), weapon, ammo, ammoInClip, hitX, hitY, hitZ)
 	end,
 	false
@@ -326,15 +323,15 @@ end
 -- Checkpoints
 
 function OnPlayerEnterCheckpoint(elem)
-	local vehicle = getPedOccupiedVehicle(g_Me)
-	if (vehicle and elem == vehicle) or (not vehicle and elem == g_Me) then
+	local vehicle = getPedOccupiedVehicle(localPlayer)
+	if (vehicle and elem == vehicle) or (not vehicle and elem == localPlayer) then
 		serverAMXEvent('OnPlayerEnterCheckpoint', g_PlayerID)
 	end
 end
 
 function OnPlayerLeaveCheckpoint(elem)
-	local vehicle = getPedOccupiedVehicle(g_Me)
-	if (vehicle and elem == vehicle) or (not vehicle and elem == g_Me) then
+	local vehicle = getPedOccupiedVehicle(localPlayer)
+	if (vehicle and elem == vehicle) or (not vehicle and elem == localPlayer) then
 		serverAMXEvent('OnPlayerLeaveCheckpoint', g_PlayerID)
 	end
 end
@@ -367,15 +364,15 @@ function SetPlayerCheckpoint(x, y, z, size)
 end
 
 function OnPlayerEnterRaceCheckpoint(elem)
-	local vehicle = getPedOccupiedVehicle(g_Me)
-	if (vehicle and elem == vehicle) or (not vehicle and elem == g_Me) then
+	local vehicle = getPedOccupiedVehicle(localPlayer)
+	if (vehicle and elem == vehicle) or (not vehicle and elem == localPlayer) then
 		serverAMXEvent('OnPlayerEnterRaceCheckpoint', g_PlayerID)
 	end
 end
 
 function OnPlayerLeaveRaceCheckpoint(elem)
-	local vehicle = getPedOccupiedVehicle(g_Me)
-	if (vehicle and elem == vehicle) or (not vehicle and elem == g_Me) then
+	local vehicle = getPedOccupiedVehicle(localPlayer)
+	if (vehicle and elem == vehicle) or (not vehicle and elem == localPlayer) then
 		serverAMXEvent('OnPlayerLeaveRaceCheckpoint', g_PlayerID)
 	end
 end
@@ -418,7 +415,7 @@ end
 -- Vehicles
 
 function SetPlayerPosFindZ(amxName, x, y, z)
-	setElementPosition(g_Me, x, y, getGroundPosition(x, y, z) + 1)
+	setElementPosition(localPlayer, x, y, getGroundPosition(x, y, z) + 1)
 end
 
 function SetVehicleParamsForPlayer(vehicle, isObjective, doorsLocked)
@@ -511,11 +508,11 @@ addEventHandler('onClientElementStreamIn', root,
 				vehInfo.blip = createBlipAttachedTo(source, 0, 1, 136, 136, 136, 150, 0, 500)
 				setElementParent(vehInfo.blip, source)
 			end
-			triggerServerEvent('onAmxClientVehicleStream', g_Me, getElemID(source), true)
+			triggerServerEvent('onAmxClientVehicleStream', localPlayer, getElemID(source), true)
 		elseif getElementType(source) == 'player' then
-			triggerServerEvent('onAmxClientPlayerStream', g_Me, getElemID(source), true)
+			triggerServerEvent('onAmxClientPlayerStream', localPlayer, getElemID(source), true)
 		elseif getElementType(source) == 'ped' and getElementData(source, 'amx.actorped') then
-			triggerServerEvent('onAmxClientActorStream', g_Me, getElemID(source), true)
+			triggerServerEvent('onAmxClientActorStream', localPlayer, getElemID(source), true)
 		end
 	end
 )
@@ -531,11 +528,11 @@ addEventHandler('onClientElementStreamOut', root,
 				end
 				vehInfo.blip = nil
 			end
-			triggerServerEvent('onAmxClientVehicleStream', g_Me, getElemID(source), false)
+			triggerServerEvent('onAmxClientVehicleStream', localPlayer, getElemID(source), false)
 		elseif getElementType(source) == 'player' then
-			triggerServerEvent('onAmxClientPlayerStream', g_Me, getElemID(source), false)
+			triggerServerEvent('onAmxClientPlayerStream', localPlayer, getElemID(source), false)
 		elseif getElementType(source) == 'ped' and getElementData(source, 'amx.actorped') then
-			triggerServerEvent('onAmxClientActorStream', g_Me, getElemID(source), false)
+			triggerServerEvent('onAmxClientActorStream', localPlayer, getElemID(source), false)
 		end
 	end
 )
@@ -543,7 +540,7 @@ addEventHandler('onClientElementStreamOut', root,
 -- emulate SA-MP behaviour: block enter attempts as driver to locked vehicles
 addEventHandler('onClientVehicleStartEnter', root,
 	function(player, seat, door)
-		if (player == g_Me and seat == 0 and isVehicleLocked(source)) then
+		if (player == localPlayer and seat == 0 and isVehicleLocked(source)) then
 			cancelEvent()
 		end
 	end
@@ -867,9 +864,9 @@ function renderTextLabels()
 				end
 
 				local screenX, screenY = getScreenFromWorldPosition(textlabel.X, textlabel.Y, textlabel.Z, textlabel.dist, false)
-				local pX, pY, pZ = getElementPosition(g_Me)
+				local pX, pY, pZ = getElementPosition(localPlayer)
 				local dist = getDistanceBetweenPoints3D(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z)
-				local vw = getElementDimension(g_Me)
+				local vw = getElementDimension(localPlayer)
 				--[[if textlabel.attached then
 					local LOS = isLineOfSightClear(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z, true, true, true, true, true, false, false, textlabel.attachedTo)
 				else]] --Ã­Ã¥Ã°Ã Ã¡Ã®Ã²Ã Ã¥Ã², Ã¯Ã®ÃµÃ®Ã¦Ã¥ Ã´Ã³Ã­ÃªÃ¶Ã¨Ã¿ isLineOfSightClearÃ­Ã¥ Ã°Ã Ã¡Ã®Ã²Ã Ã¥Ã² Ã± Ã Ã°Ã£Ã³Ã¬Ã¥Ã­Ã²Ã®Ã¬ ignoredElement.
@@ -895,7 +892,7 @@ function checkTextLabels()
 	for name,amx in pairs(g_AMXs) do
 		for id,textlabel in pairs(amx.textlabels) do
 
-			local pX, pY, pZ = getElementPosition(g_Me)
+			local pX, pY, pZ = getElementPosition(localPlayer)
 			local dist = getDistanceBetweenPoints3D(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z)
 
 			if dist <= textlabel.dist then
@@ -1237,13 +1234,13 @@ function sendWeapons()
 	local weapons = {}
 	local needResync = false
 	for slot=0,12 do
-		weapons[slot] = { id = getPedWeapon(g_Me, slot), ammo = getPedTotalAmmo(g_Me, slot) }
+		weapons[slot] = { id = getPedWeapon(localPlayer, slot), ammo = getPedTotalAmmo(localPlayer, slot) }
 		if not needResync and (not prevWeapons or prevWeapons[slot].ammo ~= weapons[slot].ammo or prevWeapons[slot].id ~= weapons[slot].id) then
 			needResync = true
 		end
 	end
 	if needResync then
-		server.syncPlayerWeapons(g_Me, weapons)
+		server.syncPlayerWeapons(localPlayer, weapons)
 		prevWeapons = weapons
 	end
 end
@@ -1281,18 +1278,18 @@ function checkWorldBounds()
 	end
 
 	local x, y, z, vx, vy, vz
-	local elem = getPedOccupiedVehicle(g_Me)
+	local elem = getPedOccupiedVehicle(localPlayer)
 	local isVehicle
 
 	if elem then
-		if getVehicleController(elem) == g_Me then
+		if getVehicleController(elem) == localPlayer then
 			isVehicle = true
 			vx, vy, vz = getElementVelocity(elem)
 		else
 			return
 		end
 	else
-		elem = g_Me
+		elem = localPlayer
 		isVehicle = false
 	end
 	local bounds = g_WorldBounds
@@ -1404,7 +1401,7 @@ function OnListDialogButton1Click( button, state )
 	if button == "left" then
 		local row, column = guiGridListGetSelectedItem(listGrid)
 		local text = guiGridListGetItemText(listGrid, row, column)
-		serverAMXEvent("OnDialogResponse", getElemID(getLocalPlayer()), listDialog, 1, row, text);
+		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), listDialog, 1, row, text);
 		guiSetVisible(listWindow, false)
 		guiGridListClear(listGrid)
 		showCursor(false)
@@ -1416,7 +1413,7 @@ function OnListDialogButton2Click( button, state )
 	if button == "left" then
 		local row, column = guiGridListGetSelectedItem(listGrid)
 		local text = guiGridListGetItemText(listGrid, row, column)
-		serverAMXEvent("OnDialogResponse", getElemID(getLocalPlayer()), listDialog, 0, row, text);
+		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), listDialog, 0, row, text);
 		guiSetVisible(listWindow, false)
 		guiGridListClear(listGrid)
 		showCursor(false)
@@ -1426,7 +1423,7 @@ end
 
 function OnInputDialogButton1Click( button, state )
 	if button == "left" then
-		serverAMXEvent("OnDialogResponse", getElemID(getLocalPlayer()), inputDialog, 1, 0, guiGetText(inputEdit));
+		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), inputDialog, 1, 0, guiGetText(inputEdit));
 		guiSetVisible(inputWindow, false)
 		showCursor(false)
 		inputDialog = nil
@@ -1435,7 +1432,7 @@ end
 
 function OnInputDialogButton2Click( button, state )
 	if button == "left" then
-		serverAMXEvent("OnDialogResponse", getElemID(getLocalPlayer()), inputDialog, 0, 0, guiGetText(inputEdit));
+		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), inputDialog, 0, 0, guiGetText(inputEdit));
 		guiSetVisible(inputWindow, false)
 		showCursor(false)
 		inputDialog = nil
@@ -1444,7 +1441,7 @@ end
 
 function OnMessageDialogButton1Click( button, state )
 	if button == "left" then
-		serverAMXEvent("OnDialogResponse", getElemID(getLocalPlayer()), msgDialog, 1, 0, "");
+		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), msgDialog, 1, 0, "");
 		guiSetVisible(msgWindow, false)
 		showCursor(false)
 		msgDialog = nil
@@ -1453,7 +1450,7 @@ end
 
 function OnMessageDialogButton2Click( button, state )
 	if button == "left" then
-		serverAMXEvent("OnDialogResponse", getElemID(getLocalPlayer()), msgDialog, 0, 0, "");
+		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), msgDialog, 0, 0, "");
 		guiSetVisible(msgWindow, false)
 		msgDialog = nil
 		showCursor(false)
@@ -1498,8 +1495,6 @@ end
 
 addEvent ( "onPlayerClickPlayer" )
 function OnPlayerClickPlayer ( element )
-	serverAMXEvent('OnPlayerClickPlayer', getElemID(getLocalPlayer()), getElemID(element), 0)
+	serverAMXEvent('OnPlayerClickPlayer', getElemID(localPlayer), getElemID(element), 0)
 end
-addEventHandler ( "onPlayerClickPlayer", getRootElement(), OnPlayerClickPlayer )
-
-
+addEventHandler ( "onPlayerClickPlayer", root, OnPlayerClickPlayer )

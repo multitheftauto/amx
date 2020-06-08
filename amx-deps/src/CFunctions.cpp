@@ -403,12 +403,12 @@ int CFunctions::amxUnload(lua_State *luaVM) {
 // amxUnloadAllPlugins()
 int CFunctions::amxUnloadAllPlugins(lua_State *luaVM) {
 	for (const auto& plugin : loadedPlugins) {
-		Unload_t* Unload = it.second->Unload;
+		Unload_t* Unload = plugin.second->Unload;
 		if (Unload) {
 			Unload();
 		}
-		freeLib(it.second->pPluginPointer);
-		delete it.second;
+		freeLib(plugin.second->pPluginPointer);
+		delete plugin.second;
 	}
 	loadedPlugins.clear();
 	vecPfnProcessTick.clear();
