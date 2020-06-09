@@ -2,7 +2,7 @@
  *
  *  This module uses the UDP protocol (from the TCP/IP protocol suite).
  *
- *  Copyright (c) ITB CompuPhase, 2005-2008
+ *  Copyright (c) ITB CompuPhase, 2005-2006
  *
  *  This software is provided "as-is", without any express or implied warranty.
  *  In no event will the authors be held liable for any damages arising from
@@ -20,14 +20,12 @@
  *      misrepresented as being the original software.
  *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: amxdgram.c 3902 2008-01-23 17:40:01Z thiadmer $
+ *  Version: $Id: amxdgram.c 3664 2006-11-08 12:09:25Z thiadmer $
  */
+
 #include <assert.h>
-#include <ctype.h>
 #include <stdio.h>
-#include <string.h>
-#include "osdefs.h"
-#if defined __LINUX__ || defined __FreeBSD__ || defined __OpenBSD__
+#if defined LINUX
   #include <arpa/inet.h>
   #include <netinet/in.h>
   #include <sys/ioctl.h>
@@ -39,6 +37,7 @@
   #include <malloc.h>
   #include <winsock.h>
 #endif
+#include "osdefs.h"
 #include "amx.h"
 
 

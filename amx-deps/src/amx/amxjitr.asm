@@ -76,8 +76,6 @@
 
 ; Revision History
 ; ----------------
-; 26 august 2007  by Thiadmer Riemersma
-;       Minor clean-up; removed unneeded parameter.
 ; 28 july 2005
 ;       Bug fix for the switch table, in the situation where only the default
 ;       case was present. Bug found by Bailopan.
@@ -259,11 +257,11 @@ RELOC   MACRO   adr, dest
         PUBLIC  getMaxCodeSize_
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;                                                                      ;
-; void   asm_runJIT( AMX *amxh, JumpAddressArray *jumps, void *dest )  ;
-;                         eax                     edx          ebx     ;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+; void   asm_runJIT( AMX_HEADER *amxh, JumpAddressArray *jumps, void *dest )  ;
+;                                eax                     edx          ebx     ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; asm_runJIT() assumes that the code of this module is allready browsed and
 ; relocated for the JIT compiler. It also assumes that both the jumps array and
@@ -791,18 +789,23 @@ OP_PUSH_PRI:
 ;good
 OP_PUSH_ALT:
 ;nop;
-        GO_ON   j_push_alt, OP_PICK
+        GO_ON   j_push_alt, OP_PUSH_R_PRI
 
         j_push_alt:
         _PUSH   edx
 
-OP_PICK:
+OP_PUSH_R_PRI:
 ;nop;
-        putval  j_pick+2
-        GO_ON   j_pick, OP_PUSH_C, 8
+        putval  j_push_r_pri+1
+        GO_ON   j_push_r_pri, OP_PUSH_C, 8
 
-    j_pick:
-        mov     eax,[esp+12345678h]
+    j_push_r_pri:
+        mov     ecx,12345678h
+        j_push_loop:
+        _PUSH   eax
+        loop    j_push_loop
+        ;dec     ecx
+        ;jnz     j_push_loop
 
 ;good
 OP_PUSH_C:
@@ -1666,23 +1669,24 @@ asm_runJIT_     ENDP
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;                                                               ;
-;cell   asm_exec_jit( AMX *amx, cell *retval, char *data )      ;
-;                          eax        edx           ebx         ;
+;cell   amx_exec( cell *regs, cell *retval, cell stp, cell hea );
+;                       eax         edx          ebx       ecx  ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 amx_exec_jit_   PROC
+;TODO:  clean up this mess, make it use __cdecl.....
         push    edi
         push    esi
         push    ebp
 
         sub     esp,4*3         ; place for PRI, ALT & STK at SYSREQs
 
-        push    DWORD ptr [eax+_codeseg]    ; store pointer to code segment
-        push    eax                         ; store pointer to AMX
-        push    edx                         ; store address of retval
-        push    DWORD ptr [eax+_stp]        ; store STP
-        push    DWORD ptr [eax+_hea]        ; store HEA
-        push    DWORD ptr [eax+_frm]        ; store FRM
+        push    DWORD ptr [eax+28] ; store pointer to code segment
+        push    DWORD ptr [eax+24] ; store pointer to AMX
+        push    edx             ; store address of retval
+        push    ebx             ; store STP
+        push    ecx             ; store HEA
+        push    DWORD ptr[eax+20]; store FRM
 
         stk     equ [esi+32]    ; define some aliases to registers that will
         alt     equ [esi+28]    ;   be stored on the stack when the code is
@@ -1695,12 +1699,12 @@ amx_exec_jit_   PROC
         frm     equ [esi]   ; FRM is NOT stored in ebp, rather FRM+DAT is being
                             ; held in ebx.
 
-        mov     edi,ebx         ; get pointer to data segment
-        mov     edx,[eax+_alt]  ; get ALT
-        mov     ecx,[eax+_cip]  ; get CIP (N.B. different from ASM interpreter)
-        mov     esi,[eax+_stk]  ; get STK (N.B. different from ASM interpreter)
-        mov     ebx,[eax+_frm]  ; get FRM
-        mov     eax,[eax+_pri]  ; get PRI
+        mov     edx,[eax+4]     ; get ALT
+        mov     ecx,[eax+8]     ; get CIP
+        mov     edi,[eax+12]    ; get pointer to data segment
+        mov     esi,[eax+16]    ; get STK
+        mov     ebx,[eax+20]    ; get FRM
+        mov     eax,[eax]       ; get PRI
         add     ebx,edi         ; relocate frame
 
         add     esi,edi         ; ESP will contain DAT+STK
@@ -2121,7 +2125,7 @@ _amx_opcodelist_jit:
         DD      OP_XCHG
         DD      OP_PUSH_PRI
         DD      OP_PUSH_ALT
-        DD      OP_PICK
+        DD      OP_PUSH_R_PRI
         DD      OP_PUSH_C
         DD      OP_PUSH
         DD      OP_PUSH_S

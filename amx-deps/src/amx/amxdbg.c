@@ -2,7 +2,7 @@
  *
  *  Support functions for debugger applications
  *
- *  Copyright (c) ITB CompuPhase, 2005-2008
+ *  Copyright (c) ITB CompuPhase, 2005-2006
  *
  *  This software is provided "as-is", without any express or implied warranty.
  *  In no event will the authors be held liable for any damages arising from
@@ -20,8 +20,9 @@
  *      misrepresented as being the original software.
  *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: amxdbg.c 3902 2008-01-23 17:40:01Z thiadmer $
+ *  Version: $Id: amxdbg.c 3612 2006-07-22 09:59:46Z thiadmer $
  */
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,6 +31,123 @@
 #include "amx.h"
 #include "amxdbg.h"
 
+#if PAWN_CELL_SIZE==16
+  #define dbg_AlignCell(v) dbg_Align16(v)
+#elif PAWN_CELL_SIZE==32
+  #define dbg_AlignCell(v) dbg_Align32(v)
+#elif PAWN_CELL_SIZE==64 && (defined _I64_MAX || defined HAVE_I64)
+  #define dbg_AlignCell(v) dbg_Align64(v)
+#else
+  #error Unsupported cell size
+#endif
+
+#if !defined NDEBUG
+  static int check_endian(void)
+  {
+    uint16_t val=0x00ff;
+    unsigned char *ptr=(unsigned char *)&val;
+    /* "ptr" points to the starting address of "val". If that address
+     * holds the byte "0xff", the computer stored the low byte of "val"
+     * at the lower address, and so the memory lay out is Little Endian.
+     */
+    assert(*ptr==0xff || *ptr==0x00);
+    #if BYTE_ORDER==BIG_ENDIAN
+      return *ptr==0x00;  /* return "true" if big endian */
+    #else
+      return *ptr==0xff;  /* return "true" if little endian */
+    #endif
+  }
+#endif
+
+#if BYTE_ORDER==BIG_ENDIAN || PAWN_CELL_SIZE==16
+  static void swap16(uint16_t *v)
+  {
+    unsigned char *s = (unsigned char *)v;
+    unsigned char t;
+
+    assert(sizeof(*v)==2);
+    /* swap two bytes */
+    t=s[0];
+    s[0]=s[1];
+    s[1]=t;
+  }
+#endif
+
+#if BYTE_ORDER==BIG_ENDIAN || PAWN_CELL_SIZE==32
+  static void swap32(uint32_t *v)
+  {
+    unsigned char *s = (unsigned char *)v;
+    unsigned char t;
+
+    assert_static(sizeof(*v)==4);
+    /* swap outer two bytes */
+    t=s[0];
+    s[0]=s[3];
+    s[3]=t;
+    /* swap inner two bytes */
+    t=s[1];
+    s[1]=s[2];
+    s[2]=t;
+  }
+#endif
+
+#if (BYTE_ORDER==BIG_ENDIAN || PAWN_CELL_SIZE==64) && (defined _I64_MAX || defined HAVE_I64)
+  static void swap64(uint64_t *v)
+  {
+    unsigned char *s = (unsigned char *)v;
+    unsigned char t;
+
+    assert(sizeof(*v)==8);
+
+    t=s[0];
+    s[0]=s[7];
+    s[7]=t;
+
+    t=s[1];
+    s[1]=s[6];
+    s[6]=t;
+
+    t=s[2];
+    s[2]=s[5];
+    s[5]=t;
+
+    t=s[3];
+    s[3]=s[4];
+    s[4]=t;
+  }
+#endif
+
+uint16_t * AMXAPI dbg_Align16(uint16_t *v)
+{
+  assert_static(sizeof(*v)==2);
+  assert(check_endian());
+  #if BYTE_ORDER==BIG_ENDIAN
+    swap16(v);
+  #endif
+  return v;
+}
+
+uint32_t * AMXAPI dbg_Align32(uint32_t *v)
+{
+  assert_static(sizeof(*v)==4);
+  assert(check_endian());
+  #if BYTE_ORDER==BIG_ENDIAN
+    swap32(v);
+  #endif
+  return v;
+}
+
+#if defined _I64_MAX || defined HAVE_I64
+uint64_t * AMXAPI dbg_Align64(uint64_t *v)
+{
+  assert(sizeof(*v)==8);
+  assert(check_endian());
+  #if BYTE_ORDER==BIG_ENDIAN
+    swap64(v);
+  #endif
+  return v;
+}
+#endif  /* _I64_MAX || HAVE_I64 */
 
 int AMXAPI dbg_FreeInfo(AMX_DBG *amxdbg)
 {
@@ -54,8 +172,10 @@ int AMXAPI dbg_LoadInfo(AMX_DBG *amxdbg, FILE *fp)
 {
   AMX_HEADER amxhdr;
   AMX_DBG_HDR dbghdr;
+  size_t size;
   unsigned char *ptr;
   int index, dim;
+  AMX_DBG_LINE *line;
   AMX_DBG_SYMDIM *symdim;
 
   assert(fp != NULL);
@@ -63,11 +183,12 @@ int AMXAPI dbg_LoadInfo(AMX_DBG *amxdbg, FILE *fp)
 
   memset(&amxhdr, 0, sizeof amxhdr);
   fseek(fp, 0L, SEEK_SET);
-  fread(&amxhdr, sizeof amxhdr, 1, fp);
+  if (fread(&amxhdr, sizeof amxhdr, 1, fp) == 0)
+    return AMX_ERR_FORMAT;
   #if BYTE_ORDER==BIG_ENDIAN
-    amx_Align32((uint32_t*)&amxhdr.size);
-    amx_Align16(&amxhdr.magic);
-    amx_Align16(&dbghdr.flags);
+    dbg_Align32((uint32_t*)&amxhdr.size);
+    dbg_Align16(&amxhdr.magic);
+    dbg_Align16(&dbghdr.flags);
   #endif
   if (amxhdr.magic != AMX_MAGIC)
     return AMX_ERR_FORMAT;
@@ -76,17 +197,19 @@ int AMXAPI dbg_LoadInfo(AMX_DBG *amxdbg, FILE *fp)
 
   fseek(fp, amxhdr.size, SEEK_SET);
   memset(&dbghdr, 0, sizeof(AMX_DBG_HDR));
-  fread(&dbghdr, sizeof(AMX_DBG_HDR), 1, fp);
+  if (fread(&dbghdr, sizeof(AMX_DBG_HDR), 1, fp) == 0)
+    return AMX_ERR_FORMAT;
 
   #if BYTE_ORDER==BIG_ENDIAN
-    amx_Align32((uint32_t*)&dbghdr.size);
-    amx_Align16(&dbghdr.magic);
-    amx_Align16(&dbghdr.files);
-    amx_Align16(&dbghdr.lines);
-    amx_Align16(&dbghdr.symbols);
-    amx_Align16(&dbghdr.tags);
-    amx_Align16(&dbghdr.automatons);
-    amx_Align16(&dbghdr.states);
+    dbg_Align32((uint32_t*)&dbghdr.size);
+    dbg_Align16(&dbghdr.magic);
+    dbg_Align16(&dbghdr.flags);
+    dbg_Align16(&dbghdr.files);
+    dbg_Align16(&dbghdr.lines);
+    dbg_Align16(&dbghdr.symbols);
+    dbg_Align16(&dbghdr.tags);
+    dbg_Align16(&dbghdr.automatons);
+    dbg_Align16(&dbghdr.states);
   #endif
   if (dbghdr.magic != AMX_DBG_MAGIC)
     return AMX_ERR_FORMAT;
@@ -117,7 +240,11 @@ int AMXAPI dbg_LoadInfo(AMX_DBG *amxdbg, FILE *fp)
 
   /* load the entire symbolic information block into memory */
   memcpy(amxdbg->hdr, &dbghdr, sizeof dbghdr);
-  fread(amxdbg->hdr + 1, 1, (size_t)(dbghdr.size - sizeof dbghdr), fp);
+  size=(size_t)(dbghdr.size - sizeof dbghdr);
+  if (fread(amxdbg->hdr + 1, 1, size, fp) < size) {
+    dbg_FreeInfo(amxdbg);
+    return AMX_ERR_FORMAT;
+  } /* if */
 
   /* run through the file, fix alignment issues and set up table pointers */
   ptr = (unsigned char *)(amxdbg->hdr + 1);
@@ -127,7 +254,7 @@ int AMXAPI dbg_LoadInfo(AMX_DBG *amxdbg, FILE *fp)
     assert(amxdbg->filetbl != NULL);
     amxdbg->filetbl[index] = (AMX_DBG_FILE *)ptr;
     #if BYTE_ORDER==BIG_ENDIAN
-      amx_AlignCell(&amxdbg->filetbl[index]->address);
+      dbg_AlignCell(&amxdbg->filetbl[index]->address);
     #endif
     for (ptr = ptr + sizeof(AMX_DBG_FILE); *ptr != '\0'; ptr++)
       /* nothing */;
@@ -138,30 +265,43 @@ int AMXAPI dbg_LoadInfo(AMX_DBG *amxdbg, FILE *fp)
   amxdbg->linetbl = (AMX_DBG_LINE*)ptr;
   #if BYTE_ORDER==BIG_ENDIAN
     for (index = 0; index < dbghdr.lines; index++) {
-      amx_AlignCell(&amxdbg->linetbl[index].address);
-      amx_Align32((uint32_t*)&amxdbg->linetbl[index].line);
+      dbg_AlignCell(&amxdbg->linetbl[index].address);
+      dbg_Align32((uint32_t*)&amxdbg->linetbl[index].line);
     } /* for */
   #endif
-  ptr += dbghdr.lines * sizeof(AMX_DBG_LINE);
+  ptr += (uint16_t)dbghdr.lines * sizeof(AMX_DBG_LINE);
+
+  /* detect dbghdr.lines overflow */
+  while ((line = (AMX_DBG_LINE *)ptr)
+         && (cell)line->address > (cell)(line - 1)->address) {
+    #if BYTE_ORDER==BIG_ENDIAN
+      for (index = 0; index <= (uint32_t)(1u << 16) - 1; index++) {
+        dbg_AlignCell(&linetbl[index].address);
+        dbg_Align32((uint32_t*)&linetbl[index].line);
+        line++;
+      } /* for */
+    #endif
+    ptr += (uint32_t)(1u << 16) * sizeof(AMX_DBG_LINE);
+  } /* while */
 
   /* symbol table (plus index tags) */
   for (index = 0; index < dbghdr.symbols; index++) {
     assert(amxdbg->symboltbl != NULL);
     amxdbg->symboltbl[index] = (AMX_DBG_SYMBOL *)ptr;
     #if BYTE_ORDER==BIG_ENDIAN
-      amx_AlignCell(&amxdbg->symboltbl[index]->address);
-      amx_Align16((uint16_t*)&amxdbg->symboltbl[index]->tag);
-      amx_AlignCell(&amxdbg->symboltbl[index]->codestart);
-      amx_AlignCell(&amxdbg->symboltbl[index]->codeend);
-      amx_Align16((uint16_t*)&amxdbg->symboltbl[index]->dim);
+      dbg_AlignCell(&amxdbg->symboltbl[index]->address);
+      dbg_Align16((uint16_t*)&amxdbg->symboltbl[index]->tag);
+      dbg_AlignCell(&amxdbg->symboltbl[index]->codestart);
+      dbg_AlignCell(&amxdbg->symboltbl[index]->codeend);
+      dbg_Align16((uint16_t*)&amxdbg->symboltbl[index]->dim);
     #endif
     for (ptr = ptr + sizeof(AMX_DBG_SYMBOL); *ptr != '\0'; ptr++)
       /* nothing */;
     ptr++;              /* skip '\0' too */
     for (dim = 0; dim < amxdbg->symboltbl[index]->dim; dim++) {
       symdim = (AMX_DBG_SYMDIM *)ptr;
-      amx_Align16((uint16_t*)&symdim->tag);
-      amx_AlignCell(&symdim->size);
+      dbg_Align16((uint16_t*)&symdim->tag);
+      dbg_AlignCell(&symdim->size);
       ptr += sizeof(AMX_DBG_SYMDIM);
     } /* for */
   } /* for */
@@ -171,7 +311,7 @@ int AMXAPI dbg_LoadInfo(AMX_DBG *amxdbg, FILE *fp)
     assert(amxdbg->tagtbl != NULL);
     amxdbg->tagtbl[index] = (AMX_DBG_TAG *)ptr;
     #if BYTE_ORDER==BIG_ENDIAN
-      amx_Align16(&amxdbg->tagtbl[index]->tag);
+      dbg_Align16(&amxdbg->tagtbl[index]->tag);
     #endif
     for (ptr = ptr + sizeof(AMX_DBG_TAG) - 1; *ptr != '\0'; ptr++)
       /* nothing */;
@@ -183,8 +323,8 @@ int AMXAPI dbg_LoadInfo(AMX_DBG *amxdbg, FILE *fp)
     assert(amxdbg->automatontbl != NULL);
     amxdbg->automatontbl[index] = (AMX_DBG_MACHINE *)ptr;
     #if BYTE_ORDER==BIG_ENDIAN
-      amx_Align16(&amxdbg->automatontbl[index]->automaton);
-      amx_AlignCell(&amxdbg->automatontbl[index]->address);
+      dbg_Align16(&amxdbg->automatontbl[index]->automaton);
+      dbg_AlignCell(&amxdbg->automatontbl[index]->address);
     #endif
     for (ptr = ptr + sizeof(AMX_DBG_MACHINE) - 1; *ptr != '\0'; ptr++)
       /* nothing */;
@@ -196,42 +336,14 @@ int AMXAPI dbg_LoadInfo(AMX_DBG *amxdbg, FILE *fp)
     assert(amxdbg->statetbl != NULL);
     amxdbg->statetbl[index] = (AMX_DBG_STATE *)ptr;
     #if BYTE_ORDER==BIG_ENDIAN
-      amx_Align16(&amxdbg->statetbl[index]->state);
-      amx_Align16(&amxdbg->automatontbl[index]->automaton);
+      dbg_Align16(&amxdbg->statetbl[index]->state);
+      dbg_Align16(&amxdbg->automatontbl[index]->automaton);
     #endif
     for (ptr = ptr + sizeof(AMX_DBG_STATE) - 1; *ptr != '\0'; ptr++)
       /* nothing */;
     ptr++;              /* skip '\0' too */
   } /* for */
 
-  return AMX_ERR_NONE;
-}
-
-/* dbg_LinearAddress() returns the linear address that matches the given
- * relative address for the current overlay. The linear address is relative
- * to the code section (as if the code section were a single block).
- * Linearizing addresses is only needed for debugging hooks when overlays
- * are active. On a non-overlay file, dbg_LinearAddress() returns the same
- * address as its input.
- */
-int AMXAPI dbg_LinearAddress(AMX *amx, ucell relative_addr, ucell *linear_addr)
-{
-  AMX_HEADER *hdr;
-
-  assert(amx!=NULL);
-  hdr=(AMX_HEADER *)amx->base;
-  assert(hdr!=NULL);
-  assert(linear_addr!=NULL);
-  if ((hdr->flags & AMX_FLAG_OVERLAY)==0) {
-    *linear_addr=relative_addr;
-  } else {
-    AMX_OVERLAYINFO *tbl;
-    assert(hdr->overlays!=0 && hdr->overlays!=hdr->nametable);
-    if ((size_t)amx->ovl_index >= (hdr->nametable-hdr->overlays)/sizeof(AMX_OVERLAYINFO))
-      return AMX_ERR_OVERLAY;
-    tbl=(AMX_OVERLAYINFO*)(amx->base+hdr->overlays)+amx->ovl_index;
-    *linear_addr=tbl->offset+relative_addr;
-  } /* if */
   return AMX_ERR_NONE;
 }
 
@@ -285,7 +397,8 @@ int AMXAPI dbg_LookupFunction(AMX_DBG *amxdbg, ucell address, const char **funcn
   for (index = 0; index < amxdbg->hdr->symbols; index++) {
     if (amxdbg->symboltbl[index]->ident == iFUNCTN
         && amxdbg->symboltbl[index]->codestart <= address
-        && amxdbg->symboltbl[index]->codeend > address)
+        && amxdbg->symboltbl[index]->codeend > address
+        && amxdbg->symboltbl[index]->name[0] != '@')
       break;
   } /* for */
   if (index >= amxdbg->hdr->symbols)
@@ -466,8 +579,8 @@ int AMXAPI dbg_GetVariable(AMX_DBG *amxdbg, const char *symname, ucell scopeaddr
       break;
     /* check the range, keep a pointer to the symbol with the smallest range */
     if (strcmp(amxdbg->symboltbl[index]->name, symname) == 0
-        && (codestart == 0 && codeend == 0
-            || amxdbg->symboltbl[index]->codestart >= codestart && amxdbg->symboltbl[index]->codeend <= codeend))
+        && ((codestart == 0 && codeend == 0)
+            || (amxdbg->symboltbl[index]->codestart >= codestart && amxdbg->symboltbl[index]->codeend <= codeend)))
     {
       *sym = amxdbg->symboltbl[index];
       codestart = amxdbg->symboltbl[index]->codestart;

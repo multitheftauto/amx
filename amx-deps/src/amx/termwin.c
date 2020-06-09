@@ -1,6 +1,6 @@
 /*  Simple terminal for Microsoft Windows
  *
- *  Copyright (c) ITB CompuPhase, 2004-2008
+ *  Copyright (c) ITB CompuPhase, 2004-2006
  *
  *  This software is provided "as-is", without any express or implied warranty.
  *  In no event will the authors be held liable for any damages arising from
@@ -18,7 +18,7 @@
  *      misrepresented as being the original software.
  *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: termwin.c 3902 2008-01-23 17:40:01Z thiadmer $
+ *  Version: $Id: termwin.c 3648 2006-10-12 11:24:50Z thiadmer $
  */
 
 #if defined _UNICODE || defined __UNICODE__ || defined UNICODE
@@ -91,7 +91,7 @@ static BOOL InitWindowClass(HINSTANCE hinst)
     wc.lpfnWndProc=(WNDPROC)ConsoleFunc;
     wc.hInstance=hinst;
     wc.hCursor=LoadCursor(NULL, IDC_ARROW);
-    wc.hIcon=LoadIcon(GetModuleHandle(NULL), __T("AppIcon"));
+    wc.hIcon=LoadIcon(GetModuleHandle(NULL), "AppIcon");
     wc.hbrBackground=(HBRUSH)(COLOR_WINDOW+1);
     wc.lpszClassName=__T("TermWin:Console");
     initok=RegisterClass(&wc);
@@ -355,7 +355,7 @@ static void RefreshScreen(CONSOLE *con,int startline,int endline)
   GetClientRect(con->hwnd,&rect);
   rect.top=startline*con->cheight;
   rect.bottom=endline*con->cheight;
-  InvalidateRect(con->hwnd,NULL/*&rect*/,FALSE);
+  InvalidateRect(con->hwnd,&rect,FALSE);
   RefreshCaretPos(con);
 }
 
@@ -498,16 +498,14 @@ long CALLBACK EXPORT ConsoleFunc(HWND hwnd,unsigned message,WPARAM wParam,
       if (con->winlines<con->lines)
         rect.right+=GetSystemMetrics(SM_CXVSCROLL);
       ClampToScreen(&rect);
-      SetWindowPos(hwnd,NULL,rect.left,rect.top,rect.right-rect.left,rect.bottom-rect.top,0);
+      SetWindowPos(hwnd,NULL,rect.left,rect.top,rect.right-rect.left,rect.bottom-rect.top,
+                   SWP_NOZORDER);
     } /* if */
     break;
 
   case WM_DESTROY:
     if ((con=Hwnd2Console(hwnd))!=NULL)
       DoDeleteConsole(con);
-    /* if there are no consoles left, abort the program */
-    if (consoleroot.next==NULL)
-      ExitProcess(0);
     break;
 
   case WM_GETMINMAXINFO:
@@ -790,7 +788,6 @@ int amx_putstr(const TCHAR *string)
   CONSOLE *con;
   if ((con=ActiveConsole())!=NULL) {
     int pos, i;
-    int top=con->csry;
 
     pos=(con->csry*con->columns+con->csrx)*2;
     assert(con->buffer!=NULL);
@@ -827,7 +824,7 @@ int amx_putstr(const TCHAR *string)
         } /* if */
       } /* if */
     } /* for */
-    RefreshScreen(con,top,con->csry+1);
+    RefreshScreen(con,con->csry,con->csry+1);
   } /* if */
   return 0;
 }
@@ -866,18 +863,6 @@ int amx_putchar(int c)
           con->buffer[pos]=__T(' ');
           con->buffer[pos+1]=con->attrib;
         } /* if */
-      } else if (c==__T('\t')) {
-        while (con->csrx % 8!=0 && con->csrx<con->columns) {
-          con->buffer[pos]=' ';
-          con->buffer[pos+1]=con->attrib;
-          con->csrx+=1;
-          if (con->csrx>=con->columns && con->autowrap) {
-            con->csrx=0;
-            con->csry++;
-            if (con->csry>=con->lines)
-              ScrollScreen(con,0,1);
-          } /* if */
-        } /* while */
       } else {
         con->buffer[pos]=(TCHAR)c;
         con->buffer[pos+1]=con->attrib;
@@ -897,27 +882,13 @@ int amx_putchar(int c)
 
 int amx_fflush(void)
 {
-  CONSOLE *con;
-  if ((con=ActiveConsole())!=NULL && IsWindow(con->hwnd))
-    UpdateWindow(con->hwnd);
   return 1;
-}
-
-static void ProcessMessages(void)
-{
-  MSG msg;
-
-  while (PeekMessage(&msg,NULL,0,0,PM_REMOVE)) {
-    TranslateMessage(&msg);
-    DispatchMessage(&msg);
-  } /* while */
 }
 
 int amx_kbhit(void)
 {
   CONSOLE *con;
 
-  ProcessMessages();
   if ((con=ActiveConsole())!=NULL)
     return con->keyq_start!=con->keyq_end;
   return 0;
@@ -929,8 +900,13 @@ int amx_getch(void)
   int c=-1;
 
   if ((con=ActiveConsole())!=NULL) {
-    while (con->keyq_start==con->keyq_end)
-      ProcessMessages();
+    MSG msg;
+    while (con->keyq_start==con->keyq_end) {
+      while (PeekMessage(&msg,NULL,0,0,PM_REMOVE)) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+      } /* while */
+    } /* while */
     c=con->keyqueue[con->keyq_start];
     con->keyq_start=(con->keyq_start+1)%KEYQUEUE_SIZE;
   } /* if */

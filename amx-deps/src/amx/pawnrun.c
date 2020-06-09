@@ -1,7 +1,6 @@
-/*  Simple "run-time" for the Pawn Abstract Machine, with optional support
- *  for debugging information and overlays.
+/*  Simple "run-time" for the Pawn Abstract Machine
  *
- *  Copyright (c) ITB CompuPhase, 1997-2008
+ *  Copyright (c) ITB CompuPhase, 1997-2006
  *
  *  This software is provided "as-is", without any express or implied warranty.
  *  In no event will the authors be held liable for any damages arising from
@@ -19,8 +18,9 @@
  *      misrepresented as being the original software.
  *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: pawnrun.c 3935 2008-03-06 13:18:13Z thiadmer $
+ *  Version: $Id: pawnrun.c 3615 2006-07-27 07:49:08Z thiadmer $
  */
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,18 +34,15 @@
   #define CLOCKS_PER_SEC CLK_TCK
 #endif
 
-#if !defined AMX_NODYNALOAD && defined ENABLE_BINRELOC && (defined __LINUX__ || defined __FreeBSD__ || defined __OpenBSD__)
+#if !defined AMX_NODYNALOAD && (defined LINUX || defined __FreeBSD__ || defined __OpenBSD__)
   #include <binreloc.h> /* from BinReloc, see www.autopackage.org */
 #endif
 
-#if defined AMXOVL
-  #include "amxpool.h"
-#endif
 #if defined AMXDBG
   #include "amxdbg.h"
+  static char g_filename[_MAX_PATH];/* for loading the debug information */
 #endif
-static char g_filename[_MAX_PATH];      /* for loading the debug or information
-                                         * or for loading overlays */
+
 
 /* These initialization functions are part of the "extension modules"
  * (libraries with native functions) that this run-time uses. More
@@ -56,13 +53,13 @@ extern int AMXEXPORT amx_ConsoleInit(AMX *amx);
 extern int AMXEXPORT amx_CoreInit(AMX *amx);
 
 AMX *global_amx;
-int AMXAPI prun_Monitor(AMX *amx);
+int AMXAPI srun_Monitor(AMX *amx);
 
 static int abortflagged = 0;
 void sigabort(int sig)
 {
   /* install the debug hook procedure if this was not done already */
-  amx_SetDebugHook(global_amx,prun_Monitor);
+  amx_SetDebugHook(global_amx, srun_Monitor);
   abortflagged=1;
   signal(sig,sigabort); /* re-install the signal handler */
 }
@@ -72,13 +69,13 @@ typedef struct tagSTACKINFO {
 } STACKINFO;
 
 
-/* prun_Monitor()
+/* srun_Monitor()
  * A simple debug hook, that allows the user to break out of a program
  * and that monitors stack usage. Note that the stack usage can only be
  * properly monitored when the debug hook is installed from the start
  * of the script to the end.
  */
-int AMXAPI prun_Monitor(AMX *amx)
+int AMXAPI srun_Monitor(AMX *amx)
 {
   int err;
   STACKINFO *stackinfo;
@@ -96,120 +93,60 @@ int AMXAPI prun_Monitor(AMX *amx)
   return abortflagged ? AMX_ERR_EXIT : AMX_ERR_NONE;
 }
 
-#if defined AMXOVL
-/* prun_Overlay()
- * Helper function to load overlays
- */
-int AMXAPI prun_Overlay(AMX *amx, int index)
-{
-  AMX_HEADER *hdr;
-  AMX_OVERLAYINFO *tbl;
-  FILE *ovl;
-
-  assert(amx != NULL);
-  hdr = (AMX_HEADER*)amx->base;
-  assert((size_t)index < (hdr->nametable - hdr->overlays) / sizeof(AMX_OVERLAYINFO));
-  tbl = (AMX_OVERLAYINFO*)(amx->base + hdr->overlays) + index;
-  amx->codesize = tbl->size;
-  amx->code = amx_poolfind(index);
-  if (amx->code == NULL) {
-    if ((amx->code = amx_poolalloc(tbl->size, index)) == NULL)
-      return AMX_ERR_OVERLAY;   /* failure allocating memory for the overlay */
-    ovl = fopen(g_filename, "rb");
-    assert(ovl != NULL);
-    fseek(ovl, (int)hdr->cod + tbl->offset, SEEK_SET);
-    fread(amx->code, 1, tbl->size, ovl);
-    fclose(ovl);
-  } /* if */
-  return AMX_ERR_NONE;
-}
-#endif
-
 /* aux_LoadProgram()
  * Load a compiled Pawn script into memory and initialize the abstract machine.
  * This function is extracted out of AMXAUX.C.
  */
-int AMXAPI aux_LoadProgram(AMX *amx, char *filename)
+int AMXAPI aux_LoadProgram(AMX *amx, char *filename, void *memblock)
 {
   FILE *fp;
   AMX_HEADER hdr;
-  int result;
-  int32_t size;
-  unsigned char *datablock;
-  #define OVLPOOLSIZE 4096
+  int result, didalloc;
 
   /* open the file, read and check the header */
   if ((fp = fopen(filename, "rb")) == NULL)
     return AMX_ERR_NOTFOUND;
   fread(&hdr, sizeof hdr, 1, fp);
   amx_Align16(&hdr.magic);
-  amx_Align16((uint16_t *)&hdr.flags);
   amx_Align32((uint32_t *)&hdr.size);
-  amx_Align32((uint32_t *)&hdr.cod);
-  amx_Align32((uint32_t *)&hdr.dat);
-  amx_Align32((uint32_t *)&hdr.hea);
   amx_Align32((uint32_t *)&hdr.stp);
   if (hdr.magic != AMX_MAGIC) {
     fclose(fp);
     return AMX_ERR_FORMAT;
   } /* if */
 
-  if ((hdr.flags & AMX_FLAG_OVERLAY) != 0) {
-    /* allocate the block for the data + stack/heap, plus the complete file
-     * header, plus the overlay pool
-     */
-    #if defined AMXOVL
-      size = (hdr.stp - hdr.dat) + hdr.cod + OVLPOOLSIZE;
-    #else
-      return AMX_ERR_OVERLAY;
-    #endif
-  } else {
-    size = hdr.stp;
-  } /* if */
-  if ((datablock = malloc(size)) == NULL) {
-    fclose(fp);
-    return AMX_ERR_MEMORY;
+  /* allocate the memblock if it is NULL */
+  didalloc = 0;
+  if (memblock == NULL) {
+    if ((memblock = malloc(hdr.stp)) == NULL) {
+      fclose(fp);
+      return AMX_ERR_MEMORY;
+    } /* if */
+    didalloc = 1;
+    /* after amx_Init(), amx->base points to the memory block */
   } /* if */
 
-  /* save the filename, for optionally reading the debug information (we could
-   * also have read it here immediately); for reading overlays, we also need
-   * the filename (and in this case, note that amx_Init() already browses
-   * through all overlays)
-   */
-  strcpy(g_filename, filename);
-
-  /* read in the file, in two parts; first the header and then the data section */
+  /* read in the file */
   rewind(fp);
-  if ((hdr.flags & AMX_FLAG_OVERLAY) != 0) {
-    #if defined AMXOVL
-      /* read the entire header */
-      fread(datablock, 1, hdr.cod, fp);
-      /* read the data section, put it behind the header in the block */
-      fseek(fp, hdr.dat, SEEK_SET);
-      fread(datablock + hdr.cod, 1, hdr.hea - hdr.dat, fp);
-      /* initialize the overlay pool */
-      amx_poolinit(datablock + (hdr.stp - hdr.dat) + hdr.cod, OVLPOOLSIZE);
-    #endif
-  } else {
-    fread(datablock, 1, (size_t)hdr.size, fp);
-  } /* if */
+  fread(memblock, 1, (size_t)hdr.size, fp);
   fclose(fp);
 
   /* initialize the abstract machine */
   memset(amx, 0, sizeof *amx);
-  #if defined AMXOVL
-    if ((hdr.flags & AMX_FLAG_OVERLAY) != 0) {
-      amx->data = datablock + hdr.cod;
-      amx->overlay = prun_Overlay;
-    } /* if */
-  #endif
-  result = amx_Init(amx, datablock);
+  result = amx_Init(amx, memblock);
 
   /* free the memory block on error, if it was allocated here */
-  if (result != AMX_ERR_NONE) {
-    free(datablock);
+  if (result != AMX_ERR_NONE && didalloc) {
+    free(memblock);
     amx->base = NULL;                   /* avoid a double free */
   } /* if */
+
+  /* save the filename, for optionally reading the debug information (we could
+   * also have read it here immediately
+   */
+  #if defined AMXDBG
+    strcpy(g_filename, filename);
+  #endif
 
   return result;
 }
@@ -248,7 +185,7 @@ static char *messages[] = {
       /* AMX_ERR_NATIVE    */ "Native function failed",
       /* AMX_ERR_DIVIDE    */ "Divide by zero",
       /* AMX_ERR_SLEEP     */ "(sleep mode)",
-      /* AMX_ERR_INVSTATE  */ "Invalid state",
+      /* 13 */                "(reserved)",
       /* 14 */                "(reserved)",
       /* 15 */                "(reserved)",
       /* AMX_ERR_MEMORY    */ "Out of memory",
@@ -261,9 +198,6 @@ static char *messages[] = {
       /* AMX_ERR_USERDATA  */ "Unable to set user data field (table full)",
       /* AMX_ERR_INIT_JIT  */ "Cannot initialize the JIT",
       /* AMX_ERR_PARAMS    */ "Parameter error",
-      /* AMX_ERR_DOMAIN    */ "Domain error, expression result does not fit in range",
-      /* AMX_ERR_GENERAL   */ "General error (unknown or unspecific error)",
-      /* AMX_ERR_OVERLAY   */ "Overlays are unsupported (JIT) or uninitialized",
     };
   if (errnum < 0 || errnum >= sizeof messages / sizeof messages[0])
     return "(unknown)";
@@ -288,7 +222,7 @@ void ExitOnError(AMX *amx, int error)
      */
     #if defined AMXDBG
       /* load the debug info. */
-      if ((fp=fopen(g_filename,"rb")) != NULL && dbg_LoadInfo(&amxdbg,fp) == AMX_ERR_NONE) {
+      if ((fp=fopen(g_filename,"r")) != NULL && dbg_LoadInfo(&amxdbg,fp) == AMX_ERR_NONE) {
         dbg_LookupFile(&amxdbg, amx->cip, &filename);
         dbg_LookupLine(&amxdbg, amx->cip, &line);
         printf("File: %s, line: %ld\n", filename, line);
@@ -323,7 +257,7 @@ int main(int argc,char *argv[])
   if (argc < 2)
     PrintUsage(argv[0]);        /* function "usage" aborts the program */
 
-  #if !defined AMX_NODYNALOAD && defined ENABLE_BINRELOC && (defined __LINUX__ || defined __FreeBSD__ || defined __OpenBSD__)
+  #if !defined AMX_NODYNALOAD && (defined LINUX || defined __FreeBSD__ || defined __OpenBSD__)
     /* see www.autopackage.org for the BinReloc module */
     if (br_init(NULL)) {
       char *libroot=br_find_exe_dir("");
@@ -333,13 +267,13 @@ int main(int argc,char *argv[])
   #endif
 
   /* Load the program and initialize the abstract machine. */
-  err = aux_LoadProgram(&amx, argv[1]);
+  err = aux_LoadProgram(&amx, argv[1], NULL);
   if (err != AMX_ERR_NONE) {
     /* try adding an extension */
     char filename[_MAX_PATH];
     strcpy(filename, argv[1]);
     strcat(filename, ".amx");
-    err = aux_LoadProgram(&amx, filename);
+    err = aux_LoadProgram(&amx, filename, NULL);
     if (err != AMX_ERR_NONE)
       PrintUsage(argv[0]);
   } /* if */
@@ -379,7 +313,7 @@ int main(int argc,char *argv[])
       /* Install the debug hook, so that we can start monitoring the stack/heap
        * usage right from the beginning of the script.
        */
-      amx_SetDebugHook(&amx, prun_Monitor);
+      amx_SetDebugHook(&amx, srun_Monitor);
     } /* if */
   } /* for */
 
@@ -415,8 +349,7 @@ int main(int argc,char *argv[])
     } /* if */
     err = amx_Exec(&amx, &ret, AMX_EXEC_CONT);
   } /* while */
-  if (idlefunc == NULL || err != AMX_ERR_INDEX)
-    ExitOnError(&amx, err);     /* event-driven programs may not have main() */
+  ExitOnError(&amx, err);
 
   /* For event-driven programs, we also need to loop over the idle/monitor
    * function that some extension module installed (this could be the console

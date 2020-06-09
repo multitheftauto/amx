@@ -6,7 +6,7 @@ local amxfiles = {
 	"amxfile.c",
 	"amxstring.c",
 	"amxtime.c",
-	"float.c",
+	"amxfloat.c",
 }
 
 project "amx"
@@ -16,6 +16,7 @@ project "amx"
 	defines {
 		-- From original project, but causes crashes?
 		-- "AMX_DONT_RELOCATE"
+		"FLOATPOINT",
 	}
 
 	filter "system:windows"
@@ -23,13 +24,19 @@ project "amx"
 		defines { "__WIN32__" }
 
 	vpaths {
-		["Headers/*"] = "**.h",
+		["Headers/*"] = {"**.h", "../linux/**.h"},
 		["Sources/*"] = amxfiles,
 	}
 
 	files {
 		amxfiles,
 	}
+
+	filter "system:linux"
+		files { "../linux/getch.c" }
+
+	filter "system:linux"
+		includedirs { "../linux" }
 
 	filter "system:windows"
 		links { "winmm" }

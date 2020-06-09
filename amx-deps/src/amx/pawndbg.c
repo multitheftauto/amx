@@ -15,7 +15,7 @@
  *  - ability to do remote debugging over an RS232 connection
  *
  *
- *  Copyright (c) ITB CompuPhase, 1998-2008
+ *  Copyright (c) ITB CompuPhase, 1998-2006
  *
  *  This software is provided "as-is", without any express or implied warranty.
  *  In no event will the authors be held liable for any damages arising from
@@ -33,7 +33,7 @@
  *      misrepresented as being the original software.
  *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: pawndbg.c 3936 2008-03-06 14:18:27Z thiadmer $
+ *  Version: $Id: pawndbg.c 3662 2006-11-07 08:44:33Z thiadmer $
  *
  *
  *  Command line options:
@@ -50,6 +50,7 @@
  *                        needs only to transfer a file:
  *                            pawndbg myprog.amx -rs232=1 -transfer -quit
  */
+
 #include <assert.h>
 #include <ctype.h>
 #include <setjmp.h>
@@ -64,13 +65,13 @@
   #include <readline/readline.h>
   #include <readline/history.h>
 #endif
-#include "osdefs.h"     /* for _MAX_PATH and other macros */
+#include "osdefs.h"     /* for _MAX_PATH */
 #include "amx.h"
 #include "amxdbg.h"
 
-#if defined __WIN32__ || defined __MSDOS__ || defined __WATCOMC__
+#if defined __WIN32 || defined _WIN32 || defined __WIN32__ || defined __MSDOS__ || defined __WATCOMC__
   #include <conio.h>
-  #if defined __WIN32__ || defined __WATCOMC__
+  #if defined __WIN32 || defined _WIN32 || defined __WIN32__ || defined __WATCOMC__
     #if !defined __WIN32__
       #define __WIN32__ 1
     #endif
@@ -86,11 +87,9 @@
   #include <unistd.h>
 #endif
 
-#if !defined AMX_NODYNALOAD && defined ENABLE_BINRELOC && (defined __LINUX__ || defined __FreeBSD__ || defined __OpenBSD__)
+#if !defined AMX_NODYNALOAD && (defined LINUX || defined __FreeBSD__ || defined __OpenBSD__)
   #include <binreloc.h> /* from BinReloc, see www.autopackage.org */
 #endif
-
-extern int chdir(const char *path); /* position of this function in header files depends on the compiler */
 
 
 #define MAXSTACKTRACE   128
@@ -121,7 +120,6 @@ extern int chdir(const char *path); /* position of this function in header files
   void amx_wherexy(int *x,int *y);
   unsigned int amx_setattr(int foregr,int backgr,int highlight);
   void amx_console(int columns, int lines, int flags);
-  void amx_viewsize(int *width,int *height);
   #if defined amx_Init
     #define STR_PROMPT  "dbg\xbb "
     #define CHR_HLINE   '\x97'
@@ -130,27 +128,9 @@ extern int chdir(const char *path); /* position of this function in header files
     #define CHR_HLINE   '-'
   #endif
   #define CHR_VLINE     '|'
-#elif defined USE_CURSES || defined HAVE_CURSES_H
-  /* Use the "curses" library to implement the console */
-  const int _False = 0;     /* to avoid compiler warnings */
-  #define amx_printf        printw
-  #define amx_putchar(c)    addch(c)
-  #define amx_fflush()      (0)
-  #define amx_getch()       getch()
-  #define amx_gets(s,n)     getnstr(s,n)
-  #define amx_clrscr()      (void)(0)
-  #define amx_clreol()      (void)(0)
-  #define amx_gotoxy(x,y)   (void)(0)
-  #define amx_wherexy(x,y)  (*(x)=*(y)=0)
-  #define amx_setattr(c,b,h) (_False)
-  #define amx_termctl(c,v)  (_False)
-  #define amx_console(c,l,f) (void)(0)
-  #define STR_PROMPT        "dbg> "
-  #define CHR_HLINE         '-'
-  #define CHR_VLINE         '|'
-#elif defined VT100 || defined __LINUX__ || defined ANSITERM
+#elif defined VT100 || defined LINUX || defined ANSITERM
   /* ANSI/VT100 terminal, or shell emulating "xterm" */
-  #if !defined VT100 && !defined ANSITERM && defined __LINUX__
+  #if !defined VT100 && !defined ANSITERM && defined LINUX
     #define VT100
   #endif
   #define amx_printf      printf
@@ -165,7 +145,6 @@ extern int chdir(const char *path); /* position of this function in header files
   void amx_wherexy(int *x,int *y);
   unsigned int amx_setattr(int foregr,int backgr,int highlight);
   void amx_console(int columns, int lines, int flags);
-  void amx_viewsize(int *width,int *height);
   #define STR_PROMPT    "dbg> "
   #define CHR_HLINE     '-'
   #define CHR_VLINE     '|'
@@ -183,10 +162,27 @@ extern int chdir(const char *path); /* position of this function in header files
   void amx_wherexy(int *x,int *y);
   unsigned int amx_setattr(int foregr,int backgr,int highlight);
   void amx_console(int columns, int lines, int flags);
-  void amx_viewsize(int *width,int *height);
   #define STR_PROMPT    "dbg> "
   #define CHR_HLINE     '\xc4'
   #define CHR_VLINE     '\xb3'
+#elif defined USE_CURSES
+  /* Use the "curses" library to implement the console */
+  const int _False = 0;     /* to avoid compiler warnings */
+  #define amx_printf        printw
+  #define amx_putchar(c)    addch(c)
+  #define amx_fflush()      (0)
+  #define amx_getch()       getch()
+  #define amx_gets(s,n)     getnstr(s,n)
+  #define amx_clrscr()      (void)(0)
+  #define amx_clreol()      (void)(0)
+  #define amx_gotoxy(x,y)   (void)(0)
+  #define amx_wherexy(x,y)  (*(x)=*(y)=0)
+  #define amx_setattr(c,b,h) (_False)
+  #define amx_termctl(c,v)  (_False)
+  #define amx_console(c,l,f) (void)(0)
+  #define STR_PROMPT        "dbg> "
+  #define CHR_HLINE         '-'
+  #define CHR_VLINE         '|'
 #else
   /* assume a streaming terminal; limited features (no colour, no cursor
    * control)
@@ -203,7 +199,6 @@ extern int chdir(const char *path); /* position of this function in header files
   #define amx_setattr(c,b,h) ((void)(c),(void)(b),(void)(h),(0))
   #define amx_termctl(c,v)  ((void)(c),(void)(v),(0))
   #define amx_console(c,l,f) ((void)(c),(void)(l),(void)(f),(void)(0))
-  #define amx_viewsize      (*(x)=80,*(y)=25)
   #define STR_PROMPT        "dbg> "
   #define CHR_HLINE         '-'
   #define CHR_VLINE         '|'
@@ -316,6 +311,16 @@ static char hline_str[256] = "";  /* number of columns in a window should
   amx_fflush();
 }
 
+#if defined WIN32_CONSOLE
+void win32_getscreensize(int *width,int *height)
+{
+  CONSOLE_SCREEN_BUFFER_INFO csbi;
+  assert(width!=NULL && height!=NULL);
+  GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE),&csbi);
+  *width=(int)csbi.dwSize.X;
+  *height=(int)(csbi.srWindow.Bottom-csbi.srWindow.Top+1);
+}
+#endif
 
 static int csrsave_x, csrsave_y;
 #if !defined NDEBUG
@@ -412,25 +417,30 @@ static void term_open(int columns,int lines)
   #if defined VT100
     chr_hline=CHR_HLINE_VT100;
     chr_vline=CHR_VLINE_VT100;
-    amx_viewsize(&screencolumns,&screenlines);
+    /* a trick to get the size of the terminal is to position the cursor far
+     * away and then read it back
+     */
+    amx_gotoxy(999,999);
+    amx_wherexy(&screencolumns,&screenlines);
+    screenlines--;      /* keep last line empty */
     amx_printf("\033[%d;%dr",watchlines+listlines+3,STD_LINES-1); /* set window */
     amx_printf("\033)0");                  /* select graphics codes for set G1 */
-  #elif defined WIN32_CONSOLE
-    #if !defined ENABLE_INSERT_MODE || !defined ENABLE_QUICK_EDIT_MODE
-      #define ENABLE_INSERT_MODE      0x0020
-      #define ENABLE_QUICK_EDIT_MODE  0x0040
-      #define ENABLE_EXTENDED_FLAGS   0x0080
-      #define ENABLE_AUTO_POSITION    0x0100
-    #endif
-    amx_viewsize(&screencolumns,&screenlines);
+  #endif
+  #if defined WIN32_CONSOLE
+    #define ENABLE_INSERT_MODE      0x0020
+    #define ENABLE_QUICK_EDIT_MODE  0x0040
+    #define ENABLE_EXTENDED_FLAGS   0x0080
+    #define ENABLE_AUTO_POSITION    0x0100
+    win32_getscreensize(&screencolumns,&screenlines);
+    screenlines--;      /* keep last line empty */
     SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE),
                    ENABLE_ECHO_INPUT | ENABLE_INSERT_MODE | ENABLE_LINE_INPUT
                    | ENABLE_MOUSE_INPUT | ENABLE_PROCESSED_INPUT | ENABLE_QUICK_EDIT_MODE
                    | ENABLE_WINDOW_INPUT | ENABLE_EXTENDED_FLAGS);
   #elif defined READLINE
     rl_get_screen_size(&screencolumns,&screenlines);
+    screenlines--;      /* keep last line empty */
   #endif
-  screenlines--;        /* keep last line empty */
   term_refresh(1);
 }
 
@@ -458,7 +468,7 @@ static void term_scroll(int top, int bottom, int lines)
       CHAR_INFO Fill;
       int screenlines,screencolumns;
 
-      amx_viewsize(&screencolumns,&screenlines);
+      win32_getscreensize(&screencolumns,&screenlines);
       ScrollRectangle.Left=0;
       ScrollRectangle.Top=(short)(top-1);
       ScrollRectangle.Right=(short)(screencolumns-1);
@@ -801,16 +811,12 @@ static int getresponse_rs232(char *buffer, int buffersize, long retries)
   int len=0;
   unsigned long size;
 
-  //assert(hCom!=INVALID_HANDLE_VALUE);
   do {
 
-    /* read character by character, so that when we see the '\n' we stop
-     * reading and keep the rest of the waiting characters in the queue
-     */
     #if defined __WIN32__
-      ReadFile(hCom,buffer+len,1,&size,NULL);
+      ReadFile(hCom,buffer+len,buffersize-len,&size,NULL);
     #else
-      size=read(fdCom,buffer+len,1);
+      size=read(fdCom,buffer+len,buffersize-len);
     #endif
     len+=size;
 
@@ -835,7 +841,7 @@ static int getresponse_rs232(char *buffer, int buffersize, long retries)
       retries--;
     } /* if */
 
-  } while ((len==0 || strchr(buffer,'\n')==NULL) && retries>0);
+  } while ((len==0 || strchr(buffer,'\n')==NULL) && retries>=0);
 
   return len;
 }
@@ -958,21 +964,21 @@ static int remote_rs232(int port,int baud)
   do {
     #if defined __WIN32__
       WriteFile(hCom,"!",1,&size,NULL);
-      Sleep(500);
+      Sleep(100);
       do {
         ReadFile(hCom,buffer,1,&size,NULL);
       } while (size>0 && buffer[0]!='@');
-      Sleep(500);
+      Sleep(100);
       /* read remaining buffer (if any) */
       ReadFile(hCom,buffer+1,sizeof buffer - 1,&size,NULL);
       size++; /* add size of the handshake character */
     #else
       write(fdCom,"!",1);
-      usleep(500*1000);
+      usleep(100*1000);
       do {
         size=read(fdCom,buffer,1);
       } while (size>0 && buffer[0]!='@');
-      usleep(500*1000);
+      usleep(100*1000);
       /* read remaining buffer (if any) */
       size=read(fdCom,buffer+1,sizeof buffer - 1);
       size++; /* add size of the handshake character */
@@ -989,7 +995,7 @@ static int remote_rs232(int port,int baud)
     remote_pendingsize=size-1;
     memcpy(remote_pendingbuf,buffer+1,remote_pendingsize);
     /* give a "sync time" command, so that the device has the same time as the computer */
-    settimestamp_rs232((unsigned long)time(NULL));
+    settimestamp_rs232(time(NULL));
   } /* if */
 
   remote=REMOTE_RS232;
@@ -1207,7 +1213,7 @@ static int remote_transfer_rs232(const char *filename)
       chksum=(chksum&0xff)+(chksum>>8);
     do {
       /* send block */
-      send_rs232((const char*)buffer,bytes+1); /* also send the ACK/NAK prefix */
+      send_rs232((char*)buffer,bytes+1); /* also send the ACK/NAK prefix */
       getresponse_rs232(str,sizeof str,100);
       err=(str[0]!='\0') ? strtol(str+1,NULL,16) : 0;
       assert(err>=0 && err<=255);
@@ -1223,7 +1229,7 @@ static int remote_transfer_rs232(const char *filename)
       block=size;
   } /* while */
   buffer[0]=ACK;
-  send_rs232((const char*)buffer,1); /* ACK the last block */
+  send_rs232(buffer,1); /* ACK the last block */
 
   free(buffer);
   fclose(fp);
@@ -1436,7 +1442,7 @@ static void printvalue(long value, int disptype)
 
 static void display_variable(AMX *amx,AMX_DBG *amxdbg,AMX_DBG_SYMBOL *sym,int index[3],int idxlevel)
 {
-  const AMX_DBG_SYMDIM *symdim=NULL;
+  const AMX_DBG_SYMDIM *symdim;
   cell value;
 
   assert(index!=NULL);
@@ -1469,11 +1475,10 @@ static void display_variable(AMX *amx,AMX_DBG *amxdbg,AMX_DBG_SYMBOL *sym,int in
     } /* if */
   } /* if */
 
-  if (sym->ident==iARRAY || sym->ident==iREFARRAY) {
+  if ((sym->ident==iARRAY || sym->ident==iREFARRAY)) {
     int dim;
     dbg_GetArrayDim(amxdbg, sym, &symdim);
     /* check whether any of the indices are out of range */
-    assert(symdim!=NULL);
     for (dim=0; dim<idxlevel; dim++)
       if (symdim[dim].size>0 && (ucell)index[dim]>=symdim[dim].size)
         break;
@@ -1488,7 +1493,6 @@ static void display_variable(AMX *amx,AMX_DBG *amxdbg,AMX_DBG_SYMBOL *sym,int in
       amx_printf("\"%s\"", get_string(amx,sym,40));
     } else if (sym->dim==1) {
       ucell len,i;
-      assert(symdim!=NULL); /* set in the previous block */
       len=symdim[0].size;
       if (len>5)
         len=5;
@@ -2160,7 +2164,7 @@ static char lastcommand[32] = "";
           } /* if */
         } /* for */
       } else if (stricmp(params,"states")==0) {
-        const char *statename=NULL;
+        const char *statename;
         cell *cptr;
         if (amxdbg->hdr->automatons==0) {
           scroll_cmdwin(1);
@@ -2566,8 +2570,7 @@ static long lastline;
   dbg_LookupFile(amxdbg,amx->cip,&filename);
 
   /* check breakpoints */
-  msg="";
-  i=0;
+  msg=NULL;
   if (breaknr==0) {
     msg="STOPPED at line %d\n";
     i=(int)line+1;
@@ -2669,7 +2672,7 @@ extern AMX_NATIVE_INFO console_Natives[];
   unsigned short flags;
   char *ptr;
 
-  #if !defined AMX_NODYNALOAD && defined ENABLE_BINRELOC && (defined __LINUX__ || defined __FreeBSD__ || defined __OpenBSD__)
+  #if !defined AMX_NODYNALOAD && (defined LINUX || defined __FreeBSD__ || defined __OpenBSD__)
     /* see www.autopackage.org for the BinReloc module */
     if (br_init(NULL)) {
       char *libroot=br_find_exe_dir("");
@@ -2712,6 +2715,7 @@ extern AMX_NATIVE_INFO console_Natives[];
   } /* if */
   /* switch the current directory to that of the debugged script */
   if ((ptr=strrchr(amx_filename,DIRSEP_CHAR))!=NULL) {
+    extern int chdir(const char *path);
     char dir[_MAX_PATH];
     int len=(int)(ptr-amx_filename);
     if (len<sizeof dir) {
