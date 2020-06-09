@@ -46,9 +46,13 @@ solution "king"
 			"**.cpp",
 			"*.h",
 			"include/*.h",
-			"linux/*.h",
-			"king.rc",
 		}
+
+		filter "system:windows"
+			files { "king.rc" }
+
+		filter "system:linux"
+			includedirs { "linux" }
 
 		include "amx"
 		links "amx"
