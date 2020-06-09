@@ -1469,6 +1469,55 @@ function TextDrawCreate(amx, x, y, text)
 	return id
 end
 
+--Mainly just wrappers to the other non-player functions
+function PlayerTextDrawDestroy(amx, playerid, textdrawID)
+  TextDrawDestroy(amx, textdrawID)
+end
+function PlayerTextDrawShow(amx, playerid, textdrawID)
+  TextDrawShowForPlayer(amx, playerid, textdrawID)
+end
+function PlayerTextDrawHide(amx, playerid, textdrawID)
+  TextDrawHideForPlayer(amx, playerid, textdrawID)
+end
+function PlayerTextDrawBoxColor(amx, playerid, textdrawID, r, g, b, a)
+  TextDrawBoxColor(amx, textdrawID, r, g, b, a)
+end
+function PlayerTextDrawUseBox(amx, playerid, textdrawID, usebox)
+  TextDrawUseBox(amx, textdrawID, usebox)
+end
+function PlayerTextDrawTextSize(amx, playerid, textdrawID, x, y)
+  TextDrawTextSize(amx, textdrawID, x, y)
+end
+function PlayerTextDrawLetterSize(amx, playerid, textdrawID, x, y)
+  TextDrawLetterSize(amx, textdrawID, width, height)
+end
+function CreatePlayerTextDraw(amx, playerid, x, y, text)
+  TextDrawCreate(amx, x, y, text)
+end
+function PlayerTextDrawAlignment(amx, playerid, textdrawID, align)
+  TextDrawAlignment(amx, textdrawID, align)
+end
+function PlayerTextDrawBackgroundColor(amx, playerid, textdraw, r, g, b, a)
+  TextDrawBackgroundColor(amx, textdraw, r, g, b, a)
+end
+function PlayerTextDrawFont(amx, playerid, textdraw, font)
+  TextDrawFont(amx, textdraw, font)
+end
+function PlayerTextDrawColor(amx, playerid, textdraw, r, g, b, a)
+  TextDrawColor(amx, textdraw, r, g, b, a)
+end
+function PlayerTextDrawSetOutline(amx, playerid, textdraw, size)
+  TextDrawSetOutline(amx, textdraw, size)
+end
+function PlayerTextDrawSetProportional(amx, playerid, textdraw, proportional)
+  TextDrawSetProportional(amx, textdraw, proportional)
+end
+function PlayerTextDrawSetShadow(amx, playerid, textdraw, size)
+   TextDrawSetShadow(amx, textdraw, size)
+end
+function PlayerTextDrawSetString(amx, playerid, textdraw, str)
+   TextDrawSetString(amx, textdraw, str)
+end
 function TextDrawDestroy(amx, textdrawID)
 	if not amx.textdraws[textdrawID] then
 		return
@@ -2880,6 +2929,28 @@ g_SAMPSyscallPrototypes = {
 	TextDrawShowForPlayer = {'p', 'i'},
 	TextDrawTextSize = {'x', 'f', 'f'},
 	TextDrawUseBox = {'x', 'b'},
+	--Player textdraws
+	PlayerTextDrawDestroy = {'p', 's'},
+  	PlayerTextDrawShow = {'p', 'x'},
+  	PlayerTextDrawHide = {'p', 'x'},
+  	PlayerTextDrawBoxColor = {'p', 'x', 'c'},
+  	PlayerTextDrawUseBox = {'p', 'x', 'i'},
+  	PlayerTextDrawTextSize = {'p', 'x', 'f', 'f'},
+ 	PlayerTextDrawLetterSize = {'p', 'x', 'f', 'f'},
+	PlayerTextDrawAlignment = {'p', 'x', 'i'},
+	PlayerTextDrawBackgroundColor = {'p', 'x', 'c'},
+	PlayerTextDrawFont = {'p', 'x', 'i'},
+	PlayerTextDrawColor = {'p', 'x', 'c'},
+	PlayerTextDrawSetOutline = {'p', 'x', 'i'},
+	PlayerTextDrawSetProportional = {'p', 'x', 'i'},
+	PlayerTextDrawSetShadow = {'p', 'x', 'i'},
+	PlayerTextDrawSetString = {'p', 'x', 's'},
+	PlayerTextDrawSetPreviewModel = {'p', 'x', 'i'},
+	PlayerTextDrawSetPreviewVehCol = {'p', 'x', 'i', 'i'},
+	PlayerTextDrawSetSelectable = {'p', 'x', 'i'},
+	PlayerTextDrawSetPreviewRot = {'p', 'x', 'f', 'f', 'f', 'f'},
+	CreatePlayerTextDraw = {'p', 'f', 'f', 's'},
+
 	TogglePlayerClock = {'p', 'b', client=true},
 	TogglePlayerControllable = {'p', 'b'},
 	TogglePlayerSpectating = {'p', 'b'},
@@ -3110,9 +3181,42 @@ g_SAMPSyscallPrototypes = {
 
 	memcpy = {'r', 'r', 'i', 'i', 'i'},
 
-	-- more dummies
+	-- more dummies (unimplemented)
 	EnableVehicleFriendlyFire = {},
 	RemoveBuildingForPlayer = {},
+	ManualVehicleEngineAndLights = {},
+	DisableRemoteVehicleCollisions = {'p', 'i'},
+	GetPlayerTargetPlayer = {'p'},
+  	GetPlayerLastShotVectors = {'p', 'r', 'r', 'r', 'r', 'r', 'r'},
+  	SelectObject = {'p'},
+  	CancelEdit = {'p'},
+	EditAttachedObject = {'p', 'i'},
+  	EditObject = {'p', 'i'},
+	IsPlayerAttachedObjectSlotUsed = {'p', 'i'},
+	GetPlayerVersion = {'p', 's', 'i'},
+  	SetPlayerAttachedObject = {'p', 'i', 'i', 'i', 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'i', 'i'},
+	PlayAudioStreamForPlayer = {'p', 's', 'f', 'f', 'f', 'f', 'i'},
+	StopAudioStreamForPlayer = {'p'},
+	GetPlayerNetworkStats = {'p', 'r', 'i'},
+	GetNetworkStats = {'r', 'i'},
+	StartRecordingPlayerData = {'p', 'i', 's'},
+	StopRecordingPlayerData = {'p'},
+	GetAnimationName = {'i', 's', 'i', 's', 'i'},
+	GetPlayerAnimationIndex = {'p'},
+	AttachCameraToObject = {'p', 'i'},
+	GetPlayerDrunkLevel = {'p'},
+	SetPlayerDrunkLevel = {'p', 'i'},
+	SelectTextDraw = {'p', 'x'},
+  	CancelSelectTextDraw = {'p'},
+	GetActorPos = {'i', 'r', 'r', 'r'}, --r since the vals should be passed by ref
+	GetPVarsUpperIndex = {'p'},
+  	GetPVarNameAtIndex = {'p', 'i', 'r', 'i'},
+	InterpolateCameraPos = {'p', 'f', 'f', 'f', 'f', 'f', 'f', 'i', 'i'},
+  	InterpolateCameraLookAt = {'p', 'f', 'f', 'f', 'f', 'f', 'f', 'i', 'i'},
+	RemovePlayerAttachedObject = {'p', 'i'},
+	SetVehicleParamsCarWindows = {'v', 'i', 'i', 'i', 'i'},
+	GetPlayerVersion = {'p', 's', 'i'},
+	--End of unimplemented funcs
 
 	-- new imp
 	IsVehicleStreamedIn = {'v', 'p'},
@@ -3147,5 +3251,5 @@ g_SAMPSyscallPrototypes = {
 	SetActorHealth = {'y', 'f'},
 	SetActorInvulnerable = {},
 	SetActorPos = {'y', 'f', 'f', 'f'},
-	SetActorVirtualWorld = {'y', 'i'},
+	SetActorVirtualWorld = {'y', 'i'}
 }
