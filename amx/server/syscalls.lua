@@ -115,7 +115,7 @@ function syscall(amx, svc, prototype, ...)		-- svc = service number (= index in 
 	local fnName = type(svc) == 'number' and amx.natives[svc] or svc
 	local fn = prototype.fn or _G[fnName]
 	if not fn and not prototype.client then
-		outputDebugString('syscall: function ' .. tostring(fn) .. 'doesn\'t exist', 1)
+		outputDebugString('syscall: function ' .. tostring(fn) .. ' (' .. fnName .. ') doesn\'t exist', 1)
 		return
 	end
 
