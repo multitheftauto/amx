@@ -50,12 +50,18 @@ function gameModeInit(player)
 				if not isElement(player) or getElementType(player) ~= 'player' then
 					return
 				end
-				repeat until spawnPlayer(player, math.random(-20, 20), math.random(-20, 20), 3, math.random(0, 359), math.random(9, 288))
+				repeat until onPlayerInitSpawnPlayer(player, math.random(-20, 20), math.random(-20, 20), 3, math.random(0, 359), math.random(9, 288))
 			end,
 			5000,
 			1
 		)
 	end
+end
+
+function onPlayerInitSpawnPlayer(player, x, y, z, rotation, skinid)
+	local playerID = getElemID(player)
+	g_Players[playerID].spawnedfromgamemodeinit = true
+	return spawnPlayer(player, x, y, z, rotation, skinid)
 end
 
 function joinHandler(player)
@@ -250,7 +256,7 @@ addEventHandler('onPlayerSpawn', root,
 	function()
 		local playerID = getElemID(source)
 		local playerdata = g_Players[playerID]
-		if playerdata.doingclasssel or playerdata.beingremovedfromvehicle then
+		if playerdata.doingclasssel or playerdata.beingremovedfromvehicle or playerdata.spawnedfromgamemodeinit then
 			return
 		end
 		toggleAllControls(source, true)
