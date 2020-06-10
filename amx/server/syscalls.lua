@@ -783,8 +783,8 @@ function GetPVarString(amx, player, varname, outbuf, length)
 		return 0
 	end
 
-	if #value[2] < maxlength then
-		writeMemString(amx, outbuf, value)
+	if #value[2] < length then
+		writeMemString(amx, outbuf, value[2])
 	else
 		writeMemString(amx, outbuf, string.sub(value, 0, length - 1))
 	end
@@ -1064,13 +1064,31 @@ function SendClientMessage(amx, player, r, g, b, a, message)
 			message = message:gsub('/' .. samp, '/' .. mta)
 		end
 	end
-	outputChatBox(message, player, r, g, b)
+
+	--replace colors
+	message = result:gsub("(=?{[0-9A-Fa-f]*})",
+	function(colorMatches)
+		colorMatches = colorMatches:gsub("[{}]+", "") --replace the curly brackets with nothing
+		colorMatches = '#' .. colorMatches --Append to the beginning
+		return colorMatches 
+	end)
+
+	outputChatBox(message, player, r, g, b, true)
 end
 
 function SendClientMessageToAll(amx, r, g, b, a, message)
 	if (amx.proc == 'OnPlayerConnect' and message:match('joined')) or (amx.proc == 'OnPlayerDisconnect' and message:match('left')) then
 		return
 	end
+
+	--replace colors
+	message = result:gsub("(=?{[0-9A-Fa-f]*})",
+	function(colorMatches)
+		colorMatches = colorMatches:gsub("[{}]+", "") --replace the curly brackets with nothing
+		colorMatches = '#' .. colorMatches --Append to the beginning
+		return colorMatches 
+	end)
+	
 	for i,data in pairs(g_Players) do
 		SendClientMessage(amx, data.elem, r, g, b, a, message)
 	end
@@ -1081,11 +1099,11 @@ function SendDeathMessage(amx, killer, victim, reason)
 end
 
 function SendPlayerMessageToAll(amx, sender, message)
-	outputChatBox(getPlayerName(sender) .. ' ' .. message, root, 255, 255, 255)
+	outputChatBox(getPlayerName(sender) .. ' ' .. message, root, 255, 255, 255, true)
 end
 
 function SendPlayerMessageToPlayer(amx, playerTo, playerFrom, message)
-	outputChatBox(getPlayerName(playerFrom) .. ' ' .. message, playerTo, 255, 255, 255)
+	outputChatBox(getPlayerName(playerFrom) .. ' ' .. message, playerTo, 255, 255, 255, true)
 end
 
 function SendRconCommand(amx, command)
@@ -1823,8 +1841,18 @@ function format(amx, outBuf, outBufSize, fmt, ...)
 			i = i - 1
 		end
 	end
+
 	fmt = fmt:gsub('(%%[%-%d%.]*)%*(%a)', '%1%2')
 	local result = fmt:format(unpack(args))
+
+	--replace colors
+	result = result:gsub("(=?{[0-9A-Fa-f]*})",
+	function(colorMatches)
+		colorMatches = colorMatches:gsub("[{}]+", "") --replace the curly brackets with nothing
+		colorMatches = '#' .. colorMatches --Append to the beginning
+		return colorMatches 
+	end)
+
 	if #result+1 <= outBufSize then
 		writeMemString(amx, outBuf, result)
 	end
@@ -2270,13 +2298,13 @@ end
 function GetVehicleParamsEx(amx, vehicle, refEngine, refLights, refAlarm, refDoors, refBonnet, refBoot, refObjective)
 	local vehicleID = getElemID(vehicle)
 
-	amx.memDAT[refEngine] = getVehicleEngineState(vehicle)
-	amx.memDAT[refLights] = getVehicleOverrideLights(vehicle) == 2 and true or false
-	amx.memDAT[refAlarm] = g_Vehicles[vehicleID].alarm
-	amx.memDAT[refDoors] = isVehicleLocked(vehicle)
+	amx.memDAT[refEngine] = getVehicleEngineState(vehicle) and 1 or 0 --Lua expects this to be an int, so cast it
+	amx.memDAT[refLights] = getVehicleOverrideLights(vehicle) == 2 and 1 or 0
+	amx.memDAT[refAlarm] = g_Vehicles[vehicleID].alarm and 1 or 0
+	amx.memDAT[refDoors] = isVehicleLocked(vehicle) and 1 or 0
 	amx.memDAT[refBonnet] = getVehicleDoorOpenRatio(vehicle, 0) > 0
 	amx.memDAT[refBoot] = getVehicleDoorOpenRatio(vehicle, 1) > 0
-	amx.memDAT[refObjective] = g_Vehicles[vehicleID].objective or false
+	amx.memDAT[refObjective] = g_Vehicles[vehicleID].objective or 0
 
 	return 1
 end
