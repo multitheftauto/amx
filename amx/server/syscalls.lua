@@ -1066,14 +1066,17 @@ function SendClientMessage(amx, player, r, g, b, a, message)
 	end
 
 	--replace colors
-	message = result:gsub("(=?{[0-9A-Fa-f]*})",
+	outputChatBox(colorizeString(message), player, r, g, b, true)
+end
+
+--replace colors
+function colorizeString(string) 
+	return string:gsub("(=?{[0-9A-Fa-f]*})",
 	function(colorMatches)
 		colorMatches = colorMatches:gsub("[{}]+", "") --replace the curly brackets with nothing
 		colorMatches = '#' .. colorMatches --Append to the beginning
 		return colorMatches 
 	end)
-
-	outputChatBox(message, player, r, g, b, true)
 end
 
 function SendClientMessageToAll(amx, r, g, b, a, message)
@@ -1082,13 +1085,8 @@ function SendClientMessageToAll(amx, r, g, b, a, message)
 	end
 
 	--replace colors
-	message = result:gsub("(=?{[0-9A-Fa-f]*})",
-	function(colorMatches)
-		colorMatches = colorMatches:gsub("[{}]+", "") --replace the curly brackets with nothing
-		colorMatches = '#' .. colorMatches --Append to the beginning
-		return colorMatches 
-	end)
-	
+	message = colorizeString(message)
+
 	for i,data in pairs(g_Players) do
 		SendClientMessage(amx, data.elem, r, g, b, a, message)
 	end
@@ -1846,15 +1844,8 @@ function format(amx, outBuf, outBufSize, fmt, ...)
 	local result = fmt:format(unpack(args))
 
 	--replace colors
-	result = result:gsub("(=?{[0-9A-Fa-f]*})",
-	function(colorMatches)
-		colorMatches = colorMatches:gsub("[{}]+", "") --replace the curly brackets with nothing
-		colorMatches = '#' .. colorMatches --Append to the beginning
-		return colorMatches 
-	end)
-
 	if #result+1 <= outBufSize then
-		writeMemString(amx, outBuf, result)
+		writeMemString(amx, outBuf, colorizeString(result))
 	end
 end
 
