@@ -1709,24 +1709,21 @@ int AMXAPI amx_NumPublics(AMX *amx, int *number)
   return AMX_ERR_NONE;
 }
 
-int AMXAPI amx_GetPublic(AMX *amx, int index, char *funcname, ucell *address)
+int AMXAPI amx_GetPublic(AMX* amx, int index, char* funcname)
 {
-  AMX_HEADER *hdr;
-  AMX_FUNCSTUB *func;
+	AMX_HEADER* hdr;
+	AMX_FUNCSTUB* func;
 
-  hdr=(AMX_HEADER *)amx->base;
-  assert(hdr!=NULL);
-  assert(hdr->magic==AMX_MAGIC);
-  assert(hdr->publics<=hdr->natives);
-  if (index>=(cell)NUMENTRIES(hdr,publics,natives))
-    return AMX_ERR_INDEX;
+	hdr = (AMX_HEADER*)amx->base;
+	assert(hdr != NULL);
+	assert(hdr->magic == AMX_MAGIC);
+	assert(hdr->publics <= hdr->natives);
+	if (index >= (cell)NUMENTRIES(hdr, publics, natives))
+		return AMX_ERR_INDEX;
 
-  func=GETENTRY(hdr,publics,index);
-  if (funcname!=NULL)
-    strcpy(funcname,GETENTRYNAME(hdr,func));
-  if (address!=NULL)
-    *address=func->address;
-  return AMX_ERR_NONE;
+	func = GETENTRY(hdr, publics, index);
+	strcpy(funcname, GETENTRYNAME(hdr, func));
+	return AMX_ERR_NONE;
 }
 
 int AMXAPI amx_FindPublic(AMX *amx, const char *name, int *index)
@@ -1740,7 +1737,7 @@ int AMXAPI amx_FindPublic(AMX *amx, const char *name, int *index)
   /* binary search */
   while (first<=last) {
     mid=(first+last)/2;
-    amx_GetPublic(amx,mid,pname,NULL);
+    amx_GetPublic(amx,mid,pname);
     result=strcmp(pname,name);
     if (result>0) {
       last=mid-1;
