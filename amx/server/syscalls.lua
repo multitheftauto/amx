@@ -1223,7 +1223,7 @@ function SetPlayerObjectRot(amx, player, objID, rX, rY, rZ)
 end
 
 function SetPlayerName(amx, player, name)
-	setPlayerName(player, name)
+	return setPlayerName(player, name)
 end
 
 function SetPlayerPos(amx, player, x, y, z)
