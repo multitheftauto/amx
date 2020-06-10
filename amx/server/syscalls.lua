@@ -279,8 +279,12 @@ function AllowPlayerTeleport(amx, player, allow)
 end
 
 function ApplyAnimation(amx, player, animlib, animname, fDelta, loop, lockx, locky, freeze, time, forcesync)
-	setPedAnimation(actor, animlib, animname, time, loop, lockx or locky, false, freeze)
-	setPedAnimationSpeed(actor, animname, fDelta)
+	--time = Timer in ms. For a never-ending loop it should be 0.
+	if time == 0 then
+		loop = true
+	end
+	setPedAnimation(player, animlib, animname, time, loop, lockx or locky, false, freeze)
+	setPedAnimationSpeed(player, animname, fDelta)
 end
 
 function AttachObjectToPlayer(amx, object, player, offsetX, offsetY, offsetZ, rX, rY, rZ)
@@ -297,6 +301,15 @@ end
 
 function BanEx(amx, player, reason)
 	banPlayer(player, nil, reason)
+end
+
+--Dummy for now
+function GetPlayerDrunkLevel(player)
+	return 0
+end
+
+function GetPlayerAnimationIndex(player)
+	return 0
 end
 
 function CallLocalFunction(amx, fnName, fmt, ...)
@@ -2293,8 +2306,8 @@ function GetVehicleParamsEx(amx, vehicle, refEngine, refLights, refAlarm, refDoo
 	amx.memDAT[refLights] = getVehicleOverrideLights(vehicle) == 2 and 1 or 0
 	amx.memDAT[refAlarm] = g_Vehicles[vehicleID].alarm and 1 or 0
 	amx.memDAT[refDoors] = isVehicleLocked(vehicle) and 1 or 0
-	amx.memDAT[refBonnet] = getVehicleDoorOpenRatio(vehicle, 0) > 0
-	amx.memDAT[refBoot] = getVehicleDoorOpenRatio(vehicle, 1) > 0
+	amx.memDAT[refBonnet] = getVehicleDoorOpenRatio(vehicle, 0) > 0 and 1 or 0
+	amx.memDAT[refBoot] = getVehicleDoorOpenRatio(vehicle, 1) > 0 and 1 or 0
 	amx.memDAT[refObjective] = g_Vehicles[vehicleID].objective or 0
 
 	return 1
