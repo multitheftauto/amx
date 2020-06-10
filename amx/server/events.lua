@@ -257,6 +257,9 @@ addEventHandler('onPlayerSpawn', root,
 		local playerID = getElemID(source)
 		local playerdata = g_Players[playerID]
 		if playerdata.doingclasssel or playerdata.beingremovedfromvehicle or playerdata.spawnedfromgamemodeinit then
+			if playerdata.spawnedfromgamemodeinit ~= nil then
+				playerdata.spawnedfromgamemodeinit = nil
+			end
 			return
 		end
 		toggleAllControls(source, true)
