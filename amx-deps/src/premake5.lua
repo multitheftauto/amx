@@ -23,8 +23,6 @@ solution "king"
 	filter "configurations:Release"
 		optimize "Speed"
 
-	include "amx"
-
 	project "ml_base"
 		language "C++"
 		kind "SharedLib"
@@ -54,9 +52,6 @@ solution "king"
 		filter "system:linux"
 			includedirs { "linux" }
 
-		include "amx"
-		links "amx"
-
 		filter {"system:linux", "platforms:x86" }
 			linkoptions { "-Wl,-rpath=mods/deathmatch" }
 
@@ -71,3 +66,5 @@ solution "king"
 
 		filter {}
 			links "amx"
+
+	include "amx"
