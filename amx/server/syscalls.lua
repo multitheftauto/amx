@@ -894,9 +894,14 @@ end
 
 function GetWeaponName(amx, weaponID, buf, len)
 	local name = getWeaponNameFromID(weaponID)
-	if #name < len then
+	if name ~= false and #name < len then
 		writeMemString(amx, buf, name)
+		return 1
+	else
+		writeMemString(amx, buf, '') --I was going to return 'None' in here, but I believe SA-MP just returns a blank string
+		return 0
 	end
+	return 1
 end
 
 function GivePlayerMoney(amx, player, amount)
