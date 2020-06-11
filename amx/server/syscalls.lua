@@ -312,6 +312,12 @@ function GetPlayerAnimationIndex(player)
 	return 0
 end
 
+function EditPlayerObject(amx, player, object)
+	--givePlayerMoney(player, amount)
+	outputDebugString("EditPlayerObject called")
+end
+
+
 function CallLocalFunction(amx, fnName, fmt, ...)
 	local args = { ... }
 	for i=1,math.min(#fmt, #args) do
@@ -1380,7 +1386,7 @@ end
 
 function SetVehicleVelocity(amx, vehicle, vx, vy, vz)
 	setElementVelocity(vehicle, vx, vy, vz)
-	setElementAngularVelocity(vehicle, vx, vy, vz)
+	--setElementAngularVelocity(vehicle, vx, vy, vz) --This isn't needed, it makes the car spin and I believe samp doesn't do this
 end
 
 function SetVehicleVirtualWorld(amx, vehicle, dimension)

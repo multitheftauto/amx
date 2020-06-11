@@ -82,7 +82,7 @@ local controlMappingMT = {
 
 g_KeyMapping = setmetatable({
 	[1] = 'action',
-	[2 ^ 1] = 'crouch',
+	[2 ^ 1] = {'crouch', 'horn'},
 	[2 ^ 2] = { 'fire', 'vehicle_fire' },
 	[2 ^ 3] = 'sprint',
 	[2 ^ 4] = { 'enter_exit','vehicle_secondary_fire' },
