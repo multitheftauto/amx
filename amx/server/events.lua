@@ -420,10 +420,8 @@ addEventHandler('onVehicleEnter', root,
 		end
 
 		if ManualVehEngineAndLights then
-			if amx.vehicles[vehID].neverEntered ~= nil then
-				if (getVehicleType(source) ~= "Plane" and getVehicleType(source) ~= "Helicopter") then
-					setVehicleEngineState(source, false)
-				end
+			if (getVehicleType(source) ~= "Plane" and getVehicleType(source) ~= "Helicopter") then
+				setVehicleEngineState(source, amx.vehicles[vehID].engineState)
 			end
 		end
 	end

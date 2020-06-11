@@ -246,7 +246,7 @@ function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnD
 	if(vehicle == false) then
 		return false
 	end
-	
+
 	if not g_PoliceVehicles[model] then
 		if(color1 <= 0 and color1 >= 126) then color1 = math.random(1, 126) end
 		if(color2 <= 0 and color2 >= 126) then color2 = math.random(1, 126) end
@@ -265,7 +265,7 @@ function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnD
 			for i=0, 4 do
 				setVehicleLightState(vehicle, i, 0)
 			end
-			amx.vehicles[vehID].neverEntered = true
+			amx.vehicles[vehID].engineState = false
 		end
 	end
 	return vehID
@@ -2352,7 +2352,7 @@ function SetVehicleParamsEx(amx, vehicle, engine, lights, alarm, doors, bonnet, 
 	local vehicleID = getElemID(vehicle)
 	g_Vehicles[vehicleID].alarm = alarm;
 	g_Vehicles[vehicleID].objective = objective;
-
+	g_Vehicles[vehicleID].engineState = engine;
 	return 1
 end
 
