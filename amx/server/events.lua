@@ -27,13 +27,13 @@ function gameModeInit(player)
 	g_Players[playerID].streamedPlayers = {}
 	if g_PlayerClasses[0] then
 		g_Players[playerID].viewingintro = true
-		g_Players[playerID].doingclasssel = true
 		fadeCamera(player, true)
 		setTimer(
 			function()
 				if not isElement(player) or getElementType(player) ~= 'player' then
 					return
 				end
+				g_Players[playerID].doingclasssel = true
 				killPed(player)
 				if procCallOnAll('OnPlayerRequestClass', playerID, 0) then
 					putPlayerInClassSelection(player)
@@ -181,11 +181,11 @@ function putPlayerInClassSelection(player)
 		return
 	end
 	toggleAllControls(player, false, true, false)
-	killPed(player)
 	local playerID = getElemID(player)
 	g_Players[playerID].viewingintro = nil
 	g_Players[playerID].doingclasssel = true
 	g_Players[playerID].selectedclass = g_Players[playerID].selectedclass or 0
+	killPed(player)
 	if g_Players[playerID].blip then
 		setElementVisibleTo(g_Players[playerID].blip, root, false)
 	end
