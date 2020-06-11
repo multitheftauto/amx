@@ -246,7 +246,7 @@ function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnD
 	if(vehicle == false) then
 		return false
 	end
-
+	
 	if not g_PoliceVehicles[model] then
 		if(color1 <= 0 and color1 >= 126) then color1 = math.random(1, 126) end
 		if(color2 <= 0 and color2 >= 126) then color2 = math.random(1, 126) end
@@ -259,6 +259,15 @@ function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnD
 	end
 	amx.vehicles[vehID].respawndelay = respawnDelay*1000
 	amx.vehicles[vehID].spawninfo = { x = x, y = y, z = z, angle = angle }
+	if ManualVehEngineAndLights then
+		if (getVehicleType(vehicle) ~= "Plane" and getVehicleType(vehicle) ~= "Helicopter") then
+			setVehicleEngineState(vehicle, false)
+			for i=0, 4 do
+				setVehicleLightState(vehicle, i, 0)
+			end
+			amx.vehicles[vehID].neverEntered = true
+		end
+	end
 	return vehID
 end
 
@@ -293,6 +302,10 @@ end
 
 function AttachTrailerToVehicle(amx, trailer, vehicle)
 	attachTrailerToVehicle(vehicle, trailer)
+end
+
+function ManualVehicleEngineAndLights() 
+	ManualVehEngineAndLights = true
 end
 
 function Ban(amx, player)

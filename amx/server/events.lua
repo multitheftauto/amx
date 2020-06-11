@@ -418,6 +418,14 @@ addEventHandler('onVehicleEnter', root,
 			killTimer(amx.vehicles[vehID].respawntimer)
 			amx.vehicles[vehID].respawntimer = nil
 		end
+
+		if ManualVehEngineAndLights then
+			if amx.vehicles[vehID].neverEntered ~= nil then
+				if (getVehicleType(source) ~= "Plane" and getVehicleType(source) ~= "Helicopter") then
+					setVehicleEngineState(source, false)
+				end
+			end
+		end
 	end
 )
 
