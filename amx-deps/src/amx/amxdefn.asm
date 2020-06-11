@@ -2,11 +2,9 @@
 
 	struc amx_s
 _base:       resd 1
-_codeseg:    resd 1
 _dataseg:    resd 1
 _callback:   resd 1
 _debug:      resd 1
-_overlay:    resd 1
 _cip:        resd 1
 _frm:        resd 1
 _hea:        resd 1
@@ -23,12 +21,11 @@ _alt:        resd 1
 _reset_stk:  resd 1
 _reset_hea:  resd 1
 _syscall_d:  resd 1
-_ovl_index:  resd 1
-_codesize:   resd 1          ; memory size of the overlay or of the native code
 %ifdef JIT
         ; the two fields below are for the JIT; they do not exist in
         ; the non-JIT version of the abstract machine
 _reloc_size: resd 1          ; memory block for relocations
+_code_size:  resd 1          ; memory size of the native code
 %endif
 	endstruc
 
@@ -49,8 +46,7 @@ _natives:    resd 1  ; offset to the "native functions" table
 _libraries:  resd 1  ; offset to the "library" table
 _pubvars:    resd 1  ; offset to the "public variables" table
 _tags:       resd 1  ; offset to the "public tagnames" table
-_nametable:  resd 1  ; offset to the name table, file version 7+ only
-_overlaytbl: resd 1  ; offset to the overlay table, file version 10+ only
+_nametable:  resd 1  ; offset to the name table, file version 7 only
 	endstruc
 
 

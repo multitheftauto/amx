@@ -3,7 +3,7 @@
  *  This file contains extra definitions that are convenient for debugger
  *  support.
  *
- *  Copyright (c) ITB CompuPhase, 2005-2008
+ *  Copyright (c) ITB CompuPhase, 2005-2006
  *
  *  This software is provided "as-is", without any express or implied warranty.
  *  In no event will the authors be held liable for any damages arising from
@@ -21,7 +21,7 @@
  *      misrepresented as being the original software.
  *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: amxdbg.h 3902 2008-01-23 17:40:01Z thiadmer $
+ *  Version: $Id: amxdbg.h 3612 2006-07-22 09:59:46Z thiadmer $
  */
 
 #ifndef AMXDBG_H_INCLUDED
@@ -49,7 +49,7 @@ extern  "C" {
 #endif
 
 #if !defined AMX_NO_ALIGN
-  #if defined __LINUX__ || defined __FreeBSD__
+  #if defined LINUX || defined __FreeBSD__
     #pragma pack(1)         /* structures must be packed (byte-aligned) */
   #elif defined MACOS && defined __MWERKS__
 	#pragma options align=mac68k
@@ -74,18 +74,18 @@ typedef struct tagAMX_DBG_HDR {
   int16_t tags          PACKED; /* number of entries in the "tag" table */
   int16_t automatons    PACKED; /* number of entries in the "automaton" table */
   int16_t states        PACKED; /* number of entries in the "state" table */
-} AMX_DBG_HDR;
+} PACKED AMX_DBG_HDR;
 #define AMX_DBG_MAGIC   0xf1ef
 
 typedef struct tagAMX_DBG_FILE {
   ucell   address       PACKED; /* address in the code segment where generated code (for this file) starts */
   const char name[1];           /* ASCII string, zero-terminated */
-} AMX_DBG_FILE;
+} PACKED AMX_DBG_FILE;
 
 typedef struct tagAMX_DBG_LINE {
   ucell   address       PACKED; /* address in the code segment where generated code (for this line) starts */
   int32_t line          PACKED; /* line number */
-} AMX_DBG_LINE;
+} PACKED AMX_DBG_LINE;
 
 typedef struct tagAMX_DBG_SYMBOL {
   ucell   address       PACKED; /* address in the data segment or relative to the frame */
@@ -96,29 +96,29 @@ typedef struct tagAMX_DBG_SYMBOL {
   char    vclass;               /* class of symbol (global/local) */
   int16_t dim           PACKED; /* number of dimensions */
   const char name[1];           /* ASCII string, zero-terminated */
-} AMX_DBG_SYMBOL;
+} PACKED AMX_DBG_SYMBOL;
 
 typedef struct tagAMX_DBG_SYMDIM {
   int16_t tag           PACKED; /* tag for the array dimension */
   ucell   size          PACKED; /* size of the array dimension */
-} AMX_DBG_SYMDIM;
+} PACKED AMX_DBG_SYMDIM;
 
 typedef struct tagAMX_DBG_TAG {
   int16_t tag           PACKED; /* tag id */
   const char name[1];           /* ASCII string, zero-terminated */
-} AMX_DBG_TAG;
+} PACKED AMX_DBG_TAG;
 
 typedef struct tagAMX_DBG_MACHINE {
   int16_t automaton     PACKED; /* automaton id */
   ucell address         PACKED; /* address of state variable */
   const char name[1];           /* ASCII string, zero-terminated */
-} AMX_DBG_MACHINE;
+} PACKED AMX_DBG_MACHINE;
 
 typedef struct tagAMX_DBG_STATE {
   int16_t state         PACKED; /* state id */
   int16_t automaton     PACKED; /* automaton id */
   const char name[1];           /* ASCII string, zero-terminated */
-} AMX_DBG_STATE;
+} PACKED AMX_DBG_STATE;
 
 typedef struct tagAMX_DBG {
   AMX_DBG_HDR     *hdr           PACKED; /* points to the AMX_DBG header */
@@ -128,7 +128,7 @@ typedef struct tagAMX_DBG {
   AMX_DBG_TAG     **tagtbl       PACKED;
   AMX_DBG_MACHINE **automatontbl PACKED;
   AMX_DBG_STATE   **statetbl     PACKED;
-} AMX_DBG;
+} PACKED AMX_DBG;
 
 #if !defined iVARIABLE
   #define iVARIABLE  1  /* cell that has an address and that can be fetched directly (lvalue) */
@@ -142,7 +142,6 @@ typedef struct tagAMX_DBG {
 int AMXAPI dbg_FreeInfo(AMX_DBG *amxdbg);
 int AMXAPI dbg_LoadInfo(AMX_DBG *amxdbg, FILE *fp);
 
-int AMXAPI dbg_LinearAddress(AMX *amx, ucell relative_addr, ucell *linear_addr);
 int AMXAPI dbg_LookupFile(AMX_DBG *amxdbg, ucell address, const char **filename);
 int AMXAPI dbg_LookupFunction(AMX_DBG *amxdbg, ucell address, const char **funcname);
 int AMXAPI dbg_LookupLine(AMX_DBG *amxdbg, ucell address, long *line);
@@ -155,9 +154,8 @@ int AMXAPI dbg_GetTagName(AMX_DBG *amxdbg, int tag, const char **name);
 int AMXAPI dbg_GetVariable(AMX_DBG *amxdbg, const char *symname, ucell scopeaddr, const AMX_DBG_SYMBOL **sym);
 int AMXAPI dbg_GetArrayDim(AMX_DBG *amxdbg, const AMX_DBG_SYMBOL *sym, const AMX_DBG_SYMDIM **symdim);
 
-
 #if !defined AMX_NO_ALIGN
-  #if defined __LINUX__ || defined __FreeBSD__
+  #if defined LINUX || defined __FreeBSD__
     #pragma pack()    /* reset default packing */
   #elif defined MACOS && defined __MWERKS__
     #pragma options align=reset

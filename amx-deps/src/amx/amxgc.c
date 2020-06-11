@@ -1,6 +1,6 @@
 /*  Simple garbage collector for the Pawn Abstract Machine
  *
- *  Copyright (c) ITB CompuPhase, 2004-2008
+ *  Copyright (c) ITB CompuPhase, 2004-2006
  *
  *  This software is provided "as-is", without any express or implied warranty.
  *  In no event will the authors be held liable for any damages arising from
@@ -18,8 +18,9 @@
  *      misrepresented as being the original software.
  *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: amxgc.c 3902 2008-01-23 17:40:01Z thiadmer $
+ *  Version: $Id: amxgc.c 3660 2006-11-05 13:05:09Z thiadmer $
  */
+
 #include <assert.h>
 #include <limits.h>
 #include <stdlib.h>     /* for malloc()/free() */
@@ -135,7 +136,7 @@ int gc_tablestat(int *exponent,int *percentage)
 {
   if (exponent!=NULL)
     *exponent=SharedGC.exponent;
-  if (percentage!=NULL) {
+  if (*percentage!=NULL) {
     int size=(1L<<SharedGC.exponent);
     /* calculate with floating point to avoid integer overflow */
     double p=100.0*SharedGC.count/size;

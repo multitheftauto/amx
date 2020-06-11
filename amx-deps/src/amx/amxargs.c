@@ -1,25 +1,22 @@
 /*  Script Arguments support module for the Pawn Abstract Machine
  *
- *  Copyright (c) ITB CompuPhase, 2005-2008
+ *  Copyright (c) ITB CompuPhase, 2005-2016
  *
- *  This software is provided "as-is", without any express or implied warranty.
- *  In no event will the authors be held liable for any damages arising from
- *  the use of this software.
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ *  use this file except in compliance with the License. You may obtain a copy
+ *  of the License at
  *
- *  Permission is granted to anyone to use this software for any purpose,
- *  including commercial applications, and to alter it and redistribute it
- *  freely, subject to the following restrictions:
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- *  1.  The origin of this software must not be misrepresented; you must not
- *      claim that you wrote the original software. If you use this software in
- *      a product, an acknowledgment in the product documentation would be
- *      appreciated but is not required.
- *  2.  Altered source versions must be plainly marked as such, and must not be
- *      misrepresented as being the original software.
- *  3.  This notice may not be removed or altered from any source distribution.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  License for the specific language governing permissions and limitations
+ *  under the License.
  *
- *  Version: $Id: amxargs.c 3902 2008-01-23 17:40:01Z thiadmer $
+ *  Version: $Id: amxargs.c 5588 2016-10-25 11:13:28Z  $
  */
+
 #if defined _UNICODE || defined __UNICODE__ || defined UNICODE
 # if !defined UNICODE   /* for Windows */
 #   define UNICODE
@@ -41,6 +38,9 @@
 #endif
 #if defined __WIN32__ || defined _Windows
   #include <windows.h>
+#endif
+#if defined __GNUC__ || defined __clang__
+  #include <unistd.h>
 #endif
 #include "amx.h"
 
@@ -139,7 +139,10 @@ static const TCHAR *rawcmdline(void)
         skip++;
       } /* if */
     #else
-      #error Platform not supported
+      /* no mechanism for determining the commandline, so it
+       * must be supplied with amx_ArgsSetCmdLine() instead.
+       */
+      ptr = "";
     #endif
 
     /* skip leading white space */
@@ -207,7 +210,7 @@ static const TCHAR *matcharg(const TCHAR *key, int skip, int *length)
   int index, optlen, keylen;
   const TCHAR *option, *vptr;
 
-  keylen = (key != NULL) ? _tcslen(key) : 0;
+  keylen = (key != NULL) ? (int)_tcslen(key) : 0;
   index = 0;
   while ((option = tokenize(cmdline, index, length)) != NULL) {
     /* check for a colon or an equal sign (':' or '=') */
@@ -226,7 +229,7 @@ static const TCHAR *matcharg(const TCHAR *key, int skip, int *length)
         optlen++;               /* if ':' or '=' was found, skip it too */
       option += optlen;         /* point behind option */
       *length -= optlen;        /* length of the value, not of the option */
-      assert(length >= 0);
+      assert(*length >= 0);
       if (skip-- == 0)
         break;
     } /* if */
@@ -250,11 +253,7 @@ static cell AMX_NATIVE_CALL n_argindex(AMX *amx, const cell *params)
   max = (int)params[3];
   if (max <= 0)
     return 0;
-  amx_GetAddr(amx, params[2], &cptr);
-  if (cptr == NULL) {
-    amx_RaiseError(amx, AMX_ERR_NATIVE);
-    return 0;
-  } /* if */
+  cptr = amx_Address(amx, params[2]);
 
   if ((option = tokenize(cmdline, params[1], &length)) == NULL) {
     /* option not found, return an empty string */
@@ -292,11 +291,7 @@ static cell AMX_NATIVE_CALL n_argstr(AMX *amx, const cell *params)
   if (max <= 0)
     return 0;
   amx_StrParam(amx, params[2], key);
-  amx_GetAddr(amx, params[3], &cptr);
-  if (cptr == NULL) {
-    amx_RaiseError(amx, AMX_ERR_NATIVE);
-    return 0;
-  } /* if */
+  cptr = amx_Address(amx, params[3]);
 
   option = matcharg(key, (int)params[1], &length);
   if (option == NULL)
@@ -335,11 +330,7 @@ static cell AMX_NATIVE_CALL n_argvalue(AMX *amx, const cell *params)
   cell *cptr;
 
   amx_StrParam(amx, params[2], key);
-  amx_GetAddr(amx, params[3], &cptr);
-  if (cptr == NULL) {
-    amx_RaiseError(amx, AMX_ERR_NATIVE);
-    return 0;
-  } /* if */
+  cptr = amx_Address(amx, params[3]);
 
   option = matcharg(key, (int)params[1], &length);
   if (option == NULL)
@@ -376,12 +367,12 @@ const AMX_NATIVE_INFO args_Natives[] = {
   { NULL, NULL }        /* terminator */
 };
 
-int AMXEXPORT amx_ArgsInit(AMX *amx)
+int AMXEXPORT AMXAPI amx_ArgsInit(AMX *amx)
 {
   return amx_Register(amx, args_Natives, -1);
 }
 
-int AMXEXPORT amx_ArgsCleanup(AMX *amx)
+int AMXEXPORT AMXAPI amx_ArgsCleanup(AMX *amx)
 {
   (void)amx;
   return AMX_ERR_NONE;
@@ -393,7 +384,7 @@ int AMXEXPORT amx_ArgsCleanup(AMX *amx)
  * that is passed in to this function is NOT copied, so it may not be freed
  * after the call.
  */
-int AMXEXPORT amx_ArgsSetCmdLine(const TCHAR *cmd)
+int AMXEXPORT AMXAPI amx_ArgsSetCmdLine(const TCHAR *cmd)
 {
   cmdline = cmd;
   return AMX_ERR_NONE;
