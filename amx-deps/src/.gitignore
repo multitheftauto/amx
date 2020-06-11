@@ -354,4 +354,4 @@ MigrationBackup/
 # End of https://www.gitignore.io/api/visualstudio
 
 Build
-./premake5.exe
+premake5.exe
