@@ -841,9 +841,8 @@ function DeletePVar(amx, player, varname)
 	return 1
 end
 
--- dummy todo
-function RemoveBuildingForPlayer(amx)
-	return 1;
+function RemoveBuildingForPlayer(amx, player, model, x, y, z, radius)
+	clientCall(player, 'RemoveBuildingForPlayer', model, x, y, z, radius)
 end
 
 function EnableVehicleFriendlyFire(amx)
@@ -1162,7 +1161,7 @@ function SetEchoDestination(amx)
 end
 
 function SetGameModeText(amx, gamemodeName)
-	setMapName(gamemodeName)
+	setGameType(gamemodeName)
 end
 
 function SetGravity(amx, gravity)
@@ -3236,11 +3235,11 @@ g_SAMPSyscallPrototypes = {
 	format = {'r', 'i', 's'},
 
 	memcpy = {'r', 'r', 'i', 'i', 'i'},
+	RemoveBuildingForPlayer = {'p', 'i', 'f', 'f', 'f', 'f'},
+	ManualVehicleEngineAndLights = {},
 
 	-- more dummies (unimplemented)
-	EnableVehicleFriendlyFire = {},
-	RemoveBuildingForPlayer = {},
-	ManualVehicleEngineAndLights = {},
+	EnableVehicleFriendlyFire = {},	
 	DisableRemoteVehicleCollisions = {'p', 'i'},
 	GetPlayerTargetPlayer = {'p'},
   	GetPlayerLastShotVectors = {'p', 'r', 'r', 'r', 'r', 'r', 'r'},

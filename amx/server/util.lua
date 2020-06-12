@@ -42,7 +42,12 @@ fndebug(
 --]]
 
 function clientCall(player, fnName, ...)
-	triggerClientEvent(player, 'onClientCall', resourceRoot, fnName, ...)
+	local called = triggerClientEvent(player, 'onClientCall', resourceRoot, fnName, ...)
+	if called == nil or called == false then
+		outputDebugString('Failed to call ' .. fnName)
+		called = false --if it's null set it to false to prevent stuff like 'concatenating nil values'
+	end
+	return called
 end
 
 g_Keys = {

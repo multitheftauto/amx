@@ -263,6 +263,9 @@ end
 
 -----------------------------
 -- Player objects
+function RemoveBuildingForPlayer(model, x, y, z, radius)
+	removeWorldModel(model, radius, x, y, z)
+end
 
 function AttachPlayerObjectToPlayer(amxName, objID, attachPlayer, offsetX, offsetY, offsetZ, rX, rY, rZ)
 	local obj = g_AMXs[amxName] and g_AMXs[amxName].playerobjects[objID]
