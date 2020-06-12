@@ -845,6 +845,14 @@ function RemoveBuildingForPlayer(amx, player, model, x, y, z, radius)
 	clientCall(player, 'RemoveBuildingForPlayer', model, x, y, z, radius)
 end
 
+--playerid, Float:FromX, Float:FromY, Float:FromZ, Float:ToX, Float:ToY, Float:ToZ, time, cut = CAMERA_CUT
+function InterpolateCameraPos(amx, player, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
+	clientCall(player, 'InterpolateCameraPos', FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
+end
+function InterpolateCameraLookAt(amx, player, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
+	clientCall(player, 'InterpolateCameraLookAt', FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
+end
+
 function EnableVehicleFriendlyFire(amx)
 	return 1;
 end
@@ -1145,6 +1153,8 @@ function SendRconCommand(amx, command)
 end
 
 function SetCameraBehindPlayer(amx, player)
+	--In samp calling SetCameraBehindPlayer also unsets camera interpolation
+	clientCall(player, 'removeCamHandler')
 	setCameraTarget(player, player)
 end
 
@@ -1664,6 +1674,8 @@ function TogglePlayerSpectating(amx, player, enable)
 		if isPedDead(player) then
 			spawnPlayerBySelectedClass(player)
 		end
+		--In samp calling TogglePlayerSpectating also unsets camera interpolation
+		clientCall(player, 'removeCamHandler')
 		setCameraTarget(player, player)
 		setPlayerHudComponentVisible(player, 'radar', true)
 		setPlayerState(player, PLAYER_STATE_ONFOOT)
@@ -3237,7 +3249,9 @@ g_SAMPSyscallPrototypes = {
 	memcpy = {'r', 'r', 'i', 'i', 'i'},
 	RemoveBuildingForPlayer = {'p', 'i', 'f', 'f', 'f', 'f'},
 	ManualVehicleEngineAndLights = {},
-
+	InterpolateCameraPos = {'p', 'f', 'f', 'f', 'f', 'f', 'f', 'i', 'i'},
+	InterpolateCameraLookAt = {'p', 'f', 'f', 'f', 'f', 'f', 'f', 'i', 'i'},
+	  
 	-- more dummies (unimplemented)
 	EnableVehicleFriendlyFire = {},	
 	DisableRemoteVehicleCollisions = {'p', 'i'},
@@ -3266,8 +3280,6 @@ g_SAMPSyscallPrototypes = {
 	GetActorPos = {'i', 'r', 'r', 'r'}, --r since the vals should be passed by ref
 	GetPVarsUpperIndex = {'p'},
   	GetPVarNameAtIndex = {'p', 'i', 'r', 'i'},
-	InterpolateCameraPos = {'p', 'f', 'f', 'f', 'f', 'f', 'f', 'i', 'i'},
-  	InterpolateCameraLookAt = {'p', 'f', 'f', 'f', 'f', 'f', 'f', 'i', 'i'},
 	RemovePlayerAttachedObject = {'p', 'i'},
 	SetVehicleParamsCarWindows = {'v', 'i', 'i', 'i', 'i'},
 	GetPlayerVersion = {'p', 's', 'i'},

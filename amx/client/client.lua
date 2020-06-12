@@ -262,6 +262,62 @@ function showIntroScene()
 end
 
 -----------------------------
+-- Camera Interpolation
+--Originally from https://wiki.multitheftauto.com/wiki/SmoothMoveCamera
+
+local sm = {}
+sm.moov = 0
+sm.objCamPos,sm.objLookAt = nil,nil
+ 
+function removeCamHandler()
+	outputConsole('removeCamHandler was called')
+	if(sm.moov == 1) then
+		outputConsole('Destroying cam handler...')
+		sm.moov = 0
+	end
+end
+ 
+function camRender()
+	if (sm.moov == 1) then
+		local x1,y1,z1,x2,y2,z2 = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+		if sm.objCamPos ~= nil then
+			x1,y1,z1 = getElementPosition(sm.objCamPos)
+		end
+		if sm.objLookAt ~= nil then
+			x2,y2,z2 = getElementPosition(sm.objLookAt)
+		end
+		--outputConsole(string.format("Current Camera Matrix is: CamPos: %f %f %f CamLookAt: %f %f %f", x1,y1,z1,x2,y2,z2))
+		setCameraMatrix(x1,y1,z1,x2,y2,z2)
+	else
+		removeEventHandler("onClientPreRender", root, camRender)
+	end
+end
+
+function setupCameraObject(camObj, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
+	sm.moov = 1
+	camObj = createObject(1337, FromX, FromY, FromZ)
+	setElementCollisionsEnabled (camObj, false) 
+	setElementAlpha(camObj, 0)
+	setObjectScale(camObj, 0.01)
+	moveObject(camObj, time, ToX, ToY, ToZ, ToX, ToY, ToZ, "InOutQuad")
+	setTimer(removeCamHandler,time,1)
+	setTimer(destroyElement,time,1,camObj)
+	return camObj
+end
+
+function InterpolateCameraPos(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
+	outputConsole(string.format("InterpolateCameraPos called with args %f %f %f %f %f %f %d %d", FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut))
+	sm.objCamPos = setupCameraObject(sm.objCamPos, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
+	addEventHandler("onClientPreRender", root, camRender)
+	return true
+end
+function InterpolateCameraLookAt(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
+	outputConsole(string.format("InterpolateCameraLookAt called with args %f %f %f %f %f %f %d %d", FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut))
+	sm.objLookAt = setupCameraObject(sm.objLookAt, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
+	addEventHandler("onClientPreRender", root, camRender)
+	return true
+end
+-----------------------------
 -- Player objects
 function RemoveBuildingForPlayer(model, x, y, z, radius)
 	removeWorldModel(model, radius, x, y, z)
