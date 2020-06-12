@@ -262,15 +262,96 @@ function showIntroScene()
 end
 
 -----------------------------
+-- Camera related
+function removeCamHandlers()
+	removeInterpCamHandler()
+	removeCamAttachHandler()
+end
+
+-- Camera attachments
+--Based on https://forum.mtasa.com/topic/36692-move-camera-by-mouse-like-normal/?do=findComment&comment=368670
+local ca = {}
+ca.active = 0
+ca.objCamPos = nil
+ca.dist = 0.025
+ca.speed = 5 
+ca.x = math.rad(60) 
+ca.y = math.rad(60) 
+ca.z = math.rad(15) 
+ca.maxZ = math.rad(89) 
+ca.minZ = math.rad(-45) 
+
+function removeCamAttachHandler()
+	outputConsole('removeCamAttachHandler was called')
+	if(ca.active == 1) then
+		outputConsole('Destroying cam attach handler...')
+		ca.active = 0
+	end
+end
+
+function camAttachRender()
+	if (ca.active == 1) then
+		local x1,y1,z1 = 0.0, 0.0, 0.0
+		if ca.objCamPos ~= nil then
+			x1,y1,z1 = getElementPosition(ca.objCamPos)
+		end
+		local camDist = ca.dist 
+		local cosZ = math.cos(ca.z) 
+		local camX = x1 + math.cos(ca.x)*camDist*cosZ 
+		local camY = y1 + math.sin(ca.y)*camDist*cosZ 
+		local camZ = z1 + math.sin(ca.z)*camDist 
+		setCameraMatrix(camX, camY, camZ, x1, y1, z1) 
+
+		--If aiming, set the target (does nothing, todo fix)
+		if getPedTask(localPlayer, "secondary", 0) == "TASK_SIMPLE_USE_GUN" or isPedDoingGangDriveby(localPlayer) then
+			setPedAimTarget ( localPlayer, camX, camY, camZ )
+			setPlayerHudComponentVisible ( localPlayer, "crosshair", true )
+			outputConsole('ped is aiming')
+		end
+		
+		--outputConsole(string.format("camAttachRender - Camera Matrix is: CamPos: %f %f %f CamLookAt: %f %f %f", camX, camY, camZ, x1,y1,z1))
+	else
+		removeEventHandler("onClientPreRender", root, camAttachRender)
+	end
+end
+
+function cursorMouseMoveHandler(curX, curY, absX, absY)
+	if (ca.active == 1) then
+		local diffX = curX - 0.5 
+		local diffY = curY - 0.5 
+		local camX = ca.x - diffX*ca.speed 
+		local camY = ca.y - diffX*ca.speed 
+		local camZ = ca.z + (diffY*ca.speed)/math.pi 
+		if(camZ > ca.maxZ) then 
+			camZ = ca.maxZ 
+		end 
+		if(camZ < ca.minZ) then 
+			camZ = ca.minZ 
+		end 
+		ca.x = camX 
+		ca.y = camY 
+		ca.z = camZ 
+	else
+		removeEventHandler("onClientCursorMove", root, cursorMouseMoveHandler)
+	end
+end
+
+function AttachCameraToObject(camObj)
+	outputConsole('AttachCameraToObject was called')
+	ca.active = 1
+	ca.objCamPos = camObj
+	addEventHandler("onClientPreRender", root, camAttachRender)
+	addEventHandler("onClientCursorMove", root, cursorMouseMoveHandler)
+end
+
 -- Camera Interpolation
 --Originally from https://wiki.multitheftauto.com/wiki/SmoothMoveCamera
-
 local sm = {}
 sm.moov = 0
 sm.objCamPos,sm.objLookAt = nil,nil
  
-function removeCamHandler()
-	outputConsole('removeCamHandler was called')
+function removeInterpCamHandler()
+	outputConsole('removeInterpCamHandler was called')
 	if(sm.moov == 1) then
 		outputConsole('Destroying cam handler...')
 		sm.moov = 0
@@ -300,7 +381,7 @@ function setupCameraObject(camObj, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut
 	setElementAlpha(camObj, 0)
 	setObjectScale(camObj, 0.01)
 	moveObject(camObj, time, ToX, ToY, ToZ, ToX, ToY, ToZ, "InOutQuad")
-	setTimer(removeCamHandler,time,1)
+	setTimer(removeInterpCamHandler,time,1)
 	setTimer(destroyElement,time,1,camObj)
 	return camObj
 end
@@ -320,7 +401,14 @@ end
 -----------------------------
 -- Player objects
 function RemoveBuildingForPlayer(model, x, y, z, radius)
+	if model == -1 then
+		for i=550,20000 do --Remove all world models if they sent -1
+			removeWorldModel(i,20000,0,0,0)
+		end
+		return true --Don't run the rest of the code
+	end
 	removeWorldModel(model, radius, x, y, z)
+	return true
 end
 
 function AttachPlayerObjectToPlayer(amxName, objID, attachPlayer, offsetX, offsetY, offsetZ, rX, rY, rZ)
@@ -377,7 +465,30 @@ function StopPlayerObject(amxName, objID)
 	stopObject(obj)
 end
 
-
+--- Audio
+local pAudioStreamSound = nil --samp can only do one stream at a time anyway
+function PlayAudioStreamForPlayer(url, posX, posY, posZ, distance, usepos)
+	--outputConsole(string.format("PlayAudioStreamForPlayer called with args %s %f %f %f %f %d", url, posX, posY, posZ, distance, usepos))
+	if pAudioStreamSound ~= nil then --If there's one already playing, stop it
+		--outputConsole("PlayAudioStreamForPlayer is stopping an audio stream")
+		StopAudioStreamForPlayer()
+	end
+	if usepos == nil or usepos == 0 then
+		--outputConsole(string.format("PlayAudioStreamForPlayer now playing non-3d sound %s", url))
+		pAudioStreamSound = playSound(url)
+	else
+		--outputConsole(string.format("PlayAudioStreamForPlayer now playing 3d sound %s with max dist %d", url, distance))
+		pAudioStreamSound = playSound3D(url, posX, posY, posZ)
+		setSoundMaxDistance(pAudioStreamSound, distance)
+	end
+	if pAudioStreamSound ~= nil then
+		setSoundVolume(pAudioStreamSound, 1.0)
+	end
+	return true
+end
+function StopAudioStreamForPlayer()
+    stopSound(pAudioStreamSound)
+end
 -----------------------------
 -- Checkpoints
 

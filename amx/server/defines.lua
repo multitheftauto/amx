@@ -135,6 +135,34 @@ g_PoliceVehicles = {
 	[601] = true
 }
 
+--Left is SAMP, right is MTA
+g_BoneMapping = setmetatable({
+	[2] = 1,	-- Head
+	[17] = 2,	-- Neck
+	[1] = 3,	-- Spine
+	[15] = 5,	-- Left Clavicle (Shoulder)
+	[16] = 6,	-- Right Clavicle (Shoulder)
+	[3] = 9,	-- Left Upper Arm
+	[4] = 10,	-- Right Upper Arm
+	[5] = 11,	-- Left Hand
+	[6] = 12,	-- Right Hand
+	[7] = 13,	-- Left thigh (Samp doesn't really have hips)
+	[8] = 14,	-- Right thigh
+	[12] = 15,	-- Left calf
+	[11] = 16,	-- Right Calf
+	[9] = 19,	-- Left Foot
+	[10] = 20	-- Right Foot
+}, {
+	__index = function(t, k)
+		if k == 18 then --Since 18 is jaw in SAMP
+			k = 2 --Default to head
+		end
+		if k >= 1 and k <= 17 then
+			return k
+		end
+	end
+})
+
 PLAYER_STATE_NONE = 0
 PLAYER_STATE_ONFOOT = 1
 PLAYER_STATE_DRIVER = 2
@@ -172,5 +200,6 @@ PLAYER_VARTYPE_STRING = 2
 PLAYER_VARTYPE_FLOAT = 3
 
 INVALID_ACTOR_ID = 0xFFFF
+INVALID_OBJECT_ID = 0xFFFF
 
 ManualVehEngineAndLights = false

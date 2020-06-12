@@ -25,6 +25,7 @@ function gameModeInit(player)
 	g_Players[playerID].streamedActors = {}
 	g_Players[playerID].streamedVehicles = {}
 	g_Players[playerID].streamedPlayers = {}
+	g_Players[playerID].attachedObjects = {}
 	if g_PlayerClasses[0] then
 		g_Players[playerID].viewingintro = true
 		fadeCamera(player, true)

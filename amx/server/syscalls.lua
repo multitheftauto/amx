@@ -382,7 +382,14 @@ end
 
 function CreateObject(amx, model, x, y, z, rX, rY, rZ)
 	outputConsole('CreateObject(' .. model .. ')')
-	return addElem(amx, 'objects', createObject(model, x, y, z, rX, rY, rZ))
+	local obj = createObject(model, x, y, z, rX, rY, rZ)
+	if obj == false then
+		obj = createObject(1337, x, y, z, rX, rY, rZ) --Create a dummy object anyway since createobject can also be used to make camera attachments
+		setElementAlpha(obj, 0)
+		setElementCollisionsEnabled(obj, false)
+		outputDebugString(string.format("[MTA AMX - WARNING]: The provided model id (%d) is invalid (the model was replaced with id 1337, is now invisible and non-collidable), some object ids are not supported, consider updating your scripts.", model))
+	end
+	return addElem(amx, 'objects', obj)
 end
 
 CreatePickup = AddStaticPickup
@@ -853,6 +860,14 @@ function InterpolateCameraLookAt(amx, player, FromX, FromY, FromZ, ToX, ToY, ToZ
 	clientCall(player, 'InterpolateCameraLookAt', FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 end
 
+function PlayAudioStreamForPlayer(amx, player, url, posX, posY, posZ, distance, usepos)
+	clientCall(player, 'PlayAudioStreamForPlayer', url, posX, posY, posZ, distance, usepos)
+end
+
+function StopAudioStreamForPlayer(amx, player)
+	clientCall(player, 'StopAudioStreamForPlayer')
+end
+
 function EnableVehicleFriendlyFire(amx)
 	return 1;
 end
@@ -1154,7 +1169,7 @@ end
 
 function SetCameraBehindPlayer(amx, player)
 	--In samp calling SetCameraBehindPlayer also unsets camera interpolation
-	clientCall(player, 'removeCamHandler')
+	clientCall(player, 'removeCamHandlers')
 	setCameraTarget(player, player)
 end
 
@@ -1675,8 +1690,9 @@ function TogglePlayerSpectating(amx, player, enable)
 			spawnPlayerBySelectedClass(player)
 		end
 		--In samp calling TogglePlayerSpectating also unsets camera interpolation
-		clientCall(player, 'removeCamHandler')
+		clientCall(player, 'removeCamHandlers')
 		setCameraTarget(player, player)
+		clientCall(player, 'setCameraTarget', player) --Clear the one on the client as well, otherwise we can't go back to normal camera after spectating vehicles
 		setPlayerHudComponentVisible(player, 'radar', true)
 		setPlayerState(player, PLAYER_STATE_ONFOOT)
 	end
@@ -2743,6 +2759,36 @@ function VectorSize(amx, x, y, z)
 	return float2cell(math.sqrt( (x^2) + (y^2) + (z^2)))
 end
 
+function SetPlayerAttachedObject(amx, player, index, modelid, bone, fOffsetX, fOffsetY, fOffsetZ, fRotX, fRotY, fRotZ, fScaleX, fScaleY, fScaleZ, materialcolor1, materialcolor2)
+	local x, y, z = getElementPosition (player)
+	local mtaBone = g_BoneMapping[bone]
+	local obj = createObject(modelid, x, y, z)
+	local playerID = getElemID(player)
+	g_Players[playerID].attachedObjects[index] = obj
+	setElementCollisionsEnabled (obj, false)
+	setObjectScale (obj, fScaleX, fScaleY, fScaleZ)
+	attachElementToBone(obj, player, mtaBone, fOffsetX, fOffsetY, fOffsetZ, fRotX, fRotY, fRotZ)
+	--Todo: Implement material colors
+	
+	return 1
+end
+
+function RemovePlayerAttachedObject(amx, player, index)
+	local playerID = getElemID(player)
+	local obj = g_Players[playerID].attachedObjects[index] --Get the object stored at this slot
+	if obj ~= false then
+		detachElementFromBone( obj )
+		destroyElement( obj )
+		g_Players[playerID].attachedObjects[index] = nil
+		return 1
+	end
+	return 0
+end
+
+function AttachCameraToObject(amx, player, object)
+	clientCall(player, 'AttachCameraToObject', object)
+end
+
 -----------------------------------------------------
 -- List of the functions and their argument types
 
@@ -3251,7 +3297,12 @@ g_SAMPSyscallPrototypes = {
 	ManualVehicleEngineAndLights = {},
 	InterpolateCameraPos = {'p', 'f', 'f', 'f', 'f', 'f', 'f', 'i', 'i'},
 	InterpolateCameraLookAt = {'p', 'f', 'f', 'f', 'f', 'f', 'f', 'i', 'i'},
-	  
+	PlayAudioStreamForPlayer = {'p', 's', 'f', 'f', 'f', 'f', 'i'},
+	StopAudioStreamForPlayer = {'p'},
+	SetPlayerAttachedObject = {'p', 'i', 'i', 'i', 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'i', 'i'},
+	RemovePlayerAttachedObject = {'p', 'i'},
+	AttachCameraToObject = {'p', 'o'},
+
 	-- more dummies (unimplemented)
 	EnableVehicleFriendlyFire = {},	
 	DisableRemoteVehicleCollisions = {'p', 'i'},
@@ -3263,16 +3314,12 @@ g_SAMPSyscallPrototypes = {
   	EditObject = {'p', 'i'},
 	IsPlayerAttachedObjectSlotUsed = {'p', 'i'},
 	GetPlayerVersion = {'p', 's', 'i'},
-  	SetPlayerAttachedObject = {'p', 'i', 'i', 'i', 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'f', 'i', 'i'},
-	PlayAudioStreamForPlayer = {'p', 's', 'f', 'f', 'f', 'f', 'i'},
-	StopAudioStreamForPlayer = {'p'},
 	GetPlayerNetworkStats = {'p', 'r', 'i'},
 	GetNetworkStats = {'r', 'i'},
 	StartRecordingPlayerData = {'p', 'i', 's'},
 	StopRecordingPlayerData = {'p'},
 	GetAnimationName = {'i', 's', 'i', 's', 'i'},
 	GetPlayerAnimationIndex = {'p'},
-	AttachCameraToObject = {'p', 'i'},
 	GetPlayerDrunkLevel = {'p'},
 	SetPlayerDrunkLevel = {'p', 'i'},
 	SelectTextDraw = {'p', 'x'},
@@ -3280,7 +3327,6 @@ g_SAMPSyscallPrototypes = {
 	GetActorPos = {'i', 'r', 'r', 'r'}, --r since the vals should be passed by ref
 	GetPVarsUpperIndex = {'p'},
   	GetPVarNameAtIndex = {'p', 'i', 'r', 'i'},
-	RemovePlayerAttachedObject = {'p', 'i'},
 	SetVehicleParamsCarWindows = {'v', 'i', 'i', 'i', 'i'},
 	GetPlayerVersion = {'p', 's', 'i'},
 	--End of unimplemented funcs
