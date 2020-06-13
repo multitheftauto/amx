@@ -22,7 +22,18 @@ local BOATS = {
 	[454] = true
 }
 
+local defaultEmptyTableMt = {
+	__index = function(t, k)
+		local info = {}
+		t[k] = info
+		return t[k]
+	end
+}
+
 g_AMXs = {}
+
+g_Vehicles = {}
+setmetatable(g_Vehicles, defaultEmptyTableMt)
 
 local screenWidth, screenHeight = guiGetScreenSize()
 
@@ -49,16 +60,6 @@ end
 function addAMX(name, type)
 	g_AMXs[name] = { name = name, type = type, vehicles = {}, playerobjects = {}, textdraws = {}, textlabels = {}, menus = {}, blips = {} }
 	-- textdraws = { id = { text = text, color = color, align = 1|2|3, x = x, y = y, boxsize = {width, height}, parts={{x=x,y=y,color=color,text=text},...} }, ... }
-	setmetatable(
-		g_AMXs[name].vehicles,
-		{
-			__index = function(t, k)
-				local vehInfo = {}
-				t[k] = vehInfo
-				return t[k]
-			end
-		}
-	)
 	if type == 'gamemode' then
 		setTime(12, 0)
 	end
@@ -589,11 +590,11 @@ function SetPlayerPosFindZ(amxName, x, y, z)
 end
 
 function SetVehicleParamsForPlayer(vehicle, isObjective, doorsLocked)
-	local amx, vehID = getElemAMX(vehicle), getElemID(vehicle)
-	if not amx or not vehID then
+	local vehID = getElemID(vehicle)
+	if not vehID then
 		return
 	end
-	local vehInfo = amx.vehicles[vehID]
+	local vehInfo = g_Vehicles[vehID]
 	if isObjective then
 		if vehInfo.blip then
 			destroyElement(vehInfo.blip)
@@ -672,8 +673,8 @@ addEventHandler('onClientElementStreamIn', root,
 				vehicleDrops[source] = { timer = timer, tries = 0 }
 			end
 
-			local amx, vehID = getElemAMX(source), getElemID(source)
-			local vehInfo = amx and vehID and amx.vehicles[vehID]
+			local vehID = getElemID(source)
+			local vehInfo = vehID and g_Vehicles[vehID]
 			if vehInfo and not vehInfo.blip then
 				vehInfo.blip = createBlipAttachedTo(source, 0, 1, 136, 136, 136, 150, 0, 500)
 				setElementParent(vehInfo.blip, source)
@@ -690,8 +691,8 @@ addEventHandler('onClientElementStreamIn', root,
 addEventHandler('onClientElementStreamOut', root,
 	function()
 		if getElementType(source) ~= 'vehicle' then
-			local amx, vehID = getElemAMX(source), getElemID(source)
-			local vehInfo = amx and vehID and amx.vehicles[vehID]
+			local vehID = getElemID(source)
+			local vehInfo = vehID and g_Vehicles[vehID]
 			if vehInfo and vehInfo.blip and not vehInfo.blippersistent then
 				if isElement(vehInfo.blip) then
 					destroyElement(vehInfo.blip)
@@ -717,7 +718,7 @@ addEventHandler('onClientVehicleStartEnter', root,
 )
 
 function DestroyVehicle(amxName, vehID)
-	g_AMXs[amxName].vehicles[vehID] = nil
+	g_Vehicles[vehID] = nil
 end
 
 -----------------------------

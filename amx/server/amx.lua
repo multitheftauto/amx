@@ -121,7 +121,6 @@ function loadAMX(fileName, res)
 	g_LoadedAMXs[amx.name] = amx
 
 	amx.pickups = {}
-	amx.vehicles = {}
 	amx.objects = {}
 	amx.playerobjects = {}
 	amx.timers = {}
@@ -162,6 +161,16 @@ function loadAMX(fileName, res)
 end
 addEvent('onAMXStart')
 
+function destroyGlobalElements()
+	for i,vehinfo in pairs(g_Vehicles) do
+		if vehinfo.respawntimer then
+			killTimer(vehinfo.respawntimer)
+			vehinfo.respawntimer = nil
+			removeElem(g_Vehicles, vehinfo.elem)
+		end
+	end
+end
+
 function unloadAMX(amx, notifyClient)
 	outputDebugString('Unloading ' .. amx.name .. '.amx')
 
@@ -175,17 +184,10 @@ function unloadAMX(amx, notifyClient)
 
 	amxUnload(amx.cptr)
 
-	for i,elemtype in ipairs({'pickups', 'vehicles', 'objects', 'gangzones','bots','markers','textlabels','textdraws'}) do
+	for i,elemtype in ipairs({'pickups', 'objects', 'gangzones','bots','markers','textlabels','textdraws'}) do
 		for id,data in pairs(amx[elemtype]) do
 			removeElem(amx, elemtype, data.elem)
 			destroyElement(data.elem)
-		end
-	end
-
-	for i,vehinfo in pairs(amx.vehicles) do
-		if vehinfo.respawntimer then
-			killTimer(vehinfo.respawntimer)
-			vehinfo.respawntimer = nil
 		end
 	end
 

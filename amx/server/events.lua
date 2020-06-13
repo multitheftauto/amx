@@ -385,15 +385,15 @@ function respawnStaticVehicle(vehicle)
 	if not isElement(vehicle) then
 		return
 	end
-	local amx, vehID = getElemAMX(vehicle), getElemID(vehicle)
-	if not amx or not amx.vehicles[vehID] then
+	local vehID = getElemID(vehicle)
+	if not g_Vehicles[vehID] then
 		return
 	end
-	if isTimer(amx.vehicles[vehID].respawntimer) then
-		killTimer(amx.vehicles[vehID].respawntimer)
+	if isTimer(g_Vehicles[vehID].respawntimer) then
+		killTimer(g_Vehicles[vehID].respawntimer)
 	end
-	amx.vehicles[vehID].respawntimer = nil
-	local spawninfo = amx.vehicles[vehID].spawninfo
+	g_Vehicles[vehID].respawntimer = nil
+	local spawninfo = g_Vehicles[vehID].spawninfo
 	spawnVehicle(vehicle, spawninfo.x, spawninfo.y, spawninfo.z, 0, 0, spawninfo.angle)
 	procCallInternal(amx, 'OnVehicleSpawn', vehID)
 end
@@ -401,10 +401,6 @@ end
 addEventHandler('onVehicleEnter', root,
 	function(player, seat, jacked)
 		local vehID = getElemID(source)
-		local amx = getElemAMX(source)
-		if not amx then
-			return
-		end
 		if isPed(player) then
 			local pedID = getElemID(player)
 			g_Bots[pedID].vehicle = source
@@ -415,14 +411,14 @@ addEventHandler('onVehicleEnter', root,
 		g_Players[playerID].vehicle = source
 		setPlayerState(player, seat == 0 and PLAYER_STATE_DRIVER or PLAYER_STATE_PASSENGER)
 
-		if amx.vehicles[vehID] and amx.vehicles[vehID].respawntimer then
-			killTimer(amx.vehicles[vehID].respawntimer)
-			amx.vehicles[vehID].respawntimer = nil
+		if g_Vehicles[vehID] and g_Vehicles[vehID].respawntimer then
+			killTimer(g_Vehicles[vehID].respawntimer)
+			g_Vehicles[vehID].respawntimer = nil
 		end
 
 		if ManualVehEngineAndLights then
 			if (getVehicleType(source) ~= "Plane" and getVehicleType(source) ~= "Helicopter") then
-				setVehicleEngineState(source, amx.vehicles[vehID].engineState)
+				setVehicleEngineState(source, g_Vehicles[vehID].engineState)
 			end
 		end
 	end
@@ -447,11 +443,7 @@ addEventHandler('onVehicleStartEnter', root,
 
 addEventHandler('onVehicleExit', root,
 	function(player, seat, jacker)
-		local amx = getElemAMX(source)
 		local vehID = getElemID(source)
-		if not amx then
-			return
-		end
 
 		if isPed(player) then
 			local pedID = getElemID(player)
@@ -469,11 +461,11 @@ addEventHandler('onVehicleExit', root,
 				return
 			end
 		end
-		if amx.vehicles[vehID] and amx.vehicles[vehID].respawntimer then
-			killTimer(amx.vehicles[vehID].respawntimer)
-			amx.vehicles[vehID].respawntimer = nil
+		if g_Vehicles[vehID] and g_Vehicles[vehID].respawntimer then
+			killTimer(g_Vehicles[vehID].respawntimer)
+			g_Vehicles[vehID].respawntimer = nil
 		end
-		amx.vehicles[vehID].respawntimer = setTimer(respawnStaticVehicle, amx.vehicles[vehID].respawndelay, 1, source)
+		g_Vehicles[vehID].respawntimer = setTimer(respawnStaticVehicle, g_Vehicles[vehID].respawndelay, 1, source)
 	end
 )
 
@@ -503,19 +495,15 @@ addEventHandler('onVehicleStartExit', root,
 
 addEventHandler('onVehicleExplode', root,
 	function()
-		local amx = getElemAMX(source)
 		local vehID = getElemID(source)
-		if not amx then
-			return
-		end
 
 		procCallOnAll('OnVehicleDeath', vehID, 0)		-- NOES, MY VEHICLE DIED
 
-		if amx.vehicles[vehID].respawntimer then
-			killTimer(amx.vehicles[vehID].respawntimer)
-			amx.vehicles[vehID].respawntimer = nil
+		if g_Vehicles[vehID].respawntimer then
+			killTimer(g_Vehicles[vehID].respawntimer)
+			g_Vehicles[vehID].respawntimer = nil
 		end
-		amx.vehicles[vehID].respawntimer = setTimer(respawnStaticVehicle, amx.vehicles[vehID].respawndelay, 1, source)
+		g_Vehicles[vehID].respawntimer = setTimer(respawnStaticVehicle, g_Vehicles[vehID].respawndelay, 1, source)
 	end
 )
 

@@ -253,19 +253,19 @@ function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnD
 
 		setVehicleColor(vehicle, color1, color2, 0, 0)
 	end
-	local vehID = addElem(amx, 'vehicles', vehicle)
+	local vehID = addElem(g_Vehicles, vehicle)
 	if respawnDelay < 0 then
 		respawnDelay = 120
 	end
-	amx.vehicles[vehID].respawndelay = respawnDelay*1000
-	amx.vehicles[vehID].spawninfo = { x = x, y = y, z = z, angle = angle }
+	g_Vehicles[vehID].respawndelay = respawnDelay*1000
+	g_Vehicles[vehID].spawninfo = { x = x, y = y, z = z, angle = angle }
 	if ManualVehEngineAndLights then
 		if (getVehicleType(vehicle) ~= "Plane" and getVehicleType(vehicle) ~= "Helicopter") then
 			setVehicleEngineState(vehicle, false)
 			for i=0, 4 do
 				setVehicleLightState(vehicle, i, 0)
 			end
-			amx.vehicles[vehID].engineState = false
+			g_Vehicles[vehID].engineState = false
 		end
 	end
 	return vehID
@@ -433,7 +433,7 @@ end
 
 function DestroyVehicle(amx, vehicle)
 	clientCall(root, 'DestroyVehicle', amx.name, getElemID(vehicle))
-	removeElem(amx, 'vehicles', vehicle)
+	removeElem(g_Vehicles, vehicle)
 	local vehicleID = getElemID(vehicle)
 	for i,playerdata in pairs(g_Players) do
 		playerdata.streamedVehicles[vehicleID] = nil
