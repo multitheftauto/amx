@@ -201,8 +201,7 @@ function AddPlayerClothes(amx, player, type, index)
 end
 
 local function housePickup()
-	local amx = getElemAMX(source)
-	procCallInternal(amx, 'OnPlayerPickUpPickup', getElemID(player), getElemID(source))
+	procCallOnAll('OnPlayerPickUpPickup', getElemID(player), getElemID(source))
 	cancelEvent()
 end
 function AddStaticPickup(amx, model, type, x, y, z)
@@ -234,7 +233,7 @@ function AddStaticPickup(amx, model, type, x, y, z)
 		-- house pickups don't disappear on pickup
 		addEventHandler('onPickupUse', pickup, housePickup, false)
 	end
-	return addElem(amx, 'pickups', pickup)
+	return addElem(g_Pickups, pickup)
 end
 
 function AddStaticVehicle(amx, model, x, y, z, angle, color1, color2)
@@ -422,7 +421,7 @@ function DestroyObject(amx, object)
 end
 
 function DestroyPickup(amx, pickup)
-	removeElem(amx, 'pickups', pickup)
+	removeElem(g_Pickups, pickup)
 	destroyElement(pickup)
 end
 

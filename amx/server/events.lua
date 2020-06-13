@@ -427,8 +427,7 @@ addEventHandler('onVehicleEnter', root,
 addEventHandler('onVehicleStartEnter', root,
 	function(player, seat, jacked)
 		local vehID = getElemID(source)
-		local amx = getElemAMX(source)
-		if not amx then
+		if not vehID then
 			return
 		end
 		if isPed(player) then
@@ -437,7 +436,7 @@ addEventHandler('onVehicleStartEnter', root,
 			return
 		end
 		local playerID = getElemID(player)
-		procCallInternal(amx, 'OnPlayerEnterVehicle', playerID, vehID, seat ~= 0 and 1 or 0)
+		procCallOnAll('OnPlayerEnterVehicle', playerID, vehID, seat ~= 0 and 1 or 0)
 	end
 )
 
@@ -471,9 +470,8 @@ addEventHandler('onVehicleExit', root,
 
 addEventHandler('onVehicleStartExit', root,
 	function(player, seat, jacked, door)
-		local amx = getElemAMX(source)
 		local vehID = getElemID(source)
-		if not amx then
+		if not vehID then
 			return
 		end
 
@@ -509,9 +507,8 @@ addEventHandler('onVehicleExplode', root,
 
 addEventHandler('onVehicleDamage', root,
 	function(loss)
-		local amx = getElemAMX(source)
 		local vehID = getElemID(source)
-		if not amx then
+		if not vehID then
 			return
 		end
 
@@ -593,8 +590,7 @@ addEventHandler('onPickupUse', root,
 			return
 		end
 
-		local amx = getElemAMX(pickup)
-		procCallInternal(amx, 'OnPlayerPickUpPickup', getElemID(player), getElemID(pickup))
+		procCallOnAll('OnPlayerPickUpPickup', getElemID(player), getElemID(pickup))
 
 		if model == 370 then
 			-- Jetpack pickup

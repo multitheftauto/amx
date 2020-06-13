@@ -120,7 +120,6 @@ function loadAMX(fileName, res)
 
 	g_LoadedAMXs[amx.name] = amx
 
-	amx.pickups = {}
 	amx.objects = {}
 	amx.playerobjects = {}
 	amx.timers = {}
@@ -166,7 +165,13 @@ function destroyGlobalElements()
 		if vehinfo.respawntimer then
 			killTimer(vehinfo.respawntimer)
 			vehinfo.respawntimer = nil
-			removeElem(g_Vehicles, vehinfo.elem)
+		end
+	end
+
+	for i, elemtype in ipairs({g_Vehicles, g_Pickups}) do
+		for id, data in pairs(elemtype) do
+			removeElem(elemtype, data.elem)
+			destroyElement(data.elem)
 		end
 	end
 end
@@ -178,13 +183,14 @@ function unloadAMX(amx, notifyClient)
 		procCallInternal(amx, 'OnGameModeExit')
 		fadeCamera(root, false, 0)
 		ShowPlayerMarkers(amx, false)
+		destroyGlobalElements()
 	elseif amx.type == 'filterscript' then
 		procCallInternal(amx, 'OnFilterScriptExit')
 	end
 
 	amxUnload(amx.cptr)
 
-	for i,elemtype in ipairs({'pickups', 'objects', 'gangzones','bots','markers','textlabels','textdraws'}) do
+	for i,elemtype in ipairs({'objects', 'gangzones','bots','markers','textlabels','textdraws'}) do
 		for id,data in pairs(amx[elemtype]) do
 			removeElem(amx, elemtype, data.elem)
 			destroyElement(data.elem)
