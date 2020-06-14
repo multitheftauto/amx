@@ -403,8 +403,8 @@ end
 -- Player objects
 function RemoveBuildingForPlayer(model, x, y, z, radius)
 	if model == -1 then
-		for i=550,20000 do --Remove all world models if they sent -1
-			removeWorldModel(i,20000,0,0,0)
+		for i=550,20000 do --Remove all world models around radius if they sent -1
+			removeWorldModel(i, radius, x, y, z)
 		end
 		return true --Don't run the rest of the code
 	end
@@ -790,26 +790,64 @@ local textDrawColorMapping = {
 }
 
 local textDrawFonts = {
-	[0] = { font = 'beckett', lsizemul = 3 },			-- TextDraw letter size -> dxDrawText scale multiplier
-	[1] = { font = 'default-bold', lsizemul = 3 },
-	[2] = { font = 'bankgothic',   lsizemul = 2 },
-	[3] = { font = 'default-bold', lsizemul = 3 }
+	[0] = { font = 'beckett', lsizemul = 1.25 },			-- TextDraw letter size -> dxDrawText scale multiplier
+	[1] = { font = 'default-bold', lsizemul = 1.25 },
+	[2] = { font = 'bankgothic',   lsizemul = 1.5 },
+	[3] = { font = 'default-bold', lsizemul = 1.25 }
 }
+
+function visibleTextDrawsExist()
+	for name,amx in pairs(g_AMXs) do
+		if table.find(amx.textdraws, 'visible', true) then
+			return true
+		end
+	end
+	return false
+end
+
+function showTextDraw(textdraw)
+	if not visibleTextDrawsExist() then
+		addEventHandler('onClientRender', root, renderTextDraws)
+	end
+	textdraw.visible = true
+end
+
+function hideTextDraw(textdraw)
+	textdraw.visible = false
+	if not visibleTextDrawsExist() then
+		removeEventHandler('onClientRender', root, renderTextDraws)
+	end
+end
+
+function hudGetVerticalScale()
+	return 0.002232143
+end
+
+function hudGetHorizontalScale()
+	return 0.0015625
+end
 
 function initTextDraw(textdraw)
 	local amx = textdraw.amx
 	textdraw.id = textdraw.id or (#amx.textdraws + 1)
 	amx.textdraws[textdraw.id] = textdraw
 
-	local lineHeight = 60*(textdraw.lsize or 0.5)
+	local scale = (textdraw.lwidth or 0.5)
+	local tWidth, tHeight = dxGetTextSize(textdraw.text, scale)
+	local lineHeight = (tHeight or 0.25) / 2 --space between lines (vertical) also used to calculate size of the box if any
+	local lineWidth = (textdraw.lwidth or 0.25) --space between words (horizontal)
 
+	--Set the height based on the text size
+	textdraw.theight = tHeight
+	textdraw.twidth = tWidth
+	
 	local text = textdraw.text:gsub('~k~~(.-)~', getSAMPBoundKey)
 	local lines = {}
 	local pos, stop, c
 	stop = 0
 	while true do
 		pos, stop, c = text:find('~(%a)~', stop + 1)
-		if c == 'n' then
+		if c == 'n' then --If we found a new line
 			lines[#lines + 1] = text:sub(1, pos - 1)
 			text = text:sub(stop + 1)
 			stop = 0
@@ -825,12 +863,12 @@ function initTextDraw(textdraw)
 	textdraw.parts = {}
 	textdraw.width = 0
 	local font = textDrawFonts[textdraw.font and textdraw.font >= 0 and textdraw.font <= #textDrawFonts and textdraw.font or 0]
-	local scale = (textdraw.lsize or 0.5) * font.lsizemul
 	font = font.font
 
-	local curX
-	local curY = textdraw.y or screenHeight/2 - #lines*lineHeight/2
+	local TDXPos = textdraw.x or 640 - #lines*lineWidth
+	local TDYPos = textdraw.y or 448 - #lines*lineHeight
 
+	--Process the lines we previously found
 	for i,line in ipairs(lines) do
 		local colorpos = 1
 		local color
@@ -871,13 +909,14 @@ function initTextDraw(textdraw)
 		textdraw.width = math.max(textdraw.width, textWidth)
 		if textdraw.align == 1 then
 			-- left
-			curX = textdraw.x
+			TDXPos = textdraw.x
 		elseif textdraw.align == 2 or not textdraw.align then
 			-- center
-			curX = screenWidth/2 - textWidth/2
+			--outputConsole(string.format("Got centered text %d %d %s", TDXPos, TDYPos, textdraw.text))
+			TDXPos = 640/2 - textWidth/2
 		elseif textdraw.align == 3 then
 			-- right
-			curX = textdraw.x - textWidth
+			TDXPos = textdraw.x - textWidth
 		end
 
 		color = textdraw.color or tocolor(255, 255, 255)
@@ -890,65 +929,61 @@ function initTextDraw(textdraw)
 				colorpos = colorpos + 7
 			end
 			nextcolorpos = line:find('#%x%x%x%x%x%x', colorpos) or line:len() + 1
-			local part = { text = line:sub(colorpos, nextcolorpos - 1), x = curX, y = curY, color = color }
+			local part = { text = line:sub(colorpos, nextcolorpos - 1), x = TDXPos, y = TDYPos, color = color }
 			table.insert(textdraw.parts, part)
-			curX = curX + dxGetTextWidth(part.text, scale, font)
+			TDXPos = TDXPos + dxGetTextWidth(part.text, scale, font)
 			colorpos = nextcolorpos
 		end
-		curY = curY + lineHeight
+		TDYPos = TDYPos + lineHeight
 	end
-	textdraw.absheight = lineHeight*#lines
-end
-
-function visibleTextDrawsExist()
-	for name,amx in pairs(g_AMXs) do
-		if table.find(amx.textdraws, 'visible', true) then
-			return true
-		end
-	end
-	return false
-end
-
-function showTextDraw(textdraw)
-	if not visibleTextDrawsExist() then
-		addEventHandler('onClientRender', root, renderTextDraws)
-	end
-	textdraw.visible = true
-end
-
-function hideTextDraw(textdraw)
-	textdraw.visible = false
-	if not visibleTextDrawsExist() then
-		removeEventHandler('onClientRender', root, renderTextDraws)
-	end
+	textdraw.absheight = tHeight*#lines
 end
 
 function renderTextDraws()
 	for name,amx in pairs(g_AMXs) do
 		for id,textdraw in pairs(amx.textdraws) do
-			if textdraw.visible and textdraw.parts and not (textdraw.text:match('^%s*$') and not textdraw.usebox) then
+			if textdraw.visible and textdraw.parts and not (textdraw.text:match('^%s*$')) then-- and not textdraw.usebox) then
 				local font = textDrawFonts[textdraw.font and textdraw.font >= 0 and textdraw.font <= #textDrawFonts and textdraw.font or 0]
-				local scale = (textdraw.lsize or 0.5) * font.lsizemul
+				if textdraw.upscalex == nil then
+					textdraw.upscalex = 1.0
+				end
+				if textdraw.upscaley == nil then
+					textdraw.upscaley = 1.0
+				end
+
+				local letterHeight = (textdraw.lheight * textdraw.upscaley or 0.25)
+				local letterWidth = (textdraw.lwidth * textdraw.upscalex or 0.5)
+
+				local vertHudScale = hudGetVerticalScale()
+				local horHudScale = hudGetHorizontalScale()
+
+				local scaley = SCREEN_SCALE_Y(screenHeight * vertHudScale *  letterHeight * 0.175) --This should replicate what the game does
+				local scalex = SCREEN_SCALE_X(screenWidth * horHudScale *  letterWidth * 0.35)
+				
+				local sourceY = screenHeight - ((DEFAULT_SCREEN_HEIGHT - textdraw.y) * (screenHeight * vertHudScale))
+				local sourceX = screenWidth - ((DEFAULT_SCREEN_WIDTH - textdraw.x) * (screenWidth * horHudScale))
+
 				font = font.font
+				--Process box alignments
 				if textdraw.usebox then
 					local boxcolor = textdraw.boxcolor or tocolor(0, 0, 0, 120*(textdraw.alpha or 1))
 					local x, y, w, h
-					if textdraw.align == 1 then
+					if textdraw.align == 1 then --left
 						x = textdraw.x
 						if textdraw.boxsize then
-							w = textdraw.boxsize[1] - x
+							w = textdraw.boxsize[1]-- - x
 						else
 							w = textdraw.width
 						end
-					elseif textdraw.align == 2 then
+					elseif textdraw.align == 2 then --centered
 						if textdraw.boxsize then
-							x = screenWidth/2 - textdraw.boxsize[1]/2
+							x = textdraw.boxsize[1]/2
 							w = textdraw.boxsize[1]
 						else
 							x = textdraw.x
 							w = textdraw.width
 						end
-					elseif textdraw.align == 3 then
+					elseif textdraw.align == 3 then --right
 						if textdraw.boxsize then
 							w = textdraw.x - textdraw.boxsize[1]
 						else
@@ -957,21 +992,33 @@ function renderTextDraws()
 						x = textdraw.x - w
 					end
 					y = textdraw.y
+					
+					--Calculates box height
 					if textdraw.boxsize and textdraw.text:match('^%s*$') then
 						h = textdraw.boxsize[2]
 					else
 						h = textdraw.absheight
 					end
-					dxDrawRectangle(x - 3, y - 3, w + 6, h + 6, boxcolor)
+
+					dxDrawRectangle(sourceX, sourceY, w * getAspectRatio(), h * getAspectRatio(), boxcolor)
+					--outputConsole(string.format("Drawing textdraw box: sourceX: %f, sourceY: %f", sourceX, sourceY))
 				end
+					
 				for i,part in pairs(textdraw.parts) do
-					if textdraw.shade and textdraw.shade > 0 then
-						dxDrawText(part.text, part.x + 5, part.y + 5, part.x + 5, part.y + 5, tocolor(0, 0, 0, 100*(textdraw.alpha or 1)), scale, font)
+
+					sourceY = screenHeight - ((DEFAULT_SCREEN_HEIGHT - part.y) * (screenHeight * vertHudScale))
+					sourceX = screenWidth - ((DEFAULT_SCREEN_WIDTH - part.x) * (screenWidth * horHudScale))
+
+					--outputConsole(string.format("text: %s partx: %f, party: %f sourceX: %f, sourceY: %f", part.text, part.x, part.y, sourceX, sourceY))
+
+					if textdraw.shade and textdraw.shade > 0 then --Draw the shadow
+						dxDrawText(part.text, sourceX + 5, sourceY + 5, sourceX + 5, sourceY + 5, tocolor(0, 0, 0, 100*(textdraw.alpha or 1)), scalex, scaley, font)
 					end
+					--Draw the actual text
 					drawBorderText(
-						part.text, part.x, part.y,
+						part.text, sourceX, sourceY,
 						textdraw.alpha and setcoloralpha(part.color, math.floor(textdraw.alpha*255)) or part.color,
-						scale, font, math.ceil((textdraw.outlinesize or (font == 'bankgothic' and 2 or 1))*scale),
+						scalex, scaley, font, textdraw.outlinesize,
 						textdraw.outlinecolor
 					)
 				end
@@ -996,12 +1043,29 @@ function GameTextForPlayer(amxName, text, time, style)
 	end
 	local amx = g_AMXs[amxName]
 	gameText = { amx = amx, text = text, font = 2 }
-	if style == 2 then
-		gameText.x = 0.9*screenWidth
-		gameText.y = 0.7*screenHeight
+	if style == 1 then
+		gameText.x = 0.9 * 640
+		gameText.y = 0.8 * 448
+		gameText.lheight = 0.5
+		gameText.lwidth = 1.0
 		gameText.align = 3
-	elseif style == 6 then
-		gameText.y = 0.2*screenHeight
+		gameText.upscaley = 3.0
+		gameText.upscalex = 1.0
+		time = 8000 --Fades out after 8 seconds regardless of time set according to the wiki
+	elseif style == 2 then
+		gameText.x = 0.9 * 640
+		gameText.y = 0.7 * 448
+		gameText.align = 3
+	elseif style >= 3 then
+		--★
+		-- GTA replaces these with stars
+		gameText.text = string.gsub(text, "]", "★")
+		gameText.x = 0.5 * 640
+		gameText.y = 0.2 * 448
+		gameText.lheight = 0.5
+		gameText.lwidth = 1.0
+		gameText.align = 2
+		gameText.upscaley = 2.5
 	end
 	initTextDraw(gameText)
 	showTextDraw(gameText)
@@ -1103,8 +1167,8 @@ function TextDrawCreate(amxName, id, textdraw)
 	textdraw.id = id
 	amx.textdraws[id] = textdraw
 	if textdraw.x then
-		textdraw.x = textdraw.x*screenWidth
-		textdraw.y = textdraw.y*screenHeight
+		textdraw.x = textdraw.x
+		textdraw.y = textdraw.y
 	end
 	for prop,val in pairs(textdraw) do
 		TextDrawPropertyChanged(amxName, id, prop, val, true)
@@ -1124,8 +1188,8 @@ function TextDrawPropertyChanged(amxName, id, prop, newval, skipInit)
 	local textdraw = g_AMXs[amxName].textdraws[id]
 	textdraw[prop] = newval
 	if prop == 'boxsize' then
-		textdraw.boxsize[1] = textdraw.boxsize[1]*screenWidth
-		textdraw.boxsize[2] = textdraw.boxsize[2]*screenHeight
+		textdraw.boxsize[1] = textdraw.boxsize[1]
+		textdraw.boxsize[2] = textdraw.boxsize[2]
 	elseif prop:match('color') then
 		textdraw[prop] = tocolor(unpack(newval))
 	end

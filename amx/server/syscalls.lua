@@ -1517,7 +1517,8 @@ function TextDrawColor(amx, textdraw, r, g, b, a)
 end
 
 function TextDrawCreate(amx, x, y, text)
-	local textdraw = { x = x/640, y = y/480, shadow = {align=1, text=text, font=1, lsize=0.5} }
+	outputDebugString('TextDrawCreate called with args ' .. x .. ' ' .. y .. ' ' .. text)
+	local textdraw = { x = x, y = y, shadow = {align=1, text=text, font=1, lwidth=0.5, lheight = 0.5} }
 	local id = table.insert(amx.textdraws, textdraw)
 	setmetatable(
 		textdraw,
@@ -1624,7 +1625,8 @@ function TextDrawHideForPlayer(amx, player, textdrawID)
 end
 
 function TextDrawLetterSize(amx, textdraw, width, height)
-	textdraw.lsize = width
+	textdraw.lwidth = width
+	textdraw.lheight = height
 end
 
 function TextDrawSetOutline(amx, textdraw, size)
@@ -1661,7 +1663,7 @@ function TextDrawShowForPlayer(amx, player, textdrawID)
 end
 
 function TextDrawTextSize(amx, textdraw, x, y)
-	textdraw.boxsize = { x/640, y/480 }
+	textdraw.boxsize = { x, y } --Game does 448 not 480
 end
 
 function TextDrawUseBox(amx, textdraw, usebox)
