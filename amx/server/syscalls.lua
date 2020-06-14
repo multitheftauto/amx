@@ -1547,54 +1547,163 @@ function TextDrawCreate(amx, x, y, text)
 end
 
 --Mainly just wrappers to the other non-player functions
-function PlayerTextDrawDestroy(amx, playerid, textdrawID)
-  TextDrawDestroy(amx, textdrawID)
+function PlayerTextDrawDestroy(amx, player, textdrawID)
+  	if not IsPlayerTextDrawValid(amx, player, textdrawID) then
+		return false
+	end
+	clientCall(player, 'TextDrawDestroy', amx.name, textdrawID)
+	amx.playertextdraws[player][textdrawID] = nil
 end
-function PlayerTextDrawShow(amx, playerid, textdrawID)
-  TextDrawShowForPlayer(amx, playerid, textdrawID)
+function PlayerTextDrawShow(amx, player, textdrawID)
+  	if not IsPlayerTextDrawValid(amx, player, textdrawID) then
+		return false
+	end
+  	local textdraw = amx.playertextdraws[player][textdrawID]
+	local playerdata = g_Players[getElemID(player)]
+	playerdata.visibletextdraws = playerdata.visibletextdraws or {}
+	if not textdraw or playerdata.visibletextdraws[textdraw] then
+		return
+	end
+	clientCall(player, 'TextDrawShowForPlayer', amx.name, textdrawID)
+	playerdata.visibletextdraws[textdraw] = true
+	return true
 end
-function PlayerTextDrawHide(amx, playerid, textdrawID)
-  TextDrawHideForPlayer(amx, playerid, textdrawID)
+function PlayerTextDrawHide(amx, player, textdrawID)
+  	if not IsPlayerTextDrawValid(amx, player, textdrawID) then
+		return false
+	end
+  	local textdraw = amx.playertextdraws[player][textdrawID]
+	local playerdata = g_Players[getElemID(player)]
+	playerdata.visibletextdraws = playerdata.visibletextdraws or {}
+	if not textdraw or not playerdata.visibletextdraws[textdraw] then
+		return
+	end
+	clientCall(player, 'TextDrawHideForPlayer', amx.name, textdrawID)
+	playerdata.visibletextdraws[textdraw] = nil
 end
-function PlayerTextDrawBoxColor(amx, playerid, textdrawID, r, g, b, a)
-  TextDrawBoxColor(amx, textdrawID, r, g, b, a)
+function PlayerTextDrawBoxColor(amx, player, textdrawID, r, g, b, a)
+	if not IsPlayerTextDrawValid(amx, player, textdrawID) then
+		return false
+	end
+	amx.playertextdraws[player][textdrawID].boxcolor = { r, g, b, a }
 end
-function PlayerTextDrawUseBox(amx, playerid, textdrawID, usebox)
-  TextDrawUseBox(amx, textdrawID, usebox)
+function PlayerTextDrawUseBox(amx, player, textdrawID, usebox)
+	if not IsPlayerTextDrawValid(amx, player, textdrawID) then
+		return false
+	end
+	amx.playertextdraws[player][textdrawID].usebox = usebox
+	return true
 end
-function PlayerTextDrawTextSize(amx, playerid, textdrawID, x, y)
-  TextDrawTextSize(amx, textdrawID, x, y)
+function PlayerTextDrawTextSize(amx, player, textdrawID, x, y)
+	if not IsPlayerTextDrawValid(amx, player, textdrawID) then
+		return false
+	end
+	amx.playertextdraws[player][textdrawID].boxsize = { x, y }
+	return true
 end
-function PlayerTextDrawLetterSize(amx, playerid, textdrawID, x, y)
-  TextDrawLetterSize(amx, textdrawID, width, height)
+function PlayerTextDrawLetterSize(amx, player, textdrawID, x, y)
+	if not IsPlayerTextDrawValid(amx, player, textdrawID) then
+		return false
+	end
+	amx.playertextdraws[player][textdrawID].lwidth = width
+	amx.playertextdraws[player][textdrawID].lheight = height
+	return true
 end
-function CreatePlayerTextDraw(amx, playerid, x, y, text)
-  TextDrawCreate(amx, x, y, text)
+function IsPlayerTextDrawValid(amx, player, textdrawID)
+	if not amx.playertextdraws[player] then
+		return false
+	end
+	local textdraw = amx.playertextdraws[player] and amx.playertextdraws[player][textdrawID]
+	if not textdraw then
+		return false
+	end
+	return true
+end
+function CreatePlayerTextDraw(amx, player, x, y, text)
+	if not amx.playertextdraws[player] then
+		amx.playertextdraws[player] = {}
+	end
+	outputDebugString('CreatePlayerTextDraw called with args ' .. x .. ' ' .. y .. ' ' .. text)
+	local textdraw = { x = x, y = y, shadow = {align=1, text=text, font=1, lwidth=0.5, lheight = 0.5} }
+	local id = #amx.textdraws + table.insert(amx.playertextdraws[player], textdraw) --I want the ids to always be greater than the other textdraws so they don't collide when trying to use certain functions to hide them
+	setmetatable(
+		textdraw,
+		{
+			__index = textdraw.shadow,
+			__newindex = function(t, k, v)
+				local different
+				if not t.shadow[k] then
+					different = true
+				else
+					if type(v) == 'table' then
+						different = not table.cmp(v, t.shadow[k])
+					else
+						different = v ~= t.shadow[k]
+					end
+				end
+				if different then
+					clientCall(player, 'TextDrawPropertyChanged', amx.name, id, k, v)
+					t.shadow[k] = v
+				end
+			end
+		}
+	)
+	clientCall(player, 'TextDrawCreate', amx.name, id, table.deshadowize(textdraw, true))
+	return id
 end
 function PlayerTextDrawAlignment(amx, playerid, textdrawID, align)
-  TextDrawAlignment(amx, textdrawID, align)
+	if not IsPlayerTextDrawValid(amx, player, textdrawID) then
+		return false
+	end
+	amx.playertextdraws[player][textdrawID].align = (align == 0 and 1 or align)
+	return true
 end
-function PlayerTextDrawBackgroundColor(amx, playerid, textdraw, r, g, b, a)
-  TextDrawBackgroundColor(amx, textdraw, r, g, b, a)
+function PlayerTextDrawBackgroundColor(amx, playerid, textdrawID, r, g, b, a)
+	if not IsPlayerTextDrawValid(amx, player, textdrawID) then
+		return false
+	end
+	amx.playertextdraws[player][textdrawID].outlinecolor = { r, g, b, a }
+	return true
 end
-function PlayerTextDrawFont(amx, playerid, textdraw, font)
-  TextDrawFont(amx, textdraw, font)
+function PlayerTextDrawFont(amx, playerid, textdrawID, font)
+	if not IsPlayerTextDrawValid(amx, player, textdrawID) then
+		return false
+	end
+	amx.playertextdraws[player][textdrawID].font = font
+	return true
 end
-function PlayerTextDrawColor(amx, playerid, textdraw, r, g, b, a)
-  TextDrawColor(amx, textdraw, r, g, b, a)
+function PlayerTextDrawColor(amx, playerid, textdrawID, r, g, b, a)
+  	if not IsPlayerTextDrawValid(amx, player, textdrawID) then
+		return false
+	end
+	amx.playertextdraws[player][textdrawID].color = { r, g, b }
+	return true
 end
-function PlayerTextDrawSetOutline(amx, playerid, textdraw, size)
-  TextDrawSetOutline(amx, textdraw, size)
+function PlayerTextDrawSetOutline(amx, playerid, textdrawID, size)
+	if not IsPlayerTextDrawValid(amx, player, textdrawID) then
+		return false
+	end
+	amx.playertextdraws[player][textdrawID].outlinesize = size
+	return true
 end
-function PlayerTextDrawSetProportional(amx, playerid, textdraw, proportional)
-  TextDrawSetProportional(amx, textdraw, proportional)
+function PlayerTextDrawSetProportional(amx, playerid, textdrawID, proportional)
+  --TextDrawSetProportional(amx, textdraw, proportional)
 end
-function PlayerTextDrawSetShadow(amx, playerid, textdraw, size)
-   TextDrawSetShadow(amx, textdraw, size)
+function PlayerTextDrawSetShadow(amx, playerid, textdrawID, size)
+   	if not IsPlayerTextDrawValid(amx, player, textdrawID) then
+		return false
+	end
+	amx.playertextdraws[player][textdrawID].shade = size
+	return true
 end
-function PlayerTextDrawSetString(amx, playerid, textdraw, str)
-   TextDrawSetString(amx, textdraw, str)
+function PlayerTextDrawSetString(amx, playerid, textdrawID, str)
+   	if not IsPlayerTextDrawValid(amx, player, textdrawID) then
+		return false
+	end
+	amx.playertextdraws[player][textdrawID].text = str
+	return true
 end
+--End of player textdraws
 function TextDrawDestroy(amx, textdrawID)
 	if not amx.textdraws[textdrawID] then
 		return
@@ -3045,24 +3154,24 @@ g_SAMPSyscallPrototypes = {
 	TextDrawUseBox = {'x', 'b'},
 	--Player textdraws
 	PlayerTextDrawDestroy = {'p', 's'},
-  	PlayerTextDrawShow = {'p', 'x'},
-  	PlayerTextDrawHide = {'p', 'x'},
-  	PlayerTextDrawBoxColor = {'p', 'x', 'c'},
-  	PlayerTextDrawUseBox = {'p', 'x', 'i'},
-  	PlayerTextDrawTextSize = {'p', 'x', 'f', 'f'},
- 	PlayerTextDrawLetterSize = {'p', 'x', 'f', 'f'},
-	PlayerTextDrawAlignment = {'p', 'x', 'i'},
-	PlayerTextDrawBackgroundColor = {'p', 'x', 'c'},
-	PlayerTextDrawFont = {'p', 'x', 'i'},
-	PlayerTextDrawColor = {'p', 'x', 'c'},
-	PlayerTextDrawSetOutline = {'p', 'x', 'i'},
-	PlayerTextDrawSetProportional = {'p', 'x', 'i'},
-	PlayerTextDrawSetShadow = {'p', 'x', 'i'},
-	PlayerTextDrawSetString = {'p', 'x', 's'},
-	PlayerTextDrawSetPreviewModel = {'p', 'x', 'i'},
-	PlayerTextDrawSetPreviewVehCol = {'p', 'x', 'i', 'i'},
-	PlayerTextDrawSetSelectable = {'p', 'x', 'i'},
-	PlayerTextDrawSetPreviewRot = {'p', 'x', 'f', 'f', 'f', 'f'},
+  	PlayerTextDrawShow = {'p', 'i'},
+  	PlayerTextDrawHide = {'p', 'i'},
+  	PlayerTextDrawBoxColor = {'p', 'i', 'c'},
+  	PlayerTextDrawUseBox = {'p', 'i', 'i'},
+  	PlayerTextDrawTextSize = {'p', 'i', 'f', 'f'},
+ 	PlayerTextDrawLetterSize = {'p', 'i', 'f', 'f'},
+	PlayerTextDrawAlignment = {'p', 'i', 'i'},
+	PlayerTextDrawBackgroundColor = {'p', 'i', 'c'},
+	PlayerTextDrawFont = {'p', 'i', 'i'},
+	PlayerTextDrawColor = {'p', 'i', 'c'},
+	PlayerTextDrawSetOutline = {'p', 'i', 'i'},
+	PlayerTextDrawSetProportional = {'p', 'i', 'i'},
+	PlayerTextDrawSetShadow = {'p', 'i', 'i'},
+	PlayerTextDrawSetString = {'p', 'i', 's'},
+	PlayerTextDrawSetPreviewModel = {'p', 'i', 'i'},
+	PlayerTextDrawSetPreviewVehCol = {'p', 'i', 'i', 'i'},
+	PlayerTextDrawSetSelectable = {'p', 'i', 'i'},
+	PlayerTextDrawSetPreviewRot = {'p', 'i', 'f', 'f', 'f', 'f'},
 	CreatePlayerTextDraw = {'p', 'f', 'f', 's'},
 
 	TogglePlayerClock = {'p', 'b', client=true},

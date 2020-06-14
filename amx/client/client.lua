@@ -1001,7 +1001,7 @@ function renderTextDraws()
 					end
 
 					dxDrawRectangle(sourceX, sourceY, w * getAspectRatio(), h * getAspectRatio(), boxcolor)
-					--outputConsole(string.format("Drawing textdraw box: sourceX: %f, sourceY: %f", sourceX, sourceY))
+					--outputConsole(string.format("Drawing textdraw box: sourceX: %f, sourceY: %f %s", sourceX, sourceY, textdraw.text))
 				end
 					
 				for i,part in pairs(textdraw.parts) do
@@ -1035,53 +1035,67 @@ function destroyTextDraw(textdraw)
 	table.removevalue(textdraw.amx.textdraws, textdraw)
 end
 
-local gameText = false
+local gameText = {}
+local gIndex = 1
+
+function destroyAllGameTextsWithStyle(stylePassed)
+	for i = 1, gIndex do
+		if gameText[i] ~= nil and gameText[i].style == stylePassed then
+			destroyGameText(i)
+		end
+	end
+end
 
 function GameTextForPlayer(amxName, text, time, style)
-	if gameText then
-		destroyGameText()
+	if gameText[gIndex] then
+		destroyGameText(gIndex)
 	end
+
+	destroyAllGameTextsWithStyle(style) --So same styles don't overlap
+
 	local amx = g_AMXs[amxName]
-	gameText = { amx = amx, text = text, font = 2 }
+	gameText[gIndex] = { amx = amx, text = text, font = 2 }
 	if style == 1 then
-		gameText.x = 0.9 * 640
-		gameText.y = 0.8 * 448
-		gameText.lheight = 0.5
-		gameText.lwidth = 1.0
-		gameText.align = 3
-		gameText.upscaley = 3.0
-		gameText.upscalex = 1.0
+		gameText[gIndex].x = 0.9 * 640
+		gameText[gIndex].y = 0.8 * 448
+		gameText[gIndex].lheight = 0.5
+		gameText[gIndex].lwidth = 1.0
+		gameText[gIndex].align = 3
+		gameText[gIndex].upscaley = 3.0
+		gameText[gIndex].upscalex = 1.0
 		time = 8000 --Fades out after 8 seconds regardless of time set according to the wiki
 	elseif style == 2 then
-		gameText.x = 0.9 * 640
-		gameText.y = 0.7 * 448
-		gameText.align = 3
+		gameText[gIndex].x = 0.9 * 640
+		gameText[gIndex].y = 0.7 * 448
+		gameText[gIndex].align = 3
 	elseif style >= 3 then
 		--★
 		-- GTA replaces these with stars
-		gameText.text = string.gsub(text, "]", "★")
-		gameText.x = 0.5 * 640
-		gameText.y = 0.2 * 448
-		gameText.lheight = 0.5
-		gameText.lwidth = 1.0
-		gameText.align = 2
-		gameText.upscaley = 2.5
+		gameText[gIndex].text = string.gsub(text, "]", "★")
+		gameText[gIndex].x = 0.5 * 640
+		gameText[gIndex].y = 0.2 * 448
+		gameText[gIndex].lheight = 0.5
+		gameText[gIndex].lwidth = 1.0
+		gameText[gIndex].align = 2
+		gameText[gIndex].upscaley = 2.5
 	end
-	initTextDraw(gameText)
-	showTextDraw(gameText)
-	gameText.timer = setTimer(destroyGameText, time, 1)
+	gameText[gIndex].style = style
+	initTextDraw(gameText[gIndex])
+	showTextDraw(gameText[gIndex])
+	gameText[gIndex].timer = setTimer(destroyGameText, time, 1, gIndex)
+	gIndex = gIndex > 100 and 1 or gIndex + 1 --Limit to 100
 end
 
-function destroyGameText()
-	if not gameText then
+function destroyGameText(gIndex)
+	if gameText[gIndex] == nil then
 		return
 	end
-	destroyTextDraw(gameText)
-	if gameText.timer then
-		killTimer(gameText.timer)
-		gameText.timer = nil
+	destroyTextDraw(gameText[gIndex])
+	if gameText[gIndex].timer then
+		killTimer(gameText[gIndex].timer)
+		gameText[gIndex].timer = nil
 	end
-	gameText = false
+	gameText[gIndex] = nil
 end
 
 function renderTextLabels()
@@ -1199,6 +1213,9 @@ function TextDrawPropertyChanged(amxName, id, prop, newval, skipInit)
 end
 
 function TextDrawShowForPlayer(amxName, id)
+	--outputConsole(string.format("TextDrawShowForPlayer trying to show textdraw with id %d", id))
+	--outputConsole(string.format("TextDrawShowForPlayer trying to show textdraw with text %s", g_AMXs[amxName].textdraws[id].text))
+	
 	showTextDraw(g_AMXs[amxName].textdraws[id])
 end
 

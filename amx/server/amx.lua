@@ -133,7 +133,8 @@ function loadAMX(fileName, res)
 	amx.dbresults = {}
 	amx.slothbots = {}
 	amx.actors = {}
-
+	amx.playertextdraws = {}
+	
 	clientCall(root, 'addAMX', amx.name, amx.type)
 
 	-- run initialization
