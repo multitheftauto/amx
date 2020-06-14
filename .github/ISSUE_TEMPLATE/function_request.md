@@ -1,6 +1,6 @@
 ---
 name: Function request
-about: You find a function or functions in SAMP but it still doesn't work here? Please, write here.
+about: Tell us about a function that does not work here, but works in SA-MP
 labels: function
 
 ---
