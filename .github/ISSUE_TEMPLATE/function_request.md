@@ -14,8 +14,8 @@ labels: function
 **Examples of using of the function**
 <!-- Put the code with example here. If you have it. -->
 
-**Analogs in MTA**
-<!-- If you know the analog of the function or functions in MTA, please write it here. -->
+**Equivalents in MTA**
+<!-- If you know the equivalents of the function or functions in MTA, please write it here. -->
 
 **Additional information**
 <!-- The additional information can be an article about it, wiki of SAMP or something that can helps us. -->
