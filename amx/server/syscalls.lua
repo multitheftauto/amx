@@ -1580,27 +1580,20 @@ function PlayerTextDrawUseBox(amx, player, textdrawID, usebox)
 	if not IsPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
-	local pId = getElemID(player)
-	if pId ~= nil then
-		g_PlayerTextDraws[player][textdrawID].usebox = usebox
-	end
+	g_PlayerTextDraws[player][textdrawID].usebox = usebox
 	return true
 end
 function PlayerTextDrawTextSize(amx, player, textdrawID, x, y)
 	if not IsPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
-	local pId = getElemID(player)
-	if pId ~= nil then
-		g_PlayerTextDraws[player][textdrawID].boxsize = { x, y }
-	end
+	g_PlayerTextDraws[player][textdrawID].boxsize = { x, y }
 	return true
 end
 function PlayerTextDrawLetterSize(amx, player, textdrawID, x, y)
 	if not IsPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
-	local playerId = getElemID(player)
 	g_PlayerTextDraws[player][textdrawID].lwidth = width
 	g_PlayerTextDraws[player][textdrawID].lheight = height
 	return true
