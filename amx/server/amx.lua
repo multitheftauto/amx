@@ -9,6 +9,7 @@ g_Pickups = {}
 g_Markers = {}
 g_SlothBots = {}
 g_Actors = {}
+g_PlayerTextDraws  = {}
 
 function initGameModeGlobals()
 	g_PlayerClasses = {}
@@ -133,7 +134,6 @@ function loadAMX(fileName, res)
 	amx.dbresults = {}
 	amx.slothbots = {}
 	amx.actors = {}
-	amx.playertextdraws = {}
 	
 	clientCall(root, 'addAMX', amx.name, amx.type)
 

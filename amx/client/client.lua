@@ -832,6 +832,9 @@ function initTextDraw(textdraw)
 	textdraw.id = textdraw.id or (#amx.textdraws + 1)
 	amx.textdraws[textdraw.id] = textdraw
 
+	-- GTA replaces underscores with spaces
+	textdraw.text = string.gsub(textdraw.text, "_", " ")
+
 	local scale = (textdraw.lwidth or 0.5)
 	local tWidth, tHeight = dxGetTextSize(textdraw.text, scale)
 	local lineHeight = (tHeight or 0.25) / 2 --space between lines (vertical) also used to calculate size of the box if any
@@ -1213,8 +1216,8 @@ function TextDrawPropertyChanged(amxName, id, prop, newval, skipInit)
 end
 
 function TextDrawShowForPlayer(amxName, id)
-	--outputConsole(string.format("TextDrawShowForPlayer trying to show textdraw with id %d", id))
-	--outputConsole(string.format("TextDrawShowForPlayer trying to show textdraw with text %s", g_AMXs[amxName].textdraws[id].text))
+	outputConsole(string.format("TextDrawShowForPlayer trying to show textdraw with id %d", id))
+	outputConsole(string.format("TextDrawShowForPlayer trying to show textdraw with text %s", g_AMXs[amxName].textdraws[id].text))
 	
 	showTextDraw(g_AMXs[amxName].textdraws[id])
 end
