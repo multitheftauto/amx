@@ -1038,7 +1038,7 @@ function isCustomPickup(elem)
 	return false
 end
 
-function depricated(native, version, additional)
+function deprecated(native, version, additional)
 	if native ~= nil then
 		if version ~= '' or version ~= nil then 
 			outputDebugString(native..' has been deprecated since '..version..' and will no longer be available.')

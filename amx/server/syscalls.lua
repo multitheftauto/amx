@@ -275,15 +275,15 @@ function AddVehicleComponent(amx, vehicle, upgradeID)
 end
 
 function AllowAdminTeleport(amx, allow)
-	depricated('AllowAdminTeleport', '0.3d')
+	deprecated('AllowAdminTeleport', '0.3d')
 end
 
 function AllowInteriorWeapons(amx, allow)
-	depricated('AllowInteriorWeapons', '0.3d')
+	deprecated('AllowInteriorWeapons', '0.3d')
 end
 
 function AllowPlayerTeleport(amx, player, allow)
-	depricated('AllowPlayerTeleport', '0.3d')
+	deprecated('AllowPlayerTeleport', '0.3d')
 end
 
 function ApplyAnimation(amx, player, animlib, animname, fDelta, loop, lockx, locky, freeze, time, forcesync)
