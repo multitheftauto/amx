@@ -2892,11 +2892,6 @@ function SetPlayerAttachedObject(amx, player, index, modelid, bone, fOffsetX, fO
 		g_Players[playerID].attachedObjects[index] = obj
 		setElementCollisionsEnabled (obj, false)
 		setObjectScale (obj, fScaleX, fScaleY, fScaleZ)
-
-		fRotX = fRotX
-		fRotY = fRotY
-		fRotZ = fRotZ
-
 		attachElementToBone(obj, player, mtaBone, fOffsetX, fOffsetY, fOffsetZ, fRotX, fRotY, fRotZ)
 		--Todo: Implement material colors
 	else
