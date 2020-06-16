@@ -50,7 +50,7 @@ function argsToMTA(amx, prototype, ...)
 			val = amx.dbresults[val]
 		elseif vartype == 'a' then		-- 3D text label
 			val = amx.textlabels[val]
-		elseif vartype == 'y' then
+		elseif vartype == 'y' then		-- Actor
 			val = g_Actors[val] and g_Actors[val].elem
 		end
 		if val == nil then
@@ -2917,6 +2917,13 @@ function AttachCameraToObject(amx, player, object)
 	clientCall(player, 'AttachCameraToObject', object)
 end
 
+-- Security
+
+function SHA256_PassHash(amx, pass, salt, ret_hash, ret_hash_len)
+	local secret = hash ( 'sha256', salt .. '' .. pass )
+	writeMemString(amx, ret_hash, string.upper(secret) )
+end
+
 -----------------------------------------------------
 -- List of the functions and their argument types
 
@@ -3492,5 +3499,8 @@ g_SAMPSyscallPrototypes = {
 	SetActorHealth = {'y', 'f'},
 	SetActorInvulnerable = {},
 	SetActorPos = {'y', 'f', 'f', 'f'},
-	SetActorVirtualWorld = {'y', 'i'}
+	SetActorVirtualWorld = {'y', 'i'},
+
+	-- security
+	SHA256_PassHash = {'s', 's', 'r', 'r'}	
 }
