@@ -275,15 +275,15 @@ function AddVehicleComponent(amx, vehicle, upgradeID)
 end
 
 function AllowAdminTeleport(amx, allow)
-
+	depricated('AllowAdminTeleport', '0.3d')
 end
 
 function AllowInteriorWeapons(amx, allow)
-
+	depricated('AllowInteriorWeapons', '0.3d')
 end
 
 function AllowPlayerTeleport(amx, player, allow)
-
+	depricated('AllowPlayerTeleport', '0.3d')
 end
 
 function ApplyAnimation(amx, player, animlib, animname, fDelta, loop, lockx, locky, freeze, time, forcesync)
@@ -317,16 +317,18 @@ end
 
 --Dummy for now
 function GetPlayerDrunkLevel(player)
+	notImplemented('GetPlayerDrunkLevel', 'SCM is not supported.')
 	return 0
 end
 
 function GetPlayerAnimationIndex(player)
+	notImplemented('GetPlayerAnimationIndex')
 	return 0
 end
 
 function EditPlayerObject(amx, player, object)
 	--givePlayerMoney(player, amount)
-	outputDebugString("EditPlayerObject called")
+	notImplemented('EditPlayerObject')
 end
 
 
@@ -868,6 +870,7 @@ function StopAudioStreamForPlayer(amx, player)
 end
 
 function EnableVehicleFriendlyFire(amx)
+	notImplemented('EnableVehicleFriendlyFire')
 	return 1;
 end
 

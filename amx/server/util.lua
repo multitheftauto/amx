@@ -1037,3 +1037,29 @@ function isCustomPickup(elem)
 	end
 	return false
 end
+
+function depricated(native, version, additional)
+	if native ~= nil then
+		if version ~= '' or version ~= nil then 
+			outputDebugString(native..' has been deprecated since '..version..' and will no longer be available.')
+			return;
+		end
+		if additional ~= '' or additional ~= nil then 
+			outputDebugString(native..' has been deprecated since '..version..' and will no longer be available. More info: '.. additional .. '.')
+			return;
+		end
+		outputDebugString(native..' is deprecated and will no longer be available.')
+	end
+end
+
+function notImplemented(native, additional)
+	if native ~= nil then
+		if additional == '' or additional == nil then 
+			outputDebugString('Sorry, but '..native..' is not implemented.')
+			return;
+		else
+			outputDebugString('Sorry, but '..native..' is not implemented. More info: '.. additional..'.')
+			return;
+		end
+	end
+end
