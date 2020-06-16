@@ -979,20 +979,19 @@ function renderTextDraws()
 							w = textdraw.width
 						end
 					elseif textdraw.align == 2 then --centered
+						x = textdraw.x
 						if textdraw.boxsize then
-							x = textdraw.boxsize[1]/2
 							w = textdraw.boxsize[1]
 						else
-							x = textdraw.x
 							w = textdraw.width
 						end
 					elseif textdraw.align == 3 then --right
+						x = textdraw.x - w
 						if textdraw.boxsize then
 							w = textdraw.x - textdraw.boxsize[1]
 						else
 							w = textdraw.width
 						end
-						x = textdraw.x - w
 					end
 					y = textdraw.y
 					
@@ -1182,6 +1181,9 @@ function TextDrawCreate(amxName, id, textdraw)
 	local amx = g_AMXs[amxName]
 	textdraw.amx = amx
 	textdraw.id = id
+	textdraw.visible = false
+	--outputConsole('Got TextDrawCreate, textdraw.visible is ' .. textdraw.visible)
+
 	amx.textdraws[id] = textdraw
 	if textdraw.x then
 		textdraw.x = textdraw.x

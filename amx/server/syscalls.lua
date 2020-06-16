@@ -1551,7 +1551,7 @@ function PlayerTextDrawDestroy(amx, player, textdrawID)
   	if not IsPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
-	clientCall(player, 'TextDrawDestroy', amx.name, textdrawID)
+	clientCall(player, 'TextDrawDestroy', amx.name, g_PlayerTextDraws[player][textdrawID].clientTDId)
 	g_PlayerTextDraws[player][textdrawID] = nil
 end
 function PlayerTextDrawShow(amx, player, textdrawID)
@@ -1559,16 +1559,24 @@ function PlayerTextDrawShow(amx, player, textdrawID)
 		outputDebugString('PlayerTextDrawShow: not showing anything, not valid')
 		return false
 	end
+	--if g_PlayerTextDraws[player][textdrawID].visible == 1 then
+	--	return false
+	--end
 	g_PlayerTextDraws[player][textdrawID].visible = true
-	clientCall(player, 'TextDrawShowForPlayer', amx.name, textdrawID)
+	clientCall(player, 'TextDrawShowForPlayer', amx.name, g_PlayerTextDraws[player][textdrawID].clientTDId)
+	--outputDebugString('PlayerTextDrawShow: proccessed for ' .. textdrawID .. ' with ' .. g_PlayerTextDraws[player][textdrawID].text)
 	return true
 end
 function PlayerTextDrawHide(amx, player, textdrawID)
   	if not IsPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
+	--if g_PlayerTextDraws[player][textdrawID].visible == 0 then
+	--	return false
+	--end
 	g_PlayerTextDraws[player][textdrawID].visible = false
-	clientCall(player, 'TextDrawHideForPlayer', amx.name, textdrawID)
+	clientCall(player, 'TextDrawHideForPlayer', amx.name, g_PlayerTextDraws[player][textdrawID].clientTDId)
+	--outputDebugString('PlayerTextDrawHide: proccessed for ' .. textdrawID .. ' with ' .. g_PlayerTextDraws[player][textdrawID].text)
 end
 function PlayerTextDrawBoxColor(amx, player, textdrawID, r, g, b, a)
 	if not IsPlayerTextDrawValid(player, textdrawID) then
@@ -1599,13 +1607,18 @@ function PlayerTextDrawLetterSize(amx, player, textdrawID, x, y)
 	return true
 end
 function IsPlayerTextDrawValid(player, textdrawID)
+	local tableType = type(g_PlayerTextDraws[player])
+	if tableType ~= "table" then
+		outputDebugString("[ERROR_NOT_A_TABLE] IsPlayerTextDrawValid: g_PlayerTextDraws[player] is not a table yet for textdrawID: " .. textdrawID .. " it's actually a " .. tableType)
+		return false
+	end
 	if not g_PlayerTextDraws[player] then
-		outputDebugString("[ERROR] IsPlayerTextDrawValid: g_PlayerTextDraws[player] is nil! for textdrawID: " .. textdrawID)
+		outputDebugString("[ERROR_NIL_TABLE] IsPlayerTextDrawValid: g_PlayerTextDraws[player] is nil! for textdrawID: " .. textdrawID)
 		return false
 	end
 	local textdraw = g_PlayerTextDraws[player][textdrawID]
 	if not textdraw then
-		outputDebugString("[ERROR] IsPlayerTextDrawValid: no textdraw properties for player with textdrawID: " .. textdrawID)
+		outputDebugString("[ERROR_NOTD_PROPERTIES] IsPlayerTextDrawValid: no textdraw properties for player with textdrawID: " .. textdrawID)
 		return false
 	end
 	return true
@@ -1618,10 +1631,16 @@ function CreatePlayerTextDraw(amx, player, x, y, text)
 		g_PlayerTextDraws[player] = {}
 	end
 
-	local textdraw = { x = x, y = y, shadow = {visible=0, align=1, text=text, font=1, lwidth=0.5, lheight = 0.5} }
-	local id = #amx.textdraws + table.insert(g_PlayerTextDraws[player], textdraw)
+	local serverTDId = #g_PlayerTextDraws[player]+1
+	local clientTDId = #amx.textdraws + serverTDId
 
-	textdraw.id = id
+	local textdraw = { x = x, y = y, lwidth=0.5, lheight = 0.5, shadow = { visible=0, align=1, text=text, font=1, lwidth=0.5, lheight = 0.5} }
+	textdraw.clientTDId = clientTDId
+	textdraw.serverTDId = serverTDId
+	textdraw.visible = 0
+
+	g_PlayerTextDraws[player][serverTDId] = textdraw
+
 	setmetatable(
 		textdraw,
 		{
@@ -1638,64 +1657,65 @@ function CreatePlayerTextDraw(amx, player, x, y, text)
 					end
 				end
 				if different then
-					outputDebugString('A property changed for ' .. textdraw.id .. ' string: ' .. textdraw.text)
-					clientCall(player, 'TextDrawPropertyChanged', amx.name, textdraw.id, k, v)
+					--table.dump(v, 1, nil) --Dump the data
+					--outputDebugString(string.format('A property changed for %s string: %s visibility is %d', textdraw.serverTDId, textdraw.text, textdraw.visible))
+					clientCall(player, 'TextDrawPropertyChanged', amx.name, textdraw.clientTDId, k, v)
 					t.shadow[k] = v
 				end
 			end
 		}
 	)
-		
-	outputDebugString('assigned id ' .. id .. ' to playertextdraws')
-	clientCall(player, 'TextDrawCreate', amx.name, id, table.deshadowize(textdraw, true))
-	return id
+
+	outputDebugString('assigned id s->' .. serverTDId .. ' c->' .. clientTDId .. ' to g_PlayerTextDraws[player]')
+	clientCall(player, 'TextDrawCreate', amx.name, clientTDId, table.deshadowize(textdraw, true))
+	return serverTDId
 end
-function PlayerTextDrawAlignment(amx, playerid, textdrawID, align)
+function PlayerTextDrawAlignment(amx, player, textdrawID, align)
 	if not IsPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].align = (align == 0 and 1 or align)
 	return true
 end
-function PlayerTextDrawBackgroundColor(amx, playerid, textdrawID, r, g, b, a)
+function PlayerTextDrawBackgroundColor(amx, player, textdrawID, r, g, b, a)
 	if not IsPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].outlinecolor = { r, g, b, a }
 	return true
 end
-function PlayerTextDrawFont(amx, playerid, textdrawID, font)
+function PlayerTextDrawFont(amx, player, textdrawID, font)
 	if not IsPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].font = font
 	return true
 end
-function PlayerTextDrawColor(amx, playerid, textdrawID, r, g, b, a)
+function PlayerTextDrawColor(amx, player, textdrawID, r, g, b, a)
   	if not IsPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].color = { r, g, b }
 	return true
 end
-function PlayerTextDrawSetOutline(amx, playerid, textdrawID, size)
+function PlayerTextDrawSetOutline(amx, player, textdrawID, size)
 	if not IsPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].outlinesize = size
 	return true
 end
-function PlayerTextDrawSetProportional(amx, playerid, textdrawID, proportional)
+function PlayerTextDrawSetProportional(amx, player, textdrawID, proportional)
   --TextDrawSetProportional(amx, textdraw, proportional)
 end
-function PlayerTextDrawSetShadow(amx, playerid, textdrawID, size)
+function PlayerTextDrawSetShadow(amx, player, textdrawID, size)
    	if not IsPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].shade = size
 	return true
 end
-function PlayerTextDrawSetString(amx, playerid, textdrawID, str)
+function PlayerTextDrawSetString(amx, player, textdrawID, str)
    	if not IsPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
@@ -1723,13 +1743,10 @@ end
 
 function TextDrawHideForPlayer(amx, player, textdrawID)
 	local textdraw = amx.textdraws[textdrawID]
-	local playerdata = g_Players[getElemID(player)]
-	playerdata.visibletextdraws = playerdata.visibletextdraws or {}
-	if not textdraw or not playerdata.visibletextdraws[textdraw] then
+	if not textdraw then
 		return
 	end
 	clientCall(player, 'TextDrawHideForPlayer', amx.name, textdrawID)
-	playerdata.visibletextdraws[textdraw] = nil
 end
 
 function TextDrawLetterSize(amx, textdraw, width, height)
@@ -1761,13 +1778,10 @@ end
 
 function TextDrawShowForPlayer(amx, player, textdrawID)
 	local textdraw = amx.textdraws[textdrawID]
-	local playerdata = g_Players[getElemID(player)]
-	playerdata.visibletextdraws = playerdata.visibletextdraws or {}
-	if not textdraw or playerdata.visibletextdraws[textdraw] then
+	if not textdraw then
 		return
 	end
 	clientCall(player, 'TextDrawShowForPlayer', amx.name, textdrawID)
-	playerdata.visibletextdraws[textdraw] = true
 end
 
 function TextDrawTextSize(amx, textdraw, x, y)
@@ -2872,13 +2886,23 @@ function SetPlayerAttachedObject(amx, player, index, modelid, bone, fOffsetX, fO
 	local x, y, z = getElementPosition (player)
 	local mtaBone = g_BoneMapping[bone]
 	local obj = createObject(modelid, x, y, z)
-	local playerID = getElemID(player)
-	g_Players[playerID].attachedObjects[index] = obj
-	setElementCollisionsEnabled (obj, false)
-	setObjectScale (obj, fScaleX, fScaleY, fScaleZ)
-	attachElementToBone(obj, player, mtaBone, fOffsetX, fOffsetY, fOffsetZ, fRotX, fRotY, fRotZ)
-	--Todo: Implement material colors
-	
+
+	if obj ~= false then
+		local playerID = getElemID(player)
+		g_Players[playerID].attachedObjects[index] = obj
+		setElementCollisionsEnabled (obj, false)
+		setObjectScale (obj, fScaleX, fScaleY, fScaleZ)
+
+		fRotX = fRotX
+		fRotY = fRotY
+		fRotZ = fRotZ
+
+		attachElementToBone(obj, player, mtaBone, fOffsetX, fOffsetY, fOffsetZ, fRotX, fRotY, fRotZ)
+		--Todo: Implement material colors
+	else
+		outputDebugString('SetPlayerAttachedObject: Cannot attach object since the model is invalid. Model id was ' .. modelid)
+		return 0
+	end
 	return 1
 end
 
