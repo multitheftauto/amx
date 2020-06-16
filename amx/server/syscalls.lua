@@ -2920,10 +2920,25 @@ end
 -- Security
 
 function SHA256_PassHash(amx, pass, salt, ret_hash, ret_hash_len)
-	local secret = hash ( 'sha256', salt .. '' .. pass )
+	local secret = hash ( 'sha256', pass .. '' .. salt ) -- who is it guy which writes salt after pass?
 	writeMemString(amx, ret_hash, string.upper(secret) )
 end
 
+-- Siren
+
+function GetVehicleParamsSirenState(amx, vehicle)
+	local sirenstat = getVehicleSirensOn ( vehicle )
+
+	-- in samp this native returns 3 states
+	-- 1 - siren on
+	-- 0 - siren off
+	-- -1 - siren not exist, but we never get it.
+	if (sirenstat == true) then
+		return 1
+	else
+		return 0
+	end
+end
 -----------------------------------------------------
 -- List of the functions and their argument types
 
@@ -3502,5 +3517,8 @@ g_SAMPSyscallPrototypes = {
 	SetActorVirtualWorld = {'y', 'i'},
 
 	-- security
-	SHA256_PassHash = {'s', 's', 'r', 'r'}	
+	SHA256_PassHash = {'s', 's', 'r', 'i'},
+
+	-- siren
+	GetVehicleParamsSirenState = {'v'}
 }
