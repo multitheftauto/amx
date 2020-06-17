@@ -1756,8 +1756,8 @@ function _isPedReloadingWeapon(player)
 	return 0;
 end
 
-addEvent ("onPlayerClickPlayer")
-function OnPlayerClickPlayer (element)
+addEvent("onPlayerClickPlayer")
+function OnPlayerClickPlayer(element)
 	serverAMXEvent('OnPlayerClickPlayer', getElemID(localPlayer), getElemID(element), 0)
 end
 addEventHandler ("onPlayerClickPlayer", root, OnPlayerClickPlayer)
