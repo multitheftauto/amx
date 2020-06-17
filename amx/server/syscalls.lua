@@ -2975,7 +2975,8 @@ function GetPlayerWeaponState(amx, player)
 		return 1
 	elseif ammo >= 2 then 
 		return 2
-	else return -1;
+	else
+		return -1
 	end
 end
 -----------------------------------------------------
