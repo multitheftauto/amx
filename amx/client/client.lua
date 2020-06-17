@@ -1760,4 +1760,4 @@ addEvent("onPlayerClickPlayer")
 function OnPlayerClickPlayer(element)
 	serverAMXEvent('OnPlayerClickPlayer', getElemID(localPlayer), getElemID(element), 0)
 end
-addEventHandler ("onPlayerClickPlayer", root, OnPlayerClickPlayer)
+addEventHandler("onPlayerClickPlayer", root, OnPlayerClickPlayer)
