@@ -2942,6 +2942,42 @@ function GetVehicleParamsSirenState(amx, vehicle)
 		return 0
 	end
 end
+
+
+-- Weapon
+
+-- This part looks like a dirt
+function _PutReloadingStatus(status)
+	g_Players[getElemID(client)].reloading = status
+end
+addEvent("onPuttingReloadingStatus", true)
+addEventHandler("onPuttingReloadingStatus", resourceRoot, _PutReloadingStatus)
+
+function GetPlayerWeaponState(amx, player)
+	-- -1 WEAPONSTATE_UNKNOWN 
+	-- 0 WEAPONSTATE_NO_BULLETS
+	-- 1 WEAPONSTATE_LAST_BULLET
+	-- 2 WEAPONSTATE_MORE_BULLETS
+	-- 3 WEAPONSTATE_RELOADING
+
+	local vehicle = getPedOccupiedVehicle(player)
+	if vehicle ~= nil then return -1 end
+
+	-- Someone tell me how can I transfer the value of this vars to the server?
+	clientCall(player, '_isPedReloadingWeapon', player)
+	if g_Players[getElemID(player)].reloading == true then 
+		return 3
+	end
+	local ammo = getPedAmmoInClip(player)
+	if ammo == 0 then 
+		return 0
+	elseif ammo == 1 then 
+		return 1
+	elseif ammo >= 2 then 
+		return 2
+	else return -1;
+	end
+end
 -----------------------------------------------------
 -- List of the functions and their argument types
 
@@ -3523,5 +3559,8 @@ g_SAMPSyscallPrototypes = {
 	SHA256_PassHash = {'s', 's', 'r', 'i'},
 
 	-- siren
-	GetVehicleParamsSirenState = {'v'}
+	GetVehicleParamsSirenState = {'v'},
+
+
+	GetPlayerWeaponState = {'p'}
 }
