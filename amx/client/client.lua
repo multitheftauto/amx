@@ -1752,7 +1752,7 @@ end
 
 
 function _isPedReloadingWeapon(player) 
-    triggerServerEvent ("onPuttingReloadingStatus", resourceRoot, isPedReloadingWeapon(player))
+	triggerServerEvent("onPuttingReloadingStatus", resourceRoot, isPedReloadingWeapon(player))
 	return 0;
 end
 
