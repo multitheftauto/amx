@@ -96,7 +96,7 @@ int callLuaMTRead(lua_State *luaVM) {
 	lua_getfield(luaVM, 1, "amx");
 	AMX *amx = (AMX *)lua_touserdata(luaVM, -1);
 	cell addr = (cell)luaL_checknumber(luaVM, 2);
-	if(!amx || loadedAMXs.find(amx) == loadedAMXs.end())
+	if(!amx)
 		return 0;
 	cell *physaddr;
 	amx_GetAddr(amx, addr, &physaddr);
@@ -156,7 +156,7 @@ int callLuaMTWrite(lua_State *luaVM) {
 	luaL_checktype(luaVM, 1, LUA_TTABLE);
 	lua_getfield(luaVM, 1, "amx");
 	AMX *amx = (AMX *)lua_touserdata(luaVM, -1);
-	if(!amx || loadedAMXs.find(amx) == loadedAMXs.end())
+	if(!amx)
 		return 0;
 	cell addr = (cell)luaL_checknumber(luaVM, 2);
 	cell *physaddr;

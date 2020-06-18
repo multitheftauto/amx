@@ -34,22 +34,16 @@ function argsToMTA(amx, prototype, ...)
 			val = g_Objects[val] and g_Objects[val].elem
 		elseif vartype == 'u' then		-- pickup
 			val = g_Pickups[val] and g_Pickups[val].elem
-		elseif vartype == 'h' then		-- file handle
-			val = amx.files[val]
 		elseif vartype == 'x' then		-- textdraw
-			val = amx.textdraws[val]
+			val = g_TextDraws[val]
 		elseif vartype == 'm' then		-- menu
-			val = amx.menus[val]
+			val = g_Menus[val]
 		elseif vartype == 'g' then		-- gang zone
-			val = amx.gangzones[val] and amx.gangzones[val].elem
+			val = g_GangZones[val] and g_GangZones[val].elem
 		elseif vartype == 'k' then		-- native marker
 			val = g_Markers[val] and g_Markers[val].elem
-		elseif vartype == 'l' then		-- slothbots
-			val = g_SlothBots[val] and g_SlothBots[val].elem
-		elseif vartype == 'd' then		-- database result
-			val = amx.dbresults[val]
 		elseif vartype == 'a' then		-- 3D text label
-			val = amx.textlabels[val]
+			val = g_TextLabels[val]
 		elseif vartype == 'y' then		-- Actor
 			val = g_Actors[val] and g_Actors[val].elem
 		end
@@ -107,10 +101,15 @@ end
 function syscall(amx, svc, prototype, ...)		-- svc = service number (= index in native functions table) or name of native function
 	if type(amx) == 'userdata' then
 		local amxName = table.find(g_LoadedAMXs, 'cptr', amx)
-		if not amxName then
-			return 0
+		if amxName then
+			amx = g_LoadedAMXs[amxName]
+		else
+			local dynamicAmx = {name = 'dynamicAmx', res = 'dynamicAmx', cptr = amx }
+			dynamicAmx.memCOD = setmetatable({ amx = dynamicAmx.cptr }, { __index = amxMTReadCODCell })
+			dynamicAmx.memDAT = setmetatable({ amx = dynamicAmx.cptr }, { __index = amxMTReadDATCell, __newindex = amxMTWriteDATCell })
+
+			amx = dynamicAmx
 		end
-		amx = g_LoadedAMXs[amxName]
 	end
 	local fnName = type(svc) == 'number' and amx.natives[svc] or svc
 	local fn = prototype.fn or _G[fnName]
@@ -140,7 +139,7 @@ function syscall(amx, svc, prototype, ...)		-- svc = service number (= index in 
 	local result
 	if prototype.client then
 		local player = table.remove(args, 1)
-		clientCall(player, fnName, amx.name, unpack(args))
+		clientCall(player, fnName, unpack(args))
 	else
 		result = fn(amx, unpack(args))
 		if type(result) == 'boolean' then
@@ -173,7 +172,7 @@ local skinReplace = {
 
 function AddMenuItem(amx, menu, column, caption)
 	table.insert(menu.items[column], caption)
-	clientCall(root, 'AddMenuItem', amx.name, menu.id, column, caption)
+	clientCall(root, 'AddMenuItem', menu.id, column, caption)
 end
 
 function AddPlayerClass(amx, skin, x, y, z, angle, weap1, weap1_ammo, weap2, weap2_ammo, weap3, weap3_ammo)
@@ -375,9 +374,9 @@ end
 
 function CreateMenu(amx, title, columns, x, y, leftColumnWidth, rightColumnWidth)
 	local menu = { title = title, x = x, y = y, leftColumnWidth = leftColumnWidth, rightColumnWidth = rightColumnWidth, items = { [0] = {}, [1] = {} } }
-	local id = table.insert(amx.menus, menu)
+	local id = table.insert(g_Menus, menu)
 	menu.id = id
-	clientCall(root, 'CreateMenu', amx.name, id, menu)
+	clientCall(root, 'CreateMenu', id, menu)
 	return id
 end
 
@@ -390,18 +389,18 @@ function CreateObject(amx, model, x, y, z, rX, rY, rZ)
 		setElementCollisionsEnabled(obj, false)
 		outputDebugString(string.format("[MTA AMX - WARNING]: The provided model id (%d) is invalid (the model was replaced with id 1337, is now invisible and non-collidable), some object ids are not supported, consider updating your scripts.", model))
 	end
-	return addElem(amx, 'objects', obj)
+	return addElem(g_Objects, obj)
 end
 
 CreatePickup = AddStaticPickup
 
 function CreatePlayerObject(amx, player, model, x, y, z, rX, rY, rZ)
 	outputConsole('CreatePlayerObject(' .. model .. ')')
-	if not amx.playerobjects[player] then
-		amx.playerobjects[player] = {}
+	if not g_PlayerObjects[player] then
+		g_PlayerObjects[player] = {}
 	end
-	local objID = table.insert(amx.playerobjects[player], { x = x, y = y, z = z, rx = rX, ry = rY, rz = rZ })
-	clientCall(player, 'CreatePlayerObject', amx.name, objID, model, x, y, z, rX, rY, rZ)
+	local objID = table.insert(g_PlayerObjects[player], { x = x, y = y, z = z, rx = rX, ry = rY, rz = rZ })
+	clientCall(player, 'CreatePlayerObject', objID, model, x, y, z, rX, rY, rZ)
 	return objID
 end
 
@@ -413,12 +412,12 @@ function DestroyMenu(amx, menu)
 			playerdata.menu = nil
 		end
 	end
-	clientCall(root, 'DestroyMenu', amx.name, menu.id)
-	amx.menus[menu.id] = nil
+	clientCall(root, 'DestroyMenu', menu.id)
+	g_Menus[menu.id] = nil
 end
 
 function DestroyObject(amx, object)
-	removeElem(amx, 'objects', object)
+	removeElem(g_Objects, object)
 	destroyElement(object)
 end
 
@@ -428,12 +427,12 @@ function DestroyPickup(amx, pickup)
 end
 
 function DestroyPlayerObject(amx, player, objID)
-	amx.playerobjects[player][objID] = nil
-	clientCall(player, 'DestroyPlayerObject', amx.name, objID)
+	g_PlayerObjects[player][objID] = nil
+	clientCall(player, 'DestroyPlayerObject', objID)
 end
 
 function DestroyVehicle(amx, vehicle)
-	clientCall(root, 'DestroyVehicle', amx.name, getElemID(vehicle))
+	clientCall(root, 'DestroyVehicle', getElemID(vehicle))
 	removeElem(g_Vehicles, vehicle)
 	local vehicleID = getElemID(vehicle)
 	for i,playerdata in pairs(g_Players) do
@@ -451,24 +450,24 @@ function DisableInteriorEnterExits(amx)
 end
 
 function DisableMenu(amx, menuID)
-	local menu = amx.menus[menuID]
+	local menu = g_Menus[menuID]
 	if not menu then
 		return
 	end
 	menu.disabled = true
 	for id,player in pairs(g_Players) do
 		if GetPlayerMenu(amx, player.elem) == menuID then
-			clientCall(player.elem, 'HideMenuForPlayer', amx.name, menuID)
+			clientCall(player.elem, 'HideMenuForPlayer', menuID)
 		end
 	end
 end
 
 function DisableMenuRow(amx, menuID, rowID)
-	local menu = amx.menus[menuID]
+	local menu = g_Menus[menuID]
 	if not menu then
 		return
 	end
-	clientCall(root, 'DisableMenuRow', amx.name, menuID, rowID)
+	clientCall(root, 'DisableMenuRow', menuID, rowID)
 end
 
 function DisablePlayerCheckpoint(amx, player)
@@ -530,18 +529,18 @@ function GameTextForPlayer(amx, player, str, time, style)
 	for mta,samp in pairs(g_CommandMapping) do
 		str = str:gsub('/' .. samp, '/' .. mta)
 	end
-	clientCall(player, 'GameTextForPlayer', amx.name, str, time, style)
+	clientCall(player, 'GameTextForPlayer', str, time, style)
 end
 
 function GangZoneCreate(amx, minX, minY, maxX, maxY)
 	local zone = createRadarArea(minX + (maxX - minX)/2, minY + (maxY - minY)/2, maxX - minX, maxY - minY)
-	local id = addElem(amx, 'gangzones', zone)
+	local id = addElem(g_GangZones, zone)
 	setElementVisibleTo(zone, root, false)
 	return id
 end
 
 function GangZoneDestroy(amx, zone)
-	removeElem(amx, 'gangzones', zone)
+	removeElem(g_GangZones, zone)
 	destroyElement(zone)
 end
 
@@ -694,7 +693,7 @@ function gpci(amx, player, nameBuf, bufSize)
 end
 
 local function getPlayerObjectPos(amx, player, objID)
-	local obj = amx.playerobjects[player] and amx.playerobjects[player][objID]
+	local obj = g_PlayerObjects[player] and g_PlayerObjects[player][objID]
 	if not obj then
 		return false
 	end
@@ -728,7 +727,7 @@ function GetPlayerObjectPos(amx, player, objID, refX, refY, refZ)
 end
 
 function GetPlayerObjectRot(amx, player, objID, refX, refY, refZ)
-	local obj = amx.playerobjects[player] and amx.playerobjects[player][objID]
+	local obj = g_PlayerObjects[player] and g_PlayerObjects[player][objID]
 	if not obj then
 		return
 	end
@@ -956,7 +955,7 @@ function GivePlayerWeapon(amx, player, weaponID, ammo)
 end
 
 function HideMenuForPlayer(amx, menu, player)
-	clientCall(player, 'HideMenuForPlayer', amx.name, menu.id)
+	clientCall(player, 'HideMenuForPlayer', menu.id)
 	g_Players[getElemID(player)].menu = nil
 end
 
@@ -1003,7 +1002,7 @@ function IsTrailerAttachedToVehicle(amx, vehicle)
 end
 
 function IsValidMenu(amx, menuID)
-	return amx.menus[menuID] ~= nil
+	return g_Menus[menuID] ~= nil
 end
 
 function IsValidObject(amx, objID)
@@ -1011,7 +1010,7 @@ function IsValidObject(amx, objID)
 end
 
 function IsValidPlayerObject(amx, player, objID)
-	return amx.playerobjects[player] and amx.playerobjects[player][objID] and true
+	return g_PlayerObjects[player] and g_PlayerObjects[player][objID] and true
 end
 
 function IsValidVehicle(amx, vehicleID)
@@ -1048,7 +1047,7 @@ function MoveObject(amx, object, x, y, z, speed)
 end
 
 function MovePlayerObject(amx, player, objID, x, y, z, speed)
-	local obj = amx.playerobjects[player] and amx.playerobjects[player][objID]
+	local obj = g_PlayerObjects[player] and g_PlayerObjects[player][objID]
 	if not obj then
 		return
 	end
@@ -1057,9 +1056,9 @@ function MovePlayerObject(amx, player, objID, x, y, z, speed)
 	if obj.moving and isTimer(obj.moving.timer) then
 		killTimer(obj.moving.timer)
 	end
-	local timer = setTimer(procCallInternal, duration, 1, amx.name, 'OnPlayerObjectMoved', getElemID(player), objID)
+	local timer = setTimer(procCallOnAll, duration, 1, 'OnPlayerObjectMoved', getElemID(player), objID)
 	obj.moving = { x = x, y = y, z = z, starttick = getTickCount(), duration = duration, timer = timer }
-	clientCall(player, 'MovePlayerObject', amx.name, objID, x, y, z, speed)
+	clientCall(player, 'MovePlayerObject', objID, x, y, z, speed)
 end
 
 function PlayerPlaySound(amx, player, soundID, x, y, z)
@@ -1198,7 +1197,7 @@ end
 
 function SetMenuColumnHeader(amx, menu, column, text)
 	menu.items[column][13] = text
-	clientCall(root, 'SetMenuColumnHeader', amx.name, menu.id, column, text)
+	clientCall(root, 'SetMenuColumnHeader', menu.id, column, text)
 end
 
 function SetNameTagDrawDistance(amx, distance)
@@ -1278,7 +1277,7 @@ function SetPlayerInterior(amx, player, interior)
 end
 
 function SetPlayerObjectPos(amx, player, objID, x, y, z)
-	local obj = amx.playerobjects[player] and amx.playerobjects[player][objID]
+	local obj = g_PlayerObjects[player] and g_PlayerObjects[player][objID]
 	if not obj then
 		return
 	end
@@ -1289,16 +1288,16 @@ function SetPlayerObjectPos(amx, player, objID, x, y, z)
 		obj.moving = nil
 	end
 	obj.x, obj.y, obj.z = x, y, z
-	clientCall(player, 'SetPlayerObjectPos', amx.name, objID, x, y, z)
+	clientCall(player, 'SetPlayerObjectPos', objID, x, y, z)
 end
 
 function SetPlayerObjectRot(amx, player, objID, rX, rY, rZ)
-	local obj = amx.playerobjects[player] and amx.playerobjects[player][objID]
+	local obj = g_PlayerObjects[player] and g_PlayerObjects[player][objID]
 	if not obj then
 		return
 	end
 	obj.rx, obj.ry, obj.rz = rX, rY, rZ
-	clientCall(player, 'SetPlayerObjectRot', amx.name, objID, rX, rY, rZ)
+	clientCall(player, 'SetPlayerObjectRot', objID, rX, rY, rZ)
 end
 
 function SetPlayerName(amx, player, name)
@@ -1450,7 +1449,7 @@ function SetWorldTime(amx, hours)
 end
 
 function ShowMenuForPlayer(amx, menu, player)
-	clientCall(player, 'ShowMenuForPlayer', amx.name, menu.id)
+	clientCall(player, 'ShowMenuForPlayer', menu.id)
 	g_Players[getElemID(player)].menu = menu
 end
 
@@ -1489,7 +1488,7 @@ function StopObject(amx, object)
 end
 
 function StopPlayerObject(amx, player, objID)
-	local obj = amx.playerobjects[player] and amx.playerobjects[player][objID]
+	local obj = g_PlayerObjects[player] and g_PlayerObjects[player][objID]
 	if not obj then
 		return
 	end
@@ -1500,7 +1499,7 @@ function StopPlayerObject(amx, player, objID)
 		end
 		obj.moving = nil
 	end
-	clientCall(player, 'StopPlayerObject', amx.name, objID)
+	clientCall(player, 'StopPlayerObject', objID)
 end
 
 function TextDrawAlignment(amx, textdraw, align)
@@ -1522,7 +1521,7 @@ end
 function TextDrawCreate(amx, x, y, text)
 	outputDebugString('TextDrawCreate called with args ' .. x .. ' ' .. y .. ' ' .. text)
 	local textdraw = { x = x, y = y, shadow = {align=1, text=text, font=1, lwidth=0.5, lheight = 0.5} }
-	local id = table.insert(amx.textdraws, textdraw)
+	local id = table.insert(g_TextDraws, textdraw)
 	setmetatable(
 		textdraw,
 		{
@@ -1539,13 +1538,13 @@ function TextDrawCreate(amx, x, y, text)
 					end
 				end
 				if different then
-					clientCall(root, 'TextDrawPropertyChanged', amx.name, id, k, v)
+					clientCall(root, 'TextDrawPropertyChanged', id, k, v)
 					t.shadow[k] = v
 				end
 			end
 		}
 	)
-	clientCall(root, 'TextDrawCreate', amx.name, id, table.deshadowize(textdraw, true))
+	clientCall(root, 'TextDrawCreate', id, table.deshadowize(textdraw, true))
 	return id
 end
 
@@ -1554,7 +1553,7 @@ function PlayerTextDrawDestroy(amx, player, textdrawID)
   	if not IsPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
-	clientCall(player, 'TextDrawDestroy', amx.name, g_PlayerTextDraws[player][textdrawID].clientTDId)
+	clientCall(player, 'TextDrawDestroy', g_PlayerTextDraws[player][textdrawID].clientTDId)
 	g_PlayerTextDraws[player][textdrawID] = nil
 end
 function PlayerTextDrawShow(amx, player, textdrawID)
@@ -1566,7 +1565,7 @@ function PlayerTextDrawShow(amx, player, textdrawID)
 	--	return false
 	--end
 	g_PlayerTextDraws[player][textdrawID].visible = true
-	clientCall(player, 'TextDrawShowForPlayer', amx.name, g_PlayerTextDraws[player][textdrawID].clientTDId)
+	clientCall(player, 'TextDrawShowForPlayer', g_PlayerTextDraws[player][textdrawID].clientTDId)
 	--outputDebugString('PlayerTextDrawShow: proccessed for ' .. textdrawID .. ' with ' .. g_PlayerTextDraws[player][textdrawID].text)
 	return true
 end
@@ -1578,7 +1577,7 @@ function PlayerTextDrawHide(amx, player, textdrawID)
 	--	return false
 	--end
 	g_PlayerTextDraws[player][textdrawID].visible = false
-	clientCall(player, 'TextDrawHideForPlayer', amx.name, g_PlayerTextDraws[player][textdrawID].clientTDId)
+	clientCall(player, 'TextDrawHideForPlayer', g_PlayerTextDraws[player][textdrawID].clientTDId)
 	--outputDebugString('PlayerTextDrawHide: proccessed for ' .. textdrawID .. ' with ' .. g_PlayerTextDraws[player][textdrawID].text)
 end
 function PlayerTextDrawBoxColor(amx, player, textdrawID, r, g, b, a)
@@ -1635,7 +1634,7 @@ function CreatePlayerTextDraw(amx, player, x, y, text)
 	end
 
 	local serverTDId = #g_PlayerTextDraws[player]+1
-	local clientTDId = #amx.textdraws + serverTDId
+	local clientTDId = #g_TextDraws + serverTDId
 
 	local textdraw = { x = x, y = y, lwidth=0.5, lheight = 0.5, shadow = { visible=0, align=1, text=text, font=1, lwidth=0.5, lheight = 0.5} }
 	textdraw.clientTDId = clientTDId
@@ -1662,7 +1661,7 @@ function CreatePlayerTextDraw(amx, player, x, y, text)
 				if different then
 					--table.dump(v, 1, nil) --Dump the data
 					--outputDebugString(string.format('A property changed for %s string: %s visibility is %d', textdraw.serverTDId, textdraw.text, textdraw.visible))
-					clientCall(player, 'TextDrawPropertyChanged', amx.name, textdraw.clientTDId, k, v)
+					clientCall(player, 'TextDrawPropertyChanged', textdraw.clientTDId, k, v)
 					t.shadow[k] = v
 				end
 			end
@@ -1727,11 +1726,11 @@ function PlayerTextDrawSetString(amx, player, textdrawID, str)
 end
 --End of player textdraws
 function TextDrawDestroy(amx, textdrawID)
-	if not amx.textdraws[textdrawID] then
+	if not g_TextDraws[textdrawID] then
 		return
 	end
-	clientCall(root, 'TextDrawDestroy', amx.name, textdrawID)
-	amx.textdraws[textdrawID] = nil
+	clientCall(root, 'TextDrawDestroy', textdrawID)
+	g_TextDraws[textdrawID] = nil
 end
 
 function TextDrawFont(amx, textdraw, font)
@@ -1745,11 +1744,11 @@ function TextDrawHideForAll(amx, textdrawID)
 end
 
 function TextDrawHideForPlayer(amx, player, textdrawID)
-	local textdraw = amx.textdraws[textdrawID]
+	local textdraw = g_TextDraws[textdrawID]
 	if not textdraw then
 		return
 	end
-	clientCall(player, 'TextDrawHideForPlayer', amx.name, textdrawID)
+	clientCall(player, 'TextDrawHideForPlayer', textdrawID)
 end
 
 function TextDrawLetterSize(amx, textdraw, width, height)
@@ -1780,11 +1779,11 @@ function TextDrawShowForAll(amx, textdrawID)
 end
 
 function TextDrawShowForPlayer(amx, player, textdrawID)
-	local textdraw = amx.textdraws[textdrawID]
+	local textdraw = g_TextDraws[textdrawID]
 	if not textdraw then
 		return
 	end
-	clientCall(player, 'TextDrawShowForPlayer', amx.name, textdrawID)
+	clientCall(player, 'TextDrawShowForPlayer', textdrawID)
 end
 
 function TextDrawTextSize(amx, textdraw, x, y)
@@ -1833,7 +1832,7 @@ end
 function CreateActor(amx, model, x, y, z, rotation)
 	local actor = createPed(model, x, y, z, rotation, false)
 	setElementData(actor, 'amx.actorped', true)
-	return addElem(amx, 'actors', actor)
+	return addElem(g_Actors, actor)
 end
 
 function IsValidActor(amx, actorId)
@@ -1849,7 +1848,7 @@ function DestroyActor(amx, actor)
 		playerdata.streamedActors[getElemID(actor)] = nil
 	end
 
-	removeElem(amx, 'actors', actor)
+	removeElem(g_Actors, actor)
 	destroyElement(actor)
 end
 
@@ -1951,7 +1950,7 @@ function db_close(amx, db)
 end
 
 function db_free_result(amx, dbResultID)
-	amx.dbresults[dbResultID] = nil
+	g_DBResults[dbResultID] = nil
 end
 
 function db_field_name(amx, dbresult, fieldIndex, outbuf, maxlength)
@@ -1999,7 +1998,7 @@ function db_query(amx, db, query)
 	local dbresult = sqlite3Query(amx.cptr, db, query)
 	if type(dbresult) == 'table' then
 		dbresult.row = 1
-		return table.insert(amx.dbresults, dbresult)
+		return table.insert(g_DBResults, dbresult)
 	end
 	return 0
 end
@@ -2187,13 +2186,13 @@ function CreateBot(amx, model, x, y, z, name)
 	local ped = createPed(model, x, y, z)
 	setElementData(ped, 'amx.shownametag', true, true)
 	setElementData(ped, 'BotName', name, true)
-	local pedID = addElem(amx, 'bots', ped)
+	local pedID = addElem(g_Bots, ped)
 	procCallOnAll('OnBotConnect', pedID, name)
 	return pedID
 end
 
 function DestroyBot(amx, bot)
-	removeElem(amx, 'bots', bot)
+	removeElem(g_Bots, bot)
 	destroyElement(bot)
 end
 
@@ -2258,13 +2257,13 @@ SetBotPos = SetObjectPos
 -- Native Markers
 function CreateMarker(amx, x, y, z, typeid, size, r, g, b, a)
 	local marker = createMarker(x, y, z, typeid, size, r, g, b, a, root)
-	local markerID = addElem(amx, 'markers', marker)
+	local markerID = addElem(g_Markers, marker)
 	procCallOnAll('OnMarkerCreate', markerID)
 	return markerID
 end
 
 function DestroyMarker(amx, marker)
-	removeElem(amx, 'markers', marker)
+	removeElem(g_Markers, marker)
 	destroyElement(marker)
 	return true
 end
@@ -2766,11 +2765,11 @@ function Create3DTextLabel(amx, text, r, g, b, a, x, y, z, dist, vw, los)
 		text = text:gsub('/' .. samp, '/' .. mta)
 	end
 	local textlabel = { text = text, color = {r = r, g = g, b = b, a = a}, X = x, Y = y, Z = z, dist = dist, vw = vw, los = los }
-	local id = table.insert(amx.textlabels, textlabel)
+	local id = table.insert(g_TextLabels, textlabel)
 
 	textlabel.id = id
 
-	clientCall(root, 'Create3DTextLabel', amx.name, id, textlabel)
+	clientCall(root, 'Create3DTextLabel', id, textlabel)
 	return id
 end
 
@@ -2780,31 +2779,31 @@ function CreatePlayer3DTextLabel(amx, player, text, r, g, b, a, x, y, z, dist, v
 		text = text:gsub('/' .. samp, '/' .. mta)
 	end
 	local textlabel = { text = text, color = {r = r, g = g, b = b, a = a}, X = x, Y = y, Z = z, dist = dist, vw = vw, los = los }
-	local id = table.insert(amx.textlabels, textlabel)
+	local id = table.insert(g_TextLabels, textlabel)
 
 	textlabel.id = id
 
-	clientCall(root, 'Create3DTextLabel', amx.name, id, textlabel)
+	clientCall(root, 'Create3DTextLabel', id, textlabel)
 	return id
 end
 
 function Delete3DTextLabel(amx, textlabel)
 	local id = textlabel.id
-	if not amx.textlabels[id] then
+	if not g_TextLabels[id] then
 		return
 	end
-	clientCall(root, 'Delete3DTextLabel', amx.name, id)
-	amx.textlabels[id] = nil
+	clientCall(root, 'Delete3DTextLabel', id)
+	g_TextLabels[id] = nil
 	return true
 end
 
 function DeletePlayer3DTextLabel(amx, player, textlabel)
 	local id = textlabel.id
-	if not amx.textlabels[id] then
+	if not g_TextLabels[id] then
 		return
 	end
-	clientCall(root, 'Delete3DTextLabel', amx.name, id)
-	amx.textlabels[id] = nil
+	clientCall(root, 'Delete3DTextLabel', id)
+	g_TextLabels[id] = nil
 	return true
 end
 
@@ -2814,7 +2813,7 @@ function Attach3DTextLabelToPlayer(amx, textlabel, player, offX, offY, offZ)
 	textlabel.offY = offY
 	textlabel.offZ = offZ
 	textlabel.attachedTo = player
-	clientCall(root, 'Attach3DTextLabel', amx.name, textlabel)
+	clientCall(root, 'Attach3DTextLabel', textlabel)
 	return true
 end
 
@@ -2824,7 +2823,7 @@ function Attach3DTextLabelToVehicle(amx, textlabel, vehicle, offX, offY, offZ)
 	textlabel.offY = offY
 	textlabel.offZ = offZ
 	textlabel.attachedTo = vehicle
-	clientCall(root, 'Attach3DTextLabel', amx.name, textlabel)
+	clientCall(root, 'Attach3DTextLabel', textlabel)
 	return true
 end
 
@@ -3392,6 +3391,20 @@ g_SAMPSyscallPrototypes = {
 	ConnectNPC = {'s', 's'},
 	IsPlayerNPC = {'p'},
 	SetPlayerChatBubble = {'p', 's', 'i', 'f', 'i'},
+
+	TextDrawSetSelectable = {},
+	SetObjectMaterial = {},
+	GetVehicleModelInfo = {},
+	NetStats_GetConnectedTime = {},
+	GetPlayerSurfingObjectID = {},
+	SendClientCheck = {},
+	NetStats_PacketLossPercent = {},
+	SetPlayerObjectMaterial = {},
+	EditPlayerObject = {},
+	TextDrawSetPreviewModel = {},
+	TextDrawSetPreviewRot = {},
+	AttachObjectToObject = {},
+	HTTP = {},
 
 	Create3DTextLabel = {'s', 'c', 'f', 'f', 'f', 'f', 'i', 'i'},
 	CreatePlayer3DTextLabel = {'p', 's', 'c', 'f', 'f', 'f', 'f', 'i', 'i'},

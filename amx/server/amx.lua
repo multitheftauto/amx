@@ -7,9 +7,14 @@ g_Vehicles = {}
 g_Objects = {}
 g_Pickups = {}
 g_Markers = {}
-g_SlothBots = {}
 g_Actors = {}
-g_PlayerTextDraws  = {}
+g_PlayerTextDraws = {}
+g_GangZones = {}
+g_DBResults = {}
+g_Menus = {}
+g_TextDraws = {}
+g_TextLabels = {}
+g_PlayerObjects = {}
 
 function initGameModeGlobals()
 	g_PlayerClasses = {}
@@ -121,24 +126,12 @@ function loadAMX(fileName, res)
 
 	g_LoadedAMXs[amx.name] = amx
 
-	amx.objects = {}
-	amx.playerobjects = {}
 	amx.timers = {}
-	amx.files = {}
-	amx.textdraws = {}
-	amx.textlabels = {}
-	amx.menus = {}
-	amx.gangzones = {}
-	amx.bots = {}
-	amx.markers = {}
-	amx.dbresults = {}
-	amx.slothbots = {}
-	amx.actors = {}
 	
-	clientCall(root, 'addAMX', amx.name, amx.type)
-
+	
 	-- run initialization
 	if amx.type == 'gamemode' then
+		clientCall(root, 'gamemodeLoad')
 		setWeather(10)
 		initGameModeGlobals()
 		ShowPlayerMarkers(amx, true)
@@ -169,7 +162,13 @@ function destroyGlobalElements()
 		end
 	end
 
-	for i, elemtype in ipairs({g_Vehicles, g_Pickups}) do
+	for i, elemtype in ipairs({g_TextDraws, g_TextLabels}) do
+		for id, data in pairs(elemtype) do
+			elemtype[id] = nil
+		end
+	end
+
+	for i, elemtype in ipairs({g_Vehicles, g_Pickups, g_Objects, g_GangZones, g_Markers, g_Bots}) do
 		for id, data in pairs(elemtype) do
 			removeElem(elemtype, data.elem)
 			destroyElement(data.elem)
@@ -185,25 +184,18 @@ function unloadAMX(amx, notifyClient)
 		fadeCamera(root, false, 0)
 		ShowPlayerMarkers(amx, false)
 		destroyGlobalElements()
+
+		if notifyClient == nil or notifyClient == true then
+			clientCall(root, 'gamemodeUnload')
+		end
+
 	elseif amx.type == 'filterscript' then
 		procCallInternal(amx, 'OnFilterScriptExit')
 	end
 
 	amxUnload(amx.cptr)
 
-	for i,elemtype in ipairs({'objects', 'gangzones','bots','markers','textlabels','textdraws'}) do
-		for id,data in pairs(amx[elemtype]) do
-			removeElem(amx, elemtype, data.elem)
-			destroyElement(data.elem)
-		end
-	end
-
 	table.each(amx.timers, killTimer)
-	table.each(amx.files, fileClose)
-
-	if notifyClient == nil or notifyClient == true then
-		clientCall(root, 'removeAMX', amx.name)
-	end
 
 	if amx.boundkeys then
 		for i,key in ipairs(amx.boundkeys) do

@@ -2,6 +2,7 @@
 -- Players
 
 function gameModeInit(player)
+	clientCall(player, 'gamemodeLoad')
 	local playerID = getElemID(player)
 	local playerData = g_Players[playerID]
 	for k,v in pairs(playerData) do
@@ -101,26 +102,25 @@ function joinHandler(player)
 		if isWeaponSyncingNeeded() then
 			clientCall(player, 'enableWeaponSyncing', true)
 		end
+		
+		-- send menus
+		for i,menu in pairs(g_Menus) do
+			clientCall(player, 'CreateMenu', i, menu)
+		end
+
+		-- send textdraws
+		for id,textdraw in pairs(g_TextDraws) do
+			clientCall(player, 'TextDrawCreate', id, table.deshadowize(textdraw, true))
+		end
+
+		-- send 3d text labels
+		for i,label in pairs(g_TextLabels) do
+			clientCall(player, 'Create3DTextLabel', i, label)
+		end
+
 		table.each(
 			g_LoadedAMXs,
 			function(amx)
-				-- add amx clientside
-				clientCall(player, 'addAMX', amx.name, amx.publics.OnGameModeInit and true)
-				-- send textdraws
-				for id,textdraw in pairs(amx.textdraws) do
-					clientCall(player, 'TextDrawCreate', amx.name, id, table.deshadowize(textdraw, true))
-				end
-
-				-- send menus
-				for i,menu in pairs(amx.menus) do
-					clientCall(player, 'CreateMenu', amx.name, i, menu)
-				end
-
-				-- send 3d text labels
-				for i,label in pairs(amx.textlabels) do
-					clientCall(player, 'Create3DTextLabel', amx.name, i, label)
-				end
-
 				procCallInternal(amx, 'OnPlayerConnect', playerID)
 
 			end
@@ -356,9 +356,7 @@ addEventHandler('onPlayerQuit', root,
 		if vehicle then
 			triggerEvent('onVehicleExit', vehicle, source)
 		end
-		for name,amx in pairs(g_LoadedAMXs) do
-			amx.playerobjects[source] = nil
-		end
+		g_PlayerObjects[source] = nil
 		local playerID = getElemID(source)
 
 		for i,playerdata in pairs(g_Players) do

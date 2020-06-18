@@ -230,7 +230,7 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 // amxCall(amxptr, fnName|fnIndex, arg1, arg2, ...)
 int CFunctions::amxCall(lua_State *luaVM) {
 	AMX *amx = (AMX *)lua_touserdata(luaVM, 1);
-	if(!amx || loadedAMXs.find(amx) == loadedAMXs.end()) {
+	if(!amx) {
 		pModuleManager->ErrorPrintf("amxCall: invalid amx parameter\n");
 		lua_pushboolean(luaVM, 0);
 		return 1;
@@ -313,7 +313,7 @@ int CFunctions::amxMTReadDATCell(lua_State *luaVM) {
 	cell addr = (cell)luaL_checknumber(luaVM, 2);
 	lua_getfield(luaVM, 1, "amx");
 	AMX *amx = (AMX *)lua_touserdata(luaVM, -1);
-	if(!amx || loadedAMXs.find(amx) == loadedAMXs.end())
+	if(!amx)
 		return 0;
 	cell *physaddr;
 	amx_GetAddr(amx, addr, &physaddr);
@@ -331,7 +331,7 @@ int CFunctions::amxMTWriteDATCell(lua_State *luaVM) {
 	cell value = (cell)luaL_checknumber(luaVM, 3);
 	lua_getfield(luaVM, 1, "amx");
 	AMX *amx = (AMX *)lua_touserdata(luaVM, -1);
-	if(!amx || loadedAMXs.find(amx) == loadedAMXs.end())
+	if(!amx)
 		return 0;
 	cell *physaddr;
 	amx_GetAddr(amx, addr, &physaddr);
@@ -344,7 +344,7 @@ int CFunctions::amxMTWriteDATCell(lua_State *luaVM) {
 // amxReadString(amxptr, addr, maxlen)
 int CFunctions::amxReadString(lua_State *luaVM) {
 	AMX *amx = (AMX *)lua_touserdata(luaVM, 1);
-	if(!amx || loadedAMXs.find(amx) == loadedAMXs.end())
+	if(!amx)
 		return 0;
 	const cell addr = (cell)lua_tonumber(luaVM, 2);
 	lua_pushamxstring(luaVM, amx, addr);
@@ -354,7 +354,7 @@ int CFunctions::amxReadString(lua_State *luaVM) {
 // amxWriteString(amxptr, addr, str)
 int CFunctions::amxWriteString(lua_State *luaVM) {
 	AMX *amx = (AMX *)lua_touserdata(luaVM, 1);
-	if(!amx || loadedAMXs.find(amx) == loadedAMXs.end())
+	if(!amx)
 		return 0;
 	const cell addr = (cell)lua_tonumber(luaVM, 2);
 	const char *str = luaL_checkstring(luaVM, 3);
@@ -371,7 +371,7 @@ int CFunctions::amxWriteString(lua_State *luaVM) {
 // amxUnload(amxptr)
 int CFunctions::amxUnload(lua_State *luaVM) {
 	AMX *amx = (AMX *)lua_touserdata(luaVM, 1);
-	if(!amx || loadedAMXs.find(amx) == loadedAMXs.end()) {
+	if(!amx) {
 		pModuleManager->ErrorPrintf("amxUnload: invalid amx parameter\n");
 		lua_pushboolean(luaVM, 0);
 		return 1;
@@ -573,7 +573,7 @@ int CFunctions::amxVersionString(lua_State *luaVM) {
 int CFunctions::sqlite3OpenDB(lua_State *luaVM) {
 	AMX *amx = (AMX *)lua_touserdata(luaVM, 1);
 	const char *dbName = luaL_checkstring(luaVM, 2);
-	if(!amx || loadedAMXs.find(amx) == loadedAMXs.end() || !isSafePath(dbName)) {
+	if(!amx) {
 		lua_pushboolean(luaVM, 0);
 		return 1;
 	}
