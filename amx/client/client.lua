@@ -30,10 +30,14 @@ local defaultEmptyTableMt = {
 	end
 }
 
-g_AMXs = {}
-
 g_Vehicles = {}
 setmetatable(g_Vehicles, defaultEmptyTableMt)
+
+g_Menus = {}
+g_TextDraws = {}
+g_TextLabels = {}
+g_Blips = {}
+g_PlayerObjects = {}
 
 local screenWidth, screenHeight = guiGetScreenSize()
 
@@ -57,45 +61,48 @@ function setAMXVersion(ver)
 	g_AMXVersion = ver
 end
 
-function addAMX(name, type)
-	g_AMXs[name] = { name = name, type = type, vehicles = {}, playerobjects = {}, textdraws = {}, textlabels = {}, menus = {}, blips = {} }
-	-- textdraws = { id = { text = text, color = color, align = 1|2|3, x = x, y = y, boxsize = {width, height}, parts={{x=x,y=y,color=color,text=text},...} }, ... }
-	if type == 'gamemode' then
-		setTime(12, 0)
-	end
+function gamemodeLoad()
+	setTime(12, 0)
 end
 
-function removeAMX(amxName)
-	local amx = g_AMXs[amxName]
-	if amx.type == 'gamemode' then
-		if g_ClassSelectionInfo then
-			if g_ClassSelectionInfo.gui then
-				table.each(g_ClassSelectionInfo.gui, destroyElement)
-			end
-			g_ClassSelectionInfo = nil
-		end
-		DisablePlayerCheckpoint()
-		DisablePlayerRaceCheckpoint()
-		destroyGameText()
-		destroyClassSelGUI()
-		if g_WorldBounds and g_WorldBounds.handled then
-			removeEventHandler('onClientRender', root, checkWorldBounds)
-			g_WorldBounds = nil
-		end
+function destroyGlobalElements()
+	for id, data in pairs(g_Vehicles) do
+		g_Vehicles[id] = nil
 	end
-	table.each(amx.playerobjects, destroyElement)
-	for id,textdraw in pairs(amx.textdraws) do
+
+	for id, data in pairs(g_Menus) do
+		DestroyMenu(id)
+	end
+
+	for id, textdraw in pairs(g_TextDraws) do
 		destroyTextDraw(textdraw)
 	end
-	for id, textlabel in pairs(amx.textlabels) do
+
+	for id, textlabel in pairs(g_TextLabels) do
 		destroyTextLabel(textlabel)
 	end
-	for id,menu in pairs(amx.menus) do
-		DestroyMenu(amxName, id)
+
+	table.each(g_Blips, destroyElement)
+	table.each(g_PlayerObjects, destroyElement)
+end
+
+function gamemodeUnload()
+	if g_ClassSelectionInfo then
+		if g_ClassSelectionInfo.gui then
+			table.each(g_ClassSelectionInfo.gui, destroyElement)
+		end
+		g_ClassSelectionInfo = nil
 	end
-	table.each(amx.blips, destroyElement)
+	DisablePlayerCheckpoint()
+	DisablePlayerRaceCheckpoint()
+	destroyGameText()
+	destroyClassSelGUI()
+	if g_WorldBounds and g_WorldBounds.handled then
+		removeEventHandler('onClientRender', root, checkWorldBounds)
+		g_WorldBounds = nil
+	end
+	destroyGlobalElements()
 	setElementAlpha(localPlayer, 255)
-	g_AMXs[amxName] = nil
 end
 
 function setPlayerID(id)
@@ -412,29 +419,29 @@ function RemoveBuildingForPlayer(model, x, y, z, radius)
 	return true
 end
 
-function AttachPlayerObjectToPlayer(amxName, objID, attachPlayer, offsetX, offsetY, offsetZ, rX, rY, rZ)
-	local obj = g_AMXs[amxName] and g_AMXs[amxName].playerobjects[objID]
+function AttachPlayerObjectToPlayer(objID, attachPlayer, offsetX, offsetY, offsetZ, rX, rY, rZ)
+	local obj = g_PlayerObjects[objID]
 	if not obj then
 		return
 	end
 	attachElements(obj, attachPlayer, offsetX, offsetY, offsetZ, rX, rY, rZ)
 end
 
-function CreatePlayerObject(amxName, objID, model, x, y, z, rX, rY, rZ)
-	g_AMXs[amxName].playerobjects[objID] = createObject(model, x, y, z, rX, rY, rZ)
+function CreatePlayerObject(objID, model, x, y, z, rX, rY, rZ)
+	g_PlayerObjects[objID] = createObject(model, x, y, z, rX, rY, rZ)
 end
 
-function DestroyPlayerObject(amxName, objID)
-	local obj = g_AMXs[amxName].playerobjects[objID]
+function DestroyPlayerObject(objID)
+	local obj = g_PlayerObjects[objID]
 	if not obj then
 		return
 	end
 	destroyElement(obj)
-	g_AMXs[amxName].playerobjects[objID] = nil
+	g_PlayerObjects[objID] = nil
 end
 
-function MovePlayerObject(amxName, objID, x, y, z, speed)
-	local obj = g_AMXs[amxName].playerobjects[objID]
+function MovePlayerObject(objID, x, y, z, speed)
+	local obj = g_PlayerObjects[objID]
 	local rX, rY, rZ = getElementRotation(obj)
 	local distance = getDistanceBetweenPoints3D(x, y, z, getElementPosition(obj))
 	local time = distance/speed*1000
@@ -442,24 +449,24 @@ function MovePlayerObject(amxName, objID, x, y, z, speed)
 	setElementRotation(obj, rX, rY, rZ)
 end
 
-function SetPlayerObjectPos(amxName, objID, x, y, z)
-	local obj = g_AMXs[amxName] and g_AMXs[amxName].playerobjects[objID]
+function SetPlayerObjectPos(objID, x, y, z)
+	local obj = g_PlayerObjects[objID]
 	if not obj then
 		return
 	end
 	setElementPosition(obj, x, y, z)
 end
 
-function SetPlayerObjectRot(amxName, objID, rX, rY, rZ)
-	local obj = g_AMXs[amxName] and g_AMXs[amxName].playerobjects[objID]
+function SetPlayerObjectRot(objID, rX, rY, rZ)
+	local obj = g_PlayerObjects[objID]
 	if not obj then
 		return
 	end
 	setElementRotation(obj, rX, rY, rZ)
 end
 
-function StopPlayerObject(amxName, objID)
-	local obj = g_AMXs[amxName] and g_AMXs[amxName].playerobjects[objID]
+function StopPlayerObject(objID)
+	local obj = g_PlayerObjects[objID]
 	if not obj then
 		return
 	end
@@ -585,7 +592,7 @@ end
 -----------------------------
 -- Vehicles
 
-function SetPlayerPosFindZ(amxName, x, y, z)
+function SetPlayerPosFindZ(x, y, z)
 	setElementPosition(localPlayer, x, y, getGroundPosition(x, y, z) + 1)
 end
 
@@ -717,7 +724,7 @@ addEventHandler('onClientVehicleStartEnter', root,
 	end
 )
 
-function DestroyVehicle(amxName, vehID)
+function DestroyVehicle(vehID)
 	g_Vehicles[vehID] = nil
 end
 
@@ -797,10 +804,8 @@ local textDrawFonts = {
 }
 
 function visibleTextDrawsExist()
-	for name,amx in pairs(g_AMXs) do
-		if table.find(amx.textdraws, 'visible', true) then
-			return true
-		end
+	if table.find(g_TextDraws, 'visible', true) then
+		return true
 	end
 	return false
 end
@@ -828,9 +833,8 @@ function hudGetHorizontalScale()
 end
 
 function initTextDraw(textdraw)
-	local amx = textdraw.amx
-	textdraw.id = textdraw.id or (#amx.textdraws + 1)
-	amx.textdraws[textdraw.id] = textdraw
+	textdraw.id = textdraw.id or (#g_TextDraws + 1)
+	g_TextDraws[textdraw.id] = textdraw
 
 	-- GTA replaces underscores with spaces
 	textdraw.text = string.gsub(textdraw.text, "_", " ")
@@ -943,87 +947,85 @@ function initTextDraw(textdraw)
 end
 
 function renderTextDraws()
-	for name,amx in pairs(g_AMXs) do
-		for id,textdraw in pairs(amx.textdraws) do
-			if textdraw.visible and textdraw.parts and not (textdraw.text:match('^%s*$')) then-- and not textdraw.usebox) then
-				local font = textDrawFonts[textdraw.font and textdraw.font >= 0 and textdraw.font <= #textDrawFonts and textdraw.font or 0]
-				if textdraw.upscalex == nil then
-					textdraw.upscalex = 1.0
-				end
-				if textdraw.upscaley == nil then
-					textdraw.upscaley = 1.0
-				end
+	for id,textdraw in pairs(g_TextDraws) do
+		if textdraw.visible and textdraw.parts and not (textdraw.text:match('^%s*$')) then-- and not textdraw.usebox) then
+			local font = textDrawFonts[textdraw.font and textdraw.font >= 0 and textdraw.font <= #textDrawFonts and textdraw.font or 0]
+			if textdraw.upscalex == nil then
+				textdraw.upscalex = 1.0
+			end
+			if textdraw.upscaley == nil then
+				textdraw.upscaley = 1.0
+			end
 
-				local letterHeight = (textdraw.lheight * textdraw.upscaley or 0.25)
-				local letterWidth = (textdraw.lwidth * textdraw.upscalex or 0.5)
+			local letterHeight = (textdraw.lheight * textdraw.upscaley or 0.25)
+			local letterWidth = (textdraw.lwidth * textdraw.upscalex or 0.5)
 
-				local vertHudScale = hudGetVerticalScale()
-				local horHudScale = hudGetHorizontalScale()
+			local vertHudScale = hudGetVerticalScale()
+			local horHudScale = hudGetHorizontalScale()
 
-				local scaley = SCREEN_SCALE_Y(screenHeight * vertHudScale *  letterHeight * 0.175) --This should replicate what the game does
-				local scalex = SCREEN_SCALE_X(screenWidth * horHudScale *  letterWidth * 0.35)
-				
-				local sourceY = screenHeight - ((DEFAULT_SCREEN_HEIGHT - textdraw.y) * (screenHeight * vertHudScale))
-				local sourceX = screenWidth - ((DEFAULT_SCREEN_WIDTH - textdraw.x) * (screenWidth * horHudScale))
+			local scaley = SCREEN_SCALE_Y(screenHeight * vertHudScale *  letterHeight * 0.175) --This should replicate what the game does
+			local scalex = SCREEN_SCALE_X(screenWidth * horHudScale *  letterWidth * 0.35)
+			
+			local sourceY = screenHeight - ((DEFAULT_SCREEN_HEIGHT - textdraw.y) * (screenHeight * vertHudScale))
+			local sourceX = screenWidth - ((DEFAULT_SCREEN_WIDTH - textdraw.x) * (screenWidth * horHudScale))
 
-				font = font.font
-				--Process box alignments
-				if textdraw.usebox then
-					local boxcolor = textdraw.boxcolor or tocolor(0, 0, 0, 120*(textdraw.alpha or 1))
-					local x, y, w, h
-					if textdraw.align == 1 then --left
-						x = textdraw.x
-						if textdraw.boxsize then
-							w = textdraw.boxsize[1]-- - x
-						else
-							w = textdraw.width
-						end
-					elseif textdraw.align == 2 then --centered
-						x = textdraw.x
-						if textdraw.boxsize then
-							w = textdraw.boxsize[1]
-						else
-							w = textdraw.width
-						end
-					elseif textdraw.align == 3 then --right
-						x = textdraw.x - w
-						if textdraw.boxsize then
-							w = textdraw.x - textdraw.boxsize[1]
-						else
-							w = textdraw.width
-						end
-					end
-					y = textdraw.y
-					
-					--Calculates box height
-					if textdraw.boxsize and textdraw.text:match('^%s*$') then
-						h = textdraw.boxsize[2]
+			font = font.font
+			--Process box alignments
+			if textdraw.usebox then
+				local boxcolor = textdraw.boxcolor or tocolor(0, 0, 0, 120*(textdraw.alpha or 1))
+				local x, y, w, h
+				if textdraw.align == 1 then --left
+					x = textdraw.x
+					if textdraw.boxsize then
+						w = textdraw.boxsize[1]-- - x
 					else
-						h = textdraw.absheight
+						w = textdraw.width
 					end
-
-					dxDrawRectangle(sourceX, sourceY, w * getAspectRatio(), h * getAspectRatio(), boxcolor)
-					--outputConsole(string.format("Drawing textdraw box: sourceX: %f, sourceY: %f %s", sourceX, sourceY, textdraw.text))
-				end
-					
-				for i,part in pairs(textdraw.parts) do
-
-					sourceY = screenHeight - ((DEFAULT_SCREEN_HEIGHT - part.y) * (screenHeight * vertHudScale))
-					sourceX = screenWidth - ((DEFAULT_SCREEN_WIDTH - part.x) * (screenWidth * horHudScale))
-
-					--outputConsole(string.format("text: %s partx: %f, party: %f sourceX: %f, sourceY: %f", part.text, part.x, part.y, sourceX, sourceY))
-
-					if textdraw.shade and textdraw.shade > 0 then --Draw the shadow
-						dxDrawText(part.text, sourceX + 5, sourceY + 5, sourceX + 5, sourceY + 5, tocolor(0, 0, 0, 100*(textdraw.alpha or 1)), scalex, scaley, font)
+				elseif textdraw.align == 2 then --centered
+					x = textdraw.x
+					if textdraw.boxsize then
+						w = textdraw.boxsize[1]
+					else
+						w = textdraw.width
 					end
-					--Draw the actual text
-					drawBorderText(
-						part.text, sourceX, sourceY,
-						textdraw.alpha and setcoloralpha(part.color, math.floor(textdraw.alpha*255)) or part.color,
-						scalex, scaley, font, textdraw.outlinesize,
-						textdraw.outlinecolor
-					)
+				elseif textdraw.align == 3 then --right
+					x = textdraw.x - w
+					if textdraw.boxsize then
+						w = textdraw.x - textdraw.boxsize[1]
+					else
+						w = textdraw.width
+					end
 				end
+				y = textdraw.y
+				
+				--Calculates box height
+				if textdraw.boxsize and textdraw.text:match('^%s*$') then
+					h = textdraw.boxsize[2]
+				else
+					h = textdraw.absheight
+				end
+
+				dxDrawRectangle(sourceX, sourceY, w * getAspectRatio(), h * getAspectRatio(), boxcolor)
+				--outputConsole(string.format("Drawing textdraw box: sourceX: %f, sourceY: %f %s", sourceX, sourceY, textdraw.text))
+			end
+				
+			for i,part in pairs(textdraw.parts) do
+
+				sourceY = screenHeight - ((DEFAULT_SCREEN_HEIGHT - part.y) * (screenHeight * vertHudScale))
+				sourceX = screenWidth - ((DEFAULT_SCREEN_WIDTH - part.x) * (screenWidth * horHudScale))
+
+				--outputConsole(string.format("text: %s partx: %f, party: %f sourceX: %f, sourceY: %f", part.text, part.x, part.y, sourceX, sourceY))
+
+				if textdraw.shade and textdraw.shade > 0 then --Draw the shadow
+					dxDrawText(part.text, sourceX + 5, sourceY + 5, sourceX + 5, sourceY + 5, tocolor(0, 0, 0, 100*(textdraw.alpha or 1)), scalex, scaley, font)
+				end
+				--Draw the actual text
+				drawBorderText(
+					part.text, sourceX, sourceY,
+					textdraw.alpha and setcoloralpha(part.color, math.floor(textdraw.alpha*255)) or part.color,
+					scalex, scaley, font, textdraw.outlinesize,
+					textdraw.outlinecolor
+				)
 			end
 		end
 	end
@@ -1034,7 +1036,7 @@ function destroyTextDraw(textdraw)
 		return
 	end
 	hideTextDraw(textdraw)
-	table.removevalue(textdraw.amx.textdraws, textdraw)
+	table.removevalue(g_TextDraws, textdraw)
 end
 
 local gameText = {}
@@ -1048,15 +1050,14 @@ function destroyAllGameTextsWithStyle(stylePassed)
 	end
 end
 
-function GameTextForPlayer(amxName, text, time, style)
+function GameTextForPlayer(text, time, style)
 	if gameText[gIndex] then
 		destroyGameText(gIndex)
 	end
 
 	destroyAllGameTextsWithStyle(style) --So same styles don't overlap
 
-	local amx = g_AMXs[amxName]
-	gameText[gIndex] = { amx = amx, text = text, font = 2 }
+	gameText[gIndex] = { text = text, font = 2 }
 	if style == 1 then
 		gameText[gIndex].x = 0.9 * 640
 		gameText[gIndex].y = 0.8 * 448
@@ -1101,37 +1102,35 @@ function destroyGameText(gIndex)
 end
 
 function renderTextLabels()
-	for name,amx in pairs(g_AMXs) do
-		for id,textlabel in pairs(amx.textlabels) do
-			if textlabel.enabled then
-				if textlabel.attached then
-					local oX, oY, oZ = getElementPosition(textlabel.attachedTo)
-					oX = oX + textlabel.offX
-					oY = oY + textlabel.offY
-					oZ = oZ + textlabel.offZ
-					textlabel.X = oX
-					textlabel.Y = oY
-					textlabel.Z = oZ
-				end
+	for id,textlabel in pairs(g_TextLabels) do
+		if textlabel.enabled then
+			if textlabel.attached then
+				local oX, oY, oZ = getElementPosition(textlabel.attachedTo)
+				oX = oX + textlabel.offX
+				oY = oY + textlabel.offY
+				oZ = oZ + textlabel.offZ
+				textlabel.X = oX
+				textlabel.Y = oY
+				textlabel.Z = oZ
+			end
 
-				local screenX, screenY = getScreenFromWorldPosition(textlabel.X, textlabel.Y, textlabel.Z, textlabel.dist, false)
-				local pX, pY, pZ = getElementPosition(localPlayer)
-				local dist = getDistanceBetweenPoints3D(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z)
-				local vw = getElementDimension(localPlayer)
-				--[[if textlabel.attached then
-					local LOS = isLineOfSightClear(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z, true, true, true, true, true, false, false, textlabel.attachedTo)
-				else]] --Ã­Ã¥Ã°Ã Ã¡Ã®Ã²Ã Ã¥Ã², Ã¯Ã®ÃµÃ®Ã¦Ã¥ Ã´Ã³Ã­ÃªÃ¶Ã¨Ã¿ isLineOfSightClearÃ­Ã¥ Ã°Ã Ã¡Ã®Ã²Ã Ã¥Ã² Ã± Ã Ã°Ã£Ã³Ã¬Ã¥Ã­Ã²Ã®Ã¬ ignoredElement.
-					local LOS = isLineOfSightClear(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z, true, false, false)--Ã¯Ã®ÃªÃ  Ã²Ã Ãª, Ã¯Ã®Ã²Ã®Ã¬ Ã°Ã Ã§Ã¡Ã¥Ã°Ã³Ã²Ã±Ã¿ Ã± Ã´Ã³Ã­ÃªÃ¶Ã¨Ã¥Ã© Ã±Ã¤Ã¥Ã«Ã Ã¥ÃªÃ Ãª Ã­Ã³Ã¦Ã­Ã® :)
-				--end
-				local len = string.len(textlabel.text)
-				if screenX and dist <= textlabel.dist and vw == textlabel.vw then
-					if not textlabel.los then
-						--dxDrawText(textlabel.text, screenX, screenY, screenWidth, screenHeight, tocolor ( 0, 0, 0, 255 ), 1, "default")--, "center", "center")--, true, false)
-						dxDrawText(textlabel.text, screenX, screenY, screenWidth, screenHeight, tocolor(textlabel.color.r, textlabel.color.g, textlabel.color.b, textlabel.color.a), 1, "default-bold")--, "center", "center", true, false)
-					elseif LOS then
-						--dxDrawText(textlabel.text, screenX, screenY, screenWidth, screenHeight, tocolor ( 0, 0, 0, 255 ), 1, "default")--, "center", "center")--, true, false)
-						dxDrawText(textlabel.text, screenX - (len), screenY, screenWidth, screenHeight, tocolor(textlabel.color.r, textlabel.color.g, textlabel.color.b, textlabel.color.a), 1, "default-bold")--, "center", "center", true, false)
-					end
+			local screenX, screenY = getScreenFromWorldPosition(textlabel.X, textlabel.Y, textlabel.Z, textlabel.dist, false)
+			local pX, pY, pZ = getElementPosition(localPlayer)
+			local dist = getDistanceBetweenPoints3D(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z)
+			local vw = getElementDimension(localPlayer)
+			--[[if textlabel.attached then
+				local LOS = isLineOfSightClear(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z, true, true, true, true, true, false, false, textlabel.attachedTo)
+			else]] --Ã­Ã¥Ã°Ã Ã¡Ã®Ã²Ã Ã¥Ã², Ã¯Ã®ÃµÃ®Ã¦Ã¥ Ã´Ã³Ã­ÃªÃ¶Ã¨Ã¿ isLineOfSightClearÃ­Ã¥ Ã°Ã Ã¡Ã®Ã²Ã Ã¥Ã² Ã± Ã Ã°Ã£Ã³Ã¬Ã¥Ã­Ã²Ã®Ã¬ ignoredElement.
+				local LOS = isLineOfSightClear(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z, true, false, false)--Ã¯Ã®ÃªÃ  Ã²Ã Ãª, Ã¯Ã®Ã²Ã®Ã¬ Ã°Ã Ã§Ã¡Ã¥Ã°Ã³Ã²Ã±Ã¿ Ã± Ã´Ã³Ã­ÃªÃ¶Ã¨Ã¥Ã© Ã±Ã¤Ã¥Ã«Ã Ã¥ÃªÃ Ãª Ã­Ã³Ã¦Ã­Ã® :)
+			--end
+			local len = string.len(textlabel.text)
+			if screenX and dist <= textlabel.dist and vw == textlabel.vw then
+				if not textlabel.los then
+					--dxDrawText(textlabel.text, screenX, screenY, screenWidth, screenHeight, tocolor ( 0, 0, 0, 255 ), 1, "default")--, "center", "center")--, true, false)
+					dxDrawText(textlabel.text, screenX, screenY, screenWidth, screenHeight, tocolor(textlabel.color.r, textlabel.color.g, textlabel.color.b, textlabel.color.a), 1, "default-bold")--, "center", "center", true, false)
+				elseif LOS then
+					--dxDrawText(textlabel.text, screenX, screenY, screenWidth, screenHeight, tocolor ( 0, 0, 0, 255 ), 1, "default")--, "center", "center")--, true, false)
+					dxDrawText(textlabel.text, screenX - (len), screenY, screenWidth, screenHeight, tocolor(textlabel.color.r, textlabel.color.g, textlabel.color.b, textlabel.color.a), 1, "default-bold")--, "center", "center", true, false)
 				end
 			end
 		end
@@ -1140,71 +1139,63 @@ end
 addEventHandler("onClientRender", root, renderTextLabels)
 
 function checkTextLabels()
-	for name,amx in pairs(g_AMXs) do
-		for id,textlabel in pairs(amx.textlabels) do
+	for id,textlabel in pairs(g_TextLabels) do
 
-			local pX, pY, pZ = getElementPosition(localPlayer)
-			local dist = getDistanceBetweenPoints3D(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z)
+		local pX, pY, pZ = getElementPosition(localPlayer)
+		local dist = getDistanceBetweenPoints3D(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z)
 
-			if dist <= textlabel.dist then
-				textlabel.enabled = true
-			else
-				textlabel.enabled = false
-			end
-
+		if dist <= textlabel.dist then
+			textlabel.enabled = true
+		else
+			textlabel.enabled = false
 		end
+
 	end
 end
 
 
-function Create3DTextLabel(amxName, id, textlabel)
-	local amx = g_AMXs[amxName]
-	textlabel.amx = amx
+function Create3DTextLabel(id, textlabel)
 	textlabel.id = id
 	textlabel.enabled = false
-	amx.textlabels[id] = textlabel
+	g_TextLabels[id] = textlabel
 end
 
-function Delete3DTextLabel(amxName, id)
-	local amx = g_AMXs[amxName]
-	textlabel = amx.textlabels[id]
-	table.removevalue(amx.textlabels, textlabel)
+function Delete3DTextLabel(id)
+	textlabel = g_TextLabels[id]
+	table.removevalue(g_TextLabels, textlabel)
 end
 
-function Attach3DTextLabel(amxName, textlabel)
-	local amx = g_AMXs[amxName]
+function Attach3DTextLabel(textlabel)
 	local id = textlabel.id
-	amx.textlabels[id] = textlabel
+	g_TextLabels[id] = textlabel
 end
 
-function TextDrawCreate(amxName, id, textdraw)
-	local amx = g_AMXs[amxName]
-	textdraw.amx = amx
+function TextDrawCreate(id, textdraw)
 	textdraw.id = id
 	textdraw.visible = false
 	--outputConsole('Got TextDrawCreate, textdraw.visible is ' .. textdraw.visible)
 
-	amx.textdraws[id] = textdraw
+	g_TextDraws[id] = textdraw
 	if textdraw.x then
 		textdraw.x = textdraw.x
 		textdraw.y = textdraw.y
 	end
 	for prop,val in pairs(textdraw) do
-		TextDrawPropertyChanged(amxName, id, prop, val, true)
+		TextDrawPropertyChanged(id, prop, val, true)
 	end
 	initTextDraw(textdraw)
 end
 
-function TextDrawDestroy(amxName, id)
-	destroyTextDraw(g_AMXs[amxName].textdraws[id])
+function TextDrawDestroy(id)
+	destroyTextDraw(g_TextDraws[id])
 end
 
-function TextDrawHideForPlayer(amxName, id)
-	hideTextDraw(g_AMXs[amxName].textdraws[id])
+function TextDrawHideForPlayer(id)
+	hideTextDraw(g_TextDraws[id])
 end
 
-function TextDrawPropertyChanged(amxName, id, prop, newval, skipInit)
-	local textdraw = g_AMXs[amxName].textdraws[id]
+function TextDrawPropertyChanged(id, prop, newval, skipInit)
+	local textdraw = g_TextDraws[id]
 	textdraw[prop] = newval
 	if prop == 'boxsize' then
 		textdraw.boxsize[1] = textdraw.boxsize[1]
@@ -1217,11 +1208,11 @@ function TextDrawPropertyChanged(amxName, id, prop, newval, skipInit)
 	end
 end
 
-function TextDrawShowForPlayer(amxName, id)
+function TextDrawShowForPlayer(id)
 	outputConsole(string.format("TextDrawShowForPlayer trying to show textdraw with id %d", id))
-	outputConsole(string.format("TextDrawShowForPlayer trying to show textdraw with text %s", g_AMXs[amxName].textdraws[id].text))
+	outputConsole(string.format("TextDrawShowForPlayer trying to show textdraw with text %s", g_TextDraws[id].text))
 	
-	showTextDraw(g_AMXs[amxName].textdraws[id])
+	showTextDraw(g_TextDraws[id])
 end
 
 function displayFadingMessage(text, r, g, b, fadeInTime, stayTime, fadeOutTime)
@@ -1254,49 +1245,46 @@ local function updateMenuSize(menu)
 	menu.height = MENU_ITEM_HEIGHT*math.max(#menu.items[0], #menu.items[1]) + MENU_TOP_PADDING + MENU_BOTTOM_PADDING
 end
 
-function AddMenuItem(amxName, id, column, caption)
-	local menu = g_AMXs[amxName].menus[id]
+function AddMenuItem(id, column, caption)
+	local menu = g_Menus[id]
 	table.insert(menu.items[column], caption)
 	updateMenuSize(menu)
 end
 
-function CreateMenu(amxName, id, menu)
-	local amx = g_AMXs[amxName]
-	menu.amx = amx
+function CreateMenu(id, menu)
 	menu.x = math.floor(menu.x * screenWidth / 640)
 	menu.y = math.floor(menu.y * screenHeight / 480)
 	menu.leftColumnWidth = math.floor(menu.leftColumnWidth * screenWidth / 640)
 	menu.rightColumnWidth = math.floor(menu.rightColumnWidth * screenWidth / 480)
 	local id = 1
-	while amx.textdraws['m' .. id] do
+	while g_TextDraws['m' .. id] do
 		id = id + 1
 	end
-	menu.titletextdraw = { amx = amx, text = menu.title, id = 'm' .. id, x = menu.x + MENU_SIDE_PADDING, y = menu.y - 0.5*MENU_ITEM_HEIGHT, align = 1, font = 2 }
+	menu.titletextdraw = { text = menu.title, id = 'm' .. id, x = menu.x + MENU_SIDE_PADDING, y = menu.y - 0.5*MENU_ITEM_HEIGHT, align = 1, font = 2 }
 	initTextDraw(menu.titletextdraw)
 	hideTextDraw(menu.titletextdraw)
 	updateMenuSize(menu)
-	amx.menus[id] = menu
+	g_Menus[id] = menu
 end
 
-function DisableMenuRow(amxName, menuID, rowID)
-	local menu = g_AMXs[amxName].menus[menuID]
+function DisableMenuRow(menuID, rowID)
+	local menu = g_Menus[menuID]
 	menu.disabledrows = menu.disabledrows or {}
 	table.insert(menu.disabledrows, rowID)
 end
 
-function SetMenuColumnHeader(amxName, menuID, column, text)
-	g_AMXs[amxName].menus[menuID].items[column][13] = text
+function SetMenuColumnHeader(menuID, column, text)
+	g_Menus[menuID].items[column][13] = text
 end
 
-function ShowMenuForPlayer(amxName, menuID)
-	local amx = g_AMXs[amxName]
+function ShowMenuForPlayer(menuID)
 	if g_CurrentMenu and g_CurrentMenu.anim then
 		g_CurrentMenu.anim:remove()
 		g_CurrentMenu.anim = nil
 	end
 
 	local prevMenu = g_CurrentMenu
-	g_CurrentMenu = amx.menus[menuID]
+	g_CurrentMenu = g_Menus[menuID]
 	local closebtnSide = screenWidth*(30/1024)
 	if not prevMenu then
 		g_CurrentMenu.alpha = 0
@@ -1326,7 +1314,7 @@ function ShowMenuForPlayer(amxName, menuID)
 		addEventHandler('onClientGUIClick', g_CurrentMenu.closebtnhover,
 			function()
 				if not g_CurrentMenu.anim then
-					HideMenuForPlayer(amxName)
+					HideMenuForPlayer()
 				end
 			end,
 			false
@@ -1359,7 +1347,7 @@ function ShowMenuForPlayer(amxName, menuID)
 	bindKey('enter', 'down', OnKeyPress)
 end
 
-function HideMenuForPlayer(amxName, menuID)
+function HideMenuForPlayer(menuID)
 	if g_CurrentMenu and (not menuID or g_CurrentMenu.id == menuID) then
 		if g_CurrentMenu.anim then
 			g_CurrentMenu.anim:remove()
@@ -1369,13 +1357,12 @@ function HideMenuForPlayer(amxName, menuID)
 	end
 end
 
-function DestroyMenu(amxName, menuID)
-	local amx = g_AMXs[amxName]
-	destroyTextDraw(amx.menus[menuID].titletextdraw)
+function DestroyMenu(menuID)
+	destroyTextDraw(g_Menus[menuID].titletextdraw)
 	if g_CurrentMenu and menuID == g_CurrentMenu.id then
 		exitMenu()
 	end
-	amx.menus[menuID] = nil
+	g_Menus[menuID] = nil
 end
 
 function setMenuAlpha(menu, alpha)
@@ -1502,25 +1489,22 @@ function sendWeapons()
 	end
 end
 
-function RemovePlayerMapIcon(amxName, blipID)
-	local amx = g_AMXs[amxName]
-	if amx.blips[blipID] then
-		destroyElement(amx.blips[blipID])
-		amx.blips[blipID] = nil
+function RemovePlayerMapIcon(blipID)
+	if g_Blips[blipID] then
+		destroyElement(g_Blips[blipID])
+		g_Blips[blipID] = nil
 	end
 end
 
-function SetPlayerMapIcon(amxName, blipID, x, y, z, type, r, g, b, a)
-	for name,amx in pairs(g_AMXs) do
-		if amx.blips[blipID] then
-			destroyElement(amx.blips[blipID])
-			amx.blips[blipID] = nil
-		end
+function SetPlayerMapIcon(blipID, x, y, z, type, r, g, b, a)
+	if g_Blips[blipID] then
+		destroyElement(g_Blips[blipID])
+		g_Blips[blipID] = nil
 	end
-	g_AMXs[amxName].blips[blipID] = createBlip(x, y, z, type, 2, r, g, b, a)
+	g_Blips[blipID] = createBlip(x, y, z, type, 2, r, g, b, a)
 end
 
-function SetPlayerWorldBounds(amxName, xMax, xMin, yMax, yMin)
+function SetPlayerWorldBounds(xMax, xMin, yMax, yMin)
 	g_WorldBounds = g_WorldBounds or {}
 	g_WorldBounds.xmin, g_WorldBounds.ymin, g_WorldBounds.xmax, g_WorldBounds.ymax = xMin, yMin, xMax, yMax
 	if not g_WorldBounds.handled then
@@ -1586,13 +1570,12 @@ function checkWorldBounds()
 			setElementPosition(elem, x, y, z)
 		end
 		if not gameText then
-			local name, amx = next(g_AMXs)
-			GameTextForPlayer(name, 'Don\'t leave the ~r~world boundaries!', 2000)
+			GameTextForPlayer('Don\'t leave the ~r~world boundaries!', 2000)
 		end
 	end
 end
 
-function SetPlayerMarkerForPlayer(amxName, blippedPlayer, r, g, b, a)
+function SetPlayerMarkerForPlayer(blippedPlayer, r, g, b, a)
 	if a == 0 then
 		destroyBlipsAttachedTo(blippedPlayer)
 	else
@@ -1600,7 +1583,7 @@ function SetPlayerMarkerForPlayer(amxName, blippedPlayer, r, g, b, a)
 	end
 end
 
-function TogglePlayerClock(amxName, toggle)
+function TogglePlayerClock(toggle)
 	setMinuteDuration(toggle and 1000 or 2147483647)
 	setPlayerHudComponentVisible('clock', toggle)
 end
@@ -1715,7 +1698,7 @@ function OnMessageDialogButton2Click( button, state )
 end
 
 
-function ShowPlayerDialog(amxName, dialogid, dialogtype, caption, info, button1, button2)
+function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 	if dialogtype == 0 then
 		guiSetText(msgButton1, button1)
 		guiSetText(msgButton2, button2)
