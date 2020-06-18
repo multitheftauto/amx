@@ -1750,11 +1750,6 @@ function ShowPlayerDialog(amxName, dialogid, dialogtype, caption, info, button1,
 	end
 end
 
-function _isPedReloadingWeapon(player) 
-	triggerServerEvent("onPuttingReloadingStatus", resourceRoot, isPedReloadingWeapon(player))
-	return 0;
-end
-
 addEvent("onPlayerClickPlayer")
 function OnPlayerClickPlayer(element)
 	serverAMXEvent('OnPlayerClickPlayer', getElemID(localPlayer), getElemID(element), 0)

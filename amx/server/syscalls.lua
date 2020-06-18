@@ -2945,14 +2945,6 @@ end
 
 
 -- Weapon
-
--- This part looks like a dirt
-function _PutReloadingStatus(status)
-	g_Players[getElemID(client)].reloading = status
-end
-addEvent("onPuttingReloadingStatus", true)
-addEventHandler("onPuttingReloadingStatus", resourceRoot, _PutReloadingStatus)
-
 function GetPlayerWeaponState(amx, player)
 	-- -1 WEAPONSTATE_UNKNOWN 
 	-- 0 WEAPONSTATE_NO_BULLETS
@@ -2963,11 +2955,7 @@ function GetPlayerWeaponState(amx, player)
 	local vehicle = getPedOccupiedVehicle(player)
 	if vehicle ~= nil then return -1 end
 
-	-- Someone tell me how can I transfer the value of this vars to the server?
-	clientCall(player, '_isPedReloadingWeapon', player)
-	if g_Players[getElemID(player)].reloading == true then 
-		return 3
-	end
+	-- TODO: Function don't return 3 because a isPedReloadingWeapon function only client-side
 	local ammo = getPedAmmoInClip(player)
 	if ammo == 0 then 
 		return 0
