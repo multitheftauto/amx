@@ -1669,7 +1669,7 @@ function CreatePlayerTextDraw(amx, player, x, y, text)
 	)
 
 	outputDebugString('assigned id s->' .. serverTDId .. ' c->' .. clientTDId .. ' to g_PlayerTextDraws[player]')
-	clientCall(player, 'TextDrawCreate', amx.name, clientTDId, table.deshadowize(textdraw, true))
+	clientCall(player, 'TextDrawCreate', clientTDId, table.deshadowize(textdraw, true))
 	return serverTDId
 end
 function PlayerTextDrawAlignment(amx, player, textdrawID, align)

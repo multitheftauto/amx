@@ -1195,6 +1195,16 @@ function TextDrawHideForPlayer(id)
 end
 
 function TextDrawPropertyChanged(id, prop, newval, skipInit)
+	if g_TextDraws == nil then
+		outputConsole('Error: g_TextDraws is nil')
+		return
+	end
+
+	if g_TextDraws[id] == nil then
+		outputConsole('Error: g_TextDraws is nil at index: ' .. id)
+		return
+	end
+
 	local textdraw = g_TextDraws[id]
 	textdraw[prop] = newval
 	if prop == 'boxsize' then
@@ -1209,8 +1219,8 @@ function TextDrawPropertyChanged(id, prop, newval, skipInit)
 end
 
 function TextDrawShowForPlayer(id)
-	outputConsole(string.format("TextDrawShowForPlayer trying to show textdraw with id %d", id))
-	outputConsole(string.format("TextDrawShowForPlayer trying to show textdraw with text %s", g_TextDraws[id].text))
+	--outputConsole(string.format("TextDrawShowForPlayer trying to show textdraw with id %d", id))
+	--outputConsole(string.format("TextDrawShowForPlayer trying to show textdraw with text %s", g_TextDraws[id].text))
 	
 	showTextDraw(g_TextDraws[id])
 end
