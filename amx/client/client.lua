@@ -1743,8 +1743,8 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 	end
 end
 
-addEvent ( "onPlayerClickPlayer" )
-function OnPlayerClickPlayer ( element )
+addEvent("onPlayerClickPlayer")
+function OnPlayerClickPlayer(element)
 	serverAMXEvent('OnPlayerClickPlayer', getElemID(localPlayer), getElemID(element), 0)
 end
-addEventHandler ( "onPlayerClickPlayer", root, OnPlayerClickPlayer )
+addEventHandler("onPlayerClickPlayer", root, OnPlayerClickPlayer)
