@@ -2740,10 +2740,12 @@ end
 -----------------------------------------------------
 -- dummy
 function ConnectNPC(amx, name, script)
+	notImplemented('ConnectNPC')
 	return true
 end
 
 function IsPlayerNPC(amx, player)
+	notImplemented('IsPlayerNPC')
 	return false
 end
 
@@ -2756,7 +2758,38 @@ function IsPlayerStreamedIn(amx, otherPlayer, player)
 end
 
 function SetPlayerChatBubble(amx, player, text, color, dist, exptime)
+	notImplemented('SetPlayerChatBubble')
 	return false
+end
+
+
+-- In MTA we can't set the type of the request. 
+-- When we add 'data' it becomes POST request.
+-- TODO: arguments "index" and "type" here only for compatibility.
+function HTTP(amx, index, type, url, data, callback)
+	if type == 3 then 
+		notImplemented('HTTP', 'A HEAD type have not support right now')
+	end
+	local request = fetchRemote ("http://".. url, 
+	function(responseData, error)
+		if error == 0 then
+			procCallInternal(amx, callback, index, 200, responseData)
+		elseif error >= 1 and error <= 89 then
+			procCallInternal(amx, callback, index, 3, responseData)
+			return 0;
+		elseif error == 1006 or error == 1005 then
+			procCallInternal(amx, callback, index, 1, responseData)
+			return 0;
+		elseif error == 1007 then 
+			procCallInternal(amx, callback, index, 5, responseData)	
+			return 0;
+		else
+			procCallInternal(amx, callback, index, error, responseData)
+			return 0;
+		end
+	end, data, false)
+
+	return 0;
 end
 
 function Create3DTextLabel(amx, text, r, g, b, a, x, y, z, dist, vw, los)
@@ -3429,7 +3462,7 @@ g_SAMPSyscallPrototypes = {
 	TextDrawSetPreviewModel = {},
 	TextDrawSetPreviewRot = {},
 	AttachObjectToObject = {},
-	HTTP = {},
+	HTTP = {'i', 'i', 's', 's', 's'},
 
 	Create3DTextLabel = {'s', 'c', 'f', 'f', 'f', 'f', 'i', 'i'},
 	CreatePlayer3DTextLabel = {'p', 's', 'c', 'f', 'f', 'f', 'f', 'i', 'i'},
