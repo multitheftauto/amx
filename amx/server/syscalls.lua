@@ -2774,6 +2774,7 @@ function HTTP(amx, index, type, url, data, callback)
 	function(responseData, error)
 		if error == 0 then
 			procCallInternal(amx, callback, index, 200, responseData)
+			return 1;
 		elseif error >= 1 and error <= 89 then
 			procCallInternal(amx, callback, index, 3, responseData)
 			return 0;
@@ -2788,7 +2789,6 @@ function HTTP(amx, index, type, url, data, callback)
 			return 0;
 		end
 	end, data, false)
-
 	return 0;
 end
 
