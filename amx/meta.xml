@@ -36,7 +36,9 @@
     <!-- <include resource="amxscoreboard" /> -->
 
     <aclrequest>
+
         <right name="general.ModifyOtherObjects" access="true"></right>
+        <right name="function.fetchRemote" access="true"></right>
         <right name="function.startResource" access="true"></right>
         <right name="function.stopResource" access="true"></right>
         <right name="function.restartResource" access="true"></right>
