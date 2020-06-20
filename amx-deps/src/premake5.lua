@@ -2,7 +2,7 @@ solution "king"
 	configurations { "Debug", "Release" }
 	platforms { "x86", "x64" }
 	location ( "Build" )
-	targetdir "Bin/%{cfg.buildcfg}"
+	targetdir "Bin"
 
 	cppdialect "C++17"
 	characterset "MBCS"
