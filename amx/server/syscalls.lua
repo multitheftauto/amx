@@ -2763,15 +2763,37 @@ function SetPlayerChatBubble(amx, player, text, color, dist, exptime)
 end
 
 
--- In MTA we can't set the type of the request. 
--- When we add 'data' it becomes POST request.
--- TODO: arguments "index" and "type" here only for compatibility.
+-- Now we have all of RESTful types of requests. Our function is better!
+-- The SAMP documentation said about 'url' - "The URL you want to request. (Without 'http://')"
+-- But I didn't set it up. Because WE SUPPORT HTTPS!
+-- TODO: An "index" argument only for compatibility.
 function HTTP(amx, index, type, url, data, callback)
-	if type == 3 then 
-		notImplemented('HTTP', 'A HEAD type have not support right now')
-	end
-	local request = fetchRemote ("http://".. url, 
-	function(responseData, error)
+
+	local typesToText = {
+		'GET',
+		'POST',
+		'HEAD',
+		'PUT',
+		'PATCH',
+		'DELETE',
+		'COPY',
+		'OPTIONS',
+		'LINK',
+		'UNLINK',
+		'PURGE',
+		'LOCK',
+		'UNLOCK',
+		'PROPFIND',
+		'VIEW'
+	}
+	local sendOptions = {
+		queueName = "A SAMP request queue",
+		postData = data,
+		method = typesToText[tonumber(type)],
+	}
+	fetchRemote(url, sendOptions, 
+	function (responseData, responseInfo)
+		local error = responseInfo.statusCode
 		if error == 0 then
 			procCallInternal(amx, callback, index, 200, responseData)
 			return 1;
@@ -2788,7 +2810,7 @@ function HTTP(amx, index, type, url, data, callback)
 			procCallInternal(amx, callback, index, error, responseData)
 			return 0;
 		end
-	end, data, false)
+	end)
 	return 0;
 end
 
