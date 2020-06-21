@@ -2814,7 +2814,7 @@ function HTTP(amx, index, type, url, data, callback)
 			procCallInternal(amx, callback, index, error, responseData)
 		end
 	end)
-	if not success then
+	if not successRemote then
 		return 0
 	end
 	return 1
