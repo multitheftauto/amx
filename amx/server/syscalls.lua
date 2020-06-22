@@ -203,7 +203,7 @@ local function housePickup()
 	procCallOnAll('OnPlayerPickUpPickup', getElemID(player), getElemID(source))
 	cancelEvent()
 end
-function AddStaticPickup(amx, model, type, x, y, z)
+function AddStaticPickup(amx, model, type, x, y, z, vw)
 	local mtaPickupType, mtaPickupAmount, respawntime
 	if model == 1240 then		-- health
 		mtaPickupType = 0
@@ -232,6 +232,7 @@ function AddStaticPickup(amx, model, type, x, y, z)
 		-- house pickups don't disappear on pickup
 		addEventHandler('onPickupUse', pickup, housePickup, false)
 	end
+	setElementDimension(pickup, vw)
 	return addElem(g_Pickups, pickup)
 end
 
@@ -3043,7 +3044,7 @@ g_SAMPSyscallPrototypes = {
 	AddPlayerClass = {'i', 'f', 'f', 'f', 'f', 'i', 'i', 'i', 'i', 'i', 'i'},
 	AddPlayerClassEx = {'t', 'i', 'f', 'f', 'f', 'f', 'i', 'i', 'i', 'i', 'i', 'i'},
 	AddPlayerClothes = {'p', 'i', 'i'},
-	AddStaticPickup = {'i', 'i', 'f', 'f', 'f'},
+	AddStaticPickup = {'i', 'i', 'f', 'f', 'f', 'i'},
 	AddStaticVehicle = {'i', 'f', 'f', 'f', 'f', 'i', 'i'},
 	AddStaticVehicleEx = {'i', 'f', 'f', 'f', 'f', 'i', 'i', 'i'},
 	AddVehicleComponent = {'v', 'i'},
