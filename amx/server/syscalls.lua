@@ -3027,6 +3027,12 @@ function GetPlayerWeaponState(amx, player)
 		return -1
 	end
 end
+
+-- Explosion
+function CreateExplosionForPlayer(amx, player, x, y, z, type, radius)
+	clientCall(player, 'createExplosion', x, y, z, type, true, -1.0, false)
+	return 1
+end
 -----------------------------------------------------
 -- List of the functions and their argument types
 
@@ -3625,5 +3631,8 @@ g_SAMPSyscallPrototypes = {
 	GetVehicleParamsSirenState = {'v'},
 
 
-	GetPlayerWeaponState = {'p'}
+	GetPlayerWeaponState = {'p'},
+
+	-- Explosion
+	CreateExplosionForPlayer = {'p', 'f', 'f', 'f', 'i', 'f'}
 }
