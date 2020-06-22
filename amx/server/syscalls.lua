@@ -3038,8 +3038,6 @@ function CreateExplosionForPlayer(amx, player, x, y, z, type, radius)
 	return 1
 end
 
--- If I put this in syscalls.lua the whole thing crashes at startup at syscallsinit or whatever, if i put it here, the entire screen is black
--- when joining the server and natives are no longer processed...
 function toggleUninmplementedErrors ( playerSource, commandName )
 	if not isPlayerInACLGroup(playerSource, 'Console') then
 		return

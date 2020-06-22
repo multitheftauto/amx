@@ -271,7 +271,6 @@ end
 -----------------------------
 -- Pickup related
 function pickupOnInteriorChangeLoop() 
-	outputConsole('pickupOnInteriorChangeLoop called')
 	local vw = getElementDimension(localPlayer)
 	local interior = getElementInterior(localPlayer)
 	for i, v in ipairs(getElementsByType("pickup", root)) do --Only for those that are streamed in
