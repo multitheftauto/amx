@@ -203,7 +203,7 @@ local function housePickup()
 	procCallOnAll('OnPlayerPickUpPickup', getElemID(player), getElemID(source))
 	cancelEvent()
 end
-function AddStaticPickup(amx, model, type, x, y, z, vw)
+function AddStaticPickup(amx, model, type, x, y, z)
 	local mtaPickupType, mtaPickupAmount, respawntime
 	if model == 1240 then		-- health
 		mtaPickupType = 0
@@ -232,7 +232,6 @@ function AddStaticPickup(amx, model, type, x, y, z, vw)
 		-- house pickups don't disappear on pickup
 		addEventHandler('onPickupUse', pickup, housePickup, false)
 	end
-	setElementDimension(pickup, vw)
 	return addElem(g_Pickups, pickup)
 end
 
@@ -1271,10 +1270,14 @@ function SetPlayerHealth(amx, player, health)
 end
 
 function SetPlayerInterior(amx, player, interior)
-	if g_Players[getElemID(player)].viewingintro then
+	local playerId = getElemID(player)
+	if g_Players[playerId].viewingintro then
 		return
 	end
+	local oldInt = getElementInterior(player)
 	setElementInterior(player, interior)
+	procCallOnAll('OnPlayerInteriorChange', playerId, interior, oldInt)
+	clientCall(player, 'AMX_OnPlayerInteriorChange', interior, oldInt)
 end
 
 function SetPlayerObjectPos(amx, player, objID, x, y, z)
@@ -3034,6 +3037,18 @@ function CreateExplosionForPlayer(amx, player, x, y, z, type, radius)
 	clientCall(player, 'createExplosion', x, y, z, type, true, -1.0, false)
 	return 1
 end
+
+-- If I put this in syscalls.lua the whole thing crashes at startup at syscallsinit or whatever, if i put it here, the entire screen is black
+-- when joining the server and natives are no longer processed...
+function toggleUninmplementedErrors ( playerSource, commandName )
+	if not isPlayerInACLGroup(playerSource, 'Console') then
+		return
+	end
+	ShowUnimplementedErrors = not ShowUnimplementedErrors
+	outputDebugString('[INFO]: ShowUnimplementedErrors is now ' .. (ShowUnimplementedErrors and "Enabled" or "Disabled"))
+end
+addCommandHandler ( "showunimplementederrors", toggleUninmplementedErrors )
+
 -----------------------------------------------------
 -- List of the functions and their argument types
 
@@ -3044,7 +3059,7 @@ g_SAMPSyscallPrototypes = {
 	AddPlayerClass = {'i', 'f', 'f', 'f', 'f', 'i', 'i', 'i', 'i', 'i', 'i'},
 	AddPlayerClassEx = {'t', 'i', 'f', 'f', 'f', 'f', 'i', 'i', 'i', 'i', 'i', 'i'},
 	AddPlayerClothes = {'p', 'i', 'i'},
-	AddStaticPickup = {'i', 'i', 'f', 'f', 'f', 'i'},
+	AddStaticPickup = {'i', 'i', 'f', 'f', 'f'},
 	AddStaticVehicle = {'i', 'f', 'f', 'f', 'f', 'i', 'i'},
 	AddStaticVehicleEx = {'i', 'f', 'f', 'f', 'f', 'i', 'i', 'i'},
 	AddVehicleComponent = {'v', 'i'},

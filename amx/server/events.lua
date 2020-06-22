@@ -572,21 +572,10 @@ addEventHandler('onPedWasted', root,
 )
 -------------------------------
 -- Misc
-
-addEventHandler('onPickupUse', root,
-	function(player)
-		--if isPed(source) then
-		--	procCallOnAll('OnBotPickUpPickup', getElemID(source), getElemID(pickup))
-		--end
-		--if getElementType(source) ~= 'player' or not getElemID(pickup) then
-		--	return
-		--end
-		local pickup = source
+addEvent('OnPlayerPickUpPickup_Ev', true)
+addEventHandler('OnPlayerPickUpPickup_Ev', root,
+	function(pickup)
 		local model = getElementModel(pickup)
-
-		if isCustomPickup(pickup) then
-			return
-		end
 
 		procCallOnAll('OnPlayerPickUpPickup', getElemID(player), getElemID(pickup))
 

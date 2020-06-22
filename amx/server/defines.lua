@@ -203,3 +203,4 @@ INVALID_ACTOR_ID = 0xFFFF
 INVALID_OBJECT_ID = 0xFFFF
 
 ManualVehEngineAndLights = false
+ShowUnimplementedErrors = false

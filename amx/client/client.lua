@@ -268,6 +268,32 @@ function showIntroScene()
 
 	introSceneShown = true
 end
+-----------------------------
+-- Pickup related
+function pickupOnInteriorChangeLoop() 
+	outputConsole('pickupOnInteriorChangeLoop called')
+	local vw = getElementDimension(localPlayer)
+	local interior = getElementInterior(localPlayer)
+	for i, v in ipairs(getElementsByType("pickup", root)) do --Only for those that are streamed in
+		if isElement(v) then
+			setElementInterior(v, interior)
+			setElementDimension(v, vw)
+		end
+	end
+end
+
+local function clientPlayerPickupHit(thePickup, matchingDimension)
+	triggerServerEvent('OnPlayerPickUpPickup_Ev', resourceRoot, thePickup)
+end
+addEventHandler("onClientPlayerPickupHit", root, clientPlayerPickupHit)
+-----------------------------
+-- Interior related
+local interiorTimerPtr = false
+function AMX_OnPlayerInteriorChange(interior, oldInt)
+	if not interiorTimerPtr then
+		interiorTimerPtr = setTimer ( pickupOnInteriorChangeLoop, 1000, 0 ) --Every second check for pickups
+	end
+end
 
 -----------------------------
 -- Camera related

@@ -1053,13 +1053,15 @@ function deprecated(native, version, additional)
 end
 
 function notImplemented(native, additional)
-	if native ~= nil then
-		if additional == '' or additional == nil then 
-			outputDebugString('Sorry, but '..native..' is not implemented.')
-			return;
-		else
-			outputDebugString('Sorry, but '..native..' is not implemented. More info: '.. additional..'.')
-			return;
+	if ShowUnimplementedErrors then
+		if native ~= nil then
+			if additional == '' or additional == nil then 
+				outputDebugString('Sorry, but '..native..' is not implemented.')
+				return;
+			else
+				outputDebugString('Sorry, but '..native..' is not implemented. More info: '.. additional..'.')
+				return;
+			end
 		end
 	end
 end
