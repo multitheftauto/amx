@@ -9,9 +9,6 @@
 	#define getProcAddr GetProcAddress
 	#define loadLib LoadLibrary
 	#define freeLib FreeLibrary
-
-	int setenv(const char* name, const char* value, int overwrite);
-
 #else
 
 	#define HMODULE void*
@@ -31,6 +28,7 @@
 
 
 // Util functions
+int setenv_portable(const char* name, const char* value, int overwrite);
 std::string ToUTF8(const char * str);
 std::string ToOriginalCP(const char * str);
 void lua_pushamxstring(lua_State *luaVM, AMX *amx, cell addr);

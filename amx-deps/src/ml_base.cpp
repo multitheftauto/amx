@@ -103,7 +103,7 @@ MTAEXPORT bool InitModule ( ILuaModuleManager10 *pManager, char *szModuleName, c
 
 	string PATH = getenv("PATH");
 	PATH += ";mods/deathmatch/resources/amx/plugins/";
-	setenv("PATH", PATH.c_str(), 1);
+	setenv_portable("PATH", PATH.c_str(), 1);
 
 	return true;
 }

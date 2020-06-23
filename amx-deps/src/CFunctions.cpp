@@ -127,6 +127,14 @@ int CFunctions::amxLoadPlugin(lua_State *luaVM) {
 
 	loadedPlugins[pluginName] = pSampPlugin;
 
+	//Setup environment variables
+	fs::path scriptfilespath = fs::path("mods/deathmatch/resources/amx/scriptfiles");
+	if (exists(scriptfilespath)) {
+		setenv_portable("AMXFILE", scriptfilespath.string().c_str(), 1);
+	} else {
+		pModuleManager->ErrorPrintf("scriptfiles directory doesn't exist at: %s\n", scriptfilespath.string());
+	}
+
 	lua_pushboolean(luaVM, 1);
 	return 1;
 }

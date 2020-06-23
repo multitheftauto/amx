@@ -8,15 +8,15 @@ namespace fs = std::filesystem;
 
 extern map < AMX *, AMXPROPS > loadedAMXs;
 
+int setenv_portable(const char* name, const char* value, int overwrite) {
 #ifdef WIN32
-
-	int setenv(const char* name, const char* value, int overwrite) {
-		((void)overwrite);
-		return SetEnvironmentVariable(name, value) ? 0 : -1;
-	}
-
+	return _putenv_s(name, value);
 #else
+	return setenv(name, value, overwrite);
+#endif
+}
 
+#ifndef WIN32
 	void *getProcAddr ( HMODULE hModule, const char *szProcName )
 	{
 		char *szError = NULL;
@@ -26,7 +26,6 @@ extern map < AMX *, AMXPROPS > loadedAMXs;
 			return NULL;
 		return pFunc;
 	}
-
 #endif
 
 std::string ToUTF8(const char * str)
