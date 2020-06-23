@@ -1631,7 +1631,8 @@ function createListDialog()
 		listGrid = guiCreateGridList(0.0, 0.1, 1.0, 0.8,true,listWindow)
 		guiGridListSetSelectionMode(listGrid,2)
 		guiGridListSetScrollBars(listGrid, true, true)
-		listColumn = guiGridListAddColumn(listGrid, "List", 0.85)
+		guiGridListSetSortingEnabled (listGrid, false)
+		--listColumn = guiGridListAddColumn(listGrid, "List", 0.85)
 		listButton1 = guiCreateButton(10,323,256,20,"",false,listWindow)
 		listButton2 = guiCreateButton(281,323,256,20,"",false,listWindow)
 		guiSetVisible(listWindow, false)
@@ -1672,15 +1673,27 @@ function InitDialogs()
 	createMessageDialog()
 end
 
+function clearListItem()
+	guiGridListRemoveColumn(listGrid, listColumn) --First remove the default column
+	local colAmount = guiGridListGetColumnCount(listGrid)
+	for i=1, colAmount do --Column indexes appear to start from 1
+		if not guiGridListRemoveColumn(listGrid, i) then --Always clean up all columns
+			outputConsole('[AMX:ShowPlayerDialog] Error: Couldn\'t remove column: ' .. 'idx: ' .. i)
+		end
+		outputConsole('vals: ' .. 'idx: ' .. i)
+	end
+	guiGridListClear(listGrid)
+end
+
 function OnListDialogButton1Click( button, state )
 	if button == "left" then
 		local row, column = guiGridListGetSelectedItem(listGrid)
 		local text = guiGridListGetItemText(listGrid, row, column)
 		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), listDialog, 1, row, text);
 		guiSetVisible(listWindow, false)
-		guiGridListClear(listGrid)
 		showCursor(false)
 		listDialog = nil
+		clearListItem()
 	end
 end
 
@@ -1690,9 +1703,9 @@ function OnListDialogButton2Click( button, state )
 		local text = guiGridListGetItemText(listGrid, row, column)
 		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), listDialog, 0, row, text);
 		guiSetVisible(listWindow, false)
-		guiGridListClear(listGrid)
 		showCursor(false)
 		listDialog = nil
+		clearListItem()
 	end
 end
 
@@ -1752,18 +1765,57 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 		guiSetVisible(inputWindow, true)
 		inputDialog = dialogid
 		showCursor(true)
-	elseif dialogtype == 2 then
+	elseif dialogtype == 2 or dialogtype == 4 or dialogtype == 5 then --DIALOG_STYLE_LIST, DIALOG_STYLE_TABLIST, DIALOG_STYLE_TABLIST_HEADER
+		--Setup the UI
 		guiSetText(listButton1, button1)
 		guiSetText(listButton2, button2)
 		guiSetText(listWindow, caption)
 		guiSetVisible(listWindow, true)
 		listDialog = dialogid
 		showCursor(true)
-		local items = string.gsub(info, "\t", "        ")
-		items = string.split(items, "\n")
-		for k,v in ipairs(items) do
-			local row = guiGridListAddRow ( listGrid )
-			guiGridListSetItemText ( listGrid, row, listColumn, v, false, true)
+		-- Done
+
+		--Process each
+		--DIALOG_STYLE_LIST
+		if dialogtype == 2 then
+			local items = string.gsub(info, "\t", "        ")
+			items = string.split(items, "\n")
+			listColumn = guiGridListAddColumn(listGrid, "List", 0.85)
+			for k,v in ipairs(items) do
+				local row = guiGridListAddRow ( listGrid )
+				guiGridListSetItemText ( listGrid, row, listColumn, v, false, true)
+			end
+			return
+		end
+
+		--DIALOG_STYLE_TABLIST, DIALOG_STYLE_TABLIST_HEADER
+		--Add the columns
+		local items = string.split(info, "\n") -- Get the first one which is the header
+		if #items < 1 then
+			outputConsole('Error, your dialog either has no items, its format is wrong or you\'re missing a newline character in the string')
+			outputConsole('The raw string was: ' .. info)
+			return --Abort if there's no items
+		end
+
+		--Create the header
+		local headerCols = string.split(items[1], "\t")
+		for k,v in ipairs(headerCols) do
+			local colIdx = guiGridListAddColumn( listGrid, (dialogtype == 5 and v or ''), 0.5 ) --If it's the DIALOG_STYLE_TABLIST_HEADER add the name, otherwise leave it blank
+			--outputConsole('headerCols - colidx: ' .. colIdx .. 'k: ' .. k .. 'v: ' .. v)
+		end
+
+		if dialogtype == 5 then --Only remove if it's a DIALOG_STYLE_TABLIST_HEADER
+			table.remove(items, 1) --remove the first item which is the header
+		end
+
+		--Add the rows ordered under each column
+		for k,v in ipairs(items) do --rows
+			local row = guiGridListAddRow ( listGrid ) --add the row
+			--Now process every individual column (columns are tabulated)
+			for hk,hv in ipairs(string.split(v, "\t")) do --header key, header value
+				--outputConsole('hk: ' .. hk .. 'hv: ' .. hv)
+				guiGridListSetItemText ( listGrid, row, hk, hv, false, true)
+			end
 		end
 	end
 end
