@@ -862,7 +862,7 @@ function initTextDraw(textdraw)
 	g_TextDraws[textdraw.id] = textdraw
 
 	-- GTA replaces underscores with spaces
-	textdraw.text = string.gsub(textdraw.text, "_", " ")
+	textdraw.text = textdraw.text:gsub("_", " ")
 
 	local scale = (textdraw.lwidth or 0.5)
 	local tWidth, tHeight = dxGetTextSize(textdraw.text, scale)
@@ -1099,7 +1099,7 @@ function GameTextForPlayer(text, time, style)
 	elseif style >= 3 then
 		--★
 		-- GTA replaces these with stars
-		gameText[gIndex].text = string.gsub(text, "]", "★")
+		gameText[gIndex].text = text:gsub("]", "★")
 		gameText[gIndex].x = 0.5 * 640
 		gameText[gIndex].y = 0.2 * 448
 		gameText[gIndex].lheight = 0.5
@@ -1778,8 +1778,8 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 		--Process each
 		--DIALOG_STYLE_LIST
 		if dialogtype == 2 then
-			local items = string.gsub(info, "\t", "        ")
-			items = string.split(items, "\n")
+			local items = info:gsub("\t", "        ")
+			items = items:split("\n")
 			listColumn = guiGridListAddColumn(listGrid, "List", 0.85)
 			for k,v in ipairs(items) do
 				local row = guiGridListAddRow ( listGrid )
@@ -1790,7 +1790,7 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 
 		--DIALOG_STYLE_TABLIST, DIALOG_STYLE_TABLIST_HEADER
 		--Add the columns
-		local items = string.split(info, "\n") -- Get the first one which is the header
+		local items = info:split("\n") -- Get the first one which is the header
 		if #items < 1 then
 			outputConsole('Error, your dialog either has no items, its format is wrong or you\'re missing a newline character in the string')
 			outputConsole('The raw string was: ' .. info)
@@ -1798,7 +1798,7 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 		end
 
 		--Create the header
-		local headerCols = string.split(items[1], "\t")
+		local headerCols = items[1]:split("\t")
 		for k,v in ipairs(headerCols) do
 			local colIdx = guiGridListAddColumn( listGrid, (dialogtype == 5 and v or ''), 0.5 ) --If it's the DIALOG_STYLE_TABLIST_HEADER add the name, otherwise leave it blank
 			--outputConsole('headerCols - colidx: ' .. colIdx .. 'k: ' .. k .. 'v: ' .. v)
@@ -1812,7 +1812,7 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 		for k,v in ipairs(items) do --rows
 			local row = guiGridListAddRow ( listGrid ) --add the row
 			--Now process every individual column (columns are tabulated)
-			for hk,hv in ipairs(string.split(v, "\t")) do --header key, header value
+			for hk,hv in ipairs(v:split("\t")) do --header key, header value
 				--outputConsole('hk: ' .. hk .. 'hv: ' .. hv)
 				guiGridListSetItemText ( listGrid, row, hk, hv, false, true)
 			end
