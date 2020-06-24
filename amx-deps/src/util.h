@@ -29,6 +29,7 @@
 
 // Util functions
 int setenv_portable(const char* name, const char* value, int overwrite);
+const char* getenv_portable(const char* name);
 std::string ToUTF8(const char * str);
 std::string ToOriginalCP(const char * str);
 void lua_pushamxstring(lua_State *luaVM, AMX *amx, cell addr);

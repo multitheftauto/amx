@@ -19,8 +19,10 @@
 #include "StdInc.h"
 
 #include <locale.h>
+#include <filesystem>
 
 using namespace std;
+namespace fs = std::filesystem;
 
 ILuaModuleManager10 *pModuleManager = NULL;
 lua_State *mainVM = NULL;
@@ -104,6 +106,20 @@ MTAEXPORT bool InitModule ( ILuaModuleManager10 *pManager, char *szModuleName, c
 	string PATH = getenv("PATH");
 	PATH += ";mods/deathmatch/resources/amx/plugins/";
 	setenv_portable("PATH", PATH.c_str(), 1);
+
+	//Setup environment variables
+	fs::path scriptfilespath = fs::canonical(fs::current_path() / fs::path("mods/deathmatch/resources/amx/scriptfiles"));
+
+	const char* envvar = getenv_portable("MTA_SCRIPTFILESDIR");
+	if (envvar != NULL)
+		fs::path scriptfilespath = envvar;
+
+	if (exists(scriptfilespath)) {
+		setenv_portable("AMXFILE", scriptfilespath.string().c_str(), 0);
+	}
+	else {
+		pModuleManager->ErrorPrintf("scriptfiles directory doesn't exist at: %s\n", scriptfilespath.string());
+	}
 
 	return true;
 }

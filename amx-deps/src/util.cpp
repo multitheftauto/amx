@@ -10,9 +10,34 @@ extern map < AMX *, AMXPROPS > loadedAMXs;
 
 int setenv_portable(const char* name, const char* value, int overwrite) {
 #ifdef WIN32
+	if (!overwrite) {
+		const char* envvar = getenv_portable(name);
+		if (envvar != NULL) {
+			return 1; //It's not null, we succeeded, don't set it
+		}
+	} //Otherwise continue and set it anyway
 	return _putenv_s(name, value);
 #else
 	return setenv(name, value, overwrite);
+#endif
+}
+
+//Credit: https://stackoverflow.com/questions/4130180/how-to-use-vs-c-getenvironmentvariable-as-cleanly-as-possible
+const char* getenv_portable(const char* name)
+{
+#ifdef WIN32
+	const DWORD buffSize = 65535;
+	static char buffer[buffSize];
+	if (GetEnvironmentVariableA(name, buffer, buffSize))
+	{
+		return buffer;
+	}
+	else
+	{
+		return 0;
+	}
+#else
+	return getenv(name);
 #endif
 }
 
