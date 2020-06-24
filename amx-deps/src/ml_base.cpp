@@ -112,12 +112,11 @@ MTAEXPORT bool InitModule ( ILuaModuleManager10 *pManager, char *szModuleName, c
 
 	const char* envvar = getenv_portable("MTA_SCRIPTFILESDIR");
 	if (envvar != NULL)
-		fs::path scriptfilespath = envvar;
+		scriptfilespath = envvar;
 
 	if (exists(scriptfilespath)) {
 		setenv_portable("AMXFILE", scriptfilespath.string().c_str(), 0);
-	}
-	else {
+	} else {
 		pModuleManager->ErrorPrintf("scriptfiles directory doesn't exist at: %s\n", scriptfilespath.string());
 	}
 
