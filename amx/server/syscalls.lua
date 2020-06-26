@@ -2608,6 +2608,49 @@ function SetTrainSpeed(amx, train, speed)
 	return setTrainSpeed(train, speed)
 end
 
+-- 0 - CARMODTYPE_SPOILER
+-- 1 - CARMODTYPE_HOOD
+-- 2 - CARMODTYPE_ROOF
+-- 3 - CARMODTYPE_SIDESKIRT
+-- 4 - CARMODTYPE_LAMPS
+-- 5 - CARMODTYPE_NITRO
+-- 6 - CARMODTYPE_EXHAUST
+-- 7 - CARMODTYPE_WHEELS
+-- 8 - CARMODTYPE_STEREO
+-- 9 - CARMODTYPE_HYDRAULICS
+-- 10 - CARMODTYPE_FRONT_BUMPER
+-- 11 - CARMODTYPE_REAR_BUMPER
+-- 12 - CARMODTYPE_VENT_RIGHT
+-- 13 - CARMODTYPE_VENT_LEFT
+function GetVehicleComponentType(amx, componentid) 
+	local components = {
+		['Spoiler'] = 0,
+		['Hood'] = 1,
+		['Roof'] = 2,
+		['Sideskirt'] = 3,
+		['Headlights'] = 4,
+		['Nitro'] = 5,
+		['Exhaust'] = 6,
+		['Wheels'] = 7,
+		['Stereo'] = 8,
+		['Hydraulics'] = 9,
+		['Front Bumper'] = 10,
+		['Rear Bumper'] = 11,
+
+		-- TODO:
+		-- 12 - CARMODTYPE_VENT_RIGHT
+		-- 13 - CARMODTYPE_VENT_LEFT
+		['Vent'] = 12
+	}
+	local componentName = getVehicleUpgradeSlotName (componentid)
+
+	local componentId = components[componentName]
+	if tonumber(componentId) ~= nil then
+		return componentId
+	else
+		return -1
+	end
+end
 -----------------------------------------------------
 -- Water
 function GetWaveHeight(amx)
@@ -3526,6 +3569,7 @@ g_SAMPSyscallPrototypes = {
 	SetTrainDirection = {'v', 'b'},
 	GetTrainSpeed = {'v', 'r'},
 	SetTrainSpeed = {'v', 'f'},
+	GetVehicleComponentType = {'i'},
 
 	-- pickups
 	GetPickupType = {'u'},
