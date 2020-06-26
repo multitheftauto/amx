@@ -2767,6 +2767,99 @@ function SetPlayerChatBubble(amx, player, text, color, dist, exptime)
 end
 
 
+function TextDrawSetSelectable(amx)
+	notImplemented('TextDrawSetSelectable')
+end
+
+function SetObjectMaterial(amx)
+	notImplemented('SetObjectMaterial')
+end
+
+function GetVehicleModelInfo(amx)
+	notImplemented('GetVehicleModelInfo')
+end
+
+function GetPlayerSurfingObjectID(amx)
+	notImplemented('GetPlayerSurfingObjectID')
+end
+
+function SendClientCheck(amx)
+	notImplemented('SendClientCheck')
+end
+
+function SetPlayerObjectMaterial(amx)
+	notImplemented('SetPlayerObjectMaterial')
+end
+
+function EditPlayerObject(amx)
+	notImplemented('EditPlayerObject')
+end
+
+function TextDrawSetPreviewModel(amx)
+	notImplemented('TextDrawSetPreviewModel')
+end
+
+function TextDrawSetPreviewRot(amx)
+	notImplemented('TextDrawSetPreviewRot')
+end
+
+function AttachObjectToObject(amx)
+	notImplemented('AttachObjectToObject')
+end
+
+function GetPlayerCameraMode(amx)
+	notImplemented('GetPlayerCameraMode')
+end
+
+function GetObjectModel(amx, object)
+	notImplemented('GetObjectModel')
+end
+
+function GetPlayerObjectModel(amx, player, object)
+	notImplemented('GetPlayerObjectModel')
+end
+
+function GetVehicleParamsCarWindows(amx, vehicle, int1, int2, int3, int4)
+	notImplemented('GetVehicleParamsCarWindows')
+end
+
+function NetStats_BytesReceived(amx, player)
+	notImplemented('NetStats_BytesReceived')
+end
+
+function NetStats_BytesSent(amx, player)
+	notImplemented('NetStats_BytesSent')
+end
+
+function NetStats_ConnectionStatus(amx, player)
+	notImplemented('NetStats_ConnectionStatus')
+end
+
+function NetStats_GetConnectedTime(amx, player)
+	notImplemented('NetStats_GetConnectedTime')
+end
+
+function NetStats_GetIpPort(amx, player)
+	notImplemented('NetStats_GetIpPort')
+end
+
+function NetStats_MessagesReceived(amx, player)
+	notImplemented('NetStats_MessagesReceived')
+end
+
+function NetStats_MessagesRecvPerSecond(amx, player)
+	notImplemented('NetStats_MessagesRecvPerSecond')
+end
+
+function NetStats_MessagesSent(amx, player)
+	notImplemented('NetStats_MessagesSent')
+end
+
+function NetStats_PacketLossPercent(amx, player)
+	notImplemented('NetStats_PacketLossPercent')
+end
+
+
 -- Now we have all of RESTful types of requests. Our function is better!
 -- The SAMP documentation said about 'url' - "The URL you want to request. (Without 'http://')"
 -- I made a check. The state without a protocol is called as 'default'.
@@ -3501,10 +3594,8 @@ g_SAMPSyscallPrototypes = {
 	TextDrawSetSelectable = {},
 	SetObjectMaterial = {},
 	GetVehicleModelInfo = {},
-	NetStats_GetConnectedTime = {},
 	GetPlayerSurfingObjectID = {},
 	SendClientCheck = {},
-	NetStats_PacketLossPercent = {},
 	SetPlayerObjectMaterial = {},
 	EditPlayerObject = {},
 	TextDrawSetPreviewModel = {},
@@ -3524,6 +3615,23 @@ g_SAMPSyscallPrototypes = {
 	PlayCrimeReportForPlayer  = {'p', 'i', 'i'},
 
 	GetPlayerSurfingVehicleID = {'p'},
+
+	GetPlayerCameraMode = {'p'},
+	GetObjectModel = {'o'},
+	GetPlayerObjectModel = {'p', 'o'},
+	GetVehicleParamsCarWindows = {'v', 'i', 'i', 'i', 'i'},
+
+	-- network dummy
+	NetStats_BytesReceived = {'p'},
+	NetStats_BytesSent = {'p'},
+	NetStats_ConnectionStatus = {'p'},
+	NetStats_GetConnectedTime = {'p'},
+	NetStats_GetIpPort = {'p','s','i'},
+	NetStats_MessagesReceived = {'p'},
+	NetStats_MessagesRecvPerSecond = {'p'},
+	NetStats_MessagesSent = {'p'},
+	NetStats_PacketLossPercent = {'p'},
+
 
 	-- player data
 	SetPlayerDataInt = {'p', 's', 'i'},
