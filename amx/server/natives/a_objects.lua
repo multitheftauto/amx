@@ -113,6 +113,30 @@ function SetPlayerObjectRot(amx, player, objID, rX, rY, rZ)
 	clientCall(player, 'SetPlayerObjectRot', objID, rX, rY, rZ)
 end
 
+local function getPlayerObjectPos(amx, player, objID)
+	local obj = g_PlayerObjects[player] and g_PlayerObjects[player][objID]
+	if not obj then
+		return false
+	end
+
+	if obj.moving then
+		local curtick = getTickCount()
+		if curtick >= obj.moving.starttick + obj.moving.duration then
+			obj.x, obj.y, obj.z = obj.moving.x, obj.moving.y, obj.moving.z
+			obj.moving = nil
+			x, y, z = obj.x, obj.y, obj.z
+		else
+			local factor = (curtick - obj.moving.starttick)/obj.moving.duration
+			x = obj.x + (obj.moving.x - obj.x)*factor
+			y = obj.y + (obj.moving.y - obj.y)*factor
+			z = obj.z + (obj.moving.z - obj.z)*factor
+		end
+	else
+		x, y, z = obj.x, obj.y, obj.z
+	end
+	return x, y, z
+end
+
 function GetPlayerObjectPos(amx, player, objID, refX, refY, refZ)
 	local x, y, z = getPlayerObjectPos(amx, player, objID)
 	if not x then
@@ -186,3 +210,24 @@ end
 -- native SetPlayerObjectMaterialText(playerid, objectid, text[], materialindex = 0, materialsize = OBJECT_MATERIAL_SIZE_256x128, fontface[] = "Arial", fontsize = 24, bold = 1, fontcolor = 0xFFFFFFFF, backcolor = 0, textalignment = 0);
 
 -- native SetObjectsDefaultCameraCol(disable);
+
+function EditPlayerObject(amx, player, object)
+	--givePlayerMoney(player, amount)
+	notImplemented('EditPlayerObject')
+end
+
+function SetObjectMaterial(amx)
+	notImplemented('SetObjectMaterial')
+end
+
+function SendClientCheck(amx)
+	notImplemented('SendClientCheck')
+end
+
+function SetPlayerObjectMaterial(amx)
+	notImplemented('SetPlayerObjectMaterial')
+end
+
+function EditPlayerObject(amx)
+	notImplemented('EditPlayerObject')
+end

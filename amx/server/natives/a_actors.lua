@@ -68,3 +68,8 @@ end
 SetActorHealth = SetPlayerHealth
 SetActorPos = SetPlayerPos
 SetActorVirtualWorld = SetPlayerVirtualWorld
+
+-- stub
+function GetPlayerCameraTargetActor(amx)
+	return INVALID_ACTOR_ID
+end

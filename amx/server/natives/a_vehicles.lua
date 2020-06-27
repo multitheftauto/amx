@@ -296,3 +296,11 @@ end
 function GetVehicleVirtualWorld(amx, vehicle)
 	return getElementDimension(vehicle)
 end
+
+function GetVehicleModel(amx, vehicle)
+	return getElementModel(vehicle)
+end
+
+function IsValidVehicle(amx, vehicleID)
+	return g_Vehicles[vehicleID] ~= nil
+end

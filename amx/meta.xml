@@ -15,6 +15,7 @@
     <script src="server/natives/a_npc.lua" type="server" />
     <script src="server/natives/a_http.lua" type="server" />
     <script src="server/natives/a_sampdb.lua" type="server" />
+    <script src="server/natives/a_mta.lua" type="server" />
 
     <script src="server/syscalls.lua" type="server" />
     <script src="server/events.lua" type="server" />

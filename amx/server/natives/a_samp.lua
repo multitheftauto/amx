@@ -285,6 +285,11 @@ function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnD
 	return vehID
 end
 
+local function housePickup()
+	procCallOnAll('OnPlayerPickUpPickup', getElemID(player), getElemID(source))
+	cancelEvent()
+end
+
 function AddStaticPickup(amx, model, type, x, y, z)
 	local mtaPickupType, mtaPickupAmount, respawntime
 	if model == 1240 then		-- health
@@ -388,11 +393,22 @@ function AllowAdminTeleport(amx, allow)
 end
 
 function SetDeathDropAmount(amx, amount)
-
+	notImplemented('SetDeathDropAmount')
 end
 
 function CreateExplosion(amx, x, y, z, type, radius)
 	createExplosion(x, y, z, type)
+end
+
+function ShowPlayerMarker(amx, player, show)
+	local data = g_Players[getElemID(player)]
+	if not show and data.blip then
+		destroyElement(data.blip)
+		data.blip = nil
+	elseif show and not data.blip then
+		local r, g, b = getPlayerNametagColor(player)
+		data.blip = createBlipAttachedTo(player, 0, 2, r, g, b)
+	end
 end
 
 
@@ -404,17 +420,17 @@ function EnableZoneNames(amx, enable)
 end
 
 function UsePlayerPedAnims(amx)
-
+	notImplemented('UsePlayerPedAnims')
 end
 
 
 function DisableInteriorEnterExits(amx)
-
+	notImplemented('DisableInteriorEnterExits')
 end
 
 
 function SetNameTagDrawDistance(amx, distance)
-
+	notImplemented('SetNameTagDrawDistance')
 end
 
 function LimitGlobalChatRadius(amx, radius)
@@ -449,7 +465,9 @@ function SendRconCommand(amx, command)
 	print(doRCON(command))
 end
 
-
+function SpawnPlayer(amx, player)
+	spawnPlayerBySelectedClass(player)
+end
 
 -- GetPlayerNetworkStats
 -- GetNetworkStats
@@ -572,6 +590,29 @@ function TextDrawCreate(amx, x, y, text)
 	return id
 end
 
+--Mainly just wrappers to the other non-player functions
+
+function IsPlayerTextDrawValid(player, textdrawID)
+	local tableType = type(g_PlayerTextDraws[player])
+	if tableType ~= "table" then
+		outputDebugString("[ERROR_NOT_A_TABLE] IsPlayerTextDrawValid: g_PlayerTextDraws[player] is not a table yet for textdrawID: " .. textdrawID .. " it's actually a " .. tableType)
+		return false
+	end
+	if not g_PlayerTextDraws[player] then
+		outputDebugString("[ERROR_NIL_TABLE] IsPlayerTextDrawValid: g_PlayerTextDraws[player] is nil! for textdrawID: " .. textdrawID)
+		return false
+	end
+	local textdraw = g_PlayerTextDraws[player][textdrawID]
+	if not textdraw then
+		outputDebugString("[ERROR_NOTD_PROPERTIES] IsPlayerTextDrawValid: no textdraw properties for player with textdrawID: " .. textdrawID)
+		return false
+	end
+	return true
+end
+
+function TextDrawUseBox(amx, textdraw, usebox)
+	textdraw.usebox = usebox
+end
 
 --End of player textdraws
 function TextDrawDestroy(amx, textdrawID)
@@ -805,3 +846,87 @@ function UpdatePlayer3DTextLabelText(amx, textlabel, r, g, b, a, text)
 end
 
 
+function floatstr(amx, str)
+	return float2cell(tonumber(str) or 0)
+end
+
+function format(amx, outBuf, outBufSize, fmt, ...)
+	local args = { ... }
+	local i = 0
+
+	fmt = fmt:gsub('[^%%]%%$', '%%%%'):gsub('%%i', '%%d')
+	for c in fmt:gmatch('%%[%-%d%.]*(%*?%a)') do
+		i = i + 1
+		if c:match('^%*') then
+			c = c:sub(2)
+			table.remove(args, i)
+		end
+		if c == 'd' then
+			args[i] = amx.memDAT[args[i]]
+		elseif c == 'f' then
+			args[i] = cell2float(amx.memDAT[args[i]])
+		elseif c == 's' then
+			args[i] = readMemString(amx, args[i])
+		else
+			i = i - 1
+		end
+	end
+
+	fmt = fmt:gsub('(%%[%-%d%.]*)%*(%a)', '%1%2')
+	local result = fmt:format(unpack(args))
+
+	--replace colors
+	if #result+1 <= outBufSize then
+		writeMemString(amx, outBuf, colorizeString(result))
+	end
+end
+
+function gpci(amx, player, nameBuf, bufSize)
+	local serial = getPlayerSerial(player)
+	if #serial <= bufSize then
+		writeMemString(amx, nameBuf, serial)
+	end
+end
+
+function SetSpawnInfo(amx, player, team, skin, x, y, z, angle, weap1, weap1_ammo, weap2, weap2_ammo, weap3, weap3_ammo)
+	g_Players[getElemID(player)].spawninfo = {
+		x, y, z, angle, skinReplace[skin] or skin, 0, 0, team,
+		weapons={ {weap1, weap1_ammo}, {weap2, weap2_ammo}, {weap3, weap3_ammo} }
+	}
+end
+
+function NetStats_BytesReceived(amx, player)
+	notImplemented('NetStats_BytesReceived')
+end
+
+function NetStats_BytesSent(amx, player)
+	notImplemented('NetStats_BytesSent')
+end
+
+function NetStats_ConnectionStatus(amx, player)
+	notImplemented('NetStats_ConnectionStatus')
+end
+
+function NetStats_GetConnectedTime(amx, player)
+	notImplemented('NetStats_GetConnectedTime')
+end
+
+function NetStats_GetIpPort(amx, player)
+	notImplemented('NetStats_GetIpPort')
+end
+
+function NetStats_MessagesReceived(amx, player)
+	notImplemented('NetStats_MessagesReceived')
+end
+
+function NetStats_MessagesRecvPerSecond(amx, player)
+	notImplemented('NetStats_MessagesRecvPerSecond')
+end
+
+function NetStats_MessagesSent(amx, player)
+	notImplemented('NetStats_MessagesSent')
+end
+
+function NetStats_PacketLossPercent(amx, player)
+	notImplemented('NetStats_PacketLossPercent')
+end
