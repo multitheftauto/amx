@@ -2,7 +2,7 @@
 ----------------------------------------------
 --  Start of SA-MP API implementation
 
-local skinReplace = {
+skinReplace = {
 	-- invalid skins
 	[3] = 0,
 	[4] = 0,
