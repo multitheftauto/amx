@@ -1,0 +1,188 @@
+function CreateObject(amx, model, x, y, z, rX, rY, rZ)
+	outputConsole('CreateObject(' .. model .. ')')
+	local obj = createObject(model, x, y, z, rX, rY, rZ)
+	if obj == false then
+		obj = createObject(1337, x, y, z, rX, rY, rZ) --Create a dummy object anyway since createobject can also be used to make camera attachments
+		setElementAlpha(obj, 0)
+		setElementCollisionsEnabled(obj, false)
+		outputDebugString(string.format("[MTA AMX - WARNING]: The provided model id (%d) is invalid (the model was replaced with id 1337, is now invisible and non-collidable), some object ids are not supported, consider updating your scripts.", model))
+	end
+	return addElem(g_Objects, obj)
+end
+
+-- TODO: AttachObjectToVehicle dummy
+
+function AttachObjectToObject(amx)
+	notImplemented('AttachObjectToObject')
+end
+
+function AttachObjectToPlayer(amx, object, player, offsetX, offsetY, offsetZ, rX, rY, rZ)
+	attachElements(object, player, offsetX, offsetY, offsetZ, rX, rY, rZ)
+end
+
+function SetObjectPos(amx, object, x, y, z)
+	if(getElementType(object) == 'vehicle') then
+		setElementFrozen(object, true)
+	end
+
+	setElementPosition(object, x, y, z)
+
+	if getElementType(object) == 'vehicle' then
+		setElementAngularVelocity(object, 0, 0, 0)
+		setElementVelocity(object, 0, 0, 0)
+		setTimer(setElementFrozen, 500, 1, object, false)
+	end
+end
+
+function GetObjectPos(amx, object, refX, refY, refZ)
+	local x, y, z = getElementPosition(object)
+	writeMemFloat(amx, refX, x)
+	writeMemFloat(amx, refY, y)
+	writeMemFloat(amx, refZ, z)
+end
+
+function GetObjectRot(amx, object, refX, refY, refZ)
+	local rX, rX, rZ = getObjectRotation(object)
+	writeMemFloat(amx, refX, rX)
+	writeMemFloat(amx, refY, rY)
+	writeMemFloat(amx, refZ, rZ)
+end
+
+function SetObjectRot(amx, object, rX, rY, rY)
+	setObjectRotation(object, rX, rY, rZ)
+end
+
+function GetObjectModel(amx, object)
+	notImplemented('GetObjectModel')
+end
+
+-- SetObjectNoCameraCol
+
+function IsValidObject(amx, objID)
+	return g_Objects[objID] ~= nil
+end
+
+function DestroyObject(amx, object)
+	removeElem(g_Objects, object)
+	destroyElement(object)
+end
+
+function MoveObject(amx, object, x, y, z, speed)
+	local distance = getDistanceBetweenPoints3D(x, y, z, getElementPosition(object))
+	local time = distance/speed*1000
+	moveObject(object, time, x, y, z, 0, 0, 0)
+	setTimer(procCallOnAll, time, 1, 'OnObjectMoved', getElemID(object))
+end
+
+function StopObject(amx, object)
+	stopObject(object)
+end
+-- IsObjectMoving
+
+function CreatePlayerObject(amx, player, model, x, y, z, rX, rY, rZ)
+	outputConsole('CreatePlayerObject(' .. model .. ')')
+	if not g_PlayerObjects[player] then
+		g_PlayerObjects[player] = {}
+	end
+	local objID = table.insert(g_PlayerObjects[player], { x = x, y = y, z = z, rx = rX, ry = rY, rz = rZ })
+	clientCall(player, 'CreatePlayerObject', objID, model, x, y, z, rX, rY, rZ)
+	return objID
+end
+
+function SetPlayerObjectPos(amx, player, objID, x, y, z)
+	local obj = g_PlayerObjects[player] and g_PlayerObjects[player][objID]
+	if not obj then
+		return
+	end
+	if obj.moving then
+		if isTimer(obj.moving.timer) then
+			killTimer(obj.moving.timer)
+		end
+		obj.moving = nil
+	end
+	obj.x, obj.y, obj.z = x, y, z
+	clientCall(player, 'SetPlayerObjectPos', objID, x, y, z)
+end
+
+function SetPlayerObjectRot(amx, player, objID, rX, rY, rZ)
+	local obj = g_PlayerObjects[player] and g_PlayerObjects[player][objID]
+	if not obj then
+		return
+	end
+	obj.rx, obj.ry, obj.rz = rX, rY, rZ
+	clientCall(player, 'SetPlayerObjectRot', objID, rX, rY, rZ)
+end
+
+function GetPlayerObjectPos(amx, player, objID, refX, refY, refZ)
+	local x, y, z = getPlayerObjectPos(amx, player, objID)
+	if not x then
+		return
+	end
+	writeMemFloat(amx, refX, x)
+	writeMemFloat(amx, refY, y)
+	writeMemFloat(amx, refZ, z)
+end
+
+function GetPlayerObjectRot(amx, player, objID, refX, refY, refZ)
+	local obj = g_PlayerObjects[player] and g_PlayerObjects[player][objID]
+	if not obj then
+		return
+	end
+	writeMemFloat(amx, refX, obj.rx)
+	writeMemFloat(amx, refY, obj.ry)
+	writeMemFloat(amx, refZ, obj.rz)
+end
+
+function GetPlayerObjectModel(amx, player, object)
+	notImplemented('GetPlayerObjectModel')
+end
+
+
+function IsValidPlayerObject(amx, player, objID)
+	return g_PlayerObjects[player] and g_PlayerObjects[player][objID] and true
+end
+
+function DestroyPlayerObject(amx, player, objID)
+	g_PlayerObjects[player][objID] = nil
+	clientCall(player, 'DestroyPlayerObject', objID)
+end
+
+function MovePlayerObject(amx, player, objID, x, y, z, speed)
+	local obj = g_PlayerObjects[player] and g_PlayerObjects[player][objID]
+	if not obj then
+		return
+	end
+	local distance = getDistanceBetweenPoints3D(x, y, z, getPlayerObjectPos(amx, player, objID))
+	local duration = distance/speed*1000
+	if obj.moving and isTimer(obj.moving.timer) then
+		killTimer(obj.moving.timer)
+	end
+	local timer = setTimer(procCallOnAll, duration, 1, 'OnPlayerObjectMoved', getElemID(player), objID)
+	obj.moving = { x = x, y = y, z = z, starttick = getTickCount(), duration = duration, timer = timer }
+	clientCall(player, 'MovePlayerObject', objID, x, y, z, speed)
+end
+
+function StopPlayerObject(amx, player, objID)
+	local obj = g_PlayerObjects[player] and g_PlayerObjects[player][objID]
+	if not obj then
+		return
+	end
+	if obj.moving then
+		obj.x, obj.y, obj.z = getPlayerObjectPos(amx, player, objID)
+		if isTimer(obj.moving.timer) then
+			killTimer(obj.moving.timer)
+		end
+		obj.moving = nil
+	end
+	clientCall(player, 'StopPlayerObject', objID)
+end
+
+-- AttachPlayerObjectToPlayer client
+
+-- native SetObjectMaterial(objectid, materialindex, modelid, txdname[], texturename[], materialcolor=0);
+-- native SetPlayerObjectMaterial(playerid, objectid, materialindex, modelid, txdname[], texturename[], materialcolor=0);
+
+-- native SetObjectMaterialText(objectid, text[], materialindex = 0, materialsize = OBJECT_MATERIAL_SIZE_256x128, fontface[] = "Arial", fontsize = 24, bold = 1, fontcolor = 0xFFFFFFFF, backcolor = 0, textalignment = 0);
+-- native SetPlayerObjectMaterialText(playerid, objectid, text[], materialindex = 0, materialsize = OBJECT_MATERIAL_SIZE_256x128, fontface[] = "Arial", fontsize = 24, bold = 1, fontcolor = 0xFFFFFFFF, backcolor = 0, textalignment = 0);
+
+-- native SetObjectsDefaultCameraCol(disable);
