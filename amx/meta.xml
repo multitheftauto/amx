@@ -6,6 +6,17 @@
     <script src="server/util.lua" type="server" />
     <script src="server/_triggerqueue.lua" type="server" />
     <script src="server/rcon.lua" type="server" />
+
+    <script src="server/natives/a_samp.lua" type="server" />
+    <script src="server/natives/a_objects.lua" type="server" />
+    <script src="server/natives/a_players.lua" type="server" />
+    <script src="server/natives/a_vehicles.lua" type="server" />
+    <script src="server/natives/a_actors.lua" type="server" />
+    <script src="server/natives/a_npc.lua" type="server" />
+    <script src="server/natives/a_http.lua" type="server" />
+    <script src="server/natives/a_sampdb.lua" type="server" />
+    <script src="server/natives/a_mta.lua" type="server" />
+
     <script src="server/syscalls.lua" type="server" />
     <script src="server/events.lua" type="server" />
     <script src="server/amx.lua" type="server" />
