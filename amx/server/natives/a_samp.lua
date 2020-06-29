@@ -202,7 +202,10 @@ function GetVehiclePoolSize(amx)
 end
 
 
--- TODO: GetActorPoolSize dummy
+function GetActorPoolSize(amx)
+	notImplemented('GetActorPoolSize')
+	return false
+end
 
 -- Security
 
@@ -211,26 +214,64 @@ function SHA256_PassHash(amx, pass, salt, ret_hash, ret_hash_len)
 	writeMemString(amx, ret_hash, string.upper(secret) )
 end
 
+function SetSVarInt(amx)
+	notImplemented('SetSVarInt')
+	return false
+end
 
--- // Server wide persistent variable system (SVars)
--- native SetSVarInt(varname[], int_value);
--- native GetSVarInt(varname[]);
--- native SetSVarString(varname[], string_value[]);
--- native GetSVarString(varname[], string_return[], len);
--- native SetSVarFloat(varname[], Float:float_value);
--- native Float:GetSVarFloat(varname[]);
--- native DeleteSVar(varname[]);
+function GetSVarInt(amx)
+	notImplemented('GetSVarInt')
+	return false
+end
 
--- native GetSVarsUpperIndex();
--- native GetSVarNameAtIndex(index, ret_varname[], ret_len);
--- native GetSVarType(varname[]);
+function SetSVarString(amx)
+	notImplemented('SetSVarString')
+	return false
+end
+
+function GetSVarString(amx)
+	notImplemented('GetSVarString')
+	return false
+end
+
+function SetSVarFloat(amx)
+	notImplemented('SetSVarFloat')
+	return false
+end
+
+function GetSVarFloat(amx)
+	notImplemented('GetSVarFloat')
+	return false
+end
+
+function DeleteSVar(amx)
+	notImplemented('DeleteSVar')
+	return false
+end
+
+function GetSVarsUpperIndex(amx)
+	notImplemented('GetSVarsUpperIndex')
+	return false
+end
+
+function GetSVarNameAtIndex(amx)
+	notImplemented('GetSVarNameAtIndex')
+	return false
+end
+
+function GetSVarType(amx)
+	notImplemented('GetSVarType')
+	return false
+end
+
+
 
 function SetGameModeText(amx, gamemodeName)
 	setGameType(gamemodeName)
 end
 
 function SetTeamCount(amx, count)
-
+	notImplemented('SetTeamCount')
 end
 
 function AddPlayerClass(amx, skin, x, y, z, angle, weap1, weap1_ammo, weap2, weap2_ammo, weap3, weap3_ammo)
@@ -267,6 +308,7 @@ function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnD
 		if(color1 <= 0 and color1 >= 126) then color1 = math.random(1, 126) end
 		if(color2 <= 0 and color2 >= 126) then color2 = math.random(1, 126) end
 
+		-- WARNING: [amx]\amx\server\natives\a_samp.lua:311: Expected positive value, got negative. This warning may be an error in future versions.
 		setVehicleColor(vehicle, color1, color2, 0, 0)
 	end
 	local vehID = addElem(g_Vehicles, vehicle)
@@ -474,6 +516,20 @@ end
 -- GetPlayerNetworkStats
 -- GetNetworkStats
 -- GetPlayerVersion
+function GetPlayerNetworkStats(amx)
+	notImplemented('GetPlayerNetworkStats')
+	return false
+end
+
+function GetNetworkStats(amx)
+	notImplemented('GetNetworkStats')
+	return false
+end
+
+function GetPlayerVersion(amx)
+	notImplemented('GetPlayerVersion')
+	return false
+end
 
 function GetServerVarAsBool(amx, varname)
 	return get('amx.' .. varname) and true

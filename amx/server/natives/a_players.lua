@@ -114,7 +114,10 @@ function GetPlayerDrunkLevel(player)
 	return 0
 end
 
--- TODO: SetPlayerDrunkLevel
+function SetPlayerDrunkLevel(player)
+	notImplemented('SetPlayerDrunkLevel', 'SCM is not supported.')
+	return 0
+end
 
 function SetPlayerColor(amx, player, r, g, b)
 	setPlayerNametagColor(player, r, g, b)
@@ -255,6 +258,7 @@ end
 
 -- dummy
 function PlayCrimeReportForPlayer(amx, player, suspectid, crimeid)
+	notImplemented('PlayCrimeReportForPlayer')
 	return false
 end
 
@@ -266,7 +270,10 @@ function StopAudioStreamForPlayer(amx, player)
 	clientCall(player, 'StopAudioStreamForPlayer')
 end
 
--- TODO: SetPlayerShopName
+function SetPlayerShopName(amx)
+	notImplemented('SetPlayerShopName')
+	return false
+end
 
 function SetPlayerSkillLevel(amx, player, skill, level)
 	return setPedStat(player, skill + 69, level)
@@ -284,7 +291,10 @@ function RemoveBuildingForPlayer(amx, player, model, x, y, z, radius)
 	clientCall(player, 'RemoveBuildingForPlayer', model, x, y, z, radius)
 end
 
--- TODO: GetPlayerLastShotVectors dummy
+function GetPlayerLastShotVectors(amx)
+	notImplemented('GetPlayerLastShotVectors')
+	return false
+end
 
 function SetPlayerAttachedObject(amx, player, index, modelid, bone, fOffsetX, fOffsetY, fOffsetZ, fRotX, fRotY, fRotZ, fScaleX, fScaleY, fScaleZ, materialcolor1, materialcolor2)
 	local x, y, z = getElementPosition (player)
@@ -317,8 +327,15 @@ function RemovePlayerAttachedObject(amx, player, index)
 	return 0
 end
 
--- TODO: dummy IsPlayerAttachedObjectSlotUsed
--- TODO: dummy EditAttachedObject
+function IsPlayerAttachedObjectSlotUsed(amx)
+	notImplemented('IsPlayerAttachedObjectSlotUsed')
+	return false
+end
+
+function EditAttachedObject(amx)
+	notImplemented('EditAttachedObject')
+	return false
+end
 
 function CreatePlayerTextDraw(amx, player, x, y, text)
 	outputDebugString('CreatePlayerTextDraw called with args ' .. x .. ' ' .. y .. ' ' .. text)
@@ -440,6 +457,7 @@ function PlayerTextDrawSetOutline(amx, player, textdrawID, size)
 	return true
 end
 function PlayerTextDrawSetProportional(amx, player, textdrawID, proportional)
+	notImplemented('PlayerTextDrawSetProportional')
   --TextDrawSetProportional(amx, textdraw, proportional)
 end
 
@@ -458,9 +476,10 @@ function PlayerTextDrawFont(amx, player, textdrawID, font)
 	return true
 end
 
--- TODO: dummy PlayerTextDrawFont
--- TODO: dummy PlayerTextDrawSetProportional
--- TODO: dummy PlayerTextDrawSetSelectable
+function PlayerTextDrawSetSelectable(amx)
+	notImplemented('PlayerTextDrawSetSelectable')
+	return false
+end
 
 function PlayerTextDrawShow(amx, player, textdrawID)
 	if not IsPlayerTextDrawValid(player, textdrawID) then
@@ -495,9 +514,20 @@ function PlayerTextDrawSetString(amx, player, textdrawID, str)
  return true
 end
 
--- TODO: dummy PlayerTextDrawSetPreviewModel
--- TODO: dummy PlayerTextDrawSetPreviewRot
--- TODO: dummy PlayerTextDrawSetPreviewVehCol
+function PlayerTextDrawSetPreviewModel(amx)
+	notImplemented('PlayerTextDrawSetPreviewModel')
+	return false
+end
+
+function PlayerTextDrawSetPreviewRot(amx)
+	notImplemented('PlayerTextDrawSetPreviewRot')
+	return false
+end
+
+function PlayerTextDrawSetPreviewVehCol(amx)
+	notImplemented('PlayerTextDrawSetPreviewVehCol')
+	return false
+end
 
 function GetPVarInt(amx, player, varname)
 	local value = g_Players[getElemID(player)].pvars[varname]
@@ -549,8 +579,16 @@ function DeletePVar(amx, player, varname)
 	return 1
 end
 
--- TODO: dummy GetPVarsUpperIndex
--- TODO: dummy GetPVarNameAtIndex
+function GetPVarsUpperIndex(amx)
+	notImplemented('GetPVarsUpperIndex')
+	return false
+end
+
+function GetPVarNameAtIndex(amx)
+	notImplemented('GetPVarNameAtIndex')
+	return false
+end
+
 function GetPVarType(amx, player, varname)
 	local value = g_Players[getElemID(player)].pvars[varname]
 	if value then
@@ -604,7 +642,7 @@ function TogglePlayerControllable(amx, player, enable)
 end
 
 function PlayerPlaySound(amx, player, soundID, x, y, z)
- -- TODO: dummy
+	notImplemented('PlayerPlaySound')
 end
 
 function ApplyAnimation(amx, player, animlib, animname, fDelta, loop, lockx, locky, freeze, time, forcesync)
@@ -626,7 +664,10 @@ function GetPlayerAnimationIndex(player)
 	return 0
 end
 
--- TODO: dummy GetAnimationName
+function GetAnimationName(amx)
+	notImplemented('GetAnimationName')
+	return false
+end
 
 function GetPlayerSpecialAction(amx, player)
 	if doesPedHaveJetPack(player) then
@@ -648,7 +689,10 @@ function SetPlayerSpecialAction(amx, player, actionID)
 	g_Players[getElemID(player)].specialaction = actionID
 end
 
--- TODO: dummy DisableRemoteVehicleCollisions
+function DisableRemoteVehicleCollisions(amx)
+	notImplemented('DisableRemoteVehicleCollisions')
+	return false
+end
 
 function SetPlayerCheckpoint(amx, player, x, y, z, size)
 	g_Players[getElemID(player)].checkpoint = { x = x, y = y, z = z, radius = size }
@@ -720,20 +764,49 @@ function GetPlayerCameraMode(amx)
 	notImplemented('GetPlayerCameraMode')
 end
 
--- TODO: EnablePlayerCameraTarget
+function EnablePlayerCameraTarget(amx)
+	notImplemented('EnablePlayerCameraTarget')
+	return false
+end
 
--- native GetPlayerCameraTargetObject(playerid);
--- native GetPlayerCameraTargetVehicle(playerid);
--- native GetPlayerCameraTargetPlayer(playerid);
--- native GetPlayerCameraTargetActor(playerid);
--- GetPlayerCameraAspectRatio
--- GetPlayerCameraZoom
+function GetPlayerCameraTargetObject(amx)
+	notImplemented('GetPlayerCameraTargetObject')
+	return false
+end
+
+function GetPlayerCameraTargetVehicle(amx)
+	notImplemented('GetPlayerCameraTargetVehicle')
+	return false
+end
+
+function GetPlayerCameraTargetPlayer(amx)
+	notImplemented('GetPlayerCameraTargetPlayer')
+	return false
+end
+
+function GetPlayerCameraTargetActor(amx)
+	notImplemented('GetPlayerCameraTargetActor')
+	return false
+end
+
+function GetPlayerCameraAspectRatio(amx)
+	notImplemented('GetPlayerCameraAspectRatio')
+	return false
+end
+
+function GetPlayerCameraZoom(amx)
+	notImplemented('GetPlayerCameraZoom')
+	return false
+end
 
 function AttachCameraToObject(amx, player, object)
 	clientCall(player, 'AttachCameraToObject', object)
 end
 
--- AttachCameraToPlayerObject
+function AttachCameraToPlayerObject(amx)
+	notImplemented('AttachCameraToPlayerObject')
+	return false
+end
 
 --playerid, Float:FromX, Float:FromY, Float:FromZ, Float:ToX, Float:ToY, Float:ToZ, time, cut = CAMERA_CUT
 function InterpolateCameraPos(amx, player, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
@@ -781,14 +854,17 @@ function SetPlayerVirtualWorld(amx, player, dimension)
 	setElementDimension(player, dimension)
 end
 
--- TODO: dummy GetPlayerVirtualWorld
+function GetPlayerVirtualWorld(amx)
+	notImplemented('GetPlayerVirtualWorld')
+	return false
+end
 
 function EnableStuntBonusForAll(amx, enable)
-
+	notImplemented('EnableStuntBonusForAll')
 end
 
 function EnableStuntBonusForPlayer(amx, player, enable)
-
+	notImplemented('EnableStuntBonusForPlayer')
 end
 
 function TogglePlayerSpectating(amx, player, enable)
@@ -828,11 +904,25 @@ function PlayerSpectateVehicle(amx, player, vehicleToSpectate, mode)
 	end
 end
 
--- native StartRecordingPlayerData(playerid, recordtype, recordname[]);
--- native StopRecordingPlayerData(playerid);
+function StartRecordingPlayerData(amx)
+	notImplemented('StartRecordingPlayerData')
+	return false
+end
 
--- native SelectTextDraw(playerid, hovercolor); // enables the mouse so the player can select a textdraw
--- native CancelSelectTextDraw(playerid);	// cancel textdraw selection with the mouse
+function StopRecordingPlayerData(amx)
+	notImplemented('StopRecordingPlayerData')
+	return false
+end
+
+function SelectTextDraw(amx)
+	notImplemented('SelectTextDraw')
+	return false
+end
+
+function CancelSelectTextDraw(amx)
+	notImplemented('CancelSelectTextDraw')
+	return false
+end
 
 -- Explosion
 function CreateExplosionForPlayer(amx, player, x, y, z, type, radius)

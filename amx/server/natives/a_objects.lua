@@ -11,6 +11,9 @@ function CreateObject(amx, model, x, y, z, rX, rY, rZ)
 end
 
 -- TODO: AttachObjectToVehicle dummy
+function AttachObjectToVehicle(amx)
+	notImplemented('AttachObjectToVehicle')
+end
 
 function AttachObjectToObject(amx)
 	notImplemented('AttachObjectToObject')
@@ -56,7 +59,9 @@ function GetObjectModel(amx, object)
 	notImplemented('GetObjectModel')
 end
 
--- SetObjectNoCameraCol
+function SetObjectNoCameraCol(amx)
+	notImplemented('SetObjectNoCameraCol')
+end
 
 function IsValidObject(amx, objID)
 	return g_Objects[objID] ~= nil
@@ -77,7 +82,10 @@ end
 function StopObject(amx, object)
 	stopObject(object)
 end
--- IsObjectMoving
+
+function IsObjectMoving(amx)
+	notImplemented('IsObjectMoving')
+end
 
 function CreatePlayerObject(amx, player, model, x, y, z, rX, rY, rZ)
 	outputConsole('CreatePlayerObject(' .. model .. ')')
@@ -201,18 +209,18 @@ function StopPlayerObject(amx, player, objID)
 	clientCall(player, 'StopPlayerObject', objID)
 end
 
+
+function SetObjectMaterialText(amx)
+	notImplemented('SetObjectMaterialText')
+end
 -- AttachPlayerObjectToPlayer client
 
--- native SetObjectMaterial(objectid, materialindex, modelid, txdname[], texturename[], materialcolor=0);
--- native SetPlayerObjectMaterial(playerid, objectid, materialindex, modelid, txdname[], texturename[], materialcolor=0);
 
--- native SetObjectMaterialText(objectid, text[], materialindex = 0, materialsize = OBJECT_MATERIAL_SIZE_256x128, fontface[] = "Arial", fontsize = 24, bold = 1, fontcolor = 0xFFFFFFFF, backcolor = 0, textalignment = 0);
--- native SetPlayerObjectMaterialText(playerid, objectid, text[], materialindex = 0, materialsize = OBJECT_MATERIAL_SIZE_256x128, fontface[] = "Arial", fontsize = 24, bold = 1, fontcolor = 0xFFFFFFFF, backcolor = 0, textalignment = 0);
-
--- native SetObjectsDefaultCameraCol(disable);
+function SetObjectsDefaultCameraCol(amx, disable)
+	notImplemented('SetObjectsDefaultCameraCol')
+end
 
 function EditPlayerObject(amx, player, object)
-	--givePlayerMoney(player, amount)
 	notImplemented('EditPlayerObject')
 end
 
