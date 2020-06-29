@@ -40,11 +40,13 @@ end
 
 -- stub
 function SetActorInvulnerable(amx)
+	notImplemented('SetActorInvulnerable')
 	return 1
 end
 
 -- stub
 function IsActorInvulnerable(amx)
+	notImplemented('IsActorInvulnerable')
 	return 1
 end
 
@@ -71,5 +73,6 @@ SetActorVirtualWorld = SetPlayerVirtualWorld
 
 -- stub
 function GetPlayerCameraTargetActor(amx)
+	notImplemented('GetPlayerCameraTargetActor')
 	return INVALID_ACTOR_ID
 end
