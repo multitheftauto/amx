@@ -44,7 +44,6 @@ local screenWidth, screenHeight = guiGetScreenSize()
 addEventHandler('onClientResourceStart', resourceRoot,
 	function()
 		triggerServerEvent('onLoadedAtClient', resourceRoot, localPlayer)
-		InitDialogs()
 		setTimer(checkTextLabels, 500, 0)
 	end,
 	false
@@ -1623,54 +1622,108 @@ function TogglePlayerClock(toggle)
 	setPlayerHudComponentVisible('clock', toggle)
 end
 
-function createListDialog()
-		listDialog = nil
-		listWindow = guiCreateWindow(screenWidth/2 - 541/2,screenHeight/2 - 352/2,541,352,"",false)
-		guiWindowSetMovable(listWindow,false)
-		guiWindowSetSizable(listWindow,false)
-		listGrid = guiCreateGridList(0.0, 0.1, 1.0, 0.8,true,listWindow)
-		guiGridListSetSelectionMode(listGrid,2)
-		guiGridListSetScrollBars(listGrid, true, true)
-		guiGridListSetSortingEnabled (listGrid, false)
-		--listColumn = guiGridListAddColumn(listGrid, "List", 0.85)
-		listButton1 = guiCreateButton(10,323,256,20,"",false,listWindow)
-		listButton2 = guiCreateButton(281,323,256,20,"",false,listWindow)
-		guiSetVisible(listWindow, false)
-		addEventHandler("onClientGUIClick", listButton1, OnListDialogButton1Click, false)
-		addEventHandler("onClientGUIClick", listButton2, OnListDialogButton2Click, false)
+function createListDialog(titleText, message, button1txt, button2txt)
+	if listWindow ~= nil then
+		removeEventHandler("onClientGUIClick", getRootElement(), OnListDialogButton1Click) --Remove handlers so they are not registered more than once
+		removeEventHandler("onClientGUIClick", getRootElement(), OnListDialogButton2Click)
+		destroyElement(listWindow) --Assuming inputWindow is the parent of everything, it should remove the whole hierarchy
+	end
+
+	listDialog = nil
+	listWindow = guiCreateWindow(screenWidth/2 - 541/2,screenHeight/2 - 352/2,541,352, titleText, false)
+	guiWindowSetMovable(listWindow,false)
+	guiWindowSetSizable(listWindow,false)
+	listGrid = guiCreateGridList(0.0, 0.1, 1.0, 0.8,true,listWindow)
+	guiGridListSetSelectionMode(listGrid,2)
+	guiGridListSetScrollBars(listGrid, true, true)
+	guiGridListSetSortingEnabled (listGrid, false)
+	--listColumn = guiGridListAddColumn(listGrid, "List", 0.85)
+
+	local xpos = 0.0
+	if #button1txt == 0 or #button2txt == 0 then
+		xpos = 0.40 --Center
+	end
+	
+	listButton1 = guiCreateButton(xpos ~= 0.0 and xpos or 0.3, 0.9, 0.15, 0.1, button1txt,true,listWindow)
+	listButton2 = guiCreateButton(xpos ~= 0.0 and xpos or 0.5, 0.9, 0.15, 0.1, button2txt,true,listWindow)
+
+	if #button1txt == 0 then
+		guiSetVisible(listButton1, false)
+	end
+	if #button2txt == 0 then
+		guiSetVisible(listButton2, false)
+	end
+
+	guiSetVisible(listWindow, false)
+	addEventHandler("onClientGUIClick", listButton1, OnListDialogButton1Click, false)
+	addEventHandler("onClientGUIClick", listButton2, OnListDialogButton2Click, false)
+	return listGrid
 end
 
-function createInputDialog()
+function createInputDialog(titleText, message, button1txt, button2txt)
+		if inputWindow ~= nil then
+			removeEventHandler("onClientGUIClick", getRootElement(), OnInputDialogButton1Click) --Remove handlers so they are not registered more than once
+			removeEventHandler("onClientGUIClick", getRootElement(), OnInputDialogButton2Click)
+			destroyElement(inputWindow) --Assuming inputWindow is the parent of everything, it should remove the whole hierarchy
+		end
 		inputDialog = nil
-		inputWindow = guiCreateWindow(screenWidth/2 - 541/2,screenHeight/2 - 352/2,541,352,"",false)
+		inputWindow = guiCreateWindow(screenWidth/2 - 541/2,screenHeight/2 - 352/2,541,352, titleText, false)
 		guiWindowSetMovable(listWindow,false)
 		guiWindowSetSizable(listWindow,false)
-		inputLabel = guiCreateLabel(0.1, 0.1, 1.0, 0.8, "", true, inputWindow)
-		inputEdit = guiCreateEdit(0.0, 0.7, 1.0, 0.1,"",true,inputWindow)
-		inputButton1 = guiCreateButton(0.3, 0.9, 0.15, 0.1,"",true,inputWindow) --x, y, width, height
-		inputButton2 = guiCreateButton(0.5, 0.9, 0.15, 0.1,"",true,inputWindow)
+		inputLabel = guiCreateColoredLabel(0.1, 0.1, 1.0, 0.8, message, inputWindow, true)
+		inputEdit = guiCreateEdit(0.0, 0.7, 1.0, 0.1, "", true, inputWindow)
+
+		local xpos = 0.0
+		if #button1txt == 0 or #button2txt == 0 then
+			xpos = 0.40 --Center
+		end
+
+		inputButton1 = guiCreateButton(xpos ~= 0.0 and xpos or 0.3, 0.9, 0.15, 0.1, button1txt, true,inputWindow) --x, y, width, height
+		inputButton2 = guiCreateButton(xpos ~= 0.0 and xpos or 0.5, 0.9, 0.15, 0.1, button2txt, true,inputWindow)
+
+		if #button1txt == 0 then
+			guiSetVisible(inputButton1, false)
+		end
+		if #button2txt == 0 then
+			guiSetVisible(inputButton2, false)
+		end
+		
 		guiSetVisible(inputWindow, false)
 		addEventHandler("onClientGUIClick", inputButton1, OnInputDialogButton1Click, false)
 		addEventHandler("onClientGUIClick", inputButton2, OnInputDialogButton2Click, false)
 end
 
-function createMessageDialog()
+function createMessageDialog(titleText, message, button1txt, button2txt )
+		if msgWindow ~= nil then
+			removeEventHandler("onClientGUIClick", getRootElement(), OnMessageDialogButton1Click) --Remove handlers so they are not registered more than once
+			removeEventHandler("onClientGUIClick", getRootElement(), OnMessageDialogButton2Click)
+			destroyElement(msgWindow) --Assuming msgWindow is the parent of everything, it should remove the whole hierarchy
+		end
+
 		msgDialog = nil
-		msgWindow = guiCreateWindow(screenWidth/2 - 541/2,screenHeight/2 - 352/2,541,352,"",false)
+		msgWindow = guiCreateWindow(screenWidth/2 - 541/2,screenHeight/2 - 352/2,541,352, titleText, false)
 		guiWindowSetMovable(msgWindow,false)
 		guiWindowSetSizable(msgWindow,false)
-		msgLabel = guiCreateLabel(0.0, 0.1, 1.0, 0.7, "", true, msgWindow)
-		msgButton1 = guiCreateButton(0.3, 0.9, 0.15, 0.1,"",true,msgWindow) --x, y, width, height
-		msgButton2 = guiCreateButton(0.5, 0.9, 0.15, 0.1,"",true,msgWindow)
+		msgLabel = guiCreateColoredLabel(0.1, 0.1, 1.0, 0.7, message, msgWindow, true)
+
+		local xpos = 0.0
+		if #button1txt == 0 or #button2txt == 0 then
+			xpos = 0.40 --Center
+		end
+
+		msgButton1 = guiCreateButton(xpos ~= 0.0 and xpos or 0.3, 0.9, 0.15, 0.1, button1txt,true,msgWindow) --x, y, width, height
+		msgButton2 = guiCreateButton(xpos ~= 0.0 and xpos or 0.5, 0.9, 0.15, 0.1, button2txt,true,msgWindow)
+
+		if #button1txt == 0 then
+			guiSetVisible(msgButton1, false)
+		end
+		if #button2txt == 0 then
+			guiSetVisible(msgButton2, false)
+		end
+
 		guiSetVisible(msgWindow, false)
 		addEventHandler("onClientGUIClick", msgButton1, OnMessageDialogButton1Click, false)
 		addEventHandler("onClientGUIClick", msgButton2, OnMessageDialogButton2Click, false)
-end
-
-function InitDialogs()
-	createListDialog()
-	createInputDialog()
-	createMessageDialog()
 end
 
 function clearListItem()
@@ -1745,34 +1798,92 @@ function OnMessageDialogButton2Click( button, state )
 	end
 end
 
+-- Originally by UAEpro from here: https://forum.mtasa.com/topic/33149-colorcodes-in-labels/?tab=comments#comment-335358
+function guiCreateColoredLabel(ax, ay, bx, by,str, parent, relative) --x, y, width, height
+	if not relative then
+		relative = true
+	end
+
+	local scrollpane = guiCreateScrollPane(ax,ay,bx,by,relative,parent)
+	--outputConsole('main string:' .. str)
+
+    local pat = "(.-)#(%x%x%x%x%x%x)" 
+    local s, e, cap, col = str:find(pat, 1) 
+    local last = 1 
+	local labels = {} 
+	local incy = 0
+	local incx = 0
+	while s do 
+		
+        if cap == "" and col then r,g,b = tonumber("0x"..col:sub(1, 2)), tonumber("0x"..col:sub(3, 4)), tonumber("0x"..col:sub(5, 6)) end 
+		if (s ~= 1) or cap ~= "" then 
+			--outputConsole('guiCreateColoredLabel: ' .. cap)
+
+			lbl = guiCreateLabel(ax + incx, ay + incy, 1.0, by, cap, relative, scrollpane) 
+			guiLabelSetHorizontalAlign(lbl, "left")
+            table.insert(labels, lbl) 
+            if (r == nil) then r = 255 end 
+            if (g == nil) then g = 255 end 
+            if (b == nil) then b = 255 end 
+			guiLabelSetColor(lbl,r,g,b)  
+			r,g,b = tonumber("0x"..col:sub(1, 2)), tonumber("0x"..col:sub(3, 4)), tonumber("0x"..col:sub(5, 6)) 
+
+			local match = cap:find("\n")
+			if match ~= nil then
+				local xtxtsize, ytxtsize = guiGetSize(lbl, true) --not relative
+				incy = incy + (ytxtsize / 8) --We found a /n so send it further down on the next line
+				incx = 0 --Don't add spaces on new lines
+				--outputConsole('found a new line')
+			else
+				if r ~= 255 or g ~= 255 or b ~= 255 then --It's colored so separate it
+					incy = 0
+					local xsize, ysize = guiGetSize(scrollpane, false) --not relative
+					incx = incx + (guiLabelGetTextExtent ( lbl ) / xsize) --Make space for the next word, relative to the parent width
+					--outputConsole('Separating string')
+				else
+					incy = 0
+					incx = 0
+				end
+			end
+        end 
+        last = e + 1 
+        s, e, cap, col = str:find(pat, last) 
+    end 
+    if (last <= #str) then 
+        cap = str:sub(last) 
+        lbl2 = guiCreateLabel(ax + incx, ay + incy, 1.0, by, cap, relative, scrollpane) 
+        table.insert(labels, lbl2) 
+        guiLabelSetColor(lbl2,r,g,b) 
+    end
+    return labels 
+end
+
+--replace colors
+function colorizeString(string) 
+	return string:gsub("(=?{[0-9A-Fa-f]*})",
+	function(colorMatches)
+		colorMatches = colorMatches:gsub("[{}]+", "") --replace the curly brackets with nothing
+		colorMatches = '#' .. colorMatches --Append to the beginning
+		return colorMatches 
+	end)
+end
 
 function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
+	showCursor(true)
 	if dialogtype == 0 then
-		guiSetText(msgButton1, button1)
-		guiSetText(msgButton2, button2)
-		guiSetText(msgWindow, caption)
-		guiSetText(msgLabel, info)
+		createMessageDialog(caption, colorizeString(info), button1, button2 )
 		guiSetVisible(msgWindow, true)
 		msgDialog = dialogid
-		showCursor(true)
 	elseif dialogtype == 1 or dialogtype == 3 then
-		guiSetText(inputButton1, button1)
-		guiSetText(inputButton2, button2)
-		guiSetText(inputWindow, caption)
-		guiSetText(inputEdit, "")
+		createInputDialog(caption, colorizeString(info), button1, button2)
 		guiEditSetMasked(inputEdit, dialogtype == 3)
-		guiSetText(inputLabel, info)
 		guiSetVisible(inputWindow, true)
 		inputDialog = dialogid
-		showCursor(true)
 	elseif dialogtype == 2 or dialogtype == 4 or dialogtype == 5 then --DIALOG_STYLE_LIST, DIALOG_STYLE_TABLIST, DIALOG_STYLE_TABLIST_HEADER
 		--Setup the UI
-		guiSetText(listButton1, button1)
-		guiSetText(listButton2, button2)
-		guiSetText(listWindow, caption)
+		createListDialog(caption, colorizeString(info), button1, button2)
 		guiSetVisible(listWindow, true)
 		listDialog = dialogid
-		showCursor(true)
 		-- Done
 
 		--Process each

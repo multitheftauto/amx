@@ -35,10 +35,12 @@ function SendClientMessage(amx, player, r, g, b, a, message)
 		message = ('_'):rep(43)
 	elseif message:len() > 44 and message:match('^%*+$') then
 		message = ('*'):rep(44)
+	--[[
 	else
 		for mta,samp in pairs(g_CommandMapping) do
 			message = message:gsub('/' .. samp, '/' .. mta)
 		end
+	]] --Why is command mapping stuff here? This replaces any part of a string, causing commands such as '/quitfaction' to display as '/outfaction'
 	end
 
 	--replace colors
@@ -875,9 +877,8 @@ function format(amx, outBuf, outBufSize, fmt, ...)
 	fmt = fmt:gsub('(%%[%-%d%.]*)%*(%a)', '%1%2')
 	local result = fmt:format(unpack(args))
 
-	--replace colors
 	if #result+1 <= outBufSize then
-		writeMemString(amx, outBuf, colorizeString(result))
+		writeMemString(amx, outBuf, result)
 	end
 end
 
