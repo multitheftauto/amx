@@ -955,11 +955,13 @@ function SetSpawnInfo(amx, player, team, skin, x, y, z, angle, weap1, weap1_ammo
 end
 
 function NetStats_BytesReceived(amx, player)
-	notImplemented('NetStats_BytesReceived')
+	local networkStat = getNetworkStats(player)
+	return networkStat.bytesReceived or 0
 end
 
 function NetStats_BytesSent(amx, player)
-	notImplemented('NetStats_BytesSent')
+	local networkStat = getNetworkStats(player)
+	return networkStat.bytesSent or 0
 end
 
 function NetStats_ConnectionStatus(amx, player)
@@ -970,8 +972,12 @@ function NetStats_GetConnectedTime(amx, player)
 	notImplemented('NetStats_GetConnectedTime')
 end
 
-function NetStats_GetIpPort(amx, player)
-	notImplemented('NetStats_GetIpPort')
+function NetStats_GetIpPort(amx, player, ip_port, ip_port_len)
+	local ip = getPlayerIP(player)
+	local port = 0 -- We haven't a solution for getting a client port
+	local ipandport = tostring(ip).. ":".. tostring(port)
+	writeMemString(amx, ip_port, ipandport)
+	return string.len(tostring(ip).. ":".. tostring(port));
 end
 
 function NetStats_MessagesReceived(amx, player)
@@ -987,5 +993,6 @@ function NetStats_MessagesSent(amx, player)
 end
 
 function NetStats_PacketLossPercent(amx, player)
-	notImplemented('NetStats_PacketLossPercent')
+	local networkStat = getNetworkStats(player)
+	return networkStat.packetlossTotal or 0
 end
