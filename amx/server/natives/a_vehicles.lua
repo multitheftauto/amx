@@ -1,12 +1,12 @@
 CreateVehicle = AddStaticVehicleEx
 
 function DestroyVehicle(amx, vehicle)
-	clientCall(root, 'DestroyVehicle', getElemID(vehicle))
-	removeElem(g_Vehicles, vehicle)
 	local vehicleID = getElemID(vehicle)
+	clientCall(root, 'DestroyVehicle', vehicleID)
 	for i,playerdata in pairs(g_Players) do
 		playerdata.streamedVehicles[vehicleID] = nil
 	end
+	removeElem(g_Vehicles, vehicle)
 	destroyElement(vehicle)
 end
 

@@ -415,7 +415,7 @@ addEventHandler('onVehicleEnter', root,
 		end
 
 		if ManualVehEngineAndLights then
-			if (getVehicleType(source) ~= "Plane" and getVehicleType(source) ~= "Helicopter") then
+			if (g_Vehicles[vehID] and getVehicleType(source) ~= "Plane" and getVehicleType(source) ~= "Helicopter") then
 				setVehicleEngineState(source, g_Vehicles[vehID].engineState)
 			end
 		end
@@ -495,7 +495,7 @@ addEventHandler('onVehicleExplode', root,
 
 		procCallOnAll('OnVehicleDeath', vehID, 0)		-- NOES, MY VEHICLE DIED
 
-		if g_Vehicles[vehID].respawntimer then
+		if g_Vehicles[vehID] and g_Vehicles[vehID].respawntimer then
 			killTimer(g_Vehicles[vehID].respawntimer)
 			g_Vehicles[vehID].respawntimer = nil
 		end

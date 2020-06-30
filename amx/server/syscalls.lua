@@ -655,7 +655,7 @@ g_SAMPSyscallPrototypes = {
 	HTTP = {'i', 'i', 's', 's', 's'},
 
 	Create3DTextLabel = {'s', 'c', 'f', 'f', 'f', 'f', 'i', 'i'},
-	CreatePlayer3DTextLabel = {'p', 's', 'c', 'f', 'f', 'f', 'f', 'i', 'i'},
+	CreatePlayer3DTextLabel = {'p', 's', 'c', 'f', 'f', 'f', 'f', 'i', 'i', 'i'},
 	Delete3DTextLabel = {'a'},
 	DeletePlayer3DTextLabel = {'p', 'a'},
 	Attach3DTextLabelToPlayer = {'a', 'p', 'f', 'f', 'f'},

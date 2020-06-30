@@ -1139,22 +1139,16 @@ function renderTextLabels()
 			end
 
 			local screenX, screenY = getScreenFromWorldPosition(textlabel.X, textlabel.Y, textlabel.Z, textlabel.dist, false)
-			local pX, pY, pZ = getElementPosition(localPlayer)
+			local pX, pY, pZ, _, _, _ = getCameraMatrix()--getElementPosition(localPlayer)
 			local dist = getDistanceBetweenPoints3D(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z)
 			local vw = getElementDimension(localPlayer)
-			--[[if textlabel.attached then
-				local LOS = isLineOfSightClear(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z, true, true, true, true, true, false, false, textlabel.attachedTo)
-			else]] --Ã­Ã¥Ã°Ã Ã¡Ã®Ã²Ã Ã¥Ã², Ã¯Ã®ÃµÃ®Ã¦Ã¥ Ã´Ã³Ã­ÃªÃ¶Ã¨Ã¿ isLineOfSightClearÃ­Ã¥ Ã°Ã Ã¡Ã®Ã²Ã Ã¥Ã² Ã± Ã Ã°Ã£Ã³Ã¬Ã¥Ã­Ã²Ã®Ã¬ ignoredElement.
-				local LOS = isLineOfSightClear(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z, true, false, false)--Ã¯Ã®ÃªÃ  Ã²Ã Ãª, Ã¯Ã®Ã²Ã®Ã¬ Ã°Ã Ã§Ã¡Ã¥Ã°Ã³Ã²Ã±Ã¿ Ã± Ã´Ã³Ã­ÃªÃ¶Ã¨Ã¥Ã© Ã±Ã¤Ã¥Ã«Ã Ã¥ÃªÃ Ãª Ã­Ã³Ã¦Ã­Ã® :)
-			--end
-			local len = string.len(textlabel.text)
-			if screenX and dist <= textlabel.dist and vw == textlabel.vw then
+			local LOS = isLineOfSightClear(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z, true, false, false)
+			
+			if screenX and dist <= textlabel.dist and (vw == textlabel.vw or textlabel.vw == -1) then --Because player textlabels don't have VW's, since we're processing both here
 				if not textlabel.los then
-					--dxDrawText(textlabel.text, screenX, screenY, screenWidth, screenHeight, tocolor ( 0, 0, 0, 255 ), 1, "default")--, "center", "center")--, true, false)
-					dxDrawText(textlabel.text, screenX, screenY, screenWidth, screenHeight, tocolor(textlabel.color.r, textlabel.color.g, textlabel.color.b, textlabel.color.a), 1, "default-bold")--, "center", "center", true, false)
+					dxDrawText(textlabel.text, screenX, screenY, screenX, screenY, tocolor(textlabel.color.r, textlabel.color.g, textlabel.color.b, textlabel.color.a), 1.0, "default-bold", "center", "top", false, false, false, true)
 				elseif LOS then
-					--dxDrawText(textlabel.text, screenX, screenY, screenWidth, screenHeight, tocolor ( 0, 0, 0, 255 ), 1, "default")--, "center", "center")--, true, false)
-					dxDrawText(textlabel.text, screenX - (len), screenY, screenWidth, screenHeight, tocolor(textlabel.color.r, textlabel.color.g, textlabel.color.b, textlabel.color.a), 1, "default-bold")--, "center", "center", true, false)
+					dxDrawText(textlabel.text, screenX, screenY, screenX, screenY, tocolor(textlabel.color.r, textlabel.color.g, textlabel.color.b, textlabel.color.a), 1.0, "default-bold", "center", "top", false, false, false, true)
 				end
 			end
 		end
@@ -1182,6 +1176,7 @@ function Create3DTextLabel(id, textlabel)
 	textlabel.id = id
 	textlabel.enabled = false
 	g_TextLabels[id] = textlabel
+	outputConsole('Created text label with id ' .. textlabel.id)
 end
 
 function Delete3DTextLabel(id)
@@ -1190,7 +1185,9 @@ function Delete3DTextLabel(id)
 end
 
 function Attach3DTextLabel(textlabel)
+	outputConsole('Attaching text label with id ' .. textlabel.id)
 	local id = textlabel.id
+	textlabel.enabled = true
 	g_TextLabels[id] = textlabel
 end
 

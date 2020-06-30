@@ -854,11 +854,6 @@ function SetPlayerVirtualWorld(amx, player, dimension)
 	setElementDimension(player, dimension)
 end
 
-function GetPlayerVirtualWorld(amx)
-	notImplemented('GetPlayerVirtualWorld')
-	return false
-end
-
 function EnableStuntBonusForAll(amx, enable)
 	notImplemented('EnableStuntBonusForAll')
 end

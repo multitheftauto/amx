@@ -1,5 +1,4 @@
 function CreateObject(amx, model, x, y, z, rX, rY, rZ)
-	outputConsole('CreateObject(' .. model .. ')')
 	local obj = createObject(model, x, y, z, rX, rY, rZ)
 	if obj == false then
 		obj = createObject(1337, x, y, z, rX, rY, rZ) --Create a dummy object anyway since createobject can also be used to make camera attachments
@@ -88,7 +87,6 @@ function IsObjectMoving(amx)
 end
 
 function CreatePlayerObject(amx, player, model, x, y, z, rX, rY, rZ)
-	outputConsole('CreatePlayerObject(' .. model .. ')')
 	if not g_PlayerObjects[player] then
 		g_PlayerObjects[player] = {}
 	end

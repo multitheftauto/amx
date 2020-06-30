@@ -201,12 +201,6 @@ function GetVehiclePoolSize(amx)
 	return highestId
 end
 
-
-function GetActorPoolSize(amx)
-	notImplemented('GetActorPoolSize')
-	return false
-end
-
 -- Security
 
 function SHA256_PassHash(amx, pass, salt, ret_hash, ret_hash_len)
@@ -824,11 +818,7 @@ function GangZoneStopFlashForAll(amx, zone)
 end
 
 function Create3DTextLabel(amx, text, r, g, b, a, x, y, z, dist, vw, los)
-	text = text:lower()
-	for mta,samp in pairs(g_CommandMapping) do
-		text = text:gsub('/' .. samp, '/' .. mta)
-	end
-	local textlabel = { text = text, color = {r = r, g = g, b = b, a = a}, X = x, Y = y, Z = z, dist = dist, vw = vw, los = los }
+	local textlabel = { text = colorizeString(text), color = {r = r, g = g, b = b, a = a}, X = x, Y = y, Z = z, dist = dist, vw = vw, los = los }
 	local id = table.insert(g_TextLabels, textlabel)
 
 	textlabel.id = id
@@ -837,17 +827,29 @@ function Create3DTextLabel(amx, text, r, g, b, a, x, y, z, dist, vw, los)
 	return id
 end
 
-function CreatePlayer3DTextLabel(amx, player, text, r, g, b, a, x, y, z, dist, vw, los)
-	text = text:lower()
-	for mta,samp in pairs(g_CommandMapping) do
-		text = text:gsub('/' .. samp, '/' .. mta)
-	end
-	local textlabel = { text = text, color = {r = r, g = g, b = b, a = a}, X = x, Y = y, Z = z, dist = dist, vw = vw, los = los }
+function CreatePlayer3DTextLabel(amx, player, text, r, g, b, a, x, y, z, dist, attachedplayer, attachedvehicle, los)
+	local textlabel = { text = colorizeString(text), color = {r = r, g = g, b = b, a = a}, X = x, Y = y, Z = z, dist = dist, vw = -1, los = los, attached = false }
 	local id = table.insert(g_TextLabels, textlabel)
 
-	textlabel.id = id
+	textlabel.id = id	
+	if attachedplayer ~= INVALID_PLAYER_ID or attachedvehicle ~= INVALID_VEHICLE_ID then
+		textlabel.attached = true
+	end
 
+	if attachedplayer ~= INVALID_PLAYER_ID then
+		textlabel.attachedTo = g_Players[attachedplayer] and g_Players[attachedplayer].elem
+	end
+
+	if attachedvehicle ~= INVALID_VEHICLE_ID then
+		textlabel.attachedTo = g_Vehicles[attachedvehicle] and g_Vehicles[attachedvehicle].elem
+	end
+	
+	textlabel.offX = 0.0
+	textlabel.offY = 0.0
+	textlabel.offZ = 0.0
+	
 	clientCall(root, 'Create3DTextLabel', id, textlabel)
+
 	return id
 end
 
