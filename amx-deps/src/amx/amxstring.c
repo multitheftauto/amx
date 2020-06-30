@@ -577,7 +577,7 @@ static cell AMX_NATIVE_CALL n_strval(AMX *amx,const cell *params)
     offset=params[2];
   if (offset<0)
     offset=0;
-  else if (offset>=len)
+  else if (offset>=len && len>0)
     offset=len-1;
 
   /* skip a number of cells */
