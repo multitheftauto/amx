@@ -520,26 +520,15 @@ function getPedOccupiedVehicle(player)
 	return data and data.vehicle
 end
 
+local _removePedFromVehicle = removePedFromVehicle
 function removePedFromVehicle(player)
 	local playerdata = g_Players[getElemID(player)]
 	if not playerdata.vehicle then
 		return false
 	end
-	-- Built-in removePlayerFromVehicle is simply too unreliable
-	local health, armor = getElementHealth(player), getPedArmor(player)
-	local weapons, currentslot = playerdata.weapons, getPedWeaponSlot(player)
-	playerdata.beingremovedfromvehicle = true
-	local x, y, z = getElementPosition(playerdata.vehicle)
-	local rx, ry, rz = getVehicleRotation(playerdata.vehicle)
 	procCallOnAll('OnPlayerExitVehicle', getElemID(player), getElemID(playerdata.vehicle))
-	spawnPlayerBySelectedClass(player, x + 4*math.cos(math.rad(rz+180)), y + 4*math.sin(math.rad(rz+180)), z + 1, rz)
-	playerdata.beingremovedfromvehicle = nil
 	playerdata.vehicle = nil
-	setElementHealth(player, health)
-	setPedArmor(player, armor)
-	if weapons then
-		giveWeapons(player, weapons, currentslot)
-	end
+	setTimer(_removePedFromVehicle, 500, 1, player)
 	return true
 end
 -------------------------------

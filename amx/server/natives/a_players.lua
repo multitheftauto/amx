@@ -609,7 +609,8 @@ function PutPlayerInVehicle(amx, player, vehicle, seat)
 	if g_RCVehicles[getElementModel(vehicle)] then
 		setElementAlpha(player, 0)
 	end
-	setPlayerState(player, seat == 0 and PLAYER_STATE_DRIVER or PLAYER_STATE_PASSENGER)
+	--setPlayerState(player, seat == 0 and PLAYER_STATE_DRIVER or PLAYER_STATE_PASSENGER)
+	--No need to do this since the vehicle event gets called when we enter a vehicle
 end
 
 function GetPlayerVehicleID(amx, player)
