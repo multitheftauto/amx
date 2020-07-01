@@ -305,6 +305,7 @@ function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnD
 	if respawnDelay < 0 then
 		respawnDelay = 120
 	end
+	g_Vehicles[vehID].vehicleIsAlive = true
 	g_Vehicles[vehID].respawndelay = respawnDelay*1000
 	g_Vehicles[vehID].spawninfo = { x = x, y = y, z = z, angle = angle }
 	if ManualVehEngineAndLights then
@@ -499,8 +500,9 @@ function SendRconCommand(amx, command)
 	print(doRCON(command))
 end
 
+--Call requestSpawn instead so we clear up any binds (since there's a workaround in SA-MP to skip the spawn selection screen, and I use this workaround)
 function SpawnPlayer(amx, player)
-	spawnPlayerBySelectedClass(player)
+	requestSpawn(player, false, false)
 end
 
 -- GetPlayerNetworkStats

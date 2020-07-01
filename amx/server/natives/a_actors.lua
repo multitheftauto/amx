@@ -34,8 +34,15 @@ function SetActorFacingAngle(amx, actor, ang)
 end
 
 function GetActorFacingAngle(amx, actor, refAng)
-	local rX, rY, rZ = getElementRotation(vehicle)
+	local rX, rY, rZ = getElementRotation(actor)
 	writeMemFloat(amx, refAng, rZ)
+end
+
+function GetActorPos(amx, actor, refX, refY, refZ)
+	local x, y, z = getElementPosition(actor)
+	writeMemFloat(amx, refX, x)
+	writeMemFloat(amx, refY, y)
+	writeMemFloat(amx, refZ, z)
 end
 
 -- stub

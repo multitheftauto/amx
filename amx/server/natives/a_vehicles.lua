@@ -114,8 +114,7 @@ function SetVehicleToRespawn(amx, vehicle)
 			removePedFromVehicle(player)
 		end
 	end
-	local spawninfo = g_Vehicles[getElemID(vehicle)].spawninfo
-	spawnVehicle(vehicle, spawninfo.x, spawninfo.y, spawninfo.z, 0, 0, spawninfo.angle)
+	respawnStaticVehicle(vehicle)
 end
 
 function LinkVehicleToInterior(amx, vehicle, interior)

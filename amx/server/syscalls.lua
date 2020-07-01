@@ -755,7 +755,6 @@ g_SAMPSyscallPrototypes = {
 	SetPlayerDrunkLevel = {'p', 'i'},
 	SelectTextDraw = {'p', 'x'},
   	CancelSelectTextDraw = {'p'},
-	GetActorPos = {'i', 'r', 'r', 'r'}, --r since the vals should be passed by ref
 	GetPVarsUpperIndex = {'p'},
   	GetPVarNameAtIndex = {'p', 'i', 'r', 'i'},
 	SetVehicleParamsCarWindows = {'v', 'i', 'i', 'i', 'i'},
@@ -794,6 +793,7 @@ g_SAMPSyscallPrototypes = {
 	SetActorFacingAngle = {'y', 'f'},
 	SetActorHealth = {'y', 'f'},
 	SetActorInvulnerable = {},
+	GetActorPos = {'y', 'r', 'r', 'r'}, --r since the vals should be passed by ref
 	SetActorPos = {'y', 'f', 'f', 'f'},
 	SetActorVirtualWorld = {'y', 'i'},
 

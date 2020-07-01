@@ -66,8 +66,6 @@ function serverAMXEvent(eventName, ...)
 	server.procCallOnAll(eventName, ...)
 end
 
-setDebugViewActive(true)
-
 function drawBorderText(text, x, y, color, scalex, scaley, font, outlinesize, outlinecolor)
 	local alpha = math.floor(color / 16777216)
 	outlinesize = outlinesize or 2

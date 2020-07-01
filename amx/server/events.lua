@@ -258,7 +258,7 @@ addEventHandler('onPlayerSpawn', root,
 	function()
 		local playerID = getElemID(source)
 		local playerdata = g_Players[playerID]
-		if playerdata.doingclasssel or playerdata.beingremovedfromvehicle or playerdata.spawnedfromgamemodeinit then
+		if playerdata.doingclasssel or playerdata.spawnedfromgamemodeinit then
 			if playerdata.spawnedfromgamemodeinit ~= nil then
 				playerdata.spawnedfromgamemodeinit = nil
 			end
@@ -380,6 +380,24 @@ addEventHandler('onPlayerQuit', root,
 -------------------------------
 -- Vehicles
 
+addEventHandler('onResourceStart', resourceRoot,
+	function()
+		setTimer ( checkIfLeftVehicleByOtherMeans, 1000, 0 )
+	end,
+	false
+)
+
+function checkIfLeftVehicleByOtherMeans() --If the player is slapped, or the vehicle is destroyed by a command, we need to handle such
+	for i, data in pairs(g_Players) do
+		local state = getPlayerState(data.elem)
+		if state == PLAYER_STATE_DRIVER or state == PLAYER_STATE_PASSENGER then
+			if not isPedInVehicle(data.elem) then
+				setPlayerState(data.elem, PLAYER_STATE_ONFOOT)
+			end
+		end
+	end
+end
+
 function respawnStaticVehicle(vehicle)
 	if not isElement(vehicle) then
 		return
@@ -392,6 +410,7 @@ function respawnStaticVehicle(vehicle)
 		killTimer(g_Vehicles[vehID].respawntimer)
 	end
 	g_Vehicles[vehID].respawntimer = nil
+	g_Vehicles[vehID].vehicleIsAlive = true
 	local spawninfo = g_Vehicles[vehID].spawninfo
 	spawnVehicle(vehicle, spawninfo.x, spawninfo.y, spawninfo.z, 0, 0, spawninfo.angle)
 	procCallInternal(amx, 'OnVehicleSpawn', vehID)
@@ -442,14 +461,12 @@ addEventHandler('onVehicleStartEnter', root,
 addEventHandler('onVehicleExit', root,
 	function(player, seat, jacker)
 		local vehID = getElemID(source)
-
 		if isPed(player) then
 			local pedID = getElemID(player)
 			g_Bots[pedID].vehicle = nil
 			setBotState(player, PLAYER_STATE_ONFOOT)
 			return
 		end
-
 		local playerID = getElemID(player)
 		g_Players[playerID].vehicle = nil
 		setPlayerState(player, PLAYER_STATE_ONFOOT)
@@ -494,13 +511,18 @@ addEventHandler('onVehicleExplode', root,
 	function()
 		local vehID = getElemID(source)
 
-		procCallOnAll('OnVehicleDeath', vehID, 0)		-- NOES, MY VEHICLE DIED
+		--So the OnVehicleDeath event only gets called once
+		if g_Vehicles[vehID] and g_Vehicles[vehID].vehicleIsAlive then
+			procCallOnAll('OnVehicleDeath', vehID, 0)		-- NOES, MY VEHICLE DIED
 
-		if g_Vehicles[vehID] and g_Vehicles[vehID].respawntimer then
-			killTimer(g_Vehicles[vehID].respawntimer)
-			g_Vehicles[vehID].respawntimer = nil
+			if g_Vehicles[vehID].respawntimer then
+				killTimer(g_Vehicles[vehID].respawntimer)
+				g_Vehicles[vehID].respawntimer = nil
+			end
+
+			g_Vehicles[vehID].vehicleIsAlive = false
+			g_Vehicles[vehID].respawntimer = setTimer(respawnStaticVehicle, g_Vehicles[vehID].respawndelay, 1, source)
 		end
-		g_Vehicles[vehID].respawntimer = setTimer(respawnStaticVehicle, g_Vehicles[vehID].respawndelay, 1, source)
 	end
 )
 

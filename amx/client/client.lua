@@ -45,6 +45,7 @@ addEventHandler('onClientResourceStart', resourceRoot,
 	function()
 		triggerServerEvent('onLoadedAtClient', resourceRoot, localPlayer)
 		setTimer(checkTextLabels, 500, 0)
+		setDebugViewActive(true)
 	end,
 	false
 )
@@ -55,6 +56,12 @@ addEventHandler('onClientResourceStop', resourceRoot,
 	end,
 	false
 )
+
+function enableDebug()
+	local state = not isDebugViewActive()
+	setDebugViewActive(state)
+end
+addCommandHandler("debug", enableDebug)
 
 function setAMXVersion(ver)
 	g_AMXVersion = ver
