@@ -348,7 +348,7 @@ function CreatePlayerTextDraw(amx, player, x, y, text)
 	local serverTDId = #g_PlayerTextDraws[player]+1
 	local clientTDId = #g_TextDraws + serverTDId
 
-	local textdraw = { x = x, y = y, lwidth=0.5, lheight = 0.5, shadow = { visible=0, align=1, text=text, font=1, lwidth=0.5, lheight = 0.5} }
+	local textdraw = { x = x, y = y, lwidth=0.5, lheight = 0.5, shadow = { visible=0, align=1, text=text, font=1, lwidth=0.5, lheight = 0.5 } }
 	textdraw.clientTDId = clientTDId
 	textdraw.serverTDId = serverTDId
 	textdraw.visible = 0
@@ -372,7 +372,7 @@ function CreatePlayerTextDraw(amx, player, x, y, text)
 				end
 				if different then
 					--table.dump(v, 1, nil) --Dump the data
-					--outputDebugString(string.format('A property changed for %s string: %s visibility is %d', textdraw.serverTDId, textdraw.text, textdraw.visible))
+					--outputDebugString(string.format('A property changed for %d string: %s', textdraw.clientTDId, textdraw.text))
 					clientCall(player, 'TextDrawPropertyChanged', textdraw.clientTDId, k, v)
 					t.shadow[k] = v
 				end
@@ -389,6 +389,7 @@ function PlayerTextDrawDestroy(amx, player, textdrawID)
     if not IsPlayerTextDrawValid(player, textdrawID) then
       return false
   end
+  outputDebugString('Sending textdraw id s->' .. g_PlayerTextDraws[player][textdrawID].serverTDId .. ' c->' .. g_PlayerTextDraws[player][textdrawID].clientTDId .. ' for destruction')
   clientCall(player, 'TextDrawDestroy', g_PlayerTextDraws[player][textdrawID].clientTDId)
   g_PlayerTextDraws[player][textdrawID] = nil
 end
@@ -428,6 +429,7 @@ end
 
 function PlayerTextDrawUseBox(amx, player, textdrawID, usebox)
 	if not IsPlayerTextDrawValid(player, textdrawID) then
+		outputDebugString('textdraw is invalid, not setting usebox ' .. textdrawID)
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].usebox = usebox

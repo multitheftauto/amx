@@ -849,16 +849,16 @@ function hideTextDraw(textdraw)
 end
 
 function hudGetVerticalScale()
-	return 0.002232143
+	return 1.0 / 448.0
 end
 
 function hudGetHorizontalScale()
-	return 0.0015625
+	return 1.0 / 640.0
 end
 
 function initTextDraw(textdraw)
-	textdraw.id = textdraw.id or (#g_TextDraws + 1)
-	g_TextDraws[textdraw.id] = textdraw
+	textdraw.clientTDId = textdraw.clientTDId or (#g_TextDraws + 1)
+	g_TextDraws[textdraw.clientTDId] = textdraw
 
 	-- GTA replaces underscores with spaces
 	textdraw.text = textdraw.text:gsub("_", " ")
@@ -937,14 +937,13 @@ function initTextDraw(textdraw)
 		end
 
 		local textWidth = dxGetTextWidth(line:gsub('#%x%x%x%x%x%x', ''), scale, font)
-		textdraw.width = math.max(textdraw.width, textWidth)
+
 		if textdraw.align == 1 then
 			-- left
-			TDXPos = textdraw.x
+			TDXPos = textdraw.x-- - textWidth
 		elseif textdraw.align == 2 or not textdraw.align then
 			-- center
-			--outputConsole(string.format("Got centered text %d %d %s", TDXPos, TDYPos, textdraw.text))
-			TDXPos = 640/2 - textWidth/2
+			TDXPos = textdraw.x - textWidth / 2
 		elseif textdraw.align == 3 then
 			-- right
 			TDXPos = textdraw.x - textWidth
@@ -974,12 +973,12 @@ function renderTextDraws()
 	for id,textdraw in pairs(g_TextDraws) do
 		if textdraw.visible and textdraw.parts and not (textdraw.text:match('^%s*$')) then-- and not textdraw.usebox) then
 			local font = textDrawFonts[textdraw.font and textdraw.font >= 0 and textdraw.font <= #textDrawFonts and textdraw.font or 0]
-			if textdraw.upscalex == nil then
-				textdraw.upscalex = 1.0
-			end
-			if textdraw.upscaley == nil then
-				textdraw.upscaley = 1.0
-			end
+
+			textdraw.upscalex = textdraw.upscalex or 1.0
+			textdraw.upscaley = textdraw.upscaley or 1.0
+
+			textdraw.lheight = textdraw.lheight or 0.5
+			textdraw.lwidth = textdraw.lwidth or 0.5
 
 			local letterHeight = (textdraw.lheight * textdraw.upscaley or 0.25)
 			local letterWidth = (textdraw.lwidth * textdraw.upscalex or 0.5)
@@ -987,40 +986,42 @@ function renderTextDraws()
 			local vertHudScale = hudGetVerticalScale()
 			local horHudScale = hudGetHorizontalScale()
 
-			local scaley = SCREEN_SCALE_Y(screenHeight * vertHudScale *  letterHeight * 0.175) --This should replicate what the game does
-			local scalex = SCREEN_SCALE_X(screenWidth * horHudScale *  letterWidth * 0.35)
+			local scalex = screenWidth * horHudScale * letterWidth;
+			local scaley = screenHeight * vertHudScale * letterHeight * 0.5;
 			
 			local sourceY = screenHeight - ((DEFAULT_SCREEN_HEIGHT - textdraw.y) * (screenHeight * vertHudScale))
 			local sourceX = screenWidth - ((DEFAULT_SCREEN_WIDTH - textdraw.x) * (screenWidth * horHudScale))
 
 			font = font.font
 			--Process box alignments
-			if textdraw.usebox then
+			if textdraw.usebox ~= nil and textdraw.usebox ~= 0 then
+				--outputConsole('textdraw uses box: ' .. textdraw.text)
 				local boxcolor = textdraw.boxcolor or tocolor(0, 0, 0, 120*(textdraw.alpha or 1))
 				local x, y, w, h
+				w = textdraw.width
 				if textdraw.align == 1 then --left
-					x = textdraw.x
+					x = sourceX
 					if textdraw.boxsize then
 						w = textdraw.boxsize[1]-- - x
 					else
 						w = textdraw.width
 					end
 				elseif textdraw.align == 2 then --centered
-					x = textdraw.x
+					x = sourceX-- / 2
 					if textdraw.boxsize then
 						w = textdraw.boxsize[1]
 					else
 						w = textdraw.width
 					end
 				elseif textdraw.align == 3 then --right
-					x = textdraw.x - w
+					x = sourceX - w
 					if textdraw.boxsize then
-						w = textdraw.x - textdraw.boxsize[1]
+						w = sourceX - textdraw.boxsize[1]
 					else
 						w = textdraw.width
 					end
 				end
-				y = textdraw.y
+				y = sourceY
 				
 				--Calculates box height
 				if textdraw.boxsize and textdraw.text:match('^%s*$') then
@@ -1029,7 +1030,7 @@ function renderTextDraws()
 					h = textdraw.absheight
 				end
 
-				dxDrawRectangle(sourceX, sourceY, w * getAspectRatio(), h * getAspectRatio(), boxcolor)
+				dxDrawRectangle(x, y, w * getAspectRatio(), h * getAspectRatio(), boxcolor)
 				--outputConsole(string.format("Drawing textdraw box: sourceX: %f, sourceY: %f %s", sourceX, sourceY, textdraw.text))
 			end
 				
@@ -1060,7 +1061,8 @@ function destroyTextDraw(textdraw)
 		return
 	end
 	hideTextDraw(textdraw)
-	table.removevalue(g_TextDraws, textdraw)
+	g_TextDraws[textdraw.clientTDId] = nil
+	--table.removevalue(g_TextDraws, textdraw)
 end
 
 local gameText = {}
@@ -1081,6 +1083,12 @@ function GameTextForPlayer(text, time, style)
 
 	destroyAllGameTextsWithStyle(style) --So same styles don't overlap
 
+	--[[
+		alignments 	
+			1 = left
+			2 = center
+			3 = right
+	]]
 	gameText[gIndex] = { text = text, font = 2 }
 	if style == 1 then
 		gameText[gIndex].x = 0.9 * 640
@@ -1176,7 +1184,7 @@ function Create3DTextLabel(id, textlabel)
 	textlabel.id = id
 	textlabel.enabled = false
 	g_TextLabels[id] = textlabel
-	outputConsole('Created text label with id ' .. textlabel.id)
+	--outputConsole('Created text label with id ' .. textlabel.id)
 end
 
 function Delete3DTextLabel(id)
@@ -1192,9 +1200,9 @@ function Attach3DTextLabel(textlabel)
 end
 
 function TextDrawCreate(id, textdraw)
-	textdraw.id = id
+	textdraw.clientTDId = id
 	textdraw.visible = false
-	--outputConsole('Got TextDrawCreate, textdraw.visible is ' .. textdraw.visible)
+	--outputConsole('Got TextDrawCreate, textdraw id ' .. id)
 
 	g_TextDraws[id] = textdraw
 	if textdraw.x then
@@ -1207,26 +1215,50 @@ function TextDrawCreate(id, textdraw)
 	initTextDraw(textdraw)
 end
 
+function findTextDrawHandleByID(id)
+	for _,textdraw in pairs(g_TextDraws) do
+		if textdraw.clientTDId == id then
+			return textdraw.clientTDId
+		end
+	end
+	return -1
+end
+
 function TextDrawDestroy(id)
-	destroyTextDraw(g_TextDraws[id])
+	local clientTDIdx = findTextDrawHandleByID(id)
+	if clientTDIdx ~= -1 then
+		destroyTextDraw(g_TextDraws[clientTDIdx])
+	end
 end
 
 function TextDrawHideForPlayer(id)
-	hideTextDraw(g_TextDraws[id])
+	local clientTDIdx = findTextDrawHandleByID(id)
+	if clientTDIdx ~= -1 then
+		hideTextDraw(g_TextDraws[clientTDIdx])
+	end
 end
 
 function TextDrawPropertyChanged(id, prop, newval, skipInit)
 	if g_TextDraws == nil then
-		outputConsole('Error: g_TextDraws is nil')
+		outputConsole('[TextDrawPropertyChanged] Error: g_TextDraws is nil')
 		return
 	end
 
-	if g_TextDraws[id] == nil then
-		outputConsole('Error: g_TextDraws is nil at index: ' .. id)
+	local clientTDIdx = findTextDrawHandleByID(id)
+	if clientTDIdx == -1 then
+		outputConsole('[TextDrawPropertyChanged] Error: g_TextDraws couldn\'t find handle for id: ' .. id)
 		return
 	end
 
-	local textdraw = g_TextDraws[id]
+	if g_TextDraws[clientTDIdx] == nil then
+		outputConsole('[TextDrawPropertyChanged] Error: g_TextDraws is nil at index: ' .. clientTDIdx)
+		return
+	end
+
+	local textdraw = g_TextDraws[clientTDIdx]
+
+	--outputConsole('[TextDrawPropertyChanged]: Received new property ' .. prop .. ' - ' .. newval .. ' for ' .. textdraw.text) 
+	
 	textdraw[prop] = newval
 	if prop == 'boxsize' then
 		textdraw.boxsize[1] = textdraw.boxsize[1]
@@ -1242,8 +1274,10 @@ end
 function TextDrawShowForPlayer(id)
 	--outputConsole(string.format("TextDrawShowForPlayer trying to show textdraw with id %d", id))
 	--outputConsole(string.format("TextDrawShowForPlayer trying to show textdraw with text %s", g_TextDraws[id].text))
-	
-	showTextDraw(g_TextDraws[id])
+	local clientTDIdx = findTextDrawHandleByID(id)
+	if clientTDIdx ~= -1 then
+		showTextDraw(g_TextDraws[clientTDIdx])
+	end
 end
 
 function displayFadingMessage(text, r, g, b, fadeInTime, stayTime, fadeOutTime)

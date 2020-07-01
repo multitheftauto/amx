@@ -442,7 +442,7 @@ g_SAMPSyscallPrototypes = {
 	TextDrawShowForAll = {'i'},
 	TextDrawShowForPlayer = {'p', 'i'},
 	TextDrawTextSize = {'x', 'f', 'f'},
-	TextDrawUseBox = {'x', 'b'},
+	TextDrawUseBox = {'x', 'i'},
 	--Player textdraws
 	PlayerTextDrawDestroy = {'p', 'i'},
   	PlayerTextDrawShow = {'p', 'i'},

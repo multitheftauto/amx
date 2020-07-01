@@ -428,6 +428,11 @@ function setBotState(bot, state)
 	procCallOnAll('OnBotStateChange', botID, state, oldState)
 end
 
+-- Clamping values
+function clamp(n, min, max)
+	return math.max(min, math.min(max, n))
+ end
+ 
 -- Table extensions
 
 local _table_insert = table.insert

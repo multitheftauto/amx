@@ -17,6 +17,7 @@ function gameModeInit(player)
 	local r, g, b = math.random(50, 255), math.random(50, 255), math.random(50, 255)
 	ShowPlayerMarker(false, player, g_ShowPlayerMarkers)
 	setPlayerHudComponentVisible(player, 'area_name', g_ShowZoneNames)
+	setPlayerHudComponentVisible(player, 'vehicle_name', false) --Samp doesn't show vehicle names when entering vehicles
 	SetPlayerColor(false, player, r, g, b)
 	setElementData(player, 'Score', 0)
 	toggleAllControls(player, false, true, false)

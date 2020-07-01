@@ -299,11 +299,7 @@ function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnD
 	end
 
 	if not g_PoliceVehicles[model] then
-		if(color1 <= 0 and color1 >= 126) then color1 = math.random(1, 126) end
-		if(color2 <= 0 and color2 >= 126) then color2 = math.random(1, 126) end
-
-		-- WARNING: [amx]\amx\server\natives\a_samp.lua:311: Expected positive value, got negative. This warning may be an error in future versions.
-		setVehicleColor(vehicle, color1, color2, 0, 0)
+		setVehicleColorClamped(vehicle, color1, color2)
 	end
 	local vehID = addElem(g_Vehicles, vehicle)
 	if respawnDelay < 0 then
@@ -615,7 +611,9 @@ end
 function TextDrawCreate(amx, x, y, text)
 	outputDebugString('TextDrawCreate called with args ' .. x .. ' ' .. y .. ' ' .. text)
 	local textdraw = { x = x, y = y, shadow = {align=1, text=text, font=1, lwidth=0.5, lheight = 0.5} }
+	textdraw.clientTDId = #g_TextDraws + 1
 	local id = table.insert(g_TextDraws, textdraw)
+
 	setmetatable(
 		textdraw,
 		{
@@ -632,7 +630,8 @@ function TextDrawCreate(amx, x, y, text)
 					end
 				end
 				if different then
-					clientCall(root, 'TextDrawPropertyChanged', id, k, v)
+					--outputDebugString(string.format('A property changed for %s string: %s', textdraw.clientTDId, textdraw.text))
+					clientCall(root, 'TextDrawPropertyChanged', textdraw.clientTDId, k, v)
 					t.shadow[k] = v
 				end
 			end
@@ -671,7 +670,7 @@ function TextDrawDestroy(amx, textdrawID)
 	if not g_TextDraws[textdrawID] then
 		return
 	end
-	clientCall(root, 'TextDrawDestroy', textdrawID)
+	clientCall(root, 'TextDrawDestroy', g_TextDraws[textdrawID].clientTDId)
 	g_TextDraws[textdrawID] = nil
 end
 
@@ -727,7 +726,7 @@ function TextDrawShowForPlayer(amx, player, textdrawID)
 	if not textdraw then
 		return
 	end
-	clientCall(player, 'TextDrawShowForPlayer', textdrawID)
+	clientCall(player, 'TextDrawShowForPlayer', textdraw.clientTDId)
 end
 
 function TextDrawHideForPlayer(amx, player, textdrawID)
@@ -735,7 +734,7 @@ function TextDrawHideForPlayer(amx, player, textdrawID)
 	if not textdraw then
 		return
 	end
-	clientCall(player, 'TextDrawHideForPlayer', textdrawID)
+	clientCall(player, 'TextDrawHideForPlayer', textdraw.clientTDId)
 end
 
 function TextDrawShowForAll(amx, textdrawID)

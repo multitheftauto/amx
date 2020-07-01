@@ -131,7 +131,16 @@ function RemoveVehicleComponent(amx, vehicle, upgradeID)
 end
 
 function ChangeVehicleColor(amx, vehicle, color1, color2)
-	setVehicleColor(vehicle, color1, color2, 0, 0)
+	setVehicleColorClamped(vehicle, color1, color2)
+end
+
+function setVehicleColorClamped(vehicle, color1, color2)
+	--This is to prevent negative color behavior, keep the original color if they sent -1 (I believe this is what samp does)
+	if color1 ~= -1 and color2 ~= -1 then
+		color1 = clamp(color1, 0, 126)
+		color2 = clamp(color2, 0, 126)
+		setVehicleColor(vehicle, color1, color2, 0, 0)
+	end
 end
 
 function ChangeVehiclePaintjob(amx, vehicle, paintjob)
