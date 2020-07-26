@@ -3,7 +3,6 @@
 #include <a_amx>
 new bot = 0;
 new bots = 0;
-new marker = 0;
 
 main()
 {
@@ -140,7 +139,7 @@ public OnPlayerSpawn(playerid)
 {
 	new Float:x, Float:y, Float:z;
 	GetPlayerPos(playerid, x, y, z);
-	marker = CreateMarker(x, y, z, "checkpoint", 3.0, 255, 0, 0, 250);
+	CreateMarker(x, y, z, "checkpoint", 3.0, 255, 0, 0, 250);
 	CreateBot(0, x, y, z);
 	SetBotPos(bot, x, y, z);
 	SetPlayerHealth(playerid, 50.0);
@@ -211,10 +210,6 @@ public OnPlayerText(playerid, text[])
 	return 1;
 }
 
-public OnPlayerPrivmsg(playerid, recieverid, text[])
-{
-	return 1;
-}
 strtok(const string[], &index)
 {
 	new length = strlen(string);
@@ -268,11 +263,6 @@ public OnPlayerCommandText(playerid, cmdtext[])
 public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
 {
 
-}
-
-public OnPlayerInfoChange(playerid)
-{
-	return 1;
 }
 
 public OnPlayerEnterVehicle(playerid, vehicleid, ispassenger)
