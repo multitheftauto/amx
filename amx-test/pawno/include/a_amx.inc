@@ -85,7 +85,6 @@ native SetObjectAlpha(objectid, alpha);
 native AddPlayerClothes(playerid, type, index);
 native GetPlayerClothes(playerid, type);
 native RemovePlayerClothes(playerid, type);
-native ShowPlayerMarker(playerid, show);
 native IsPlayerInWater(playerid);
 native IsPlayerOnFire(playerid);
 native IsPlayerDucked(playerid);
