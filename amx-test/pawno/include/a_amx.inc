@@ -49,7 +49,6 @@ native SetWaveHeight(Float:height);
 native SetWaterLevel(Float:level);
 
 // Pickups
-native GetPickupType(pickupid);
 native SetPickupType(pickupid, typeid, amount, ammo = 500);
 native GetPickupWeapon(pickupid);
 native GetPickupAmount(pickupid);
@@ -85,7 +84,6 @@ native SetObjectAlpha(objectid, alpha);
 native AddPlayerClothes(playerid, type, index);
 native GetPlayerClothes(playerid, type);
 native RemovePlayerClothes(playerid, type);
-native IsPlayerInWater(playerid);
 native IsPlayerOnFire(playerid);
 native IsPlayerDucked(playerid);
 native IsPlayerOnGround(playerid);
@@ -106,7 +104,6 @@ native FadePlayerCamera(playerid, fadeIn, Float:timeToFade = 1.0, red = 0, green
 native SetPlayerControlState(playerid, control[], stateid);
 
 // Vehicles
-native GetVehicleMaxPassengers(vehicleid);
 native GetVehicleEngineState(vehicleid);
 native SetVehicleEngineState(vehicleid, stateid);
 native GetVehicleDoorState(vehicleid, door);
