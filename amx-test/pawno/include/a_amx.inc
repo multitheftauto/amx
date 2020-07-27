@@ -108,7 +108,6 @@ native SetPlayerControlState(playerid, control[], stateid);
 
 // Vehicles
 native GetVehicleMaxPassengers(vehicleid);
-native SetVehicleModel(vehicleid, model);
 native GetVehicleEngineState(vehicleid);
 native SetVehicleEngineState(vehicleid, stateid);
 native GetVehicleDoorState(vehicleid, door);
