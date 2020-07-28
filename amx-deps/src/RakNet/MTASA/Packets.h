@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "net/packetenums.h"
+#include "packetenums.h"
 
 enum ePacketID
 {

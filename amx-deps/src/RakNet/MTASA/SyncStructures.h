@@ -12,7 +12,7 @@
 #pragma once
 
 #include <CVector.h>
-#include <net/bitstream.h>
+#include <bitstream.h>
 
 // Used to make sure that any position values we receive are at least half sane
 #define SYNC_POSITION_LIMIT 100000.0f
