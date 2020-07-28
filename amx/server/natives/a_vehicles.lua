@@ -234,17 +234,17 @@ function RepairVehicle(amx, vehicle)
 	fixVehicle(vehicle)
 end
 
--- function GetVehicleVelocity(amx, vehicle, refVX, refVY, refVZ)
--- 	local vx, vy, vz = getElementVelocity(vehicle)
--- 	writeMemFloat(amx, refVX, vx)
--- 	writeMemFloat(amx, refVY, vy)
--- 	writeMemFloat(amx, refVZ, vz)
--- end
+function GetVehicleVelocity(amx, vehicle, refVX, refVY, refVZ)
+	local vx, vy, vz = getElementVelocity(vehicle)
+	writeMemFloat(amx, refVX, vx)
+	writeMemFloat(amx, refVY, vy)
+	writeMemFloat(amx, refVZ, vz)
+end
 
--- function SetVehicleVelocity(amx, vehicle, vx, vy, vz)
---	setElementVelocity(vehicle, vx, vy, vz) \
+function SetVehicleVelocity(amx, vehicle, vx, vy, vz)
+	setElementVelocity(vehicle, vx, vy, vz)
 	--setElementAngularVelocity(vehicle, vx, vy, vz) --This isn't needed, it makes the car spin and I believe samp doesn't do this
--- end
+end
 
 function GetVehicleDamageStatus(amx, vehicle, refPanels, refDoors, refLights, refTires)
 	local panelsState = getVehiclePanelState(vehicle, 0)
