@@ -211,7 +211,7 @@ function destroyClassSelGUI()
 	setGravity(0.008)
 	setElementCollisionsEnabled(localPlayer, true)
 	showCursor(false)
-	if g_ClassSelectionInfo then
+	if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
 		removeEventHandler ( "onClientGUIClick", g_ClassSelectionInfo.gui.btnLeft, ClassSelLeft )
 		removeEventHandler ( "onClientGUIClick", g_ClassSelectionInfo.gui.btnRight, ClassSelRight )
 		removeEventHandler ( "onClientGUIClick", g_ClassSelectionInfo.gui.btnSpawn, ClassSelSpawn )
