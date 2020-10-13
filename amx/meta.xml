@@ -27,7 +27,7 @@
     <script src="client/arrowmarkers.lua" type="client" />
     <script src="client/mouselook.lua" type="client" />
     <script src="client/client.lua" type="client" />
-    <script src="client/bars.lua" type="client" />
+    <script src="client/samp_nametags.lua" type="client" />
     <script src="client/garages.lua" type="client" />
 
     <!-- 
