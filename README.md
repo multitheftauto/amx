@@ -3,8 +3,8 @@
 ## Introduction
 
 *amx* is a software package that allows the execution of unmodified San
-Andreas: MultiPlayer 0.2.2 gamemodes, filterscripts and plugins on Multi
-Theft Auto: San Andreas 1.0 servers. It is open source, and [**a prebuilt
+Andreas: Multiplayer 0.3.7 gamemodes, filterscripts and plugins on Multi
+Theft Auto: San Andreas 1.6 and higher servers. It is open source, and [**a prebuilt
 binary for Windows is available for testing purposes right now**](https://github.com/multitheftauto/amx/releases).
 
 - [License](#license)
