@@ -27,7 +27,7 @@ end
 addEventHandler('onResourceStart', resourceRoot,
 	function()
 		if not amxVersion then
-			outputDebugString('The amx module (king.dll/so) isn\'t loaded. It is required for amx to function. Please add it to your server config and restart your server.', 1)
+			outputDebugString('The amx module (pawn.dll/so) isn\'t loaded. It is required for amx to function. Please add it to your server config and restart your server.', 1)
 			return
 		end
 
@@ -127,8 +127,8 @@ function loadAMX(fileName, res)
 	g_LoadedAMXs[amx.name] = amx
 
 	amx.timers = {}
-	
-	
+
+
 	-- run initialization
 	if amx.type == 'gamemode' then
 		clientCall(root, 'gamemodeLoad')

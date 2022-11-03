@@ -77,8 +77,8 @@
 	<h3>Configuration</h3>
 	<ul>
 		<li><p>Open server/mods/deathmatch/mtaserver.conf in a text editor. Add the following line within the <code>&lt;config&gt;</code> node:</p>
-			<code class="block" lang="xml"><span class="xmltag">&lt;module</span> <span class="xmlprop">src=</span><span class="str">"king.dll"</span><span class="xmltag">/&gt;</span></code>
-			<p>(Use "king.so" on Linux systems). This will instruct the MTA server to load the module on startup.</p>
+			<code class="block" lang="xml"><span class="xmltag">&lt;module</span> <span class="xmlprop">src=</span><span class="str">"pawn.dll"</span><span class="xmltag">/&gt;</span></code>
+			<p>(Use "pawn.so" on Linux systems). This will instruct the MTA server to load the module on startup.</p>
 		</li>
 		<li><p>At this point you can add the <em>amx</em> resource to the autostart list if you want. Doing this will allow you to use SA-MP style rcon commands in the server console as soon as the server is started.</p>
 			<code class="block" lang="xml"><span class="xmltag">&lt;resource</span> <span class="xmlprop">src=</span><span class="str">"amx"</span> <span class="xmlprop">startup=</span><span class="str">"1"</span> <span class="xmlprop">protected=</span><span class="str">"0"</span><span class="xmltag">/&gt;</span></code>

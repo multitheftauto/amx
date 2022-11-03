@@ -102,10 +102,10 @@ Extract the "mods" folder into your MTA "server" directory.
   following line within the `<config>` node:
 
   ```xml
-  <module src="king.dll"/>
+  <module src="pawn.dll"/>
   ```
 
-  (Use "king.so" on Linux systems). This will instruct the MTA server
+  (Use "pawn.so" on Linux systems). This will instruct the MTA server
   to load the module on startup.
 
 - At this point you can add the *amx* resource to the autostart list
@@ -816,10 +816,10 @@ Extract the "mods" folder into your MTA "server" directory.
   following line within the `<config>` node:
 
   ```xml
-  <module src="king.dll"/>
+  <module src="pawn.dll"/>
   ```
 
-  (Use "king.so" on Linux systems). This will instruct the MTA server
+  (Use "pawn.so" on Linux systems). This will instruct the MTA server
   to load the module on startup.
 
 - At this point you can add the *amx* resource to the autostart list

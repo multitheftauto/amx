@@ -1,21 +1,20 @@
 /*********************************************************
-*
-*  Multi Theft Auto: San Andreas - Deathmatch
-*
-*  ml_base, External lua add-on module
-*
-*  Copyright ï¿½ 2003-2008 MTA.  All Rights Reserved.
-*
-*  Grand Theft Auto is ï¿½ 2002-2003 Rockstar North
-*
-*  THE FOLLOWING SOURCES ARE PART OF THE MULTI THEFT
-*  AUTO SOFTWARE DEVELOPMENT KIT AND ARE RELEASED AS
-*  OPEN SOURCE FILES. THESE FILES MAY BE USED AS LONG
-*  AS THE DEVELOPER AGREES TO THE LICENSE THAT IS
-*  PROVIDED WITH THIS PACKAGE.
-*
-*********************************************************/
-
+ *
+ *  Multi Theft Auto: San Andreas - Deathmatch
+ *
+ *  ml_base, External lua add-on module
+ *
+ *  Copyright © 2003-2018 MTA.  All Rights Reserved.
+ *
+ *  Grand Theft Auto is © 2002-2018 Rockstar North
+ *
+ *  THE FOLLOWING SOURCES ARE PART OF THE MULTI THEFT
+ *  AUTO SOFTWARE DEVELOPMENT KIT AND ARE RELEASED AS
+ *  OPEN SOURCE FILES. THESE FILES MAY BE USED AS LONG
+ *  AS THE DEVELOPER AGREES TO THE LICENSE THAT IS
+ *  PROVIDED WITH THIS PACKAGE.
+ *
+ *********************************************************/
 #include "StdInc.h"
 
 #include <locale.h>
@@ -101,8 +100,6 @@ MTAEXPORT bool InitModule ( ILuaModuleManager10 *pManager, char *szModuleName, c
 	pluginInitData[PLUGIN_DATA_CALLPUBLIC_FS] = (void*)&AMXCallPublicFilterScript;
 	pluginInitData[PLUGIN_DATA_CALLPUBLIC_GM] = (void*)&AMXCallPublicGameMode;
 
-	char* localeInfo = setlocale(LC_ALL, "Russian");
-
 	string PATH = getenv("PATH");
 	PATH += ";mods/deathmatch/resources/amx/plugins/";
 	setenv_portable("PATH", PATH.c_str(), 1);
@@ -117,7 +114,7 @@ MTAEXPORT bool InitModule ( ILuaModuleManager10 *pManager, char *szModuleName, c
 	if (exists(scriptfilespath)) {
 		setenv_portable("AMXFILE", scriptfilespath.string().c_str(), 0);
 	} else {
-		pModuleManager->ErrorPrintf("scriptfiles directory doesn't exist at: %s\n", scriptfilespath.string());
+		pModuleManager->ErrorPrintf("[Pawn]: scriptfiles directory doesn't exist at: %s\n", scriptfilespath.string());
 	}
 
 	return true;
@@ -205,6 +202,15 @@ MTAEXPORT bool DoPulse ( void )
 
 MTAEXPORT bool ShutdownModule ( void )
 {
-
 	return true;
+}
+
+MTAEXPORT bool ResourceStopping(lua_State* luaVM)
+{
+    return true;
+}
+
+MTAEXPORT bool ResourceStopped(lua_State* luaVM)
+{
+    return true;
 }

@@ -1,4 +1,4 @@
-solution "king"
+solution "pawn"
 	configurations { "Debug", "Release" }
 	platforms { "x86", "x64" }
 	location ( "Build" )
@@ -26,7 +26,7 @@ solution "king"
 	project "ml_base"
 		language "C++"
 		kind "SharedLib"
-		targetname "king"
+		targetname "pawn"
 
 		includedirs { "include" }
 		libdirs { "lib" }
@@ -34,7 +34,7 @@ solution "king"
 		vpaths {
 			["Headers/*"] = {"*.h", "include/*.h", "linux/*.h"},
 			["Sources/*"] = {"**.cpp"},
-			["Resources/*"] = "king.rc",
+			["Resources/*"] = "pawn.rc",
 
 			["*"] = "premake5.lua",
 		}
@@ -47,7 +47,7 @@ solution "king"
 		}
 
 		filter "system:windows"
-			files { "king.rc" }
+			files { "pawn.rc" }
 
 		filter "system:linux"
 			includedirs { "linux" }

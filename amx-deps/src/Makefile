@@ -3,7 +3,7 @@
 ASM = nasm
 CC = gcc
 LD = gcc
-PROG = king.so
+PROG = pawn.so
 CXX = gcc
 CPP = gcc
 
@@ -35,12 +35,12 @@ DEPS	= $(patsubst %.o,%.d,$(OBJS))
 
 #### Make rules
 
-all : kingasm king
+all : pawnasm pawn
 
-kingasm :
+pawnasm :
 	$(ASM) $(ASMFLAGS) $(ASMSRCS)
 
-king : $(CPPOBJS)
+pawn : $(CPPOBJS)
 	$(CC) $(CPPFLAGS) $(LDFLAGS) -o $(PROG) $(CPPOBJS) $(ASMOBJS) $(LIBS)
 
 clean :

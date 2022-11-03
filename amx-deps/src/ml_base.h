@@ -22,8 +22,8 @@
 #define MLBASE_H
 
 #define MODULE_NAME			"AMX compatibility layer"
-#define	MODULE_AUTHOR		"arc_"
-#define MODULE_VERSION		1.0
+#define	MODULE_AUTHOR		"arc_ & Zorono"
+#define MODULE_VERSION		1.1
 #define MODULE_VERSIONSTRING "MTA AMX compatibility layer RC2"
 
 void logprintf(char *fmt, ...);

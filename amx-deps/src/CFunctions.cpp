@@ -66,12 +66,12 @@ AMX *suspendedAMX = NULL;
 
 // amxLoadPlugin(pluginName)
 int CFunctions::amxLoadPlugin(lua_State *luaVM) {
-	static const char *requiredExports[] = { "Load", "Supports", 0 };
+	static const char *requiredExports[] = { "Load", "Unload", "Supports", 0 };
 
 	const char *pluginName = luaL_checkstring(luaVM, 1);
 	if(!pluginName || loadedPlugins.find(pluginName) != loadedPlugins.end() || !isSafePath(pluginName)) {
 		lua_pushboolean(luaVM, 0);
-		return 1;
+		return false;
 	}
 
 	string pluginPath = "mods/deathmatch/resources/amx/plugins/";
@@ -86,36 +86,55 @@ int CFunctions::amxLoadPlugin(lua_State *luaVM) {
 
 	if(!hPlugin) {
 		lua_pushboolean(luaVM, 0);
-		return 1;
+		return false;
 	}
 
 	bool hasAllReqFns = true;
 	for(const char **fnName = requiredExports; *fnName; fnName++) {
 		if(!getProcAddr(hPlugin, *fnName)) {
-			pModuleManager->ErrorPrintf("Plugin \"%s\" does not export required function %s\n", pluginName, *fnName);
+			pModuleManager->ErrorPrintf("  Plugin \"%s\" does not export required function %s\n", pluginName, *fnName);
 			hasAllReqFns = false;
 		}
 	}
 	if(!hasAllReqFns) {
 		freeLib(hPlugin);
 		lua_pushboolean(luaVM, 0);
-		return 1;
+		return false;
 	}
 
-	printf("Loading plugin %s\n", pluginName);
+	printf("  Loading plugin: %s\n", pluginName);
 
 	Load_t* pfnLoad = (Load_t *)getProcAddr(hPlugin, "Load");
 	Supports_t* pfnSupports = (Supports_t *)getProcAddr(hPlugin, "Supports");
+
+	if(pfnLoad == NULL || pfnSupports == NULL) {
+		printf("  Plugin does not conform to architecture.");
+		freeLib(hPlugin);
+		lua_pushboolean(luaVM, 0);
+		return false;
+	}
 
 	SampPlugin* pSampPlugin = new SampPlugin;
 	pSampPlugin->pPluginPointer = hPlugin;
 	pSampPlugin->Unload = (Unload_t*)getProcAddr(hPlugin, "Unload");
 	pSampPlugin->dwSupportFlags = (SUPPORTS_FLAGS)pfnSupports();
 
+	if ((pSampPlugin->dwSupportFlags & SUPPORTS_VERSION_MASK) != SUPPORTS_VERSION)
+	{
+		printf("  Unsupported version - This plugin requires version %x.", (pSampPlugin->dwSupportFlags & SUPPORTS_VERSION_MASK));
+		freeLib(hPlugin);
+		lua_pushboolean(luaVM, 0);
+		return false;
+	}
+
 	if ((pSampPlugin->dwSupportFlags & SUPPORTS_AMX_NATIVES) != 0)
 	{
 		pSampPlugin->AmxLoad = (AmxLoad_t *)getProcAddr(hPlugin, "AmxLoad");
 		pSampPlugin->AmxUnload = (AmxUnload_t *)getProcAddr(hPlugin, "AmxUnload");
+	}
+	else {
+		pSampPlugin->AmxLoad = NULL;
+		pSampPlugin->AmxUnload = NULL;
 	}
 
 	if ((pSampPlugin->dwSupportFlags & SUPPORTS_PROCESS_TICK) != 0)
@@ -123,12 +142,16 @@ int CFunctions::amxLoadPlugin(lua_State *luaVM) {
 		vecPfnProcessTick.push_back((ProcessTick_t *)getProcAddr(hPlugin, "ProcessTick"));
 	}
 
-	pfnLoad(pluginInitData);
+	if(!pfnLoad(pluginInitData)) {
+		freeLib(hPlugin);
+		lua_pushboolean(luaVM, 0);
+		return false;
+	}
 
 	loadedPlugins[pluginName] = pSampPlugin;
 
 	lua_pushboolean(luaVM, 1);
-	return 1;
+	return true;
 }
 
 // amxIsPluginLoaded(pluginName)
@@ -153,7 +176,7 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 	lua_State* theirLuaVM = pModuleManager->GetResourceFromName(resName);
 	if (theirLuaVM == nullptr) {
 		using namespace std::string_literals;
-		std::string errMsg = "resource "s + resName + " does not exist!";
+		std::string errMsg = "[Pawn]: resource "s + resName + " does not exist!";
 		lua_pushboolean(luaVM, false);
 		lua_pushstring(luaVM, errMsg.c_str());
 		return 2;
@@ -163,7 +186,7 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 	if (!pModuleManager->GetResourceFilePath(theirLuaVM, amxName, amxPath, 256))
 	{
 		lua_pushboolean(luaVM, false);
-		lua_pushstring(luaVM, "file not found");
+		lua_pushstring(luaVM, "[Pawn]: File not found");
 		return 2;
 	}
 
@@ -173,6 +196,7 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 	if(err != AMX_ERR_NONE) {
 		delete amx;
 		lua_pushboolean(luaVM, 0);
+		pModuleManager->ErrorPrintf("[Pawn]: Failed to load '%s' script.", amxPath);
 		return 1;
 	}
 
@@ -192,7 +216,7 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 	}
 
 	if(err != AMX_ERR_NONE) {
-		pModuleManager->ErrorPrintf("%s can't be loaded due to missing functions:\n", amxName);
+		pModuleManager->ErrorPrintf("[Pawn]: %s can't be loaded due to missing functions:\n", amxName);
 		AMX_HEADER *header = (AMX_HEADER *)amx->base;
 		AMX_FUNCSTUBNT *func = (AMX_FUNCSTUBNT *)((BYTE *)amx->base + header->natives);
 		while( func != ((AMX_FUNCSTUBNT *)((BYTE *)amx->base + header->libraries)) ) {
@@ -509,17 +533,17 @@ int CFunctions::pawn(lua_State *luaVM) {
 	lua_getfield(mainVM, -1, resName);
 	if(lua_isnil(mainVM, -1)) {
 		lua_settop(mainVM, mainTop);
-		return luaL_error(luaVM, "pawn: resource %s is not an amx resource", resName);
+		return luaL_error(luaVM, "[Pawn]: resource %s is not an amx resource", resName);
 	}
 	lua_getfield(mainVM, -1, "pawnprototypes");
 	if(lua_isnil(mainVM, -1)) {
 		lua_settop(mainVM, mainTop);
-		return luaL_error(luaVM, "pawn: resource %s does not have any registered Pawn functions - see amxRegisterPawnPrototypes", resName);
+		return luaL_error(luaVM, "[Pawn]: resource %s does not have any registered Pawn functions - see amxRegisterPawnPrototypes", resName);
 	}
 	lua_getfield(mainVM, -1, fnName);
 	if(lua_isnil(mainVM, -1)) {
 		lua_settop(mainVM, mainTop);
-		return luaL_error(luaVM, "pawn: function %s is not registered", lua_tostring(luaVM, 1));
+		return luaL_error(luaVM, "[Pawn]: function %s is not registered", lua_tostring(luaVM, 1));
 	}
 
 	lua_remove(mainVM, -2);
