@@ -1,6 +1,6 @@
 /*  String functions for the Pawn Abstract Machine
  *
- *  Copyright (c) ITB CompuPhase, 2005-2016
+ *  Copyright (c) CompuPhase, 2005-2020
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not
  *  use this file except in compliance with the License. You may obtain a copy
@@ -14,9 +14,8 @@
  *  License for the specific language governing permissions and limitations
  *  under the License.
  *
- *  Version: $Id: amxstring.c 5514 2016-05-20 14:26:51Z  $
+ *  Version: $Id: amxstring.c 6131 2020-04-29 19:47:15Z thiadmer $
  */
-
 #include <limits.h>
 #include <string.h>
 #include <assert.h>
@@ -577,7 +576,7 @@ static cell AMX_NATIVE_CALL n_strval(AMX *amx,const cell *params)
     offset=params[2];
   if (offset<0)
     offset=0;
-  else if (offset>=len && len>0)
+  else if (offset>=len)
     offset=len-1;
 
   /* skip a number of cells */

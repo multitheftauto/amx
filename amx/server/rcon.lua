@@ -203,13 +203,13 @@ local function cmdKick(id)
 	end
 	id = tonumber(id)
 	if not id or not g_Players[id] then
-		return 'Invalid player id'
+		return 'Invalid playerid'
 	end
 	local name = getPlayerName(g_Players[id].elem)
 	if kickPlayer(g_Players[id].elem) then
-		return 'Kicked ' .. id .. ' (' .. name .. ')'
+		return 'Kicked ' .. name .. ' (' .. id .. ')'
 	else
-		return 'Failed to kick ' .. id .. ' (' .. name .. ')'
+		return 'Failed to kick ' .. name .. ' (' .. id .. ')'
 	end
 end
 
@@ -231,10 +231,8 @@ local function cmdLoadPlugin(pluginName)
 	if amxIsPluginLoaded(pluginName) then
 		return 'Plugin ' .. pluginName .. ' is already loaded'
 	end
-	if amxLoadPlugin(pluginName) then
-		return 'Plugin ' .. pluginName .. ' loaded'
-	else
-		return 'Failed loading plugin ' .. pluginName
+	if not amxLoadPlugin(pluginName) then
+		return '  Failed loading plugin ' .. pluginName .. '!'
 	end
 end
 

@@ -101,11 +101,11 @@ MTAEXPORT bool InitModule ( ILuaModuleManager10 *pManager, char *szModuleName, c
 	pluginInitData[PLUGIN_DATA_CALLPUBLIC_GM] = (void*)&AMXCallPublicGameMode;
 
 	string PATH = getenv("PATH");
-	PATH += ";mods/deathmatch/resources/amx/plugins/";
+	PATH += std::format(";{}/plugins/", RESOURCE_PATH);
 	setenv_portable("PATH", PATH.c_str(), 1);
 
 	//Setup environment variables
-	fs::path scriptfilespath = fs::canonical(fs::current_path() / fs::path("mods/deathmatch/resources/amx/scriptfiles"));
+	fs::path scriptfilespath = fs::canonical(fs::current_path() / fs::path(std:format("{}/scriptfiles", RESOURCE_PATH)));
 
 	const char* envvar = getenv_portable("MTA_SCRIPTFILESDIR");
 	if (envvar != NULL)
@@ -164,7 +164,7 @@ MTAEXPORT void RegisterFunctions ( lua_State * luaVM )
 
 		char resNameBuf[4];
 		bool ok = pModuleManager->GetResourceName(luaVM, resNameBuf, 4);
-		if (!ok || std::string(resNameBuf) != "amx")
+		if (!ok/* || std::string(resNameBuf) != "amx"*/)
 			return;
 
 		mainVM = luaVM;
@@ -202,15 +202,18 @@ MTAEXPORT bool DoPulse ( void )
 
 MTAEXPORT bool ShutdownModule ( void )
 {
+	printf("SAMP2MTA module is being shut down!\n");
 	return true;
 }
 
 MTAEXPORT bool ResourceStopping(lua_State* luaVM)
 {
+	printf("SAMP2MTA resource is being stopped!\n");
     return true;
 }
 
 MTAEXPORT bool ResourceStopped(lua_State* luaVM)
 {
+	printf("SAMP2MTA resource is stopped!\n");
     return true;
 }

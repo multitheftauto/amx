@@ -2,9 +2,11 @@
 
 amx_s   STRUC
     _base       DD ?
+    _codeseg    DD ?
     _dataseg    DD ?
     _callback   DD ?
     _debug      DD ?
+    _overlay    DD ?
     _cip        DD ?
     _frm        DD ?
     _hea        DD ?
@@ -21,11 +23,12 @@ amx_s   STRUC
     _reset_stk  DD ?
     _reset_hea  DD ?
     _syscall_d  DD ?
+    _ovl_index  DD ?
+    _codesize   DD ?            ; memory size of the overlay or of the native code
 IFDEF JIT
     ; the two fields below are for the JIT; they do not exist in
     ; the non-JIT version of the abstract machine
     _reloc_size DD ?            ; memory block for relocations
-    _code_size  DD ?            ; memory size of the native code
 ENDIF
 amx_s   ENDS
 
@@ -46,7 +49,8 @@ amxhead_s   STRUC
     _libraries  DD ?  ; offset to the "library" table
     _pubvars    DD ?  ; offset to the "public variables" table
     _tags       DD ?  ; offset to the "public tagnames" table
-    _nametable  DD ?  ; offset to the name table, file version 7 only
+    _nametable  DD ?  ; offset to the name table, file version 7+ only
+    _overlaytbl DD ?  ; offset to the overlay table, file version 10+ only
 amxhead_s   ENDS
 
 

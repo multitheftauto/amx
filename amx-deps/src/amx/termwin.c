@@ -1,24 +1,20 @@
 /*  Simple terminal for Microsoft Windows
  *
- *  Copyright (c) ITB CompuPhase, 2004-2006
+ *  Copyright (c) CompuPhase, 2004-2020
  *
- *  This software is provided "as-is", without any express or implied warranty.
- *  In no event will the authors be held liable for any damages arising from
- *  the use of this software.
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ *  use this file except in compliance with the License. You may obtain a copy
+ *  of the License at
  *
- *  Permission is granted to anyone to use this software for any purpose,
- *  including commercial applications, and to alter it and redistribute it
- *  freely, subject to the following restrictions:
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- *  1.  The origin of this software must not be misrepresented; you must not
- *      claim that you wrote the original software. If you use this software in
- *      a product, an acknowledgment in the product documentation would be
- *      appreciated but is not required.
- *  2.  Altered source versions must be plainly marked as such, and must not be
- *      misrepresented as being the original software.
- *  3.  This notice may not be removed or altered from any source distribution.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ *  License for the specific language governing permissions and limitations
+ *  under the License.
  *
- *  Version: $Id: termwin.c 3648 2006-10-12 11:24:50Z thiadmer $
+ *  Version: $Id: termwin.c 6131 2020-04-29 19:47:15Z thiadmer $
  */
 
 #if defined _UNICODE || defined __UNICODE__ || defined UNICODE
@@ -91,7 +87,7 @@ static BOOL InitWindowClass(HINSTANCE hinst)
     wc.lpfnWndProc=(WNDPROC)ConsoleFunc;
     wc.hInstance=hinst;
     wc.hCursor=LoadCursor(NULL, IDC_ARROW);
-    wc.hIcon=LoadIcon(GetModuleHandle(NULL), "AppIcon");
+    wc.hIcon=LoadIcon(GetModuleHandle(NULL), __T("AppIcon"));
     wc.hbrBackground=(HBRUSH)(COLOR_WINDOW+1);
     wc.lpszClassName=__T("TermWin:Console");
     initok=RegisterClass(&wc);
@@ -355,7 +351,7 @@ static void RefreshScreen(CONSOLE *con,int startline,int endline)
   GetClientRect(con->hwnd,&rect);
   rect.top=startline*con->cheight;
   rect.bottom=endline*con->cheight;
-  InvalidateRect(con->hwnd,&rect,FALSE);
+  InvalidateRect(con->hwnd,NULL/*&rect*/,FALSE);
   RefreshCaretPos(con);
 }
 
@@ -394,8 +390,7 @@ static void ScrollScreen(CONSOLE *con,int dx,int dy)
       con->csry=con->lines-1;
   } /* if */
 
-  /* horizontal scrolling */
-  /* ??? to be implemented */
+  /* ??? horizontal scrolling to be implemented */
 
   RefreshScreen(con,0,con->lines);
 }
@@ -498,14 +493,21 @@ long CALLBACK EXPORT ConsoleFunc(HWND hwnd,unsigned message,WPARAM wParam,
       if (con->winlines<con->lines)
         rect.right+=GetSystemMetrics(SM_CXVSCROLL);
       ClampToScreen(&rect);
-      SetWindowPos(hwnd,NULL,rect.left,rect.top,rect.right-rect.left,rect.bottom-rect.top,
-                   SWP_NOZORDER);
+      SetWindowPos(hwnd,NULL,rect.left,rect.top,rect.right-rect.left,rect.bottom-rect.top,0);
     } /* if */
     break;
 
   case WM_DESTROY:
     if ((con=Hwnd2Console(hwnd))!=NULL)
       DoDeleteConsole(con);
+    /* if there are no consoles left, abort the program */
+    if (consoleroot.next==NULL) {
+      #if defined __WIN32__ || defined _WIN32 || defined WIN32
+        ExitProcess(0);
+      #else
+        exit(0);
+      #endif
+    } /* if */
     break;
 
   case WM_GETMINMAXINFO:
@@ -788,6 +790,7 @@ int amx_putstr(const TCHAR *string)
   CONSOLE *con;
   if ((con=ActiveConsole())!=NULL) {
     int pos, i;
+    int top=con->csry;
 
     pos=(con->csry*con->columns+con->csrx)*2;
     assert(con->buffer!=NULL);
@@ -824,7 +827,7 @@ int amx_putstr(const TCHAR *string)
         } /* if */
       } /* if */
     } /* for */
-    RefreshScreen(con,con->csry,con->csry+1);
+    RefreshScreen(con,top,con->csry+1);
   } /* if */
   return 0;
 }
@@ -863,6 +866,18 @@ int amx_putchar(int c)
           con->buffer[pos]=__T(' ');
           con->buffer[pos+1]=con->attrib;
         } /* if */
+      } else if (c==__T('\t')) {
+        while (con->csrx % 8!=0 && con->csrx<con->columns) {
+          con->buffer[pos]=' ';
+          con->buffer[pos+1]=con->attrib;
+          con->csrx+=1;
+          if (con->csrx>=con->columns && con->autowrap) {
+            con->csrx=0;
+            con->csry++;
+            if (con->csry>=con->lines)
+              ScrollScreen(con,0,1);
+          } /* if */
+        } /* while */
       } else {
         con->buffer[pos]=(TCHAR)c;
         con->buffer[pos+1]=con->attrib;
@@ -882,13 +897,27 @@ int amx_putchar(int c)
 
 int amx_fflush(void)
 {
+  CONSOLE *con;
+  if ((con=ActiveConsole())!=NULL && IsWindow(con->hwnd))
+    UpdateWindow(con->hwnd);
   return 1;
+}
+
+static void ProcessMessages(void)
+{
+  MSG msg;
+
+  while (PeekMessage(&msg,NULL,0,0,PM_REMOVE)) {
+    TranslateMessage(&msg);
+    DispatchMessage(&msg);
+  } /* while */
 }
 
 int amx_kbhit(void)
 {
   CONSOLE *con;
 
+  ProcessMessages();
   if ((con=ActiveConsole())!=NULL)
     return con->keyq_start!=con->keyq_end;
   return 0;
@@ -900,13 +929,8 @@ int amx_getch(void)
   int c=-1;
 
   if ((con=ActiveConsole())!=NULL) {
-    MSG msg;
-    while (con->keyq_start==con->keyq_end) {
-      while (PeekMessage(&msg,NULL,0,0,PM_REMOVE)) {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-      } /* while */
-    } /* while */
+    while (con->keyq_start==con->keyq_end)
+      ProcessMessages();
     c=con->keyqueue[con->keyq_start];
     con->keyq_start=(con->keyq_start+1)%KEYQUEUE_SIZE;
   } /* if */

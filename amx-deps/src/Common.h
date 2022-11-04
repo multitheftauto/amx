@@ -24,10 +24,26 @@ extern "C"
 	#include "include/lobject.h"
 }
 
-#ifdef WIN32
-	#define MTAEXPORT extern "C" __declspec(dllexport)
+#ifdef _WIN32
+#define MTAEXPORT extern "C" __declspec(dllexport)
 #else
-	#define MTAEXPORT extern "C"
+#define MTAEXPORT extern "C"
+#endif
+
+#if defined( _M_X64 ) || defined( __x86_64__ ) || defined( _M_AMD64 )
+#define ANY_x64
+#ifdef _WIN64
+#define WIN_x64
+#else
+#define LINUX_x64
+#endif
+#else
+#define ANY_x86
+#ifdef _WIN32
+#define WIN_x86
+#else
+#define LINUX_x86
+#endif
 #endif
 
 #include <list>
@@ -61,4 +77,6 @@ namespace FunctionArgumentType
 		TYPE_TABLE = 6
 	};
 }
+
+#define RESOURCE_PATH "mods/deathmatch/resources/amx"
 #endif

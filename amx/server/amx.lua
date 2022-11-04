@@ -34,8 +34,16 @@ addEventHandler('onResourceStart', resourceRoot,
 		table.each(getElementsByType('player'), joinHandler)
 
 		local plugins = get('amx.plugins')
-		if plugins then
-			table.each(plugins:split(), amxLoadPlugin)
+        if plugins then
+			local pluginCount
+			for pluginName in plugins:split() do
+                if amxLoadPlugin(pluginName) then
+					pluginCount = pluginCount+1
+				else
+					outputDebugString('  Failed loading plugin ' .. pluginName .. '!')
+				end
+			end
+			outputDebugString(" Loaded " .. pluginCount .. " plugins.")
 		end
 
 		local filterscripts = get('amx.filterscripts')

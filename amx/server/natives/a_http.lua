@@ -9,7 +9,7 @@ function HTTP(amx, index, type, url, data, callback)
 	local proto = protomatch[1] or 'default'
 	-- if somebody will try to put here ftp:// ssh:// etc...
 	if proto ~= 'http' and proto ~= 'https' and proto ~= 'default' then
-		print('Current protocol is not supporting')
+		print('Current protocol is not supported')
 		return 0
 	end
 	local typesToText = {
@@ -34,7 +34,7 @@ function HTTP(amx, index, type, url, data, callback)
 		postData = data,
 		method = typesToText[tonumber(type)],
 	}
-	local successRemote = fetchRemote(url, sendOptions, 
+	local successRemote = fetchRemote(url, sendOptions,
 	function (responseData, responseInfo)
 		local error = responseInfo.statusCode
 		if error == 0 then
@@ -43,8 +43,8 @@ function HTTP(amx, index, type, url, data, callback)
 			procCallInternal(amx, callback, index, 3, responseData)
 		elseif error == 1006 or error == 1005 then
 			procCallInternal(amx, callback, index, 1, responseData)
-		elseif error == 1007 then 
-			procCallInternal(amx, callback, index, 5, responseData)	
+		elseif error == 1007 then
+			procCallInternal(amx, callback, index, 5, responseData)
 		else
 			procCallInternal(amx, callback, index, error, responseData)
 		end

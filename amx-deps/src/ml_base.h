@@ -21,6 +21,13 @@
 #ifndef MLBASE_H
 #define MLBASE_H
 
+// Disable Visual Studio warnings
+#ifdef _WIN32
+#   pragma warning(disable: 4267) // DISABLE: conversion from 'size_t' to 'int', possible loss of data
+#   pragma warning(disable: 4996) // DISABLE: 'strcpy': This function or variable may be unsafe.
+#endif
+
+/** MODULE SPECIFIC INFORMATION **/
 #define MODULE_NAME			"AMX compatibility layer"
 #define	MODULE_AUTHOR		"arc_ & Zorono"
 #define MODULE_VERSION		1.1

@@ -12,8 +12,8 @@
 native lua(const fn[], {Float,_}:...);
 native amxRegisterPawnPrototypes(const prototype[][]);
 native amxVersion(&Float:ver);
-native amxVersionString(buffer[], maxsize);
-native md5hash(str[], const buf[], bufsize);
+native amxVersionString(buffer[], maxsize = sizeof(buffer));
+native md5hash(str[], const buf[], bufsize = sizeof(buf));
 
 // Events
 forward OnBotConnect(botid, name[]);

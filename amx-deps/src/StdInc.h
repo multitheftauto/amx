@@ -16,6 +16,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <variant>
 
 #include "Common.h"
 #include "include/ILuaModuleManager.h"

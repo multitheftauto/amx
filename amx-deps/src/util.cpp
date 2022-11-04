@@ -229,7 +229,7 @@ string getScriptFilePath(AMX *amx, const char *filename) {
 		return respath.string();
 
 	// Then check if it exists in the main scriptfiles folder
-	fs::path scriptfilespath = fs::path("mods/deathmatch/resources/amx/scriptfiles") / filename;
+	fs::path scriptfilespath = fs::path(std::format("{}/scriptfiles", RESOURCE_PATH)) / filename;
 	if(exists(scriptfilespath))
 	{
 		return scriptfilespath.string();

@@ -66,6 +66,7 @@ AMX *suspendedAMX = NULL;
 
 // amxLoadPlugin(pluginName)
 int CFunctions::amxLoadPlugin(lua_State *luaVM) {
+	if(!luaVM) return;
 	static const char *requiredExports[] = { "Load", "Unload", "Supports", 0 };
 
 	const char *pluginName = luaL_checkstring(luaVM, 1);
@@ -74,7 +75,7 @@ int CFunctions::amxLoadPlugin(lua_State *luaVM) {
 		return false;
 	}
 
-	string pluginPath = "mods/deathmatch/resources/amx/plugins/";
+	string pluginPath = std::format("{}/plugins/", RESOURCE_PATH);
 	pluginPath += pluginName;
 	#ifdef WIN32
 		pluginPath += ".dll";
@@ -108,7 +109,7 @@ int CFunctions::amxLoadPlugin(lua_State *luaVM) {
 	Supports_t* pfnSupports = (Supports_t *)getProcAddr(hPlugin, "Supports");
 
 	if(pfnLoad == NULL || pfnSupports == NULL) {
-		printf("  Plugin does not conform to architecture.");
+		print("  Plugin does not conform to architecture.");
 		freeLib(hPlugin);
 		lua_pushboolean(luaVM, 0);
 		return false;
@@ -116,21 +117,21 @@ int CFunctions::amxLoadPlugin(lua_State *luaVM) {
 
 	SampPlugin* pSampPlugin = new SampPlugin;
 	pSampPlugin->pPluginPointer = hPlugin;
-	pSampPlugin->Unload = (Unload_t*)getProcAddr(hPlugin, "Unload");
+	pSampPlugin->Unload = (Unload_t*)getProcAddr(pSampPlugin->pPluginPointer, "Unload");
 	pSampPlugin->dwSupportFlags = (SUPPORTS_FLAGS)pfnSupports();
 
 	if ((pSampPlugin->dwSupportFlags & SUPPORTS_VERSION_MASK) != SUPPORTS_VERSION)
 	{
 		printf("  Unsupported version - This plugin requires version %x.", (pSampPlugin->dwSupportFlags & SUPPORTS_VERSION_MASK));
-		freeLib(hPlugin);
+		freeLib(pSampPlugin->pPluginPointer);
 		lua_pushboolean(luaVM, 0);
 		return false;
 	}
 
 	if ((pSampPlugin->dwSupportFlags & SUPPORTS_AMX_NATIVES) != 0)
 	{
-		pSampPlugin->AmxLoad = (AmxLoad_t *)getProcAddr(hPlugin, "AmxLoad");
-		pSampPlugin->AmxUnload = (AmxUnload_t *)getProcAddr(hPlugin, "AmxUnload");
+		pSampPlugin->AmxLoad = (AmxLoad_t *)getProcAddr(pSampPlugin->pPluginPointer, "AmxLoad");
+		pSampPlugin->AmxUnload = (AmxUnload_t *)getProcAddr(pSampPlugin->pPluginPointer, "AmxUnload");
 	}
 	else {
 		pSampPlugin->AmxLoad = NULL;
@@ -139,16 +140,17 @@ int CFunctions::amxLoadPlugin(lua_State *luaVM) {
 
 	if ((pSampPlugin->dwSupportFlags & SUPPORTS_PROCESS_TICK) != 0)
 	{
-		vecPfnProcessTick.push_back((ProcessTick_t *)getProcAddr(hPlugin, "ProcessTick"));
+		vecPfnProcessTick.push_back((ProcessTick_t *)getProcAddr(pSampPlugin->pPluginPointer, "ProcessTick"));
 	}
 
 	if(!pfnLoad(pluginInitData)) {
-		freeLib(hPlugin);
+		freeLib(pSampPlugin->pPluginPointer);
 		lua_pushboolean(luaVM, 0);
 		return false;
 	}
 
 	loadedPlugins[pluginName] = pSampPlugin;
+	printf("  Loaded.");
 
 	lua_pushboolean(luaVM, 1);
 	return true;
@@ -156,6 +158,7 @@ int CFunctions::amxLoadPlugin(lua_State *luaVM) {
 
 // amxIsPluginLoaded(pluginName)
 int CFunctions::amxIsPluginLoaded(lua_State *luaVM) {
+	if(!luaVM) return;
 	const char *pluginName = luaL_checkstring(luaVM, 1);
 	if(loadedPlugins.find(pluginName) != loadedPlugins.end())
 		lua_pushboolean(luaVM, 1);
@@ -166,6 +169,7 @@ int CFunctions::amxIsPluginLoaded(lua_State *luaVM) {
 
 // amxLoad(resName, amxName)
 int CFunctions::amxLoad(lua_State *luaVM) {
+	if(!luaVM) return;
 	const char *resName = luaL_checkstring(luaVM, 1);
 	const char *amxName = luaL_checkstring(luaVM, 2);
 	if(!resName || !isSafePath(resName) || !amxName || !isSafePath(amxName)) {
@@ -253,9 +257,10 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 
 // amxCall(amxptr, fnName|fnIndex, arg1, arg2, ...)
 int CFunctions::amxCall(lua_State *luaVM) {
+	if(!luaVM) return;
 	AMX *amx = (AMX *)lua_touserdata(luaVM, 1);
 	if(!amx) {
-		pModuleManager->ErrorPrintf("amxCall: invalid amx parameter\n");
+		pModuleManager->ErrorPrintf("[Pawn]: invalid AMX parameter -> Load\n");
 		lua_pushboolean(luaVM, 0);
 		return 1;
 	}
@@ -333,6 +338,7 @@ int CFunctions::amxCall(lua_State *luaVM) {
 // amxMTReadDATCell(t, addr)
 // __index metamethod
 int CFunctions::amxMTReadDATCell(lua_State *luaVM) {
+	if(!luaVM) return;
 	luaL_checktype(luaVM, 1, LUA_TTABLE);
 	cell addr = (cell)luaL_checknumber(luaVM, 2);
 	lua_getfield(luaVM, 1, "amx");
@@ -350,6 +356,7 @@ int CFunctions::amxMTReadDATCell(lua_State *luaVM) {
 // amxMTWriteCell(t, addr, value)
 // __newindex metamethod
 int CFunctions::amxMTWriteDATCell(lua_State *luaVM) {
+	if(!luaVM) return;
 	luaL_checktype(luaVM, 1, LUA_TTABLE);
 	cell addr = (cell)luaL_checknumber(luaVM, 2);
 	cell value = (cell)luaL_checknumber(luaVM, 3);
@@ -367,6 +374,7 @@ int CFunctions::amxMTWriteDATCell(lua_State *luaVM) {
 
 // amxReadString(amxptr, addr, maxlen)
 int CFunctions::amxReadString(lua_State *luaVM) {
+	if(!luaVM) return;
 	AMX *amx = (AMX *)lua_touserdata(luaVM, 1);
 	if(!amx)
 		return 0;
@@ -377,6 +385,7 @@ int CFunctions::amxReadString(lua_State *luaVM) {
 
 // amxWriteString(amxptr, addr, str)
 int CFunctions::amxWriteString(lua_State *luaVM) {
+	if(!luaVM) return;
 	AMX *amx = (AMX *)lua_touserdata(luaVM, 1);
 	if(!amx)
 		return 0;
@@ -394,9 +403,10 @@ int CFunctions::amxWriteString(lua_State *luaVM) {
 
 // amxUnload(amxptr)
 int CFunctions::amxUnload(lua_State *luaVM) {
+	if(!luaVM) return;
 	AMX *amx = (AMX *)lua_touserdata(luaVM, 1);
 	if(!amx) {
-		pModuleManager->ErrorPrintf("amxUnload: invalid amx parameter\n");
+		pModuleManager->ErrorPrintf("[Pawn]: invalid AMX parameter -> Unload\n");
 		lua_pushboolean(luaVM, 0);
 		return 1;
 	}
@@ -426,6 +436,7 @@ int CFunctions::amxUnload(lua_State *luaVM) {
 
 // amxUnloadAllPlugins()
 int CFunctions::amxUnloadAllPlugins(lua_State *luaVM) {
+	if(!luaVM) return;
 	for (const auto& plugin : loadedPlugins) {
 		Unload_t* Unload = plugin.second->Unload;
 		if (Unload) {
@@ -462,7 +473,7 @@ int CFunctions::amxRegisterLuaPrototypes(lua_State *luaVM) {
 	while(lua_next(luaVM, 1)) {
 		if(!lua_istable(luaVM, -1)) {
 			lua_settop(mainVM, mainTop);
-			return luaL_error(luaVM, "amxRegisterLuaPrototypes: table expected as prototype for \"%s\"", lua_tostring(luaVM, -2));
+			return luaL_error(luaVM, "[Pawn]: table expected as prototype for \"%s\" -> RegisterLuaPrototypes", lua_tostring(luaVM, -2));
 		}
 
 		lua_getglobal(luaVM, "string");
@@ -480,7 +491,7 @@ int CFunctions::amxRegisterLuaPrototypes(lua_State *luaVM) {
 		lua_gettable(luaVM, LUA_GLOBALSINDEX);
 		if(!lua_isfunction(luaVM, -1)) {
 			lua_settop(mainVM, mainTop);
-			return luaL_error(luaVM, "amxRegisterLuaPrototypes: no function named \"%s\" exists", lua_tostring(luaVM, -3));
+			return luaL_error(luaVM, "[Pawn]: no function named \"%s\" exists -> RegisterLuaPrototypes", lua_tostring(luaVM, -3));
 		}
 		lua_pop(luaVM, 1);
 
@@ -505,6 +516,7 @@ int CFunctions::amxRegisterLuaPrototypes(lua_State *luaVM) {
 
 // pawn(fnName, ...)
 int CFunctions::pawn(lua_State *luaVM) {
+	if(!luaVM) return;
 	vector<AMX *> amxs = getResourceAMXs(luaVM);
 	if(amxs.empty()) {
 		lua_pushboolean(luaVM, 0);
@@ -523,7 +535,7 @@ int CFunctions::pawn(lua_State *luaVM) {
 		}
 	}
 	if(!amx)
-		return luaL_error(luaVM, "No Pawn function named %s exists", fnName);
+		return luaL_error(luaVM, "[Pawn]: Function \"%s\" doesn't exist", fnName);
 
 	int mainTop = lua_gettop(mainVM);
 
@@ -533,7 +545,7 @@ int CFunctions::pawn(lua_State *luaVM) {
 	lua_getfield(mainVM, -1, resName);
 	if(lua_isnil(mainVM, -1)) {
 		lua_settop(mainVM, mainTop);
-		return luaL_error(luaVM, "[Pawn]: resource %s is not an amx resource", resName);
+		return luaL_error(luaVM, "[Pawn]: resource %s is not an AMX resource", resName);
 	}
 	lua_getfield(mainVM, -1, "pawnprototypes");
 	if(lua_isnil(mainVM, -1)) {
@@ -583,18 +595,21 @@ int CFunctions::pawn(lua_State *luaVM) {
 
 // amxVersion()
 int CFunctions::amxVersion(lua_State *luaVM) {
+	if(!luaVM) return;
 	lua_pushnumber(luaVM, MODULE_VERSION);
 	return 1;
 }
 
 // amxVersionString()
 int CFunctions::amxVersionString(lua_State *luaVM) {
+	if(!luaVM) return;
 	lua_pushstring(luaVM, MODULE_VERSIONSTRING);
 	return 1;
 }
 
 // sqlite3OpenDB(amx, dbName)
 int CFunctions::sqlite3OpenDB(lua_State *luaVM) {
+	if(!luaVM) return;
 	AMX *amx = (AMX *)lua_touserdata(luaVM, 1);
 	const char *dbName = luaL_checkstring(luaVM, 2);
 	if(!amx) {
@@ -634,6 +649,7 @@ int CFunctions::sqlite3OpenDB(lua_State *luaVM) {
 // if successful and other query, returns true
 // on failure, returns false
 int CFunctions::sqlite3Query(lua_State *luaVM) {
+	if(!luaVM) return;
 	AMX *amx = (AMX *)lua_touserdata(luaVM, 1);
 	int dbID = (int)luaL_checknumber(luaVM, 2);
 	const char *query = luaL_checkstring(luaVM, 3);
@@ -694,6 +710,7 @@ int CFunctions::sqlite3Query(lua_State *luaVM) {
 
 // sqlite3CloseDB(amx, dbID)
 int CFunctions::sqlite3CloseDB(lua_State *luaVM) {
+	if(!luaVM) return;
 	AMX *amx = (AMX *)lua_touserdata(luaVM, 1);
 	int dbID = (int)luaL_checknumber(luaVM, 2);
 	if(!amx || loadedDBs.find(amx) == loadedDBs.end() || loadedDBs[amx].find(dbID) == loadedDBs[amx].end()) {
@@ -712,6 +729,7 @@ int CFunctions::sqlite3CloseDB(lua_State *luaVM) {
 
 // cell2float(cell)
 int CFunctions::cell2float(lua_State *luaVM) {
+	if(!luaVM) return;
 	cell c = (cell)luaL_checknumber(luaVM, 1);
 	lua_pushnumber(luaVM, *(float *)&c);
 	return 1;
@@ -719,6 +737,7 @@ int CFunctions::cell2float(lua_State *luaVM) {
 
 // float2cell(float)
 int CFunctions::float2cell(lua_State *luaVM) {
+	if(!luaVM) return;
 	float f = (float)luaL_checknumber(luaVM, 1);
 	lua_pushnumber(luaVM, *(cell *)&f);
 	return 1;

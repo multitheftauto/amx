@@ -17,7 +17,6 @@
  * 2004-01-09: Adaptions for 64-bit cells (using "double precision"), by
  *             Thiadmer Riemersma
  */
-
 #include <stdlib.h>     /* for atof() */
 #include <stdio.h>      /* for NULL */
 #include <assert.h>
