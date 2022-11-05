@@ -75,7 +75,7 @@ int CFunctions::amxLoadPlugin(lua_State *luaVM) {
 		return false;
 	}
 
-	string pluginPath = std::format("{}/plugins/", RESOURCE_PATH);
+	string pluginPath = std::format("{}/resources/plugins/", RESOURCE_PATH);
 	pluginPath += pluginName;
 	#ifdef WIN32
 		pluginPath += ".dll";
@@ -172,7 +172,8 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 	if(!luaVM) return;
 	const char *resName = luaL_checkstring(luaVM, 1);
 	const char *amxName = luaL_checkstring(luaVM, 2);
-	if(!resName || !isSafePath(resName) || !amxName || !isSafePath(amxName)) {
+	const int *isGamemode = luaL_checknumber(luaVM, 3);
+	if(!resName || !isSafePath(resName) || !amxName || !isSafePath(amxName) || !isGamemode) {
 		lua_pushboolean(luaVM, 0);
 		return 1;
 	}
@@ -180,14 +181,14 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 	lua_State* theirLuaVM = pModuleManager->GetResourceFromName(resName);
 	if (theirLuaVM == nullptr) {
 		using namespace std::string_literals;
-		std::string errMsg = "[Pawn]: resource "s + resName + " does not exist!";
+		std::string errMsg = std::format("[Pawn]: resource {} does not exist!", resName);
 		lua_pushboolean(luaVM, false);
 		lua_pushstring(luaVM, errMsg.c_str());
 		return 2;
 	}
 
 	char amxPath[256];
-	if (!pModuleManager->GetResourceFilePath(theirLuaVM, amxName, amxPath, 256))
+	if (!pModuleManager->GetResourceFilePath(theirLuaVM, ((isGamemode == 1 ? 'gamemodes' : 'filterscripts') + '/' + amxName), amxPath, 256))
 	{
 		lua_pushboolean(luaVM, false);
 		lua_pushstring(luaVM, "[Pawn]: File not found");
@@ -607,6 +608,9 @@ int CFunctions::amxVersionString(lua_State *luaVM) {
 	return 1;
 }
 
+/*
+	TODO: this needs  to be replaced with sqlite_amx.c
+*/
 // sqlite3OpenDB(amx, dbName)
 int CFunctions::sqlite3OpenDB(lua_State *luaVM) {
 	if(!luaVM) return;

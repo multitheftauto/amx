@@ -57,7 +57,8 @@
     </aclrequest>
 
     <settings>
-        <setting name="filterscripts" value="" />
+        <setting name="filterscripts" value="test.amx" />
+        <setting name="gamemodes" value="test.amx " />
         <setting name="plugins" value="" />
     </settings>
 </meta>

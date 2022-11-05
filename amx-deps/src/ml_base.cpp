@@ -101,11 +101,11 @@ MTAEXPORT bool InitModule ( ILuaModuleManager10 *pManager, char *szModuleName, c
 	pluginInitData[PLUGIN_DATA_CALLPUBLIC_GM] = (void*)&AMXCallPublicGameMode;
 
 	string PATH = getenv("PATH");
-	PATH += std::format(";{}/plugins/", RESOURCE_PATH);
+	PATH += std::format(";{}/resources/plugins/", RESOURCE_PATH);
 	setenv_portable("PATH", PATH.c_str(), 1);
 
 	//Setup environment variables
-	fs::path scriptfilespath = fs::canonical(fs::current_path() / fs::path(std:format("{}/scriptfiles", RESOURCE_PATH)));
+	fs::path scriptfilespath = fs::canonical(fs::current_path() / fs::path(std:format("{}/resources/scriptfiles", RESOURCE_PATH)));
 
 	const char* envvar = getenv_portable("MTA_SCRIPTFILESDIR");
 	if (envvar != NULL)

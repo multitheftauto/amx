@@ -2,7 +2,7 @@ g_ServerVars = {
 	announce = true,
 	anticheat = false,
 	bind = '',
-	filterscripts = get('amx.filterscripts') or '',
+	filterscripts = get(getResourceName(getThisResource()) .. '.filterscripts') or '',
 	gamemode0 = '',
 	gamemode1 = '',
 	gamemode2 = '',
@@ -39,7 +39,7 @@ g_ServerVars = {
 	myriad = false,
 	nosign = '',
 	password = { get = function() return getServerPassword() or '' end },
-	plugins = get('amx.plugins') or '',
+	plugins = get(getResourceName(getThisResource()) .. '.plugins') or '',
 	port = { get = getServerPort },
 	query = true,
 	rcon_password = '',
@@ -71,7 +71,8 @@ g_ServerVars = {
 	}
 }
 
-local readOnlyVars = table.create({ 'announce', 'anticheat', 'bind', 'filterscripts', 'hostname', 'maxplayers', 'nosign', 'plugins', 'port', 'version' }, true)
+local readOnlyVars = table.create({ 'announce', 'anticheat', 'bind', 'filterscripts', 'hostname', 'maxplayers', 'nosign',
+	'plugins', 'port', 'version' }, true)
 g_ServerVars = { shadow = g_ServerVars }
 setmetatable(
 	g_ServerVars,
@@ -238,7 +239,7 @@ end
 
 local function cmdPlayers()
 	local result = ''
-	for id,data in pairs(g_Players) do
+	for id, data in pairs(g_Players) do
 		result = result .. ('%5d  %s\n'):format(id, getPlayerName(data.elem))
 	end
 	return result
@@ -259,7 +260,7 @@ local function cmdUnbanIP(ip)
 	if not ip then
 		return 'unbanip <ip>'
 	end
-	for banID, ban in ipairs (getBans()) do
+	for banID, ban in ipairs(getBans()) do
 		if getBanIP(ban) == ip then
 			if removeBan(ban) then
 				return 'Removed ' .. ip .. ' from the ban list'
@@ -285,7 +286,7 @@ end
 local function cmdVarList()
 	local result = ''
 	local keys = table.sort(table.keys(g_ServerVars.shadow))
-	for i,k in ipairs(keys) do
+	for i, k in ipairs(keys) do
 		result = result .. presentServerVar(k) .. '\n'
 	end
 	return result
@@ -376,7 +377,7 @@ addCommandHandler('rcon',
 		local result = doRCON(str)
 		if result then
 			local lines = result:split('\n')
-			for i,line in ipairs(lines) do
+			for i, line in ipairs(lines) do
 				outputConsole(line)
 			end
 		end
