@@ -65,7 +65,7 @@ vector<ProcessTick_t*> vecPfnProcessTick;
 AMX *suspendedAMX = NULL;
 
 // amxLoadPlugin(pluginName)
-int CFunctions::amxLoadPlugin(lua_State *luaVM) {
+bool CFunctions::amxLoadPlugin(lua_State *luaVM) {
 	if(!luaVM) return;
 	static const char *requiredExports[] = { "Load", "Unload", "Supports", 0 };
 
@@ -198,7 +198,10 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 	// Load .amx
 	AMX *amx = new AMX;
 	int  err = aux_LoadProgram(amx, amxPath, NULL);
-	if(err != AMX_ERR_NONE) {
+	/*if(err == AMX_ERR_SLEEP) {
+		//
+	}
+	else */if(err != AMX_ERR_NONE) {
 		delete amx;
 		lua_pushboolean(luaVM, 0);
 		pModuleManager->ErrorPrintf("[Pawn]: Failed to load '%s' script.", amxPath);
@@ -212,6 +215,7 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 	amx_StringInit(amx);
 	amx_TimeInit(amx);
 	amx_FileInit(amx);
+	amx_sampDbInit(amx);
 	err = amx_SAMPInit(amx);
 	for (const auto& plugin : loadedPlugins) {
 		AmxLoad_t* pfnAmxLoad = plugin.second->AmxLoad;
@@ -230,6 +234,13 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 			func++;
 		}
 		aux_FreeProgram(amx);
+		amx_sampDbCleanup(amx);
+		amx_CoreCleanup(amx);
+		amx_TimeCleanup(amx);
+		amx_FileCleanup(amx);
+		amx_StringCleanup(amx);
+		amx_FloatCleanup(amx);
+		amx_ConsoleCleanup(amx);
 		delete amx;
 		lua_pushboolean(luaVM, 0);
 		return 1;
@@ -418,14 +429,17 @@ int CFunctions::amxUnload(lua_State *luaVM) {
 			pfnAmxUnload(amx);
 		}
 	}
-	// Close any open databases
-	if(loadedDBs.find(amx) != loadedDBs.end()) {
-		for (const auto& db : loadedDBs[amx])
-			sqlite3_close(db.second);
-		loadedDBs.erase(amx);
-	}
+
 	// Unload
 	aux_FreeProgram(amx);
+	amx_sampDbCleanup(amx);
+	amx_CoreCleanup(amx);
+	amx_TimeCleanup(amx);
+	amx_FileCleanup(amx);
+	amx_StringCleanup(amx);
+	amx_FloatCleanup(amx);
+	amx_ConsoleCleanup(amx);
+
 	lua_getfield(luaVM, LUA_REGISTRYINDEX, "amx");
 	lua_pushnil(luaVM);
 	lua_setfield(luaVM, -2, loadedAMXs[amx].resourceName.c_str());
@@ -605,129 +619,6 @@ int CFunctions::amxVersion(lua_State *luaVM) {
 int CFunctions::amxVersionString(lua_State *luaVM) {
 	if(!luaVM) return;
 	lua_pushstring(luaVM, MODULE_VERSIONSTRING);
-	return 1;
-}
-
-/*
-	TODO: this needs  to be replaced with sqlite_amx.c
-*/
-// sqlite3OpenDB(amx, dbName)
-int CFunctions::sqlite3OpenDB(lua_State *luaVM) {
-	if(!luaVM) return;
-	AMX *amx = (AMX *)lua_touserdata(luaVM, 1);
-	const char *dbName = luaL_checkstring(luaVM, 2);
-	if(!amx) {
-		lua_pushboolean(luaVM, 0);
-		return 1;
-	}
-	// Open the database
-	string dbPath = getScriptFilePath(amx, dbName);
-	if(dbPath.empty()) {
-		lua_pushboolean(luaVM, 0);
-		return 1;
-	}
-	sqlite3 *db;
-	sqlite3_open(dbPath.c_str(), &db);
-	if(!db) {
-		lua_pushboolean(luaVM, 0);
-		return 1;
-	}
-	// Check if amx is already present in loadedDBs
-	if(loadedDBs.find(amx) == loadedDBs.end())
-		loadedDBs[amx] = map< int, sqlite3 *>();
-	// Find a free ID
-	int dbID = 1;
-	for(; loadedDBs[amx].find(dbID) != loadedDBs[amx].end(); dbID++);
-	loadedDBs[amx][dbID] = db;
-	lua_pushnumber(luaVM, dbID);
-	return 1;
-}
-
-// sqlite3Query(amx, dbID, query)
-// if successful and SELECT, returns:
-// {
-//    columns = { colname1, colname2, ... },
-//    [1] = { coldata1, coldata2, ... },
-//    [2] = ...
-// }
-// if successful and other query, returns true
-// on failure, returns false
-int CFunctions::sqlite3Query(lua_State *luaVM) {
-	if(!luaVM) return;
-	AMX *amx = (AMX *)lua_touserdata(luaVM, 1);
-	int dbID = (int)luaL_checknumber(luaVM, 2);
-	const char *query = luaL_checkstring(luaVM, 3);
-	if(!amx || loadedDBs.find(amx) == loadedDBs.end() || loadedDBs[amx].find(dbID) == loadedDBs[amx].end() || !query) {
-		lua_pushboolean(luaVM, 0);
-		return 1;
-	}
-
-	sqlite3 *db = loadedDBs[amx][dbID];
-	sqlite3_stmt *stmt;
-	if(sqlite3_prepare(db, query, -1, &stmt, NULL) != SQLITE_OK) {
-		lua_pushboolean(luaVM, 0);
-		return 1;
-	}
-	int colcount = sqlite3_column_count(stmt);
-	if(colcount > 0) {
-		int res;
-		// SELECT query
-		// create main table to return
-		lua_newtable(luaVM);
-		// create table with column names
-		lua_newtable(luaVM);
-		for(int i = 0; i < colcount; i++) {
-			lua_pushnumber(luaVM, i + 1);
-			lua_pushstring(luaVM, sqlite3_column_name(stmt, i));
-			lua_settable(luaVM, -3);
-		}
-		lua_setfield(luaVM, -2, "columns");
-
-		// Read rows
-		int row = 1;
-		while((res = sqlite3_step(stmt)) == SQLITE_ROW) {
-			lua_pushnumber(luaVM, row);
-			lua_newtable(luaVM);
-			for(int i = 0; i < colcount; i++) {
-				lua_pushnumber(luaVM, i + 1);
-				lua_pushstring(luaVM, (const char *)sqlite3_column_text(stmt, i));
-				lua_settable(luaVM, -3);
-			}
-			lua_settable(luaVM, -3);
-			row++;
-		}
-		if(res == SQLITE_ERROR) {
-			lua_pop(luaVM, 1);
-			lua_pushboolean(luaVM, 0);
-		}
-	} else {
-		// Other kind of query
-		if(sqlite3_step(stmt) == SQLITE_ERROR)
-			lua_pushboolean(luaVM, 0);
-		else
-			lua_pushboolean(luaVM, 1);
-	}
-
-	sqlite3_finalize(stmt);
-	return 1;
-}
-
-// sqlite3CloseDB(amx, dbID)
-int CFunctions::sqlite3CloseDB(lua_State *luaVM) {
-	if(!luaVM) return;
-	AMX *amx = (AMX *)lua_touserdata(luaVM, 1);
-	int dbID = (int)luaL_checknumber(luaVM, 2);
-	if(!amx || loadedDBs.find(amx) == loadedDBs.end() || loadedDBs[amx].find(dbID) == loadedDBs[amx].end()) {
-		lua_pushboolean(luaVM, 0);
-		return 1;
-	}
-
-	sqlite3 *db = loadedDBs[amx][dbID];
-	sqlite3_close(db);
-	loadedDBs[amx].erase(dbID);
-	if(loadedDBs[amx].size() == 0)
-		loadedDBs.erase(amx);
-	lua_pushboolean(luaVM, 1);
 	return 1;
 }
 

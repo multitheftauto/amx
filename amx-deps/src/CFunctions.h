@@ -43,10 +43,6 @@ public:
 	static int amxVersionString(lua_State *luaVM);
 	static int startResource(lua_State *luaVM);
 
-	static int sqlite3OpenDB(lua_State *luaVM);
-	static int sqlite3Query(lua_State *luaVM);
-	static int sqlite3CloseDB(lua_State *luaVM);
-
 	static int pawn(lua_State *luaVM);
 	static int cell2float(lua_State *luaVM);
 	static int float2cell(lua_State *luaVM);

@@ -26,6 +26,7 @@ extern "C"
 {
     #include "amx/amx.h"
     #include "amx/amxaux.h"
+	#include "sqlite/sqlite_amx.c"
 
     int AMXEXPORT amx_CoreInit(AMX *amx);
 	int AMXEXPORT amx_ConsoleInit(AMX *amx);
@@ -33,13 +34,20 @@ extern "C"
 	int AMXEXPORT amx_StringInit(AMX *amx);
 	int AMXEXPORT amx_TimeInit(AMX *amx);
 	int AMXEXPORT amx_FileInit(AMX *amx);
+	int AMXEXPORT amx_sampDbInit(AMX *amx);
+
+	int AMXEXPORT amx_CoreCleanup(AMX *amx);
+	int AMXEXPORT amx_ConsoleCleanup(AMX *amx);
+	int AMXEXPORT amx_FloatCleanup(AMX *amx);
+	int AMXEXPORT amx_StringCleanup(AMX *amx);
+	int AMXEXPORT amx_TimeCleanup(AMX *amx);
+	int AMXEXPORT amx_FileCleanup(AMX *amx);
+	int AMXEXPORT amx_sampDbCleanup(AMX *amx);
 
     #include "lua/lua.h"
     #include "lua/lualib.h"
     #include "lua/lauxlib.h"
 	#include "lua/lobject.h"
-
-	#include "sqlite/sqlite_amx.c"
 };
 
 #include "ml_base.h"

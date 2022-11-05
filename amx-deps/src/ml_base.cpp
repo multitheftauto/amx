@@ -82,7 +82,12 @@ void *amxFunctions[] = {
 	(void*)&amx_UTF8Check,
 	(void*)&amx_UTF8Get,
 	(void*)&amx_UTF8Len,
-	(void*)&amx_UTF8Put
+	(void*)&amx_UTF8Put,
+	(void*)&amx_CoreCleanup,
+	(void*)&amx_FloatCleanup,
+	(void*)&amx_StringCleanup,
+	(void*)&amx_FileCleanup,
+	(void*)&amx_TimeCleanup
 };
 
 MTAEXPORT bool InitModule ( ILuaModuleManager10 *pManager, char *szModuleName, char *szAuthor, float *fVersion )
@@ -99,6 +104,19 @@ MTAEXPORT bool InitModule ( ILuaModuleManager10 *pManager, char *szModuleName, c
 	pluginInitData[PLUGIN_DATA_AMX_EXPORTS] = amxFunctions;
 	pluginInitData[PLUGIN_DATA_CALLPUBLIC_FS] = (void*)&AMXCallPublicFilterScript;
 	pluginInitData[PLUGIN_DATA_CALLPUBLIC_GM] = (void*)&AMXCallPublicGameMode;
+    //
+	fs::path filterscriptspath = fs::canonical(fs::current_path() / fs::path(std:format("{}/resources/filterscripts", RESOURCE_PATH)));
+	if (!exists(filterscriptspath)) {
+		pModuleManager->ErrorPrintf("[Pawn]: filterscripts directory doesn't exist at: %s\n", filterscriptspath.string());
+	}
+	fs::path gamemodespath = fs::canonical(fs::current_path() / fs::path(std:format("{}/resources/gamemodes", RESOURCE_PATH)));
+	if (!exists(gamemodespath)) {
+		pModuleManager->ErrorPrintf("[Pawn]: gamemodes directory doesn't exist at: %s\n", gamemodespath.string());
+	}
+	fs::path pluginspath = fs::canonical(fs::current_path() / fs::path(std:format("{}/resources/plugins", RESOURCE_PATH)));
+	if (!exists(pluginspath)) {
+		pModuleManager->ErrorPrintf("[Pawn]: plugins directory doesn't exist at: %s\n", pluginspath.string());
+	}
 
 	string PATH = getenv("PATH");
 	PATH += std::format(";{}/resources/plugins/", RESOURCE_PATH);
@@ -116,7 +134,6 @@ MTAEXPORT bool InitModule ( ILuaModuleManager10 *pManager, char *szModuleName, c
 	} else {
 		pModuleManager->ErrorPrintf("[Pawn]: scriptfiles directory doesn't exist at: %s\n", scriptfilespath.string());
 	}
-
 	return true;
 }
 
@@ -178,10 +195,6 @@ MTAEXPORT void RegisterFunctions ( lua_State * luaVM )
 		pModuleManager->RegisterFunction(luaVM, "amxWriteString", CFunctions::amxWriteString);
 		pModuleManager->RegisterFunction(luaVM, "amxUnload", CFunctions::amxUnload);
 		pModuleManager->RegisterFunction(luaVM, "amxUnloadAllPlugins", CFunctions::amxUnloadAllPlugins);
-
-		pModuleManager->RegisterFunction(luaVM, "sqlite3OpenDB", CFunctions::sqlite3OpenDB);
-		pModuleManager->RegisterFunction(luaVM, "sqlite3Query", CFunctions::sqlite3Query);
-		pModuleManager->RegisterFunction(luaVM, "sqlite3CloseDB", CFunctions::sqlite3CloseDB);
 
 		pModuleManager->RegisterFunction(luaVM, "cell2float", CFunctions::cell2float);
 		pModuleManager->RegisterFunction(luaVM, "float2cell", CFunctions::float2cell);
