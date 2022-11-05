@@ -16,6 +16,7 @@ g_TextDraws = {}
 g_TextLabels = {}
 g_PlayerObjects = {}
 
+-- TODO: Correct these Limits since it is totally wrong
 MAX_FILTERSCRIPTS = 16
 MAX_GAMEMODES = 10
 MAX_PLUGINS = 10
@@ -34,7 +35,7 @@ function loadAMX(fileName, isGamemode)
 
 	amx.type = isGamemode == false and 'filterscript' or 'gamemode'
 
-	local hAMX = fileOpen(':amx/' .. amx.type .. 's/' .. fileName .. '.amx', true)
+	local hAMX = fileOpen(':' .. getResourceName(getThisResource()) .. '/' .. amx.type .. 's/' .. fileName .. '.amx', true)
 	if hAMX then
 		outputDebugString('  "' .. fileName .. '.amx" ' .. amx.type .. ' is being loaded')
 	else
@@ -67,7 +68,7 @@ function loadAMX(fileName, isGamemode)
 		return false
 	end
 
-	amx.cptr = amxLoad('amx', amx.name .. '.amx')
+	amx.cptr = amxLoad(getResourceName(getThisResource()), amx.name .. '.amx')
 	if amx.cptr then
 		outputDebugString('"' .. fileName .. '.amx" ' .. amx.type .. ' is loaded')
 	else
