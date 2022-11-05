@@ -58,7 +58,6 @@ extern void *pluginInitData[];
 extern lua_State *mainVM;
 
 map< AMX *, AMXPROPS > loadedAMXs;
-map< AMX *, map< int, sqlite3 * > > loadedDBs;		// amx => (dbID => db)
 map< string, SampPlugin* > loadedPlugins;
 vector<ProcessTick_t*> vecPfnProcessTick;
 
