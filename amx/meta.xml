@@ -15,7 +15,6 @@
     <script src="server/natives/a_actors.lua" type="server" />
     <script src="server/natives/a_npc.lua" type="server" />
     <script src="server/natives/a_http.lua" type="server" />
-    <script src="server/natives/a_sampdb.lua" type="server" />
     <script src="server/natives/a_mta.lua" type="server" />
 
     <script src="server/syscalls.lua" type="server" />
@@ -30,10 +29,10 @@
     <script src="client/samp_nametags.lua" type="client" />
     <script src="client/garages.lua" type="client" />
 
-    <!-- 
+    <!--
         Bone_attach: Credit to  Devan_LT (also known as CrystalMV)
         https://forum.mtasa.com/profile/1985-crystalmv/
-        https://wiki.multitheftauto.com/wiki/Resource:Bone_attach 
+        https://wiki.multitheftauto.com/wiki/Resource:Bone_attach
     -->
     <script src="shared/bone_attach.lua" />
 	<script src="client/bone_attach_c.lua" type="client" />

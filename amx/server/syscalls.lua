@@ -709,17 +709,6 @@ g_SAMPSyscallPrototypes = {
 	atan = {'f'},
 	atan2 = {'f', 'f'},
 
-	db_close = {'i'},
-	db_free_result = {'i'},
-	db_field_name = {'d', 'i', 'r', 'i'},
-	db_get_field = {'d', 'i', 'r', 'i'},
-	db_get_field_assoc = {'d', 's', 'r', 'i'},
-	db_next_row = {'d'},
-	db_num_fields = {'d'},
-	db_num_rows = {'d'},
-	db_open = {'s'},
-	db_query = {'i', 's'},
-
 	floatstr = {'s'},
 	format = {'r', 'i', 's'},
 
@@ -735,7 +724,7 @@ g_SAMPSyscallPrototypes = {
 	AttachCameraToObject = {'p', 'o'},
 
 	-- more dummies (unimplemented)
-	EnableVehicleFriendlyFire = {},	
+	EnableVehicleFriendlyFire = {},
 	DisableRemoteVehicleCollisions = {'p', 'i'},
 	GetPlayerTargetPlayer = {'p'},
   	GetPlayerLastShotVectors = {'p', 'r', 'r', 'r', 'r', 'r', 'r'},
