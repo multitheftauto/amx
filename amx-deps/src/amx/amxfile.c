@@ -1,6 +1,6 @@
 /* Text file I/O module for the Pawn Abstract Machine
  *
- *  Copyright (c) CompuPhase, 2003-2020
+ *  Copyright (c) ITB CompuPhase, 2003-2016
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not
  *  use this file except in compliance with the License. You may obtain a copy
@@ -14,8 +14,9 @@
  *  License for the specific language governing permissions and limitations
  *  under the License.
  *
- *  Version: $Id: amxfile.c 6131 2020-04-29 19:47:15Z thiadmer $
+ *  Version: $Id: amxfile.c 5588 2016-10-25 11:13:28Z  $
  */
+
 #if defined _UNICODE || defined __UNICODE__ || defined UNICODE
 # if !defined UNICODE   /* for Windows */
 #   define UNICODE
@@ -34,6 +35,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "osdefs.h"
+#if (defined __linux || defined __linux__) && !defined __LINUX__
+  #define __LINUX__
+#endif
+#if defined FREEBSD && !defined __FreeBSD__
+  #define __FreeBSD__
+#endif
 #if defined __BORLANDC__
   #include <dir.h>
 #endif
@@ -93,7 +100,7 @@
   #define _tgetenv      getenv
   #define _tremove      remove
   #define _trename      rename
-  #if defined __APPLE__
+  #if defined __BORLANDC__ || defined __LINUX__ || defined __FreeBSD__ || defined __OpenBSD__ || defined MACOS || defined __APPLE__
     #define _tmkdir     mkdir
     #define _trmdir     rmdir
     #define _tstat      stat
@@ -109,9 +116,9 @@
     #define t_stat      stat
   #elif defined __WIN32__
     #if defined __WATCOMC__
-      #define t_stat    _stat
-    #else
       #define t_stat    __stat
+    #else
+      #define t_stat    _stat
     #endif
   #else
     #define t_stat      stat

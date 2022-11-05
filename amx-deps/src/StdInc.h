@@ -19,8 +19,8 @@
 #include <variant>
 
 #include "Common.h"
-#include "include/ILuaModuleManager.h"
-#include "include/sqlite3.h"
+#include "lua/ILuaModuleManager.h"
+#include "sqlite/sqlite3.h"
 
 extern "C"
 {
@@ -34,10 +34,12 @@ extern "C"
 	int AMXEXPORT amx_TimeInit(AMX *amx);
 	int AMXEXPORT amx_FileInit(AMX *amx);
 
-    #include "include/lua.h"
-    #include "include/lualib.h"
-    #include "include/lauxlib.h"
-	#include "include/lobject.h"
+    #include "lua/lua.h"
+    #include "lua/lualib.h"
+    #include "lua/lauxlib.h"
+	#include "lua/lobject.h"
+
+	#include "sqlite/sqlite_amx.c"
 };
 
 #include "ml_base.h"

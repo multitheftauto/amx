@@ -4,7 +4,7 @@
  *  cannot always be implemented with portable C functions. In other words,
  *  these routines must be ported to other environments.
  *
- *  Copyright (c) CompuPhase, 1997-2021
+ *  Copyright (c) ITB CompuPhase, 1997-2016
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not
  *  use this file except in compliance with the License. You may obtain a copy
@@ -18,7 +18,7 @@
  *  License for the specific language governing permissions and limitations
  *  under the License.
  *
- *  Version: $Id: amxcons.c 6335 2021-07-31 19:31:11Z thiadmer $
+ *  Version: $Id: amxcons.c 5587 2016-10-25 09:59:46Z  $
  */
 
 #if defined _UNICODE || defined __UNICODE__ || defined UNICODE
@@ -572,7 +572,8 @@ static int cons_putchar(void *dest,TCHAR ch)
 
 enum {
   SV_DECIMAL,
-  SV_HEX
+  SV_HEX,
+  SV_BIN
 };
 
 static TCHAR *reverse(TCHAR *string,int stop)
@@ -610,13 +611,20 @@ static TCHAR *amx_strval(TCHAR buffer[], long value, int format, int width)
 		if (value < 0) {
 			buffer[0] = __T('-');
 			start = stop = 1;
-			value = -value;
-		}
-		do {
-			buffer[stop++] = (TCHAR)((value % 10) + __T('0'));
-			value /= 10;
-		} while (value != 0);
-	} else {
+      do {
+        temp = (TCHAR)(value % 10);
+        if (temp > 0)
+          temp = (TCHAR)(temp - 10);
+        buffer[stop++] = (TCHAR)(__T('0') - temp);
+        value /= 10;
+      } while (value != 0);
+		} else {
+      do {
+        buffer[stop++] = (TCHAR)((value % 10) + __T('0'));
+        value /= 10;
+      } while (value != 0);
+    }
+  } else if (format == SV_HEX) {
 		/* hexadecimal */
 		unsigned long v = (unsigned long)value;	/* copy to unsigned value for shifting */
 		do {
@@ -626,7 +634,14 @@ static TCHAR *amx_strval(TCHAR buffer[], long value, int format, int width)
 			v >>= 4;
 			stop++;
 		} while (v != 0);
-	} /* if */
+	} else {
+    /* binary */
+    unsigned long v = (unsigned long)value;	/* copy to unsigned value for shifting */
+    do {
+      buffer[stop++] = (TCHAR)((v & 0x01) + __T('0'));
+      v >>= 1;
+    } while (v != 0);
+  } /* if */
 
 	/* pad to given width */
 	if (width < 0) {
@@ -718,10 +733,11 @@ static TCHAR *formatfixed(TCHAR *string,cell value,TCHAR align,int width,TCHAR d
 #endif
 
 
-static int dochar(AMX *amx,TCHAR ch,cell param,TCHAR sign,TCHAR decpoint,int width,int digits,TCHAR filler,
+static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,TCHAR decpoint,int width,int digits,TCHAR filler,
                   int (*f_putstr)(void*,const TCHAR *),int (*f_putchar)(void*,TCHAR),void *user)
 {
   cell *cptr;
+  int ret = 1;
   TCHAR buffer[40];
   #if defined FLOATPOINT
     TCHAR formatstring[40];
@@ -732,10 +748,20 @@ static int dochar(AMX *amx,TCHAR ch,cell param,TCHAR sign,TCHAR decpoint,int wid
   #endif
   assert(f_putstr!=NULL);
   assert(f_putchar!=NULL);
+  if (width < 0) {
+    width = *amx_Address(amx, params[paramidx]);
+    ++paramidx;
+    ++ret;
+  }
+  if (digits < 0) {
+    digits = *amx_Address(amx, params[paramidx]);
+    ++paramidx;
+    ++ret;
+  }
 
   switch (ch) {
   case __T('c'):
-    cptr=amx_Address(amx,param);
+    cptr=amx_Address(amx, params[paramidx]);
     width--;            /* single character itself has a with of 1 */
     if (sign!=__T('-'))
       while (width-->0)
@@ -743,12 +769,13 @@ static int dochar(AMX *amx,TCHAR ch,cell param,TCHAR sign,TCHAR decpoint,int wid
     f_putchar(user,(TCHAR)*cptr);
     while (width-->0)
       f_putchar(user,filler);
-    return 1;
+    return ret;
 
-  case __T('d'): {
+  case __T('d'):
+  case __T('i'): {
     cell value;
     int length=1;
-    cptr=amx_Address(amx,param);
+    cptr=amx_Address(amx, params[paramidx]);
     value=*cptr;
     if (value<0 || sign==__T('+'))
       length++;
@@ -768,7 +795,7 @@ static int dochar(AMX *amx,TCHAR ch,cell param,TCHAR sign,TCHAR decpoint,int wid
     f_putstr(user,buffer);
     while (width-->0)
       f_putchar(user,filler);
-    return 1;
+    return ret;
   } /* case */
 
 #if defined FLOATPOINT
@@ -776,7 +803,7 @@ static int dochar(AMX *amx,TCHAR ch,cell param,TCHAR sign,TCHAR decpoint,int wid
   case __T('r'): /* if floating point is enabled, %r == %f */
     /* build a format string */
     if (digits==INT_MAX)
-      digits=5;
+      digits=6;
     else if (digits>25)
       digits=25;
     _tcscpy(formatstring,__T("%"));
@@ -785,7 +812,7 @@ static int dochar(AMX *amx,TCHAR ch,cell param,TCHAR sign,TCHAR decpoint,int wid
     if (width>0)
       _stprintf(formatstring+_tcslen(formatstring),__T("%d"),width);
     _stprintf(formatstring+_tcslen(formatstring),__T(".%df"),digits);
-    cptr=amx_Address(amx,param);
+    cptr=amx_Address(amx, params[paramidx]);
     #if PAWN_CELL_SIZE == 64
       _stprintf(buffer,formatstring,*(double*)cptr);
     #else
@@ -797,7 +824,7 @@ static int dochar(AMX *amx,TCHAR ch,cell param,TCHAR sign,TCHAR decpoint,int wid
         *ptr=__T(',');
     } /* if */
     f_putstr(user,buffer);
-    return 1;
+    return ret;
 #endif
 
 #if defined FIXEDPOINT
@@ -806,7 +833,7 @@ static int dochar(AMX *amx,TCHAR ch,cell param,TCHAR sign,TCHAR decpoint,int wid
 #if !defined FLOATPOINT
   case __T('r'): /* if fixed point is enabled, and floating point is not, %r == %q */
 #endif
-    cptr=amx_Address(amx,param);
+    cptr=amx_Address(amx, params[paramidx]);
     /* format the number */
     if (digits==INT_MAX)
       digits=3;
@@ -815,7 +842,7 @@ static int dochar(AMX *amx,TCHAR ch,cell param,TCHAR sign,TCHAR decpoint,int wid
     formatfixed(buffer,*cptr,sign,width,decpoint,digits,filler);
     assert(_tcslen(buffer)<sizeof buffer);
     f_putstr(user,buffer);
-    return 1;
+    return ret;
 #endif
 
 #if !defined FLOATPOINT && !defined FIXEDPOINT
@@ -833,15 +860,15 @@ static int dochar(AMX *amx,TCHAR ch,cell param,TCHAR sign,TCHAR decpoint,int wid
     info.f_putstr=f_putstr;
     info.f_putchar=f_putchar;
     info.user=user;
-    cptr=amx_Address(amx,param);
+    cptr=amx_Address(amx, params[paramidx]);
     amx_printstring(amx,cptr,&info);
-    return 1;
+    return ret;
   } /* case */
 
   case __T('x'): {
     ucell value;
     int length=1;
-    cptr=amx_Address(amx,param);
+    cptr=amx_Address(amx, params[paramidx]);
     value=*(ucell*)cptr;
     while (value>=0x10) {
       length++;
@@ -855,7 +882,27 @@ static int dochar(AMX *amx,TCHAR ch,cell param,TCHAR sign,TCHAR decpoint,int wid
     f_putstr(user,buffer);
     while (width-->0)
       f_putchar(user,filler);
-    return 1;
+    return ret;
+  } /* case */
+
+  case __T('b'): {
+    ucell value;
+    int length = 1;
+    cptr = amx_Address(amx, params[paramidx]);
+    value = *(ucell*)cptr;
+    while (value >= 0x1) {
+      length++;
+      value >>= 1;
+    } /* while */
+    width -= length;
+    if (sign != __T('-'))
+      while (width-->0)
+        f_putchar(user, filler);
+    amx_strval(buffer, (long)*cptr, SV_BIN, 0);
+    f_putstr(user, buffer);
+    while (width-->0)
+      f_putchar(user, filler);
+    return ret;
   } /* case */
 
   } /* switch */
@@ -865,13 +912,16 @@ static int dochar(AMX *amx,TCHAR ch,cell param,TCHAR sign,TCHAR decpoint,int wid
 }
 
 enum {
-  FMT_NONE,   /* not in format state; accept '%' */
-  FMT_START,  /* found '%', accept '+', '-' (START), '0' (filler; START), digit (WIDTH), '.' (DECIM), or '%' or format letter (done) */
-  FMT_WIDTH,  /* found digit after '%' or sign, accept digit (WIDTH), '.' (DECIM) or format letter (done) */
-  FMT_DECIM,  /* found digit after '.', accept accept digit (DECIM) or format letter (done) */
+  FMT_NONE = 0,   /* not in format state; accept '%' */
+  FMT_START_D = 1,  /* found '%', accept '+', '-' (START), '0' (filler; START), digit (WIDTH), '.' (DECIM), or '%' or format letter (done) */
+  FMT_WIDTH_D = 2,  /* found digit after '%' or sign, accept digit (WIDTH), '.' (DECIM) or format letter (done) */
+  FMT_DECIM_D = 3,  /* found digit after '.', accept accept digit (DECIM) or format letter (done) */
+  FMT_START = 4,  /* above, without $ */
+  FMT_WIDTH = 5,  /* above, without $ */
+  FMT_DECIM = 6,  /* above, without $ */
 };
 
-static int formatstate(TCHAR c,int *state,TCHAR *sign,TCHAR *decpoint,int *width,int *digits,TCHAR *filler)
+static int formatstate(TCHAR c,int *state,TCHAR *sign,TCHAR *decpoint,int *width,int *digits,int *paramidx,TCHAR *filler)
 {
   assert(state!=NULL && sign!=NULL && decpoint!=NULL && width!=NULL && digits!=NULL && filler!=NULL);
   switch (*state) {
@@ -888,17 +938,28 @@ static int formatstate(TCHAR c,int *state,TCHAR *sign,TCHAR *decpoint,int *width
     } /* if */
     break;
   case FMT_START:
+    if (c == __T('$')) {
+      *paramidx=0;
+      *filler=__T(' ');
+      *state=FMT_START_D;
+      return 0;
+    }
+    /* fallthrough */
+  case FMT_START_D:
     if (c==__T('+') || c==__T('-')) {
       *sign=c;
     } else if (c==__T('0')) {
       *filler=c;
     } else if (c>=__T('1') && c<=__T('9')) {
       *width=(int)(c-__T('0'));
-      *state=FMT_WIDTH;
+      *state+=1; /* FMT_WIDTH */
+    } else if (c == __T('*')) {
+      *width = -1;
+      *state+=1; /* FMT_WIDTH */
     } else if (c==__T('.') || c==__T(',')) {
       *decpoint=c;
       *digits=0;
-      *state=FMT_DECIM;
+      *state+=2; /* FMT_DECIM */
     } else if (c==__T('%')) {
       *state=FMT_NONE;
       return -1;  /* print literal '%' */
@@ -907,19 +968,36 @@ static int formatstate(TCHAR c,int *state,TCHAR *sign,TCHAR *decpoint,int *width
     } /* if */
     break;
   case FMT_WIDTH:
-    if (c>=__T('0') && c<=__T('9')) {
-      *width=*width*10+(int)(c-__T('0'));
-    } else if (c==__T('.') || c==__T(',')) {
+    if (*width < 0) {
+      return 1;
+    } else if (c == __T('$')) {
+      *paramidx=*width;
+      *width=0;
+      *state = FMT_WIDTH_D;
+      return 0;
+    }
+    /* fallthrough */
+  case FMT_WIDTH_D:
+    if (c==__T('.') || c==__T(',')) {
       *decpoint=c;
       *digits=0;
-      *state=FMT_DECIM;
+      *state+=1; /* FMT_DECIM */
+    } else if (*width < 0) {
+      return 1;
+    } else if (c >= __T('0') && c <= __T('9')) {
+      *width=*width*10+(int)(c-__T('0'));
     } else {
       return 1;   /* print formatted character */
     } /* if */
     break;
   case FMT_DECIM:
-    if (c>=__T('0') && c<=__T('9')) {
-      *digits=*digits*10+(int)(c-__T('0'));
+  case FMT_DECIM_D:
+    if (*digits < 0) {
+      return 1;
+    } else if (c >= __T('0') && c <= __T('9')) {
+      *digits = *digits * 10 + (int)(c - __T('0'));
+    } else if (c == __T('*')) {
+      *digits = -1;
     } else {
       return 1;   /* print formatted character */
     } /* if */
@@ -931,7 +1009,7 @@ static int formatstate(TCHAR c,int *state,TCHAR *sign,TCHAR *decpoint,int *width
 
 int amx_printstring(AMX *amx,cell *cstr,AMX_FMTINFO *info)
 {
-  int i,paramidx=0;
+  int i,paramidx=0,thisparam=0;
   int fmtstate=FMT_NONE,width,digits;
   TCHAR sign,decpoint,filler;
   int (*f_putstr)(void*,const TCHAR *);
@@ -1022,7 +1100,7 @@ int amx_printstring(AMX *amx,cell *cstr,AMX_FMTINFO *info)
         char c=(char)((ucell)cstr[i] >> 8*j);
         if (c==0)
           break;
-        switch (formatstate(c,&fmtstate,&sign,&decpoint,&width,&digits,&filler)) {
+        switch (formatstate(c,&fmtstate,&sign,&decpoint,&width,&digits,&thisparam,&filler)) {
         case -1:
           f_putchar(user,c);
           break;
@@ -1033,8 +1111,11 @@ int amx_printstring(AMX *amx,cell *cstr,AMX_FMTINFO *info)
           if (paramidx>=info->numparams)  /* insufficient parameters passed */
             amx_RaiseError(amx, AMX_ERR_NATIVE);
           else
-            paramidx+=dochar(amx,c,info->params[paramidx],sign,decpoint,width,digits,filler,
+            thisparam=dochar(amx,c,info->params,thisparam,sign,decpoint,width,digits,filler,
                              f_putstr,f_putchar,user);
+          if (fmtstate & 4)
+            paramidx += thisparam;
+          thisparam = paramidx;
           fmtstate=FMT_NONE;
           break;
         default:
@@ -1047,7 +1128,7 @@ int amx_printstring(AMX *amx,cell *cstr,AMX_FMTINFO *info)
     } else {
       /* the string is unpacked */
       for (i=0; cstr[i]!=0; i++) {
-        switch (formatstate((TCHAR)cstr[i],&fmtstate,&sign,&decpoint,&width,&digits,&filler)) {
+        switch (formatstate((TCHAR)cstr[i],&fmtstate,&sign,&decpoint,&width,&digits,&thisparam,&filler)) {
         case -1:
           f_putchar(user,(TCHAR)cstr[i]);
           break;
@@ -1058,9 +1139,12 @@ int amx_printstring(AMX *amx,cell *cstr,AMX_FMTINFO *info)
           if (paramidx>=info->numparams)  /* insufficient parameters passed */
             amx_RaiseError(amx, AMX_ERR_NATIVE);
           else
-            paramidx+=dochar(amx,(TCHAR)cstr[i],info->params[paramidx],sign,decpoint,width,digits,filler,
+            thisparam=dochar(amx,(TCHAR)cstr[i],info->params,thisparam,sign,decpoint,width,digits,filler,
                              f_putstr,f_putchar,user);
-          fmtstate=FMT_NONE;
+          if (fmtstate & 4)
+            paramidx += thisparam;
+          thisparam = paramidx;
+          fmtstate = FMT_NONE;
           break;
         default:
           assert(0);
@@ -1106,6 +1190,7 @@ static cell AMX_NATIVE_CALL n_print(AMX *amx,const cell *params)
 
   cstr=amx_Address(amx,params[1]);
   amx_printstring(amx,cstr,NULL);
+  cons_putchar(NULL, __T('\n'));
 
   /* reset the colours */
   (void)amx_setattr(oldcolours & 0xff,(oldcolours >> 8) & 0x7f,(oldcolours >> 15) & 0x01);
@@ -1128,6 +1213,7 @@ static cell AMX_NATIVE_CALL n_printf(AMX *amx,const cell *params)
   CreateConsole();
   cstr=amx_Address(amx,params[1]);
   amx_printstring(amx,cstr,&info);
+  cons_putchar(NULL, __T('\n'));
   amx_fflush();
   return 0;
 }
@@ -1276,7 +1362,7 @@ static cell AMX_NATIVE_CALL n_getvalue(AMX *amx,const cell *params)
       if (c==EOL_CHAR && inlist(amx,'\r',params+2,(int)params[0]/sizeof(cell)-1)!=0)
         c='\r';
     #endif
-    if ((chars>1 || chars>0 && sign>0)
+    if ((chars>1 || (chars>0 && sign>0))
         && (n=inlist(amx,c,params+2,(int)params[0]/sizeof(cell)-1))!=0)
     {
       if (n>0)

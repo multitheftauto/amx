@@ -11,12 +11,10 @@
  * terminal tty's in 'raw' mode, if we want to be able to fetch a single character. This also means that everything must
  * be put back correctly when the function ends. See GETCH.C for an implementation.
  *
- * For interactive use of PawnRun/PawnDbg if would be much better to use GNU's readline package: the user would be able to
+ * For interactive use of SRUN/SDBG if would be much better to use GNU's readline package: the user would be able to
  * have a complete emacs/vi like line editing system.
  */
-#if !defined getch && !defined kbhit
-  #include "getch.h"
-#endif
+#include "getch.h"
 
 #define	stricmp(a,b)    strcasecmp(a,b)
 #define	strnicmp(a,b,c) strncasecmp(a,b,c)
@@ -27,6 +25,10 @@
 #define	DIRECTORY_SEP_CHAR      '/'
 #define	DIRECTORY_SEP_STR       "/"
 
+#if defined HAVE_ENDIAN_H
+# include <endian.h>
+#endif
+
 /*
  * SC assumes that a computer is Little Endian unless told otherwise. It uses
  * (and defines) the macros BYTE_ORDER and BIG_ENDIAN.
@@ -36,10 +38,16 @@
 # include <stdlib.h>
 #endif
 
-#if defined __OpenBSD__ || defined __FreeBSD__ || defined __APPLE__
+#if defined __OpenBSD__ || defined __FreeBSD__
 # define __BYTE_ORDER    BYTE_ORDER
 # define __LITTLE_ENDIAN LITTLE_ENDIAN
 # define __BIG_ENDIAN    BIG_ENDIAN
+#endif
+
+#if defined __APPLE__
+# define __BYTE_ORDER    BYTE_ORDER
+# define __LITTLE_ENDIAN __DARWIN_LITTLE_ENDIAN
+# define __BIG_ENDIAN    __DARWIN_BIG_ENDIAN
 #endif
 
 #if !defined __BYTE_ORDER

@@ -1,21 +1,26 @@
 /*  Simple garbage collector for the Pawn Abstract Machine
  *
- *  Copyright (c) CompuPhase, 2004-2020
+ *  Copyright (c) ITB CompuPhase, 2004-2006
  *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may not
- *  use this file except in compliance with the License. You may obtain a copy
- *  of the License at
+ *  This software is provided "as-is", without any express or implied warranty.
+ *  In no event will the authors be held liable for any damages arising from
+ *  the use of this software.
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *  Permission is granted to anyone to use this software for any purpose,
+ *  including commercial applications, and to alter it and redistribute it
+ *  freely, subject to the following restrictions:
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- *  License for the specific language governing permissions and limitations
- *  under the License.
+ *  1.  The origin of this software must not be misrepresented; you must not
+ *      claim that you wrote the original software. If you use this software in
+ *      a product, an acknowledgment in the product documentation would be
+ *      appreciated but is not required.
+ *  2.  Altered source versions must be plainly marked as such, and must not be
+ *      misrepresented as being the original software.
+ *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: amxgc.c 6131 2020-04-29 19:47:15Z thiadmer $
+ *  Version: $Id: amxgc.c 3660 2006-11-05 13:05:09Z thiadmer $
  */
+
 #include <assert.h>
 #include <limits.h>
 #include <stdlib.h>     /* for malloc()/free() */
@@ -131,7 +136,7 @@ int gc_tablestat(int *exponent,int *percentage)
 {
   if (exponent!=NULL)
     *exponent=SharedGC.exponent;
-  if (percentage!=NULL) {
+  if (*percentage!=NULL) {
     int size=(1L<<SharedGC.exponent);
     /* calculate with floating point to avoid integer overflow */
     double p=100.0*SharedGC.count/size;

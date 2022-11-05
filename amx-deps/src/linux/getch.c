@@ -18,7 +18,6 @@ getch (void)
 {
   struct termios save_termios;
   struct termios ios;
-  unsigned char b;
   int c = 0;
 
   if (!isatty (STDIN_FILENO))
@@ -35,9 +34,7 @@ getch (void)
   if (tcsetattr (STDIN_FILENO, TCSANOW, &ios) < 0)
     return EOF;
 
-  if (read (STDIN_FILENO, &b, 1) == 1)
-    c = (int)(0xff & b);
-  else
+  if (read (STDIN_FILENO, &c, 1) != 1)
     c = EOF;
 
   tcsetattr (STDIN_FILENO, TCSANOW, &save_termios);

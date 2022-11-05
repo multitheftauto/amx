@@ -1,21 +1,26 @@
 /*  Process control and Foreign Function Interface module for the Pawn AMX
  *
- *  Copyright (c) CompuPhase, 2005-2020
+ *  Copyright (c) ITB CompuPhase, 2005-2006
  *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may not
- *  use this file except in compliance with the License. You may obtain a copy
- *  of the License at
+ *  This software is provided "as-is", without any express or implied warranty.
+ *  In no event will the authors be held liable for any damages arising from
+ *  the use of this software.
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *  Permission is granted to anyone to use this software for any purpose,
+ *  including commercial applications, and to alter it and redistribute it
+ *  freely, subject to the following restrictions:
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- *  License for the specific language governing permissions and limitations
- *  under the License.
+ *  1.  The origin of this software must not be misrepresented; you must not
+ *      claim that you wrote the original software. If you use this software in
+ *      a product, an acknowledgment in the product documentation would be
+ *      appreciated but is not required.
+ *  2.  Altered source versions must be plainly marked as such, and must not be
+ *      misrepresented as being the original software.
+ *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: amxprocess.c 6131 2020-04-29 19:47:15Z thiadmer $
+ *  Version: $Id: amxprocess.c 3664 2006-11-08 12:09:25Z thiadmer $
  */
+
 #if defined _UNICODE || defined __UNICODE__ || defined UNICODE
 # if !defined UNICODE   /* for Windows */
 #   define UNICODE
@@ -31,34 +36,26 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "osdefs.h"
-#if defined __WIN32__ || defined __MSDOS__
+#if defined __WIN32__ || defined _WIN32 || defined WIN32 || defined _Windows
   #include <malloc.h>
 #endif
-#if defined __WIN32__ || defined _Windows
+#if defined __WIN32__ || defined _WIN32 || defined WIN32 || defined _Windows
   #include <windows.h>
-#elif defined __LINUX__ || defined __FreeBSD__ || defined __OpenBSD__ || defined __APPLE__
+#elif defined LINUX || defined __FreeBSD__ || defined __OpenBSD__
   #include <unistd.h>
   #include <dlfcn.h>
   #include <sys/types.h>
   #include <sys/wait.h>
-#endif
-#if defined HAVE_DYNCALL_H
-  /* The package dyncall (required for part of the functionality of this
-   * extension module) is not included. It can be obtained from
-   * http://www.dyncall.org/.
+  /* The package libffi library (required for compiling this extension module
+   * under Unix/Linux) is not included, because its license is more restrictive
+   * than that of Pawn (even if ever so slightly). Recent versions of the GCC
+   * compiler include libffi. A separate download of the libffi package is
+   * available at http://sources.redhat.com/libffi/ and
+   * http://sablevm.org/download/snapshot/.
    */
-  #include <dyncall.h>
-  #include <dynload.h>
-#else
-  /* no dyncall, use our own routines under Microsoft Windows, except for
-   * Microsoft Visual C/C++, because recent versions of Visual C/C++ are
-   * incompatible with the hack.
-   */
-  #if (defined __WIN32__ || defined _Windows) && !defined _MSC_VER
-    #define WIN32_FFI   1
-  #endif
+  #include <ffi.h>
 #endif
+#include "osdefs.h"
 #include "amx.h"
 
 #if defined _UNICODE
@@ -81,14 +78,13 @@
 #endif
 
 
-#if defined HAVE_DYNCALL_H || defined WIN32_FFI
-
 #define MAXPARAMS 32    /* maximum number of parameters to a called function */
+
 
 typedef struct tagMODlIST {
   struct tagMODlIST _FAR *next;
   TCHAR _FAR *name;
-  void *inst;
+  unsigned long inst;
   AMX *amx;
 } MODLIST;
 
@@ -105,8 +101,14 @@ typedef struct tagPARAM {
 #define BYREF 0x80  /* stored in the "type" field fo the PARAM structure */
 
 static MODLIST ModRoot = { NULL };
-#if defined HAVE_DYNCALL_H
-  static DCCallVM *dcVM=NULL;       /* VM handle for dyncall */
+
+/* pipes for I/O redirection */
+#if defined __WIN32__ || defined _WIN32 || defined WIN32
+  static HANDLE newstdin,newstdout,read_stdout,write_stdin;
+#elif defined LINUX || defined __FreeBSD__ || defined __OpenBSD__
+  static int pipe_to[2]={-1,-1};
+  static int pipe_from[2]={-1,-1};
+  void *inst_ffi=NULL;          /* open handle for libffi */
 #endif
 
 
@@ -150,16 +152,24 @@ static MODLIST _FAR *addlib(MODLIST *root, AMX *amx, const TCHAR *name)
     goto error;
   _tcscpy(item->name, ptr);
 
-  #if defined HAVE_DYNCALL_H
-    item->inst=dlLoadLibrary(name);
-  #else
-    item->inst=(void*)LoadLibrary(name);
+  #if defined __WIN32__ || defined _WIN32 || defined WIN32 || defined _Windows
+    item->inst = (unsigned long)LoadLibrary(name);
     #if !(defined __WIN32__ || defined _WIN32 || defined WIN32)
-      if ((unsigned long)item->inst<=32)
-        item->inst=NULL;
+      if (item->inst <= 32)
+        item->inst = 0;
     #endif
+  #elif defined LINUX || defined __FreeBSD__ || defined __OpenBSD__
+    /* also load the FFI library, if this is the first call */
+    inst_ffi=dlopen("libffi.so",RTLD_NOW);
+    if (inst_ffi==NULL)
+      inst_ffi=dlopen("libffi-2.00-beta.so",RTLD_NOW);
+    if (inst_ffi==NULL)
+      goto error;     /* failed to load either the old library or the new libbrary */
+    item->inst = (unsigned long)dlopen(name,RTLD_NOW);
+  #else
+    #error Unsupported environment
   #endif
-  if (item->inst==NULL)
+  if (item->inst == 0)
     goto error;
 
   item->amx = amx;
@@ -173,10 +183,12 @@ error:
     if (item->name != NULL)
       free(item->name);
     if (item->inst != 0) {
-      #if defined HAVE_DYNCALL_H
-        dlFreeLibrary(item->inst);
-      #else
+      #if defined __WIN32__ || defined _WIN32 || defined WIN32 || defined _Windows
         FreeLibrary((HINSTANCE)item->inst);
+      #elif defined LINUX || defined __FreeBSD__ || defined __OpenBSD__
+        dlclose((void*)item->inst);
+      #else
+        #error Unsupported environment
       #endif
     } /* if */
     free(item);
@@ -196,10 +208,12 @@ static int freelib(MODLIST *root, AMX *amx, const TCHAR *name)
     if ((amx == NULL || amx == item->amx) && (ptr == NULL || _tcscmp(item->name, ptr) == 0)) {
       prev->next = item->next;  /* unlink first */
       assert(item->inst != 0);
-      #if defined HAVE_DYNCALL_H
-        dlFreeLibrary(item->inst);
-      #else
+      #if defined __WIN32__ || defined _WIN32 || defined WIN32 || defined _Windows
         FreeLibrary((HINSTANCE)item->inst);
+      #elif defined LINUX || defined __FreeBSD__ || defined __OpenBSD__
+        dlclose((void*)item->inst);
+      #else
+        #error Unsupported environment
       #endif
       assert(item->name != NULL);
       free(item->name);
@@ -207,18 +221,15 @@ static int freelib(MODLIST *root, AMX *amx, const TCHAR *name)
       count++;
     } /* if */
   } /* for */
-  #if defined HAVE_DYNCALL_H
-    if (root->next==NULL && dcVM!=NULL) {
-      /* free the VM after closing the last DLL/library */
-      dcFree(dcVM);
-      dcVM=NULL;
-    } /* if */
+  #if defined LINUX || defined __FreeBSD__ || defined __OpenBSD__
+    if (amx==NULL && name==NULL && inst_ffi!=NULL)
+      dlclose(inst_ffi);
   #endif
   return count;
 }
 
 
-#if defined WIN32_FFI
+#if defined __WIN32__ || defined _WIN32 || defined WIN32 || defined _Windows
 
 typedef long (CALLBACK* LIBFUNC)();
 
@@ -240,11 +251,11 @@ typedef long (CALLBACK* LIBFUNC)();
 */
 static void PASCAL push() { }
 
-LIBFUNC SearchProcAddress(void *inst, const char *functionname)
+LIBFUNC SearchProcAddress(unsigned long inst, const char *functionname)
 {
   FARPROC lpfn;
 
-  assert(inst!=NULL);
+  assert(inst!=0);
   lpfn=GetProcAddress((HINSTANCE)inst,functionname);
   #if defined __WIN32__
     if (lpfn==NULL && strlen(functionname)<128-1) {
@@ -255,7 +266,7 @@ LIBFUNC SearchProcAddress(void *inst, const char *functionname)
       #else
         strcat(str,"A");
       #endif
-      lpfn=GetProcAddress((HINSTANCE)inst,str);
+      lpfn = GetProcAddress((HINSTANCE)inst,str);
     } /* if */
   #endif
   return (LIBFUNC)lpfn;
@@ -265,25 +276,10 @@ LIBFUNC SearchProcAddress(void *inst, const char *functionname)
 
 typedef long (* LIBFUNC)();
 
-LIBFUNC SearchProcAddress(void *inst, const char *functionname)
+LIBFUNC SearchProcAddress(unsigned long inst, const char *functionname)
 {
-  void *lpfn;
-
-  assert(inst!=NULL);
-  lpfn=dlFindSymbol(inst,functionname);
-  #if defined __WIN32__
-    if (lpfn==NULL && strlen(functionname)<128-1) {
-      char str[128];
-      strcpy(str,functionname);
-      #if defined UNICODE
-        strcat(str,"W");
-      #else
-        strcat(str,"A");
-      #endif
-      lpfn=dlFindSymbol(inst,str);
-    } /* if */
-  #endif
-  return (LIBFUNC)lpfn;
+  assert(inst!=0);
+  return (LIBFUNC)dlsym((void*)inst, functionname);
 }
 
 #endif
@@ -325,7 +321,7 @@ static void *fillarray(AMX *amx, PARAM *param, cell *cptr)
  * typestring format:
  *    Whitespace is permitted between the types, but not inside the type
  *    specification. The string "ii[4]&u16s" is equivalent to "i i[4] &u16 s",
- *    but the latter is easier on the eye.
+ *    but easier on the eye.
  *
  * types:
  *    i = signed integer, 16-bit in Windows 3.x, else 32-bit in Win32 and Linux
@@ -404,6 +400,11 @@ static cell AMX_NATIVE_CALL n_libcall(AMX *amx, const cell *params)
   PARAM ps[MAXPARAMS];
   cell *cptr,result;
   LIBFUNC LibFunc;
+  #if defined LINUX || defined __FreeBSD__ || defined __OpenBSD__
+    ffi_cif cif;
+    ffi_type *ptypes[MAXPARAMS];
+    void *pvalues[MAXPARAMS];
+  #endif
 
   amx_StrParam(amx, params[1], libname);
   item = findlib(&ModRoot, amx, libname);
@@ -421,15 +422,6 @@ static cell AMX_NATIVE_CALL n_libcall(AMX *amx, const cell *params)
     amx_RaiseError(amx, AMX_ERR_NATIVE);
     return 0;
   } /* if */
-
-  #if defined HAVE_DYNCALL_H
-    /* (re-)initialize the dyncall library */
-    if (dcVM==NULL) {
-      dcVM=dcNewCallVM(4096);
-      dcMode(dcVM,DC_CALL_C_X86_WIN32_STD);
-    } /* if */
-    dcReset(dcVM);
-  #endif
 
   /* decode the parameters */
   paramidx=typeidx=0;
@@ -470,7 +462,7 @@ static cell AMX_NATIVE_CALL n_libcall(AMX *amx, const cell *params)
       typeidx++;                  /* skip closing ']' too */
     } /* if */
     /* get pointer to parameter */
-    cptr=amx_Address(amx,params[paramidx+4]);
+    amx_GetAddr(amx,params[paramidx+4],&cptr);
     switch (ps[paramidx].type) {
     case 'i': /* signed integer */
     case 'u': /* unsigned integer */
@@ -515,25 +507,7 @@ static cell AMX_NATIVE_CALL n_libcall(AMX *amx, const cell *params)
   if ((params[0]/sizeof(cell)) - 3 != (size_t)paramidx)
     return amx_RaiseError(amx, AMX_ERR_NATIVE); /* format string does not match number of parameters */
 
-  #if defined HAVE_DYNCALL_H
-    for (idx = 0; idx < paramidx; idx++) {
-      if ((ps[idx].type=='i' || ps[idx].type=='u' || ps[idx].type=='f') && ps[idx].range==1) {
-        switch (ps[idx].size) {
-        case 8:
-          dcArgChar(dcVM,(unsigned char)(ps[idx].v.val & 0xff));
-          break;
-        case 16:
-          dcArgShort(dcVM,(unsigned short)(ps[idx].v.val & 0xffff));
-          break;
-        default:
-          dcArgLong(dcVM,ps[idx].v.val);
-        } /* switch */
-      } else {
-        dcArgPointer(dcVM,ps[idx].v.ptr);
-      } /* if */
-    } /* for */
-    result=(cell)dcCallPointer(dcVM,(void*)LibFunc);
-  #else /* HAVE_DYNCALL_H */
+  #if defined __WIN32__ || defined _WIN32 || defined WIN32 || defined _Windows
     /* push the parameters to the stack (left-to-right in 16-bit; right-to-left
      * in 32-bit)
      */
@@ -562,7 +536,52 @@ static cell AMX_NATIVE_CALL n_libcall(AMX *amx, const cell *params)
      * function should remove the parameters from the stack)
      */
     result=LibFunc();
-  #endif /* HAVE_DYNCALL_H */
+  #elif defined LINUX || defined __FreeBSD__ || defined __OpenBSD__
+    /* use libffi (foreign function interface) */
+    for (idx = 0; idx < paramidx; idx++) {
+      /* copy parameter types */
+        switch (ps[idx].type) {
+        case 'i': /* signed integer */
+          assert(ps[idx].range==1);
+          switch (ps[idx].size) {
+          case 8:
+            ptypes[idx] = &ffi_type_sint8;
+            break;
+          case 16:
+            ptypes[idx] = &ffi_type_sint16;
+            break;
+          default:
+            ptypes[idx] = &ffi_type_sint32;
+          } /* switch */
+          break;
+        case 'u': /* unsigned integer */
+          assert(ps[idx].range==1);
+          switch (ps[idx].size) {
+          case 8:
+            ptypes[idx] = &ffi_type_uint8;
+            break;
+          case 16:
+            ptypes[idx] = &ffi_type_uint16;
+            break;
+          default:
+            ptypes[idx] = &ffi_type_uint32;
+          } /* switch */
+          break;
+        case 'f': /* floating point */
+          assert(ps[idx].range==1);
+          ptypes[idx] = &ffi_type_float;
+          break;
+        default:  /* strings, arrays, fields passed by reference */
+          ptypes[idx] = &ffi_type_pointer;
+          break;
+        /* switch */
+      } /* if */
+      /* copy pointer to parameter values */
+      pvalues[idx] = &ps[idx].v;
+    } /* for */
+    ffi_prep_cif(&cif, FFI_DEFAULT_ABI, paramidx, &ffi_type_slong, ptypes);
+    ffi_call(&cif, FFI_FN(LibFunc), (void*)&result, pvalues);
+  #endif
 
   /* store return values and free allocated memory */
   for (idx=0; idx<paramidx; idx++) {
@@ -573,7 +592,7 @@ static cell AMX_NATIVE_CALL n_libcall(AMX *amx, const cell *params)
       break;
     case 'p' | BYREF:
     case 's' | BYREF:
-      cptr=amx_Address(amx,params[idx+4]);
+      amx_GetAddr(amx,params[idx+4],&cptr);
       amx_SetString(cptr,(char *)ps[idx].v.ptr,ps[idx].type==('p'|BYREF),sizeof(TCHAR)>1,UNLIMITED);
       free(ps[idx].v.ptr);
       break;
@@ -585,7 +604,7 @@ static cell AMX_NATIVE_CALL n_libcall(AMX *amx, const cell *params)
     case 'i' | BYREF:
     case 'u' | BYREF:
     case 'f' | BYREF:
-      cptr=amx_Address(amx,params[idx+4]);
+      amx_GetAddr(amx,params[idx+4],&cptr);
       if (ps[idx].range==1) {
         /* modify directly in the AMX (no memory block was allocated */
         switch (ps[idx].size) {
@@ -633,31 +652,6 @@ static cell AMX_NATIVE_CALL n_libfree(AMX *amx, const cell *params)
   return freelib(&ModRoot,amx,libname) > 0;
 }
 
-#else /* HAVE_DYNCALL_H || WIN32_FFI */
-
-static cell AMX_NATIVE_CALL n_libcall(AMX *amx, const cell *params)
-{
-  (void)amx;
-  (void)params;
-  return 0;
-}
-static cell AMX_NATIVE_CALL n_libfree(AMX *amx, const cell *params)
-{
-  (void)amx;
-  (void)params;
-  return 0;
-}
-
-#endif /* HAVE_DYNCALL_H || WIN32_FFI */
-
-/* pipes for I/O redirection */
-#if defined __WIN32__ || defined _WIN32 || defined WIN32
-  static HANDLE newstdin,newstdout,read_stdout,write_stdin;
-#elif defined __LINUX__ || defined __FreeBSD__ || defined __OpenBSD__ || defined __APPLE__
-  static int pipe_to[2]={-1,-1};
-  static int pipe_from[2]={-1,-1};
-#endif
-
 static void closepipe(void)
 {
   #if defined __WIN32__ || defined _WIN32 || defined WIN32
@@ -677,7 +671,7 @@ static void closepipe(void)
       CloseHandle(write_stdin);
       write_stdin=NULL;
     } /* if */
-  #elif defined __LINUX__ || defined __FreeBSD__ || defined __OpenBSD__ || defined __APPLE__
+  #elif defined LINUX || defined __FreeBSD__ || defined __OpenBSD__
     if (pipe_to[0]>=0) {
       close(pipe_to[0]);
       pipe_to[0]=-1;
@@ -713,7 +707,7 @@ static cell AMX_NATIVE_CALL n_procexec(AMX *amx, const cell *params)
     PROCESS_INFORMATION pi;
   #elif defined _Windows
     HINSTANCE hinst;
-  #elif defined __LINUX__ || defined __FreeBSD__ || defined __OpenBSD__ || defined __APPLE__
+  #elif defined LINUX || defined __FreeBSD__ || defined __OpenBSD__
   	pid_t pid;
   #endif
 
@@ -770,7 +764,7 @@ static cell AMX_NATIVE_CALL n_procexec(AMX *amx, const cell *params)
     if (hinst<=32)
       hinst=0;
     return (cell)hinst;
-  #elif defined __LINUX__ || defined __FreeBSD__ || defined __OpenBSD__ || defined __APPLE__
+  #elif defined LINUX || defined __FreeBSD__ || defined __OpenBSD__
     /* set up communication pipes first */
     closepipe();
     if (pipe(pipe_to)!=0 || pipe(pipe_from)!=0) {
@@ -837,10 +831,10 @@ static cell AMX_NATIVE_CALL n_procwrite(AMX *amx, const cell *params)
   #if defined __WIN32__ || defined _WIN32 || defined WIN32
     if (write_stdin==NULL)
       return 0;
-    WriteFile(write_stdin,line,(DWORD)_tcslen(line),&num,NULL); //send it to stdin
+    WriteFile(write_stdin,line,_tcslen(line),&num,NULL); //send it to stdin
     if (params[2])
       WriteFile(write_stdin,__T("\n"),1,&num,NULL);
-  #elif defined __LINUX__ || defined __FreeBSD__ || defined __OpenBSD__ || defined __APPLE__
+  #elif defined LINUX || defined __FreeBSD__ || defined __OpenBSD__
     if (pipe_to[1]<0)
       return 0;
     write(pipe_to[1],line,_tcslen(line));
@@ -868,7 +862,7 @@ static cell AMX_NATIVE_CALL n_procread(AMX *amx, const cell *params)
         break;
       index++;
     } while (index<sizeof(line)/sizeof(line[0])-1 && line[index-1]!=__T('\n'));
-  #elif defined __LINUX__ || defined __FreeBSD__ || defined __OpenBSD__ || defined __APPLE__
+  #elif defined LINUX || defined __FreeBSD__ || defined __OpenBSD__
     if (pipe_from[0]<0)
       return 0;
     do {
@@ -883,7 +877,7 @@ static cell AMX_NATIVE_CALL n_procread(AMX *amx, const cell *params)
       index--;
   line[index]=__T('\0');
 
-  cptr=amx_Address(amx,params[1]);
+  amx_GetAddr(amx,params[1],&cptr);
   amx_SetString(cptr,line,params[4],sizeof(TCHAR)>1,params[2]);
   return 1;
 }
@@ -906,7 +900,7 @@ static cell AMX_NATIVE_CALL n_procwait(AMX *amx, const cell *params)
         Sleep(100);
       CloseHandle(hProcess);
     } /* if */
-  #elif defined __LINUX__ || defined __FreeBSD__ || defined __OpenBSD__ || defined __APPLE__
+  #elif defined LINUX || defined __FreeBSD__ || defined __OpenBSD__
     waitpid((pid_t)params[1],NULL,WNOHANG);
   #endif
   return 0;
@@ -916,7 +910,7 @@ static cell AMX_NATIVE_CALL n_procwait(AMX *amx, const cell *params)
 #if defined __cplusplus
   extern "C"
 #endif
-AMX_NATIVE_INFO process_Natives[] = {
+AMX_NATIVE_INFO ffi_Natives[] = {
   { "libcall",   n_libcall },
   { "libfree",   n_libfree },
   { "procexec",  n_procexec },
@@ -926,16 +920,14 @@ AMX_NATIVE_INFO process_Natives[] = {
   { NULL, NULL }        /* terminator */
 };
 
-int AMXEXPORT AMXAPI amx_ProcessInit(AMX *amx)
+int AMXEXPORT amx_ProcessInit(AMX *amx)
 {
-  return amx_Register(amx, process_Natives, -1);
+  return amx_Register(amx, ffi_Natives, -1);
 }
 
-int AMXEXPORT AMXAPI amx_ProcessCleanup(AMX *amx)
+int AMXEXPORT amx_ProcessCleanup(AMX *amx)
 {
-  #if defined HAVE_DYNCALL_H || defined WIN32_FFI
-    freelib(&ModRoot, amx, NULL);
-  #endif
+  freelib(&ModRoot, amx, NULL);
   closepipe();
   return AMX_ERR_NONE;
 }

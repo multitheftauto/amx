@@ -18,10 +18,12 @@
 
 extern "C"
 {
-    #include "include/lua.h"
-    #include "include/lualib.h"
-    #include "include/lauxlib.h"
-	#include "include/lobject.h"
+    #include "lua/lua.h"
+    #include "lua/lualib.h"
+    #include "lua/lauxlib.h"
+	#include "lua/lobject.h"
+
+	#include "sqlite/sqlite_amx.c"
 }
 
 #ifdef _WIN32
