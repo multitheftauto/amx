@@ -84,7 +84,7 @@ bool CFunctions::amxLoadPlugin(lua_State *luaVM) {
 
 	HMODULE hPlugin = loadLib(pluginPath.c_str());
 
-	if(!hPlugin) {
+	if(hPlugin == NULL) {
 		lua_pushboolean(luaVM, 0);
 		return false;
 	}
@@ -224,12 +224,11 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 	}
 
 	if(err != AMX_ERR_NONE) {
-		pModuleManager->ErrorPrintf("[Pawn]: %s can't be loaded due to missing functions:\n", amxName);
 		AMX_HEADER *header = (AMX_HEADER *)amx->base;
 		AMX_FUNCSTUBNT *func = (AMX_FUNCSTUBNT *)((BYTE *)amx->base + header->natives);
 		while( func != ((AMX_FUNCSTUBNT *)((BYTE *)amx->base + header->libraries)) ) {
-			if(!func->address)
-				pModuleManager->ErrorPrintf("  %s\n", (char *)amx->base + func->nameofs);
+			if(func->address == NULL || func->address == 0)
+				pModuleManager->ErrorPrintf("  Function not registered: '%s'\n", (char *)amx->base + func->nameofs);
 			func++;
 		}
 		aux_FreeProgram(amx);

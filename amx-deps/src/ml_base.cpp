@@ -82,12 +82,7 @@ void *amxFunctions[] = {
 	(void*)&amx_UTF8Check,
 	(void*)&amx_UTF8Get,
 	(void*)&amx_UTF8Len,
-	(void*)&amx_UTF8Put,
-	(void*)&amx_CoreCleanup,
-	(void*)&amx_FloatCleanup,
-	(void*)&amx_StringCleanup,
-	(void*)&amx_FileCleanup,
-	(void*)&amx_TimeCleanup
+	(void*)&amx_UTF8Put
 };
 
 MTAEXPORT bool InitModule ( ILuaModuleManager10 *pManager, char *szModuleName, char *szAuthor, float *fVersion )
@@ -179,10 +174,10 @@ MTAEXPORT void RegisterFunctions ( lua_State * luaVM )
 		pModuleManager->RegisterFunction(luaVM, "amxVersion", CFunctions::amxVersion);
 		pModuleManager->RegisterFunction(luaVM, "amxVersionString", CFunctions::amxVersionString);
 
-		char resNameBuf[4];
+		/*char resNameBuf[4];
 		bool ok = pModuleManager->GetResourceName(luaVM, resNameBuf, 4);
-		if (!ok/* || std::string(resNameBuf) != "amx"*/)
-			return;
+		if (!ok || std::string(resNameBuf) != "amx")
+			return;*/
 
 		mainVM = luaVM;
 
