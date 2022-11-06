@@ -180,7 +180,7 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 	lua_State* theirLuaVM = pModuleManager->GetResourceFromName(resName);
 	if (theirLuaVM == nullptr) {
 		using namespace std::string_literals;
-		std::string errMsg = std::format("[Pawn]: resource {} does not exist!", resName);
+		std::string errMsg = std::format("resource {} does not exist!", resName);
 		lua_pushboolean(luaVM, false);
 		lua_pushstring(luaVM, errMsg.c_str());
 		return 2;
@@ -190,20 +190,20 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 	if (!pModuleManager->GetResourceFilePath(theirLuaVM, ((isGamemode == 1 ? 'gamemodes' : 'filterscripts') + '/' + amxName), amxPath, 256))
 	{
 		lua_pushboolean(luaVM, false);
-		lua_pushstring(luaVM, "[Pawn]: File not found");
+		lua_pushstring(luaVM, "File not found");
 		return 2;
 	}
 
 	// Load .amx
 	AMX *amx = new AMX;
 	int  err = aux_LoadProgram(amx, amxPath, NULL);
-	/*if(err == AMX_ERR_SLEEP) {
-		//
-	}
-	else */if(err != AMX_ERR_NONE) {
+	if(err != AMX_ERR_NONE) {
+		/*if(err == AMX_ERR_SLEEP) {
+			//
+		}*/
 		delete amx;
 		lua_pushboolean(luaVM, 0);
-		pModuleManager->ErrorPrintf("[Pawn]: Failed to load '%s' script.", amxPath);
+		pModuleManager->ErrorPrintf("Script[%s]: Run time error %d: \"%s\"", amxName, err, aux_StrError(err));
 		return 1;
 	}
 
@@ -270,7 +270,7 @@ int CFunctions::amxCall(lua_State *luaVM) {
 	if(!luaVM) return;
 	AMX *amx = (AMX *)lua_touserdata(luaVM, 1);
 	if(!amx) {
-		pModuleManager->ErrorPrintf("[Pawn]: invalid AMX parameter -> Load\n");
+		pModuleManager->ErrorPrintf("invalid AMX parameter -> Load\n");
 		lua_pushboolean(luaVM, 0);
 		return 1;
 	}
@@ -416,7 +416,7 @@ int CFunctions::amxUnload(lua_State *luaVM) {
 	if(!luaVM) return;
 	AMX *amx = (AMX *)lua_touserdata(luaVM, 1);
 	if(!amx) {
-		pModuleManager->ErrorPrintf("[Pawn]: invalid AMX parameter -> Unload\n");
+		pModuleManager->ErrorPrintf("invalid AMX parameter -> Unload\n");
 		lua_pushboolean(luaVM, 0);
 		return 1;
 	}
@@ -486,7 +486,7 @@ int CFunctions::amxRegisterLuaPrototypes(lua_State *luaVM) {
 	while(lua_next(luaVM, 1)) {
 		if(!lua_istable(luaVM, -1)) {
 			lua_settop(mainVM, mainTop);
-			return luaL_error(luaVM, "[Pawn]: table expected as prototype for \"%s\" -> RegisterLuaPrototypes", lua_tostring(luaVM, -2));
+			return luaL_error(luaVM, "table expected as prototype for \"%s\" -> RegisterLuaPrototypes", lua_tostring(luaVM, -2));
 		}
 
 		lua_getglobal(luaVM, "string");
@@ -504,7 +504,7 @@ int CFunctions::amxRegisterLuaPrototypes(lua_State *luaVM) {
 		lua_gettable(luaVM, LUA_GLOBALSINDEX);
 		if(!lua_isfunction(luaVM, -1)) {
 			lua_settop(mainVM, mainTop);
-			return luaL_error(luaVM, "[Pawn]: no function named \"%s\" exists -> RegisterLuaPrototypes", lua_tostring(luaVM, -3));
+			return luaL_error(luaVM, "no function named \"%s\" exists -> RegisterLuaPrototypes", lua_tostring(luaVM, -3));
 		}
 		lua_pop(luaVM, 1);
 
@@ -548,7 +548,7 @@ int CFunctions::pawn(lua_State *luaVM) {
 		}
 	}
 	if(!amx)
-		return luaL_error(luaVM, "[Pawn]: Function \"%s\" doesn't exist", fnName);
+		return luaL_error(luaVM, "Function \"%s\" doesn't exist", fnName);
 
 	int mainTop = lua_gettop(mainVM);
 
@@ -558,17 +558,17 @@ int CFunctions::pawn(lua_State *luaVM) {
 	lua_getfield(mainVM, -1, resName);
 	if(lua_isnil(mainVM, -1)) {
 		lua_settop(mainVM, mainTop);
-		return luaL_error(luaVM, "[Pawn]: resource %s is not an AMX resource", resName);
+		return luaL_error(luaVM, "resource %s is not an AMX resource", resName);
 	}
 	lua_getfield(mainVM, -1, "pawnprototypes");
 	if(lua_isnil(mainVM, -1)) {
 		lua_settop(mainVM, mainTop);
-		return luaL_error(luaVM, "[Pawn]: resource %s does not have any registered Pawn functions - see amxRegisterPawnPrototypes", resName);
+		return luaL_error(luaVM, "resource %s does not have any registered Pawn functions - see amxRegisterPawnPrototypes", resName);
 	}
 	lua_getfield(mainVM, -1, fnName);
 	if(lua_isnil(mainVM, -1)) {
 		lua_settop(mainVM, mainTop);
-		return luaL_error(luaVM, "[Pawn]: function %s is not registered", lua_tostring(luaVM, 1));
+		return luaL_error(luaVM, "function %s is not registered", lua_tostring(luaVM, 1));
 	}
 
 	lua_remove(mainVM, -2);

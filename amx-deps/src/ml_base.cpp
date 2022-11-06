@@ -102,15 +102,15 @@ MTAEXPORT bool InitModule ( ILuaModuleManager10 *pManager, char *szModuleName, c
     //
 	fs::path filterscriptspath = fs::canonical(fs::current_path() / fs::path(std:format("{}/resources/filterscripts", RESOURCE_PATH)));
 	if (!exists(filterscriptspath)) {
-		pModuleManager->ErrorPrintf("[Pawn]: filterscripts directory doesn't exist at: %s\n", filterscriptspath.string());
+		pModuleManager->ErrorPrintf("filterscripts directory doesn't exist at: %s\n", filterscriptspath.string());
 	}
 	fs::path gamemodespath = fs::canonical(fs::current_path() / fs::path(std:format("{}/resources/gamemodes", RESOURCE_PATH)));
 	if (!exists(gamemodespath)) {
-		pModuleManager->ErrorPrintf("[Pawn]: gamemodes directory doesn't exist at: %s\n", gamemodespath.string());
+		pModuleManager->ErrorPrintf("gamemodes directory doesn't exist at: %s\n", gamemodespath.string());
 	}
 	fs::path pluginspath = fs::canonical(fs::current_path() / fs::path(std:format("{}/resources/plugins", RESOURCE_PATH)));
 	if (!exists(pluginspath)) {
-		pModuleManager->ErrorPrintf("[Pawn]: plugins directory doesn't exist at: %s\n", pluginspath.string());
+		pModuleManager->ErrorPrintf("plugins directory doesn't exist at: %s\n", pluginspath.string());
 	}
 
 	string PATH = getenv("PATH");
@@ -127,7 +127,7 @@ MTAEXPORT bool InitModule ( ILuaModuleManager10 *pManager, char *szModuleName, c
 	if (exists(scriptfilespath)) {
 		setenv_portable("AMXFILE", scriptfilespath.string().c_str(), 0);
 	} else {
-		pModuleManager->ErrorPrintf("[Pawn]: scriptfiles directory doesn't exist at: %s\n", scriptfilespath.string());
+		pModuleManager->ErrorPrintf("scriptfiles directory doesn't exist at: %s\n", scriptfilespath.string());
 	}
 	return true;
 }
