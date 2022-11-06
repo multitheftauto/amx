@@ -2,6 +2,8 @@
  * _Windows     set when compiling for any version of Microsoft Windows
  * __WIN32__    set when compiling for Windows95 or WindowsNT (32 bit mode)
  * __32BIT__    set when compiling in 32-bit "flat" mode (DOS or Windows)
+ * __64BIT__    set when compiling in 64-bit mode (Windows)
+ * LINUX        set when compiling for Linux
  *
  * Copyright 1998-2005, ITB CompuPhase, The Netherlands.
  * info@compuphase.com.
@@ -33,6 +35,20 @@
 #    define __WIN32__   1
 #    define __32BIT__   1
 #  endif
+#elif defined(__MINGW32__)
+#  if !defined(_Windows)
+#    define _Windows    1
+#  endif
+#endif
+
+#if (!defined __FreeBSD__) && (defined FREEBSD)
+  #define __FreeBSD__
+#endif
+#if (!defined LINUX) && (defined __linux || defined __linux__)
+  #define LINUX
+#endif
+#if (!defined __64BIT__) && (defined _LP64 || defined WIN64 || defined _WIN64)
+  #define __64BIT__
 #endif
 
 #if defined __FreeBSD__
@@ -43,7 +59,7 @@
    #include <endian.h>
 #endif
 
-/* Linux NOW has these */
+/* Linux now has these */
 #if !defined BIG_ENDIAN
   #define BIG_ENDIAN    4321
 #endif

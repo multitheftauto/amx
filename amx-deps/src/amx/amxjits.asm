@@ -40,7 +40,7 @@
 ; The purpose is to make "buffer overrun" security holes impossible, or at least
 ; very, very difficult, by marking the stack and the heap as memory regions
 ; such that an attempt to execute processor instructions will cause a processor
-; exception (of course, a buffer overrun that is not explictly handled will then
+; exception (of course, a buffer overrun that is not explicitly handled will then
 ; crash the application --instead of executing the rogue code).
 ;
 ; For JIT compilers, this has the impact that you are not allowed to execute the
@@ -79,6 +79,8 @@
 
 ; Revision History
 ; ----------------
+; 18 May 2018 by Stanislav Gromov
+;       Fixed comment typos found with the codespell tool
 ; 17 february 2005  by Thiadmer Riemersma (TR)
 ;       Addition of the BREAK opcode, removal of the older debugging opcode
 ;       table. There should now be some debug support (if enabled during the
@@ -133,7 +135,7 @@
 ; 1999/08/04    MP
 ;       * updated with 4 new opcodes (SRANGE does nothing at the moment; 2dim.
 ;         arrays have not been tested.)
-;       * hacked relocation code to support absoulute addresses for CASETBL
+;       * hacked relocation code to support absolute addresses for CASETBL
 ;         (This assumes that no generated address will be greater than
 ;         0x7fffffff. Bit no. 31 is used as flag for absolute addresses.)
 ;       * The run-time function for SWITCH uses a (hopefully) faster algorithm
@@ -274,7 +276,7 @@ _DROPARGS MACRO n               ; (TR) remove function arguments from the stack
 ;                                eax                     edx          ebx     ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; asm_runJIT() assumes that the code of this module is allready browsed and
+; asm_runJIT() assumes that the code of this module is already browsed and
 ; relocated for the JIT compiler. It also assumes that both the jumps array and
 ; the dest memory block are large enough to hold all the data it has to write
 ; to them, as well as that the prefix (header) has already been copied to dest.
@@ -336,7 +338,7 @@ code_gen_done:                          ; Now copy the data section.
         add     ecx,8           ; set pointer to next entry in relocation table
         add     edi,4           ; base address from where the offset is taken
 IF FORCERELOCATABLE EQ 0
-        ;MP: hack to suport absolute addresses for the CASETBL instruction
+        ;MP: hack to support absolute addresses for the CASETBL instruction
         test    eax,80000000h   ; check whether it is an absolute address
         pushf
         and     eax,7fffffffh   ; clear the flag bit for absolute addresses
@@ -1212,8 +1214,8 @@ OP_NOT:
 ;nop;
         GO_ON   j_not, OP_NEG
     j_not:
-        neg     eax             ; sets CF iff EAX != 0
-        sbb     eax,eax         ; EAX == -1 iff CF set (zero otherwise)
+        neg     eax             ; sets CF if EAX != 0
+        sbb     eax,eax         ; EAX == -1 if CF set (zero otherwise)
         inc     eax             ; -1 => 0 and 0 => 1
 
 OP_NEG:
@@ -1712,7 +1714,7 @@ _amx_exec_jit   PROC
 
         stk     equ [esi+32]    ; define some aliases to registers that will
         alt     equ [esi+28]    ;   be stored on the stack when the code is
-        pri     equ [esi+24]    ;   actually beeing executed
+        pri     equ [esi+24]    ;   actually being executed
         code    equ [esi+20]
         amx     equ [esi+16]
         retval  equ [esi+12]
@@ -2052,7 +2054,7 @@ JIT_OP_SWITCH:
 IF FORCERELOCATABLE EQ 0
         jmp     [ebp-4]         ; jump to the case instructions
 ELSE
-        add     ebp,[ebp-4]     ; add offset to make absolute adddress
+        add     ebp,[ebp-4]     ; add offset to make absolute address
         jmp     ebp
 ENDIF
 
@@ -2075,7 +2077,7 @@ _getMaxCodeSize ENDP
 
 IFNDEF @Version
         ; Microsoft MASM 6.x gives the error message "Register assumed to
-        ; ERROR" when I put the code lables in the data segment. I cannot find
+        ; ERROR" when I put the code labels in the data segment. I cannot find
         ; a proper way around it.
 .DATA
 ENDIF

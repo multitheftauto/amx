@@ -40,7 +40,7 @@
 ; The purpose is to make "buffer overrun" security holes impossible, or at least
 ; very, very difficult, by marking the stack and the heap as memory regions
 ; such that an attempt to execute processor instructions will cause a processor
-; exception (of course, a buffer overrun that is not explictly handled will then
+; exception (of course, a buffer overrun that is not explicitly handled will then
 ; crash the application --instead of executing the rogue code).
 ;
 ; For JIT compilers, this has the impact that you are not allowed to execute the
@@ -79,6 +79,8 @@
 
 ; Revision History
 ; ----------------
+; 18 May 2018 by Stanislav Gromov
+;       Fixed comment typos found with the codespell tool
 ; 28 july 2005
 ;       Bug fix for the switch table, in the situation where only the default
 ;       case was present. Bug found by Bailopan.
@@ -140,7 +142,7 @@
 ; 1999/08/04    MP
 ;       * updated with 4 new opcodes (SRANGE does nothing at the moment; 2dim.
 ;         arrays have not been tested.)
-;       * hacked relocation code to support absoulute addresses for CASETBL
+;       * hacked relocation code to support absolute addresses for CASETBL
 ;         (This assumes that no generated address will be greater than
 ;         0x7fffffff. Bit no. 31 is used as flag for absolute addresses.)
 ;       * The run-time function for SWITCH uses a (hopefully) faster algorithm
@@ -180,7 +182,7 @@
 ; You should set this to 0, only when you are sure that there are no range
 ; violations in your Pawn programs and you really need those 5% speed gain.
 ;
-; GWMV: To disable runtime checks, %undef it, instread of setting it to zero
+; GWMV: To disable runtime checks, %undef it, instead of setting it to zero
 ;
 %define DORUNTIMECHECKS
 
@@ -192,7 +194,7 @@
 ; esi is not determined at compile time
 %define stk     [esi+32]    ; define some aliases to registers that will
 %define alt     [esi+28]    ;   be stored on the stack when the code is
-%define pri     [esi+24]    ;   actually beeing executed
+%define pri     [esi+24]    ;   actually being executed
 %define code    [esi+20]
 %define amx     [esi+16]
 %define retval  [esi+12]
@@ -294,7 +296,7 @@ global  getMaxCodeSize, _getMaxCodeSize
 ;                                eax                     edx          ebx     ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; asm_runJIT() assumes that the code of this module is allready browsed and
+; asm_runJIT() assumes that the code of this module is already browsed and
 ; relocated for the JIT compiler. It also assumes that both the jumps array and
 ; the dest memory block are large enough to hold all the data it has to write
 ; to them, as well as that the prefix (header) has already been copied to dest.
@@ -357,7 +359,7 @@ code_gen_done:                          ; Now copy the data section.
         add     ecx,8           ; set pointer to next entry in relocation table
         add     edi,4           ; base address from where the offset is taken
 %ifndef FORCERELOCATABLE
-        ;MP: hack to suport absolute addresses for the CASETBL instruction
+        ;MP: hack to support absolute addresses for the CASETBL instruction
         test    eax,80000000h   ; check whether it is an absolute address
         pushf
         and     eax,7fffffffh   ; clear the flag bit for absolute addresses
@@ -1327,8 +1329,8 @@ OP_NOT:
 ;nop;
         GO_ON   j_not, OP_NEG
     j_not:
-        neg     eax             ; sets CF iff EAX != 0
-        sbb     eax,eax         ; EAX == -1 iff CF set (zero otherwise)
+        neg     eax             ; sets CF if EAX != 0
+        sbb     eax,eax         ; EAX == -1 if CF set (zero otherwise)
         inc     eax             ; -1 => 0 and 0 => 1
 	CHECKCODESIZE j_not
 
@@ -2202,7 +2204,7 @@ JIT_OP_SWITCH:
 %ifndef FORCERELOCATABLE
         jmp     [ebp-4]         ; jump to the case instructions
 %else
-        add     ebp,[ebp-4]     ; add offset to make absolute adddress
+        add     ebp,[ebp-4]     ; add offset to make absolute address
         jmp     ebp
 %endif
 

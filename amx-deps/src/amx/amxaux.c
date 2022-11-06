@@ -87,7 +87,7 @@ int AMXAPI aux_LoadProgram(AMX *amx, char *filename, void *memblock)
     return AMX_ERR_FORMAT;
 
   /* initialize the abstract machine */
-  memset(amx, 0, sizeof *amx);
+  memset(amx, 0, sizeof(AMX));
   result = amx_Init(amx, memblock);
 
   /* free the memory block on error, if it was allocated here */
@@ -111,7 +111,7 @@ int AMXAPI aux_FreeProgram(AMX *amx)
 
 char * AMXAPI aux_StrError(int errnum)
 {
-  static char *messages[] = {
+    static char *messages[] = {
         /* AMX_ERR_NONE      */ "(None)",
         /* AMX_ERR_EXIT      */ "Forced exit",
         /* AMX_ERR_ASSERT    */ "Assertion failed",
@@ -140,10 +140,10 @@ char * AMXAPI aux_StrError(int errnum)
         /* AMX_ERR_PARAMS    */ "Parameter error",
         /* AMX_ERR_DOMAIN    */ "Domain error, expression result does not fit in range",
         /* AMX_ERR_GENERAL   */ "General error (unknown or unspecific error)"
-  };
-  if (errnum < 0 || errnum >= sizeof messages / sizeof messages[0])
-    return "(unknown)";
-  return messages[errnum];
+    };
+    if (errnum < 0 || errnum >= sizeof messages / sizeof messages[0])
+        return "(unknown)";
+    return messages[errnum];
 }
 
 int AMXAPI aux_GetSection(AMX *amx, int section, cell **start, size_t *size)
@@ -154,7 +154,7 @@ int AMXAPI aux_GetSection(AMX *amx, int section, cell **start, size_t *size)
     return AMX_ERR_PARAMS;
 
   hdr = (AMX_HEADER*)amx->base;
-  switch(section) {
+  switch (section) {
   case CODE_SECTION:
     *start = (cell *)(amx->base + hdr->cod);
     *size = hdr->dat - hdr->cod;

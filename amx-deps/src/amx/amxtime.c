@@ -1,20 +1,24 @@
 /*  Date/time module for the Pawn Abstract Machine
  *
- *  Copyright (c) ITB CompuPhase, 2001-2016
+ *  Copyright (c) ITB CompuPhase, 2001-2008
  *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may not
- *  use this file except in compliance with the License. You may obtain a copy
- *  of the License at
+ *  This software is provided "as-is", without any express or implied warranty.
+ *  In no event will the authors be held liable for any damages arising from
+ *  the use of this software.
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *  Permission is granted to anyone to use this software for any purpose,
+ *  including commercial applications, and to alter it and redistribute it
+ *  freely, subject to the following restrictions:
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- *  License for the specific language governing permissions and limitations
- *  under the License.
+ *  1.  The origin of this software must not be misrepresented; you must not
+ *      claim that you wrote the original software. If you use this software in
+ *      a product, an acknowledgment in the product documentation would be
+ *      appreciated but is not required.
+ *  2.  Altered source versions must be plainly marked as such, and must not be
+ *      misrepresented as being the original software.
+ *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: amxtime.c 5588 2016-10-25 11:13:28Z  $
+ *  Version: $Id: amxtime.c 3856 2007-11-27 13:55:27Z thiadmer $
  */
 
 #include <time.h>
@@ -24,16 +28,14 @@
   #include <windows.h>
   #include <mmsystem.h>
 #endif
-#if defined __GNUC__ || defined __clang__
-  #include <sys/time.h>
-#endif
 
-#if defined __clang__
-  /* ignore this warning, because fixing the macro would make it depend on
-     two's-complement arithmetic */
-  #pragma GCC diagnostic ignored "-Wshift-negative-value"
-#endif
-#define CELLMIN   (-1 << (8*sizeof(cell) - 1))
+#define EXPECT_PARAMS(num) \
+  do { \
+    if (params[0]!=(num)*sizeof(cell)) \
+      return amx_RaiseError(amx,AMX_ERR_PARAMS),0; \
+  } while(0)
+
+#define CELLMIN   (cell)((ucell)-1 << (8*sizeof(cell) - 1))
 
 #define SECONDS_PER_MINUTE	60
 #define SECONDS_PER_HOUR	3600
@@ -54,9 +56,9 @@
 #else
   #define INIT_TIMER()
 #endif
-static unsigned long timestamp;
-static unsigned long timelimit;
-static int timerepeat;
+static unsigned long timestamp=0;
+static unsigned long timelimit=0;
+static int timerepeat=0;
 
 static const unsigned char monthdays[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
@@ -74,22 +76,16 @@ static unsigned long gettimestamp(void)
   unsigned long value;
 
   #if defined __WIN32__ || defined _WIN32 || defined WIN32
-    value=timeGetTime();        /* this value is already in milliseconds */
-  #elif defined __linux || defined __linux__ || defined __LINUX__ || defined __APPLE__
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    value = ((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
+    value = (unsigned long)timeGetTime(); /* this value is already in milliseconds */
   #else
-    value=clock();
-    #if CLOCKS_PER_SEC<1000
-      /* convert to milliseconds */
-      value=(cell)((1000L * value) / CLOCKS_PER_SEC);
-    #elif CLOCKS_PER_SEC>1000
-      /* convert to milliseconds */
-      value=(cell)(value/(CLOCKS_PER_SEC/1000));
-    #endif
+    value = (unsigned long)clock();
+    /* convert to milliseconds */
+    if ((unsigned long)CLOCKS_PER_SEC<1000UL)
+      value = (1000UL*value) / (unsigned long)CLOCKS_PER_SEC;
+    else if ((unsigned long)CLOCKS_PER_SEC>1000UL)
+      value = value / ((unsigned long)CLOCKS_PER_SEC / 1000UL);
   #endif
-  return value;
+  return (unsigned long)(cell)value;
 }
 
 void stamp2datetime(unsigned long sec1970,
@@ -153,14 +149,10 @@ static void settime(cell hour,cell minute,cell second)
     SetLocalTime(&systim);
   #else
     /* Linux/Unix (and some DOS compilers) have stime(); on Linux/Unix, you
-     * must have "root" permission to call stime(); many POSIX systems will
-     * have settimeofday() instead
+     * must have "root" permission to call stime()
      */
     time_t sec1970;
     struct tm gtm;
-    #if defined __APPLE__ /* also valid for other POSIX systems */
-      struct timeval tv;
-    #endif
 
     time(&sec1970);
     gtm=*localtime(&sec1970);
@@ -171,13 +163,7 @@ static void settime(cell hour,cell minute,cell second)
     if (second!=CELLMIN)
       gtm.tm_sec=wrap((int)second,0,59);
     sec1970=mktime(&gtm);
-    #if defined __APPLE__ /* also valid for other POSIX systems */
-      tv.tv_sec = sec1970;
-      tv.tv_usec = 0;
-      settimeofday(&tv, 0);
-    #else
-      stime(&sec1970);
-    #endif
+    stime(&sec1970);
   #endif
 }
 
@@ -201,14 +187,10 @@ static void setdate(cell year,cell month,cell day)
     SetLocalTime(&systim);
   #else
     /* Linux/Unix (and some DOS compilers) have stime(); on Linux/Unix, you
-     * must have "root" permission to call stime(); many POSIX systems will
-     * have settimeofday() instead
+     * must have "root" permission to call stime()
      */
     time_t sec1970;
     struct tm gtm;
-    #if defined __APPLE__ /* also valid for other POSIX systems */
-      struct timeval tv;
-    #endif
 
     time(&sec1970);
     gtm=*localtime(&sec1970);
@@ -219,28 +201,23 @@ static void setdate(cell year,cell month,cell day)
     if (day!=CELLMIN)
       gtm.tm_mday=day;
     sec1970=mktime(&gtm);
-    #if defined __APPLE__ /* also valid for other POSIX systems */
-      tv.tv_sec = sec1970;
-      tv.tv_usec = 0;
-      settimeofday(&tv, 0);
-    #else
-      stime(&sec1970);
-    #endif
+    stime(&sec1970);
   #endif
 }
 
 
-/* settime(hour, minute, second)
+/* settime(hour=cellmin, minute=cellmin, second=cellmin)
  * Always returns 0
  */
 static cell AMX_NATIVE_CALL n_settime(AMX *amx, const cell *params)
 {
+  EXPECT_PARAMS(3);
   (void)amx;
   settime(params[1],params[2],params[3]);
   return 0;
 }
 
-/* gettime(&hour, &minute, &second)
+/* gettime(&hour=0, &minute=0, &second=0)
  * The return value is the number of seconds since 1 January 1970 (Unix system
  * time).
  */
@@ -250,7 +227,7 @@ static cell AMX_NATIVE_CALL n_gettime(AMX *amx, const cell *params)
   struct tm gtm;
   cell *cptr;
 
-  assert(params[0]==(int)(3*sizeof(cell)));
+  EXPECT_PARAMS(3);
 
   time(&sec1970);
 
@@ -258,12 +235,12 @@ static cell AMX_NATIVE_CALL n_gettime(AMX *amx, const cell *params)
    * library; in that case gmtime() and localtime() return the same value
    */
   gtm=*localtime(&sec1970);
-  cptr=amx_Address(amx,params[1]);
-  *cptr=gtm.tm_hour;
-  cptr=amx_Address(amx,params[2]);
-  *cptr=gtm.tm_min;
-  cptr=amx_Address(amx,params[3]);
-  *cptr=gtm.tm_sec;
+  if (amx_GetAddr(amx,params[1],&cptr)==AMX_ERR_NONE)
+    *cptr=gtm.tm_hour;
+  if (amx_GetAddr(amx,params[2],&cptr)==AMX_ERR_NONE)
+    *cptr=gtm.tm_min;
+  if (amx_GetAddr(amx,params[3],&cptr)==AMX_ERR_NONE)
+    *cptr=gtm.tm_sec;
 
   /* the time() function returns the number of seconds since January 1 1970
    * in Universal Coordinated Time (the successor to Greenwich Mean Time)
@@ -271,17 +248,18 @@ static cell AMX_NATIVE_CALL n_gettime(AMX *amx, const cell *params)
   return (cell)sec1970;
 }
 
-/* setdate(year, month, day)
+/* setdate(year=cellmin, month=cellmin, day=cellmin)
  * Always returns 0
  */
 static cell AMX_NATIVE_CALL n_setdate(AMX *amx, const cell *params)
 {
+  EXPECT_PARAMS(3);
   (void)amx;
   setdate(params[1],params[2],params[3]);
   return 0;
 }
 
-/* getdate(&year, &month, &day)
+/* getdate(&year=0, &month=0, &day=0)
  * The return value is the number of days since the start of the year. January
  * 1 is day 1 of the year.
  */
@@ -291,22 +269,22 @@ static cell AMX_NATIVE_CALL n_getdate(AMX *amx, const cell *params)
   struct tm gtm;
   cell *cptr;
 
-  assert(params[0]==(int)(3*sizeof(cell)));
+  EXPECT_PARAMS(3);
 
   time(&sec1970);
 
   gtm=*localtime(&sec1970);
-  cptr=amx_Address(amx,params[1]);
-  *cptr=gtm.tm_year+1900;
-  cptr=amx_Address(amx,params[2]);
-  *cptr=gtm.tm_mon+1;
-  cptr=amx_Address(amx,params[3]);
-  *cptr=gtm.tm_mday;
+  if (amx_GetAddr(amx,params[1],&cptr)==AMX_ERR_NONE)
+    *cptr=gtm.tm_year+1900;
+  if (amx_GetAddr(amx,params[2],&cptr)==AMX_ERR_NONE)
+    *cptr=gtm.tm_mon+1;
+  if (amx_GetAddr(amx,params[3],&cptr)==AMX_ERR_NONE)
+    *cptr=gtm.tm_mday;
 
   return gtm.tm_yday+1;
 }
 
-/* tickcount(&granularity)
+/* tickcount(&granularity=0)
  * Returns the number of milliseconds since start-up. For a 32-bit cell, this
  * count overflows after approximately 24 days of continuous operation.
  */
@@ -314,14 +292,15 @@ static cell AMX_NATIVE_CALL n_tickcount(AMX *amx, const cell *params)
 {
   cell *cptr;
 
-  assert(params[0]==(int)sizeof(cell));
+  EXPECT_PARAMS(1);
 
   INIT_TIMER();
-  cptr=amx_Address(amx,params[1]);
   #if defined __WIN32__ || defined _WIN32 || defined WIN32
-    *cptr=1000;               	/* granularity = 1 ms */
+    if (amx_GetAddr(amx,params[1],&cptr)==AMX_ERR_NONE)
+      *cptr=1000;               /* granularity = 1 ms */
   #else
-    *cptr=(cell)CLOCKS_PER_SEC;	/* in Unix/Linux, this is often 100 */
+    if (amx_GetAddr(amx,params[1],&cptr)==AMX_ERR_NONE)
+      *cptr=(cell)CLOCKS_PER_SEC;       /* in Unix/Linux, this is often 100 */
   #endif
   return gettimestamp() & 0x7fffffff;
 }
@@ -333,9 +312,9 @@ static cell AMX_NATIVE_CALL n_delay(AMX *amx, const cell *params)
 {
   unsigned long stamp;
 
-  (void)amx;
-  assert(params[0]==(int)sizeof(cell));
+  EXPECT_PARAMS(1);
 
+  (void)amx;
   INIT_TIMER();
   stamp=gettimestamp();
   while (gettimestamp()-stamp < (unsigned long)params[1])
@@ -343,12 +322,13 @@ static cell AMX_NATIVE_CALL n_delay(AMX *amx, const cell *params)
   return 0;
 }
 
-/* settimer(milliseconds, bool: singleshot = false)
+/* settimer(milliseconds, bool: singleshot=false)
  * Sets the delay until the @timer() callback is called. The timer may either
  * be single-shot or repetitive.
  */
 static cell AMX_NATIVE_CALL n_settimer(AMX *amx, const cell *params)
 {
+  EXPECT_PARAMS(2);
   (void)amx;
   assert(params[0]==(int)(2*sizeof(cell)));
   timestamp=gettimestamp();
@@ -365,52 +345,52 @@ static cell AMX_NATIVE_CALL n_gettimer(AMX *amx, const cell *params)
 {
   cell *cptr;
 
-  assert(params[0]==(int)(2*sizeof(cell)));
-  cptr=amx_Address(amx,params[1]);
-  *cptr=timelimit;
-  cptr=amx_Address(amx,params[2]);
-  *cptr=timerepeat;
+  EXPECT_PARAMS(2);
+
+  if (amx_GetAddr(amx,params[1],&cptr)==AMX_ERR_NONE)
+    *cptr=timelimit;
+  if (amx_GetAddr(amx,params[1],&cptr)==AMX_ERR_NONE)
+    *cptr=timerepeat;
   return timelimit>0;
 }
 
-/* settimestamp(seconds1970) sets the date and time from a single parameter: the
- * number of seconds since 1 January 1970.
+/* settimestamp(seconds1970)
+ * sets the date and time from a single parameter: the number of seconds since
+ * 1 January 1970.
  */
 static cell AMX_NATIVE_CALL n_settimestamp(AMX *amx, const cell *params)
 {
-  #if defined __WIN32__ || defined _WIN32 || defined WIN32
-    int year, month, day, hour, minute, second;
+  EXPECT_PARAMS(1);
 
-    stamp2datetime(params[1],
-                   &year, &month, &day,
-                   &hour, &minute, &second);
-    setdate(year, month, day);
-    settime(hour, minute, second);
-  #else
-    /* Linux/Unix (and some DOS compilers) have stime(); on Linux/Unix, you
-     * must have "root" permission to call stime(); many POSIX systems will
-     * have settimeofday() instead
-     */
-    #if defined __APPLE__ /* also valid for other POSIX systems */
-      struct timeval tv;
-      tv.tv_sec = params[1];
-      tv.tv_usec = 0;
-      settimeofday(&tv, 0);
+  (void)amx;
+  do {
+    #if defined __WIN32__ || defined _WIN32 || defined WIN32
+      int year, month, day, hour, minute, second;
+
+      stamp2datetime(params[1],
+        &year, &month, &day,
+        &hour, &minute, &second);
+      setdate(year, month, day);
+      settime(hour, minute, second);
     #else
-      time_t sec1970=(time_t)params[1];
+      /* Linux/Unix (and some DOS compilers) have stime(); on Linux/Unix, you
+       * must have "root" permission to call stime()
+       */
+      time_t sec1970 = (time_t)params[1];
       stime(&sec1970);
     #endif
-  #endif
-  (void)amx;
+  } while (0);
 
   return 0;
 }
 
-/* cvttimestamp(seconds1970, &year, &month, &day, &hour, &minute, &second)
+/* cvttimestamp(seconds1970, &year=0, &month=0, &day=0, &hour=0, &minute=0, &second=0)
  */
 static cell AMX_NATIVE_CALL n_cvttimestamp(AMX *amx, const cell *params)
 {
   int year, month, day, hour, minute, second;
+
+  EXPECT_PARAMS(7);
 
   (void)amx;
   stamp2datetime(params[1],
@@ -448,17 +428,14 @@ static int AMXAPI amx_TimeIdle(AMX *amx, int AMXAPI Exec(AMX *, cell *, int))
 #endif
 
 
-#if defined __cplusplus
-  extern "C"
-#endif
-const AMX_NATIVE_INFO time_Natives[] = {
+static const AMX_NATIVE_INFO natives[] = {
   { "gettime",      n_gettime },
   { "settime",      n_settime },
   { "getdate",      n_getdate },
   { "setdate",      n_setdate },
   { "tickcount",    n_tickcount },
   { "settimer",     n_settimer },
-  { "gettimer",     n_gettimer },
+  { "gettimer",     n_gettimer },   /* NOTE: Not defined in time.inc */
   { "delay",        n_delay },
   { "settimestamp", n_settimestamp },
   { "cvttimestamp", n_cvttimestamp },
@@ -476,7 +453,7 @@ int AMXEXPORT AMXAPI amx_TimeInit(AMX *amx)
     } /* if */
   #endif
 
-  return amx_Register(amx, time_Natives, -1);
+  return amx_Register(amx, natives, -1);
 }
 
 int AMXEXPORT AMXAPI amx_TimeCleanup(AMX *amx)

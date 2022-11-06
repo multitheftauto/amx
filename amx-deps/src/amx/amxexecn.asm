@@ -56,6 +56,8 @@
 ;
 ;History (list of changes)
 ;-------------------------
+; 18 May 2018 by Stanislav Gromov
+;       Fixed comment typos found with the codespell tool
 ; 14 december 2005  by Thiadmer Riemersma (TR)
 ;       Addition of macro instructions, to speed up instruction decoding
 ; 17 february 2005  by Thiadmer Riemersma (TR)
@@ -126,7 +128,7 @@
 %endmacro
 
 %macro  _CHKMARGIN 0
-        lea     ebp,[ecx-16*4]  ;savety margin = 16 cells
+        lea     ebp,[ecx-16*4]  ;safety margin = 16 cells
         cmp     hea,ebp
         jg      near err_stack
 %endmacro
@@ -885,8 +887,8 @@ OP_XOR:
 
 OP_NOT:
         add     esi,4
-        neg     eax             ; sets CF iff EAX != 0
-        sbb     eax,eax         ; EAX == -1 iff CF set (zero otherwise)
+        neg     eax             ; sets CF if EAX != 0
+        sbb     eax,eax         ; EAX == -1 if CF set (zero otherwise)
         inc     eax             ; -1 => 0 and 0 => 1
         GO_ON
 
