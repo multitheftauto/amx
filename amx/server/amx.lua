@@ -16,10 +16,8 @@ g_TextDraws = {}
 g_TextLabels = {}
 g_PlayerObjects = {}
 
--- TODO: Correct these Limits since it is totally wrong
 MAX_FILTERSCRIPTS = 16
-MAX_GAMEMODES = 10
-MAX_PLUGINS = 10
+MAX_GAMEMODES = 16
 
 function initGameModeGlobals()
 	g_PlayerClasses = {}
@@ -31,10 +29,9 @@ end
 
 function loadAMX(fileName, isGamemode)
 	isGamemode = isGamemode or true
-	outputDebugString('  Loading ' .. fileName)
-
 	amx.type = isGamemode == false and 'filterscript' or 'gamemode'
 
+    outputDebugString('  Loading \'' .. fileName .. '.amx\' ' .. amx.type)
 	local hAMX = fileOpen(':' .. getResourceName(getThisResource()) .. '/' .. amx.type .. 's/' .. fileName .. '.amx', true)
 	if hAMX then
 		outputDebugString('  "' .. fileName .. '.amx" ' .. amx.type .. ' is being loaded')
@@ -72,7 +69,7 @@ function loadAMX(fileName, isGamemode)
 	if amx.cptr then
 		outputDebugString('"' .. fileName .. '.amx" ' .. amx.type .. ' is loaded')
 	else
-		outputDebugString('  Failed to load "' .. fileName .. '.amx" ' .. amx.type, 1)
+		outputDebugString('  Unable to load "' .. fileName .. '.amx" ' .. amx.type, 1)
 		return false
 	end
 
@@ -185,15 +182,11 @@ addEventHandler('onResourceStart', resourceRoot,
 		if plugins then
 			local pluginCount
 			for pluginName in plugins:split() do
-				if pluginCount < MAX_PLUGINS then
-					if amxLoadPlugin(pluginName) then
-						pluginCount = pluginCount + 1
-					else
-						outputDebugString('  Failed loading plugin ' .. pluginName .. '!')
-					end
-				else
-					outputDebugString('  Plugins Limit is already reached. Failed to load plugin ' .. pluginName .. '"', 1)
-				end
+                if amxLoadPlugin(pluginName) then
+                    pluginCount = pluginCount + 1
+                else
+                    outputDebugString('  Failed loading plugin ' .. pluginName .. '!')
+                end
 			end
 			outputDebugString("  Loaded " .. pluginCount .. " plugins.")
 		end
@@ -226,6 +219,7 @@ addEventHandler('onResourceStart', resourceRoot,
 					outputDebugString('  Filterscripts Limit is already reached. Failed to load ' .. filterscript .. '.amx"', 1)
 				end
 			end
+            outputDebugString("  Loaded " .. filterscriptsCount .. " filterscripts.")
 		end
 
 		-- TODO(q): this needs to be added back later
