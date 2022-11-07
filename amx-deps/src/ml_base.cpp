@@ -113,7 +113,7 @@ MTAEXPORT bool InitModule ( ILuaModuleManager10 *pManager, char *szModuleName, c
 		pModuleManager->ErrorPrintf("plugins directory doesn't exist at: %s\n", pluginspath.string());
 	}
 
-	string PATH = getenv("PATH");
+	std::string PATH = getenv("PATH");
 	PATH += std::format(";{}/resources/plugins/", RESOURCE_PATH);
 	setenv_portable("PATH", PATH.c_str(), 1);
 
