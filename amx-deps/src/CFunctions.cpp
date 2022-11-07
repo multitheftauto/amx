@@ -74,12 +74,14 @@ bool CFunctions::amxLoadPlugin(lua_State *luaVM) {
 		return false;
 	}
 
-	string pluginPath = std::format("{}/resources/plugins/", RESOURCE_PATH);
+	std::string pluginPath = std::format("{}/resources/plugins/", RESOURCE_PATH);
 	pluginPath += pluginName;
+    int pluginNameSize = pluginName.size();
+
 	#ifdef WIN32
-		pluginPath += ".dll";
+        if(!(pluginNameSize >= 4 && pluginName.compare(pluginNameSize - 4, 4, ".dll") == 0)) pluginPath += ".dll";
 	#else
-		pluginPath += ".so";
+		if(!(pluginNameSize >= 3 && pluginName.compare(pluginNameSize - 3, 3, ".so") == 0)) pluginPath += ".so";
 	#endif
 
 	HMODULE hPlugin = loadLib(pluginPath.c_str());
