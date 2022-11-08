@@ -87,6 +87,11 @@ void *amxFunctions[] = {
 
 MTAEXPORT bool InitModule ( ILuaModuleManager10 *pManager, char *szModuleName, char *szAuthor, float *fVersion )
 {
+    printf("  '%s' module v%d is being Loaded!", MODULE_NAME, MODULE_VERSION);
+    printf("  Author: %s", MODULE_AUTHOR);
+    printf("  Maintainer: Zorono");
+    printf("  Built on: %s at %s", __DATE__, __TIME__);
+
 	pModuleManager = pManager;
 
 	// Set the module info
@@ -210,18 +215,18 @@ MTAEXPORT bool DoPulse ( void )
 
 MTAEXPORT bool ShutdownModule ( void )
 {
-	printf("SAMP2MTA module is being shut down!\n");
+	printf("'%s' module is being shut down!\n", MODULE_NAME);
 	return true;
 }
 
 MTAEXPORT bool ResourceStopping(lua_State* luaVM)
 {
-	printf("SAMP2MTA resource is being stopped!\n");
+	printf("'%s' resource is being stopped!\n", MODULE_NAME);
     return true;
 }
 
 MTAEXPORT bool ResourceStopped(lua_State* luaVM)
 {
-	printf("SAMP2MTA resource is stopped!\n");
+	printf("'%s' resource is stopped!\n", MODULE_NAME);
     return true;
 }

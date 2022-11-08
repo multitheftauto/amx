@@ -2,7 +2,7 @@
 #define UTIL_H
 
 // Cross compatibility
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32) || defined(__WIN32__) || defined(_WIN64)
 
 	#define STDCALL __stdcall
 
@@ -42,4 +42,3 @@ extern "C" char* getScriptFilePath(AMX *amx, char *dest, const char *filename, s
 bool isSafePath(const char* path);
 
 #endif
-

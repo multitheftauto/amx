@@ -9,7 +9,7 @@ namespace fs = std::filesystem;
 extern map < AMX *, AMXPROPS > loadedAMXs;
 
 int setenv_portable(const char* name, const char* value, int overwrite) {
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32) || defined(__WIN32__) || defined(_WIN64)
 	if (!overwrite) {
 		const char* envvar = getenv_portable(name);
 		if (envvar != NULL) {
@@ -17,7 +17,7 @@ int setenv_portable(const char* name, const char* value, int overwrite) {
 		}
 	} //Otherwise continue and set it anyway
 	return _putenv_s(name, value);
-#else
+#elif defined(LINUX) || defined(FREEBSD) || defined(__FreeBSD__) || defined(__OpenBSD__)
 	return setenv(name, value, overwrite);
 #endif
 }
@@ -25,7 +25,7 @@ int setenv_portable(const char* name, const char* value, int overwrite) {
 //Credit: https://stackoverflow.com/questions/4130180/how-to-use-vs-c-getenvironmentvariable-as-cleanly-as-possible
 const char* getenv_portable(const char* name)
 {
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32) || defined(__WIN32__) || defined(_WIN64)
 	const DWORD buffSize = 65535;
 	static char buffer[buffSize];
 	if (GetEnvironmentVariableA(name, buffer, buffSize))
@@ -36,7 +36,7 @@ const char* getenv_portable(const char* name)
 	{
 		return 0;
 	}
-#else
+#elif defined(LINUX) || defined(FREEBSD) || defined(__FreeBSD__) || defined(__OpenBSD__)
 	return getenv(name);
 #endif
 }

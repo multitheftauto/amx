@@ -78,9 +78,9 @@ bool CFunctions::amxLoadPlugin(lua_State *luaVM) {
 	pluginPath += pluginName;
     int pluginNameSize = pluginName.size();
 
-	#ifdef WIN32
+	#if defined(_WIN32) || defined(WIN32) || defined(__WIN32__) || defined(_WIN64)
         if(!(pluginNameSize >= 4 && pluginName.compare(pluginNameSize - 4, 4, ".dll") == 0)) pluginPath += ".dll";
-	#else
+	#elif defined(LINUX) || defined(FREEBSD) || defined(__FreeBSD__) || defined(__OpenBSD__)
 		if(!(pluginNameSize >= 3 && pluginName.compare(pluginNameSize - 3, 3, ".so") == 0)) pluginPath += ".so";
 	#endif
 

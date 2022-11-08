@@ -26,7 +26,7 @@ extern "C"
 	#include "sqlite/sqlite_amx.c"
 }
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(WIN32) || defined(__WIN32__) || defined(_WIN64)
 #define MTAEXPORT extern "C" __declspec(dllexport)
 #else
 #define MTAEXPORT extern "C"
@@ -41,7 +41,7 @@ extern "C"
 #endif
 #else
 #define ANY_x86
-#ifdef _WIN32
+#if defined(_WIN32) || defined(WIN32) || defined(__WIN32__) || defined(_WIN64)
 #define WIN_x86
 #else
 #define LINUX_x86

@@ -1,2 +1,5 @@
 amx-deps/src/.___TMP
 **/*~
+amx/resources/plugins/*.dll
+amx/resources/plugins/*.so
+amx/resources/plugins/*.pdb

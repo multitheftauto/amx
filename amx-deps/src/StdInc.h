@@ -1,10 +1,10 @@
 #ifndef _STDINC_H
 #define _STDINC_H
 
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32) || defined(__WIN32__) || defined(_WIN64)
     #define WIN32_LEAN_AND_MEAN
 	#include <windows.h>
-#else
+#elif defined(LINUX) || defined(FREEBSD) || defined(__FreeBSD__) || defined(__OpenBSD__)
 	#include <dlfcn.h>
 #endif
 
