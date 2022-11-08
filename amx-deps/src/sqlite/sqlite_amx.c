@@ -40,7 +40,7 @@ static cell AMX_NATIVE_CALL n_open(AMX* amx, cell* params)
 
 	// Get the db filename
 	amx_StrParam(amx, params[1], szDBName);
-	
+
 	// ensure the name doesn't start with a '/' or '\\' on win32
 	if (szDBName[0] == '\\' || szDBName[0] == '/')
 	{
@@ -69,7 +69,7 @@ static cell AMX_NATIVE_CALL n_open(AMX* amx, cell* params)
 	}
 
 	// Create the pathname string
-	sprintf(szPathName, "scriptfiles/%s", szDBName);
+	sprintf(szPathName, "%s/resources/scriptfiles/%s", RESOURCE_PATH, szDBName);
 
 	// Open the database
 	errorCode = sqlite3_open(szPathName, &sqlite);
@@ -146,7 +146,7 @@ static cell AMX_NATIVE_CALL n_free_result(AMX* amx, cell* params)
 	SQLiteResult *result;
 
 	result = (SQLiteResult *)params[1];
-	
+
 	if (!result)
 	{
 		//logprintf(NATIVE_PREFIX "free_result() - Warning: Invalid result set\n");
@@ -155,7 +155,7 @@ static cell AMX_NATIVE_CALL n_free_result(AMX* amx, cell* params)
 
 	if (result->pResults)
 		sqlite3_free_table(result->pResults);
-	
+
 	if (result->szErrMsg)
 		sqlite3_free(result->szErrMsg);
 
@@ -171,7 +171,7 @@ static cell AMX_NATIVE_CALL n_num_rows(AMX* amx, cell* params)
 	SQLiteResult *result;
 
 	result = (SQLiteResult *)params[1];
-	
+
 	if (!result)
 	{
 		//logprintf(NATIVE_PREFIX "num_rows() - Warning: Invalid result set\n");
@@ -185,9 +185,9 @@ static cell AMX_NATIVE_CALL n_num_rows(AMX* amx, cell* params)
 static cell AMX_NATIVE_CALL n_next_row(AMX* amx, cell* params)
 {
 	SQLiteResult *result;
-	
+
 	result = (SQLiteResult *)params[1];
-	
+
 	if (!result)
 	{
 		//logprintf(NATIVE_PREFIX "next_row() - Warning: Invalid result set\n");
@@ -210,7 +210,7 @@ static cell AMX_NATIVE_CALL n_next_row(AMX* amx, cell* params)
 static cell AMX_NATIVE_CALL n_num_fields(AMX* amx, cell* params)
 {
 	SQLiteResult *result;
-	
+
 	result = (SQLiteResult *)params[1];
 
 	if (!result)
@@ -227,7 +227,7 @@ static cell AMX_NATIVE_CALL n_field_name(AMX* amx, cell* params)
 {
 	SQLiteResult *result;
 	int field;
-	
+
 	result = (SQLiteResult *)params[1];
 
 	if (!result)
@@ -254,7 +254,7 @@ static cell AMX_NATIVE_CALL n_get_field(AMX* amx, cell* params)
 {
 	SQLiteResult *result;
 	int field;
-	
+
 	result = (SQLiteResult *)params[1];
 
 	if (!result)
@@ -282,7 +282,7 @@ static cell AMX_NATIVE_CALL n_get_field_assoc(AMX* amx, cell* params)
 	SQLiteResult *result;
 	int field, i;
 	char *szFieldName;
-	
+
 	result = (SQLiteResult *)params[1];
 
 	if (!result)
