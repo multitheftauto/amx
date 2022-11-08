@@ -43,29 +43,20 @@ static cell AMX_NATIVE_CALL n_open(AMX* amx, cell* params)
 
 	// ensure the name doesn't start with a '/' or '\\' on win32
 	if (szDBName[0] == '\\' || szDBName[0] == '/')
-	{
-		//logprintf(NATIVE_PREFIX "open - Warning: Database name can not start with %c", szDBName[0]);
-		return 0;
-	}
+        return 0;
 
 	// ensure there are no ".." in dbname, and no :
 	for(i=1; szDBName[i]!=0; i++)
 	{
 		if (szDBName[i-1] == '.' && szDBName[i] == '.')
-		{
-			//logprintf(NATIVE_PREFIX "open - Warning: Database name can not contain '..'");
-			return 0;
-		}
+            return 0;
 	}
 
 	// ensure there are no : in the file
 	for(i=0; szDBName[i]!=0; i++)
 	{
 		if (szDBName[i] == ':')
-		{
-			//logprintf(NATIVE_PREFIX "open - Warning: Database name can not contain ':'");
-			return 0;
-		}
+            return 0;
 	}
 
 	// Create the pathname string
@@ -113,10 +104,7 @@ static cell AMX_NATIVE_CALL n_query(AMX* amx, cell* params)
 	sqlite = (sqlite3 *)params[1];
 
 	if (!sqlite)
-	{
-		//logprintf(NATIVE_PREFIX "query() - Warning: Invalid database handle provided.\n");
-		return 0;
-	}
+        return 0;
 
 	// Get the query
 	amx_StrParam(amx, params[2], szQuery);
@@ -148,10 +136,7 @@ static cell AMX_NATIVE_CALL n_free_result(AMX* amx, cell* params)
 	result = (SQLiteResult *)params[1];
 
 	if (!result)
-	{
-		//logprintf(NATIVE_PREFIX "free_result() - Warning: Invalid result set\n");
-		return 0;
-	}
+        return 0;
 
 	if (result->pResults)
 		sqlite3_free_table(result->pResults);
@@ -173,10 +158,7 @@ static cell AMX_NATIVE_CALL n_num_rows(AMX* amx, cell* params)
 	result = (SQLiteResult *)params[1];
 
 	if (!result)
-	{
-		//logprintf(NATIVE_PREFIX "num_rows() - Warning: Invalid result set\n");
-		return 0;
-	}
+        return 0;
 
 	return result->nRows;
 }
@@ -189,16 +171,11 @@ static cell AMX_NATIVE_CALL n_next_row(AMX* amx, cell* params)
 	result = (SQLiteResult *)params[1];
 
 	if (!result)
-	{
-		//logprintf(NATIVE_PREFIX "next_row() - Warning: Invalid result set\n");
-		return 0;
-	}
+        return 0;
 
 	// Are we on the last row?
 	if (result->nCurrentRow == (result->nRows - 1))
-	{
-		return 0;
-	}
+        return 0;
 
 	// Increment to the next row
 	result->nCurrentRow++;
@@ -214,10 +191,7 @@ static cell AMX_NATIVE_CALL n_num_fields(AMX* amx, cell* params)
 	result = (SQLiteResult *)params[1];
 
 	if (!result)
-	{
-		//logprintf(NATIVE_PREFIX "num_fields() - Warning: Invalid result set\n");
-		return 0;
-	}
+        return 0;
 
 	return result->nColumns;
 }
@@ -231,10 +205,7 @@ static cell AMX_NATIVE_CALL n_field_name(AMX* amx, cell* params)
 	result = (SQLiteResult *)params[1];
 
 	if (!result)
-	{
-		//logprintf(NATIVE_PREFIX "field_name() - invalid result set\n");
-		return 0;
-	}
+        return 0;
 
 	field = (int) params[2];
 	if (field < 0 || field >= result->nColumns)
@@ -258,10 +229,7 @@ static cell AMX_NATIVE_CALL n_get_field(AMX* amx, cell* params)
 	result = (SQLiteResult *)params[1];
 
 	if (!result)
-	{
-		//logprintf(NATIVE_PREFIX "get_field() - Warning: Invalid result set\n");
-		return 0;
-	}
+        return 0;
 
 	field = (int) params[2];
 	if (field < 0 || field >= result->nColumns)
@@ -286,10 +254,7 @@ static cell AMX_NATIVE_CALL n_get_field_assoc(AMX* amx, cell* params)
 	result = (SQLiteResult *)params[1];
 
 	if (!result)
-	{
-		//logprintf(NATIVE_PREFIX "get_field_assoc() - Warning: Invalid result set\n");
-		return 0;
-	}
+        return 0;
 
 	// Figure out the field index
 	amx_StrParam(amx, params[2], szFieldName);
