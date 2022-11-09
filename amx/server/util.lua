@@ -1063,10 +1063,10 @@ function notImplemented(native, additional)
 	if ShowUnimplementedErrors then
 		if native ~= nil then
 			if additional == '' or additional == nil then
-				outputDebugString('Sorry, but '..native..' is not implemented.')
+				outputDebugString('Sorry, but \''..native..'\' is not implemented.')
 				return;
 			else
-				outputDebugString('Sorry, but '..native..' is not implemented. More info: '.. additional..'.')
+				outputDebugString('Sorry, but \''..native..'\' is not implemented. More info: '.. additional..'.')
 				return;
 			end
 		end

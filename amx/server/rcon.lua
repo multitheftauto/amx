@@ -19,7 +19,7 @@ g_ServerVars = {
 	gamemode13 = '',
 	gamemode14 = '',
 	gamemode15 = '',
-	gamemodetext = '',
+	gamemodetext = 'Sorry, but \'gamemodetext\' is not implemented.',
 	gravity = {
 		get = function()
 			return tostring(getGravity())
@@ -31,7 +31,8 @@ g_ServerVars = {
 			end
 		end
 	},
-	hostname = { get = getServerName },
+    hostname = { get = getServerName },
+    language = 'Sorry, but \'language\' is not implemented.'
 	instagib = false,
 	lanmode = false,
 	mapname = { get = function() return getMapName() or '' end, set = setMapName },
@@ -42,7 +43,7 @@ g_ServerVars = {
 	plugins = get(getResourceName(getThisResource()) .. '.plugins') or '',
 	port = { get = getServerPort },
 	query = true,
-	rcon_password = '',
+	rcon_password = 'Sorry, but \'rcon_password\' is not implemented.',
 	timestamp = true,
 	version = amxVersionString(),
 	weather = {
@@ -278,62 +279,35 @@ g_RCONCommands = {
         return result
     end,
     sleep = function()
-        return 'Sorry, but the RCON Command \'sleep\' is not implemented.'
+        return 'Sorry, but \'sleep\' is not implemented.'
     end,
     say = function()
-        return 'Sorry, but the RCON Command \'say\' is not implemented.'
+        return 'Sorry, but \'say\' is not implemented.'
     end,
     tickrate = function()
-        return 'Sorry, but the RCON Command \'tickrate\' is not implemented.'
+        return 'Sorry, but \'tickrate\' is not implemented.'
     end,
     dynticks = function()
-        return 'Sorry, but the RCON Command \'dynticks\' is not implemented.'
-    end,
-    weather = function()
-        return 'Sorry, but the RCON Command \'weather\' is not implemented.'
-    end,
-    weburl = function()
-        return 'Sorry, but the RCON Command \'weburl\' is not implemented.'
-    end,
-    password = function()
-        return 'Sorry, but the RCON Command \'password\' is not implemented.'
-    end,
-    language = function()
-        return 'Sorry, but the RCON Command \'language\' is not implemented.'
-    end,
-    hostname = function()
-        return 'Sorry, but the RCON Command \'hostname\' is not implemented.'
+        return 'Sorry, but \'dynticks\' is not implemented.'
     end,
     messageslimit = function()
-        return 'Sorry, but the RCON Command \'messageslimit\' is not implemented.'
+        return 'Sorry, but \'messageslimit\' is not implemented.'
     end,
     playertimeout = function()
-        return 'Sorry, but the RCON Command \'playertimeout\' is not implemented.'
-    end,
-    mapname = function()
-        return 'Sorry, but the RCON Command \'mapname\' is not implemented.'
-    end,
-    gamemodetext = function()
-        return 'Sorry, but the RCON Command \'gamemodetext\' is not implemented.'
+        return 'Sorry, but \'playertimeout\' is not implemented.'
     end,
     rcon = function()
-        return 'Sorry, but the RCON Command \'rcon\' is not implemented.'
-    end,
-    worldtime = function()
-        return 'Sorry, but the RCON Command \'worldtime\' is not implemented.'
+        return 'Sorry, but \'rcon\' is not implemented.'
     end,
     messageholelimit = function()
-        return 'Sorry, but the RCON Command \'worldtime\' is not implemented.'
+        return 'Sorry, but \'worldtime\' is not implemented.'
     end,
     reloadbans = function()
-        return 'Sorry, but the RCON Command \'reloadbans\' is not implemented.'
+        return 'Sorry, but \'reloadbans\' is not implemented.'
     end,
     ackslimit = function()
-        return 'Sorry, but the RCON Command \'ackslimit\' is not implemented.'
+        return 'Sorry, but \'ackslimit\' is not implemented.'
     end,
-    rcon_password = function()
-        return 'Sorry, but the RCON Command \'rcon_password\' is not implemented.'
-    end
 }
 
 function doRCON(str, overrideReadOnly)
