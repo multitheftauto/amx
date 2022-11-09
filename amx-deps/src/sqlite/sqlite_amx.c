@@ -119,7 +119,6 @@ static cell AMX_NATIVE_CALL n_query(AMX* amx, cell* params)
 	// Check to make sure we succeeded
 	if (errorCode != SQLITE_OK)
 	{
-		//logprintf(NATIVE_PREFIX "query() - Warning: Query failed: %s\n", result->szErrMsg);
 		free(result);
 		return 0;
 	}
