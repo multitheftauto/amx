@@ -121,194 +121,181 @@ local function presentServerVar(k)
 	return result
 end
 
-local function cmdBan(id)
-	if not id then
-		return 'ban <playerid>'
-	end
-	id = tonumber(id)
-	if not id or not g_Players[id] then
-		return
-	end
-	local name = getPlayerName(g_Players[id].elem)
-	if banPlayer(g_Players[id].elem) then
-		return 'Added ' .. id .. ' (' .. name .. ') to the ban list'
-	else
-		return 'Failed to ban ' .. id .. ' (' .. name .. ')'
-	end
-end
-
-local function cmdBanIP(ip)
-	if not ip then
-		return 'banip <ip>'
-	end
-	if addBan(ip) then
-		return 'Added ' .. ip .. ' to the ban list'
-	else
-		return 'Failed to ban ' .. ip
-	end
-end
-
-local function cmdCmdList()
-	return table.concat(table.sort(table.keys(g_RCONCommands)), '\n')
-end
-
-local function cmdEcho(str)
-	print(str or '')
-end
-
-local function cmdExec(fname)
-	if not fname then
-		return 'exec <filename>'
-	end
-	return doRCONFromFile(fname) or ('exec: invalid file name ' .. fname)
-end
-
-local function cmdChangeMode(mode)
-	if not mode then
-		return 'changemode <modename>'
-	end
-	local newRes = getResourceFromName('amx-' .. mode)
-	if not newRes then
-		return 'No gamemode named ' .. mode
-	end
-	local amx = getRunningGameMode(mode)
-	if amx then
-		unloadAMX(amx)
-	end
-	startResource(newRes)
-end
-
-local function cmdGMX()
-	local mapcycler = getResourceFromName('mapcycler')
-	if not mapcycler then
-		return 'The mapcycler resource, which is required for amx mode cycling, is not installed'
-	end
-	if getResourceState(mapcycler) == 'running' then
-		restartResource(mapcycler)
-	else
-		startResource(mapcycler)
-	end
-end
-
-local function cmdGravity(grav)
-	grav = grav and tonumber(grav)
-	if not grav then
-		return 'gravity <grav>'
-	end
-	setGravity(grav)
-end
-
-local function cmdKick(id)
-	if not id then
-		return 'kick <id>'
-	end
-	id = tonumber(id)
-	if not id or not g_Players[id] then
-		return 'Invalid playerid'
-	end
-	local name = getPlayerName(g_Players[id].elem)
-	if kickPlayer(g_Players[id].elem) then
-		return 'Kicked ' .. name .. ' (' .. id .. ')'
-	else
-		return 'Failed to kick ' .. name .. ' (' .. id .. ')'
-	end
-end
-
-local function cmdLoadFS(fsname)
-	if not fsname then
-		return 'loadfs <fsname>'
-	end
-	local res = getResourceFromName('amx-fs-' .. fsname)
-	if not res then
-		return 'No such filterscript: ' .. fsname
-	end
-	startResource(res)
-end
-
-local function cmdLoadPlugin(pluginName)
-	if not pluginName then
-		return 'loadplugin <pluginname>'
-	end
-	if amxIsPluginLoaded(pluginName) then
-		return 'Plugin ' .. pluginName .. ' is already loaded'
-	end
-	if not amxLoadPlugin(pluginName) then
-		return '  Failed loading plugin ' .. pluginName .. '!'
-	end
-end
-
-local function cmdPlayers()
-	local result = ''
-	for id, data in pairs(g_Players) do
-		result = result .. ('%5d  %s\n'):format(id, getPlayerName(data.elem))
-	end
-	return result
-end
-
-local function cmdReloadFS(fsname)
-	if not fsname then
-		return 'reloadfs <fsname>'
-	end
-	local res = getResourceFromName('amx-fs-' .. fsname)
-	if not res then
-		return 'No such filterscript: ' .. fsname
-	end
-	restartResource(res)
-end
-
-local function cmdUnbanIP(ip)
-	if not ip then
-		return 'unbanip <ip>'
-	end
-	for banID, ban in ipairs(getBans()) do
-		if getBanIP(ban) == ip then
-			if removeBan(ban) then
-				return 'Removed ' .. ip .. ' from the ban list'
-			else
-				return 'Failed to unban ' .. ip
-			end
-		end
-	end
-	return 'Failed to unban ' .. ip
-end
-
-local function cmdUnloadFS(fsname)
-	if not fsname then
-		return 'unloadfs <fsname>'
-	end
-	local res = getResourceFromName('amx-fs-' .. fsname)
-	if not res then
-		return 'No such filterscript: ' .. fsname
-	end
-	stopResource(res)
-end
-
-local function cmdVarList()
-	local result = ''
-	local keys = table.sort(table.keys(g_ServerVars.shadow))
-	for i, k in ipairs(keys) do
-		result = result .. presentServerVar(k) .. '\n'
-	end
-	return result
-end
-
 g_RCONCommands = {
-	ban = cmdBan,
-	banip = cmdBanIP,
-	changemode = cmdChangeMode,
-	cmdlist = cmdCmdList,
-	echo = cmdEcho,
-	exec = cmdExec,
-	gravity = cmdGravity,
-	gmx = cmdGMX,
-	kick = cmdKick,
-	loadfs = cmdLoadFS,
-	loadplugin = cmdLoadPlugin,
-	players = cmdPlayers,
-	reloadfs = cmdReloadFS,
-	unbanip = cmdUnbanIP,
-	unloadfs = cmdUnloadFS,
-	varlist = cmdVarList
+	ban = function (ip)
+        if not ip then
+            return 'banip <ip>'
+        end
+        if addBan(ip) then
+            return 'Added ' .. ip .. ' to the ban list'
+        else
+            return 'Failed to ban ' .. ip
+        end
+    end,
+	banip = function (id)
+        if not id then
+            return 'ban <playerid>'
+        end
+        id = tonumber(id)
+        if not id or not g_Players[id] then
+            return
+        end
+        local name = getPlayerName(g_Players[id].elem)
+        if banPlayer(g_Players[id].elem) then
+            return 'Added ' .. id .. ' (' .. name .. ') to the ban list'
+        else
+            return 'Failed to ban ' .. id .. ' (' .. name .. ')'
+        end
+    end,
+	changemode = function (mode)
+        if not mode then
+            return 'changemode <modename>'
+        end
+        local newRes = getResourceFromName('amx-' .. mode)
+        if not newRes then
+            return 'No gamemode named ' .. mode
+        end
+        local amx = getRunningGameMode(mode)
+        if amx then
+            unloadAMX(amx)
+        end
+        startResource(newRes)
+    end,
+	cmdlist = function ()
+        return table.concat(table.sort(table.keys(g_RCONCommands)), '\n')
+    end,
+	echo = function (str)
+        print(str or '')
+    end,
+	exec = function (fname)
+        if not fname then
+            return 'exec <filename>'
+        end
+        return doRCONFromFile(fname) or ('exec: invalid file name ' .. fname)
+    end,
+	gravity = function (grav)
+        grav = grav and tonumber(grav)
+        if not grav then
+            return 'gravity <grav>'
+        end
+        setGravity(grav)
+    end,
+	gmx = function ()
+        local mapcycler = getResourceFromName('mapcycler')
+        if not mapcycler then
+            return 'The mapcycler resource, which is required for amx mode cycling, is not installed'
+        end
+        if getResourceState(mapcycler) == 'running' then
+            restartResource(mapcycler)
+        else
+            startResource(mapcycler)
+        end
+    end,
+	kick = function (id)
+        if not id then
+            return 'kick <id>'
+        end
+        id = tonumber(id)
+        if not id or not g_Players[id] then
+            return 'Invalid playerid'
+        end
+        local name = getPlayerName(g_Players[id].elem)
+        if kickPlayer(g_Players[id].elem) then
+            return 'Kicked ' .. name .. ' (' .. id .. ')'
+        else
+            return 'Failed to kick ' .. name .. ' (' .. id .. ')'
+        end
+    end,
+	loadfs = function (fsname)
+        if not fsname then
+            return 'loadfs <fsname>'
+        end
+        local res = getResourceFromName('amx-fs-' .. fsname)
+        if not res then
+            return 'No such filterscript: ' .. fsname
+        end
+        startResource(res)
+    end,
+	loadplugin = function (pluginName)
+        if not pluginName then
+            return 'loadplugin <pluginname>'
+        end
+        if amxIsPluginLoaded(pluginName) then
+            return 'Plugin ' .. pluginName .. ' is already loaded'
+        end
+        if not amxLoadPlugin(pluginName) then
+            return '  Failed loading plugin ' .. pluginName .. '!'
+        end
+    end,
+	players = function ()
+        local result = ''
+        for id, data in pairs(g_Players) do
+            result = result .. ('%5d  %s\n'):format(id, getPlayerName(data.elem))
+        end
+        return result
+    end,
+	reloadfs = function (fsname)
+        if not fsname then
+            return 'reloadfs <fsname>'
+        end
+        local res = getResourceFromName('amx-fs-' .. fsname)
+        if not res then
+            return 'No such filterscript: ' .. fsname
+        end
+        restartResource(res)
+    end,
+	unbanip = function (ip)
+        if not ip then
+            return 'unbanip <ip>'
+        end
+        for banID, ban in ipairs(getBans()) do
+            if getBanIP(ban) == ip then
+                if removeBan(ban) then
+                    return 'Removed ' .. ip .. ' from the ban list'
+                else
+                    return 'Failed to unban ' .. ip
+                end
+            end
+        end
+        return 'Failed to unban ' .. ip
+    end,
+	unloadfs = function (fsname)
+        if not fsname then
+            return 'unloadfs <fsname>'
+        end
+        local res = getResourceFromName('amx-fs-' .. fsname)
+        if not res then
+            return 'No such filterscript: ' .. fsname
+        end
+        stopResource(res)
+    end,
+    varlist = function ()
+        local result = ''
+        local keys = table.sort(table.keys(g_ServerVars.shadow))
+        for i, k in ipairs(keys) do
+            result = result .. presentServerVar(k) .. '\n'
+        end
+        return result
+    end,
+    sleep = cmdSleep,
+    say = cmdSay,
+    tickrate = cmdTickrate,
+    dynticks = cmdDynticks,
+    weather = cmdWeather,
+    weburl = cmdWeburl,
+    password = cmdPassword,
+    language = cmdLanguage,
+    hostname = cmdHostname,
+    messageslimit = cmdMessagesL,
+    playertimeout = cmdPlayertimeout,
+    mapname = cmdMapname,
+    gamemodetext = cmdgmtext,
+    rcon = cmdRcon,
+    worldtime = cmdWorldtime,
+    messageholelimit = cmdMessageHL,
+    reloadbans = cmdReloadbans,
+    ackslimit = cmdAckslimit,
+    rcon_password = cmdRconPass
 }
 
 function doRCON(str, overrideReadOnly)
