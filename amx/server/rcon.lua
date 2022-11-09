@@ -277,25 +277,63 @@ g_RCONCommands = {
         end
         return result
     end,
-    sleep = cmdSleep,
-    say = cmdSay,
-    tickrate = cmdTickrate,
-    dynticks = cmdDynticks,
-    weather = cmdWeather,
-    weburl = cmdWeburl,
-    password = cmdPassword,
-    language = cmdLanguage,
-    hostname = cmdHostname,
-    messageslimit = cmdMessagesL,
-    playertimeout = cmdPlayertimeout,
-    mapname = cmdMapname,
-    gamemodetext = cmdgmtext,
-    rcon = cmdRcon,
-    worldtime = cmdWorldtime,
-    messageholelimit = cmdMessageHL,
-    reloadbans = cmdReloadbans,
-    ackslimit = cmdAckslimit,
-    rcon_password = cmdRconPass
+    sleep = function()
+        return 'Sorry, but the RCON Command \'sleep\' is not implemented.'
+    end,
+    say = function()
+        return 'Sorry, but the RCON Command \'say\' is not implemented.'
+    end,
+    tickrate = function()
+        return 'Sorry, but the RCON Command \'tickrate\' is not implemented.'
+    end,
+    dynticks = function()
+        return 'Sorry, but the RCON Command \'dynticks\' is not implemented.'
+    end,
+    weather = function()
+        return 'Sorry, but the RCON Command \'weather\' is not implemented.'
+    end,
+    weburl = function()
+        return 'Sorry, but the RCON Command \'weburl\' is not implemented.'
+    end,
+    password = function()
+        return 'Sorry, but the RCON Command \'password\' is not implemented.'
+    end,
+    language = function()
+        return 'Sorry, but the RCON Command \'language\' is not implemented.'
+    end,
+    hostname = function()
+        return 'Sorry, but the RCON Command \'hostname\' is not implemented.'
+    end,
+    messageslimit = function()
+        return 'Sorry, but the RCON Command \'messageslimit\' is not implemented.'
+    end,
+    playertimeout = function()
+        return 'Sorry, but the RCON Command \'playertimeout\' is not implemented.'
+    end,
+    mapname = function()
+        return 'Sorry, but the RCON Command \'mapname\' is not implemented.'
+    end,
+    gamemodetext = function()
+        return 'Sorry, but the RCON Command \'gamemodetext\' is not implemented.'
+    end,
+    rcon = function()
+        return 'Sorry, but the RCON Command \'rcon\' is not implemented.'
+    end,
+    worldtime = function()
+        return 'Sorry, but the RCON Command \'worldtime\' is not implemented.'
+    end,
+    messageholelimit = function()
+        return 'Sorry, but the RCON Command \'worldtime\' is not implemented.'
+    end,
+    reloadbans = function()
+        return 'Sorry, but the RCON Command \'reloadbans\' is not implemented.'
+    end,
+    ackslimit = function()
+        return 'Sorry, but the RCON Command \'ackslimit\' is not implemented.'
+    end,
+    rcon_password = function()
+        return 'Sorry, but the RCON Command \'rcon_password\' is not implemented.'
+    end
 }
 
 function doRCON(str, overrideReadOnly)
