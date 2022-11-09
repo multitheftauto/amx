@@ -87,7 +87,7 @@ BEGIN
             VALUE "LegalCopyright", "Copyright (C) 2008"
             VALUE "OriginalFilename", "pawn.dll"
             VALUE "ProductName", "AMX compatibility suite"
-            VALUE "ProductVersion", "1, 0, 0, 0"
+            VALUE "ProductVersion", "1, 0, 0, 1"
         END
     END
     BLOCK "VarFileInfo"

@@ -28,11 +28,11 @@ solution "pawn"
 		kind "SharedLib"
 		targetname "pawn"
 
-		includedirs { "include" }
+		includedirs { "lua","sqlite","sqlite","amx" }
 		libdirs { "lib" }
 
 		vpaths {
-			["Headers/*"] = {"*.h", "include/*.h", "linux/*.h"},
+			["Headers/*"] = {"*.h", "**/*.h"},
 			["Sources/*"] = {"**.cpp"},
 			["Resources/*"] = "pawn.rc",
 
@@ -43,7 +43,7 @@ solution "pawn"
 			"premake5.lua",
 			"**.cpp",
 			"*.h",
-			"include/*.h",
+			"**/*.h",
 		}
 
 		filter "system:windows"
