@@ -9,8 +9,8 @@ static cell AMX_NATIVE_CALL n_SHA256_PassHash(AMX *amx, cell *params)
 	amx_StrParam(amx, params[1], szPassword);
 	amx_StrParam(amx, params[2], szSalt);
 
-	if(!szPassword) szPassword = "";
-	if(!szSalt) szSalt = "";
+	if(!szPassword || !szPassword)
+        return 0;
 
 	char szResult[65];
 	sha256(szPassword, szSalt, szResult, 65);
