@@ -60,10 +60,6 @@ extern "C"
     #include "natives/misc.c"
 	int AMXEXPORT amx_sampMiscInit(AMX *amx);
 	int AMXEXPORT amx_sampMiscCleanup(AMX *amx);
-
-	#include "natives/maths.c"
-	int AMXEXPORT amx_sampMathsInit(AMX *amx);
-	int AMXEXPORT amx_sampMathsCleanup(AMX *amx);
 }
 
 #include "CFunctions.h"

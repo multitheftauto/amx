@@ -218,7 +218,6 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 	amx_FileInit(amx);
 	amx_sampDbInit(amx);
     amx_sampMiscInit(amx);
-    amx_sampMathsInit(amx);
 
 	err = amx_SAMPInit(amx);
 	for (const auto& plugin : loadedPlugins) {
@@ -245,7 +244,6 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 		amx_FloatCleanup(amx);
 		amx_ConsoleCleanup(amx);
         amx_sampMiscCleanup(amx);
-		amx_sampMathsCleanup(amx);
 		delete amx;
 		lua_pushboolean(luaVM, 0);
 		return 1;
@@ -445,8 +443,7 @@ int CFunctions::amxUnload(lua_State *luaVM) {
 	amx_FloatCleanup(amx);
 	amx_ConsoleCleanup(amx);
     amx_sampMiscCleanup(amx);
-    amx_sampMathsCleanup(amx);
-    
+
 	lua_getfield(luaVM, LUA_REGISTRYINDEX, "amx");
 	lua_pushnil(luaVM);
 	lua_setfield(luaVM, -2, loadedAMXs[amx].resourceName.c_str());
