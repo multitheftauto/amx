@@ -204,7 +204,7 @@ end
 -- Security
 
 function SHA256_PassHash(amx, pass, salt, ret_hash, ret_hash_len)
-	local secret = hash('sha256', pass .. '' .. salt) -- who is it guy which writes salt after pass?
+	local secret = hash('sha256', pass, { key: salt })
 	writeMemString(amx, ret_hash, string.upper(secret))
 end
 

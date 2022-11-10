@@ -270,9 +270,4 @@ extern "C" int set_amxstring(AMX *amx,cell amx_addr,const char *source,int max)
   return dest-start;
 }
 
-extern "C" float VectorSize(VECTOR* p)
-{
-	return (float)sqrt((p->X * p->X) + (p->Y * p->Y) + (p->Z * p->Z));
-}
-
 #define CHECK_PARAMS(num,func) if (params[0] != (num * sizeof(cell))) { logprintf("%s: Bad parameter count (Count is %d, Should be %d)", func, params[0] / sizeof(cell), num); return 0; }
