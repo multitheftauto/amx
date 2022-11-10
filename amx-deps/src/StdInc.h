@@ -21,6 +21,7 @@
 #include "Common.h"
 #include "lua/ILuaModuleManager.h"
 #include "sqlite/sqlite3.h"
+#include "sha256/sha256.h"
 
 extern "C"
 {
@@ -48,6 +49,8 @@ extern "C"
     #include "lua/lualib.h"
     #include "lua/lauxlib.h"
 	#include "lua/lobject.h"
+
+    #include "misc.c"
 };
 
 #include "ml_base.h"

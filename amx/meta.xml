@@ -50,6 +50,7 @@
     <file src="client/logo_small.png" download="true" />
     <file src="client/closebtn.png" download="true" />
     <file src="client/closebtn_hover.png" download="true" />
+    <file src="client/arial.ttf" download="true" />
 
     <!-- <include resource="amxscoreboard" /> -->
 
