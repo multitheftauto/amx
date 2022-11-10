@@ -786,9 +786,6 @@ g_SAMPSyscallPrototypes = {
 	SetActorPos = {'y', 'f', 'f', 'f'},
 	SetActorVirtualWorld = {'y', 'i'},
 
-	-- security
-	SHA256_PassHash = {'s', 's', 'r', 'i'},
-
 	-- siren
 	GetVehicleParamsSirenState = {'v'},
 

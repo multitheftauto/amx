@@ -203,11 +203,6 @@ end
 
 -- Security
 
-function SHA256_PassHash(amx, pass, salt, ret_hash, ret_hash_len)
-	local secret = hash('sha256', pass, { key: salt })
-	writeMemString(amx, ret_hash, string.upper(secret))
-end
-
 function SetSVarInt(amx)
 	notImplemented('SetSVarInt')
 	return false
@@ -397,7 +392,7 @@ function GetWeaponName(amx, weaponID, buf, len)
 end
 
 function EnableTirePopping(amx, enable)
-
+	deprecated('EnableTirePopping', '0.3d')
 end
 
 function EnableVehicleFriendlyFire(amx)
