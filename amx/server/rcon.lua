@@ -46,7 +46,9 @@ g_ServerVars = {
 		end
 	},
     hostname = {
-        get = getServerName
+        get = function ()
+            return getServerName() or ''
+        end
     },
     language = 'Sorry, but \'language\' is not implemented.'
 	-- instagib = false,
@@ -67,7 +69,9 @@ g_ServerVars = {
         end
     },
 	maxplayers = {
-        get = getMaxPlayers
+        get = function()
+            return getMaxPlayers() or 0
+        end
     },
 	password = {
         get = function()
@@ -80,11 +84,13 @@ g_ServerVars = {
     },
 	plugins = get(getResourceName(getThisResource()) .. '.plugins') or '',
 	port = {
-        get = getServerPort
+        get = function()
+            return getServerPort() or 0
+        end
     },
 	query = true,
 	rcon_password = {
-        get: function ()
+        get: function()
             return get(getResourceName(getThisResource()) .. '.rcon_password') or 'changeme',
         end,
         set = function (pass)
