@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "../amx/amx.h"
-#include "sqlite3.h"
+#include "../sqlite/sqlite3.h"
 
 //--------------------------------------------------------------------------------------
 
@@ -22,6 +22,7 @@ typedef struct _SQLiteResult
 // native SQLiteDB:sqlite_open(name[]);
 static cell AMX_NATIVE_CALL n_open(AMX* amx, cell* params)
 {
+    CHECK_PARAMS(1, "sqlite_open");
 	char *szDBName, szPathName[260];
 	int errorCode, i;
 	sqlite3 *sqlite;
@@ -65,6 +66,7 @@ static cell AMX_NATIVE_CALL n_open(AMX* amx, cell* params)
 // native sqlite_close(SQLiteDB:db);
 static cell AMX_NATIVE_CALL n_close(AMX* amx, cell* params)
 {
+    CHECK_PARAMS(1, "sqlite_close");
 	int errorCode;
 	sqlite3 *sqlite;
 
@@ -83,15 +85,13 @@ static cell AMX_NATIVE_CALL n_close(AMX* amx, cell* params)
 // native SQLiteResult:sqlite_query(SQLiteDB:db, query[]);
 static cell AMX_NATIVE_CALL n_query(AMX* amx, cell* params)
 {
+    CHECK_PARAMS(2, "sqlite_query");
 	char *szQuery;
 	SQLiteResult *result;
 	int errorCode;
 	sqlite3 *sqlite;
 
 	sqlite = (sqlite3 *)params[1];
-
-	if (!sqlite)
-        return 0;
 
 	// Get the query
 	amx_StrParam(amx, params[2], szQuery);
@@ -117,12 +117,10 @@ static cell AMX_NATIVE_CALL n_query(AMX* amx, cell* params)
 // native sqlite_free_result(SQLiteResult:result)
 static cell AMX_NATIVE_CALL n_free_result(AMX* amx, cell* params)
 {
+    CHECK_PARAMS(1, "sqlite_free_result");
 	SQLiteResult *result;
 
 	result = (SQLiteResult *)params[1];
-
-	if (!result)
-        return 0;
 
 	if (result->pResults)
 		sqlite3_free_table(result->pResults);
@@ -139,12 +137,10 @@ static cell AMX_NATIVE_CALL n_free_result(AMX* amx, cell* params)
 // native sqlite_num_rows(SQLiteResult:result)
 static cell AMX_NATIVE_CALL n_num_rows(AMX* amx, cell* params)
 {
+    CHECK_PARAMS(1, "sqlite_num_rows");
 	SQLiteResult *result;
 
 	result = (SQLiteResult *)params[1];
-
-	if (!result)
-        return 0;
 
 	return result->nRows;
 }
@@ -152,12 +148,10 @@ static cell AMX_NATIVE_CALL n_num_rows(AMX* amx, cell* params)
 // native sqlite_next_row(SQLiteResult:result)
 static cell AMX_NATIVE_CALL n_next_row(AMX* amx, cell* params)
 {
+    CHECK_PARAMS(1, "sqlite_next_row");
 	SQLiteResult *result;
 
 	result = (SQLiteResult *)params[1];
-
-	if (!result)
-        return 0;
 
 	// Are we on the last row?
 	if (result->nCurrentRow == (result->nRows - 1))
@@ -172,12 +166,10 @@ static cell AMX_NATIVE_CALL n_next_row(AMX* amx, cell* params)
 // native sqlite_num_fields(SQLiteResult:result)
 static cell AMX_NATIVE_CALL n_num_fields(AMX* amx, cell* params)
 {
+    CHECK_PARAMS(1, "sqlite_num_fields");
 	SQLiteResult *result;
 
 	result = (SQLiteResult *)params[1];
-
-	if (!result)
-        return 0;
 
 	return result->nColumns;
 }
@@ -185,13 +177,11 @@ static cell AMX_NATIVE_CALL n_num_fields(AMX* amx, cell* params)
 // native sqlite_field_name(SQLiteResult:result, field, fieldname[], maxlength = sizeof fieldname );
 static cell AMX_NATIVE_CALL n_field_name(AMX* amx, cell* params)
 {
+    CHECK_PARAMS(4, "sqlite_field_name");
 	SQLiteResult *result;
 	int field;
 
 	result = (SQLiteResult *)params[1];
-
-	if (!result)
-        return 0;
 
 	field = (int) params[2];
 	if (field < 0 || field >= result->nColumns)
@@ -209,13 +199,11 @@ static cell AMX_NATIVE_CALL n_field_name(AMX* amx, cell* params)
 // native sqlite_get_field(SQLiteResult:result, field, fieldvalue[], maxlength = sizeof fieldvalue );
 static cell AMX_NATIVE_CALL n_get_field(AMX* amx, cell* params)
 {
+    CHECK_PARAMS(4, "sqlite_get_field");
 	SQLiteResult *result;
 	int field;
 
 	result = (SQLiteResult *)params[1];
-
-	if (!result)
-        return 0;
 
 	field = (int) params[2];
 	if (field < 0 || field >= result->nColumns)
@@ -233,14 +221,12 @@ static cell AMX_NATIVE_CALL n_get_field(AMX* amx, cell* params)
 // native sqlite_get_field_assoc(SQLiteResult:result, const field[], fieldvalue[], maxlength = sizeof fieldvalue );
 static cell AMX_NATIVE_CALL n_get_field_assoc(AMX* amx, cell* params)
 {
+    CHECK_PARAMS(4, "sqlite_get_field_assoc");
 	SQLiteResult *result;
 	int field, i;
 	char *szFieldName;
 
 	result = (SQLiteResult *)params[1];
-
-	if (!result)
-        return 0;
 
 	// Figure out the field index
 	amx_StrParam(amx, params[2], szFieldName);
