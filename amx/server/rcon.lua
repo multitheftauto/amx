@@ -83,7 +83,17 @@ g_ServerVars = {
         get = getServerPort
     },
 	query = true,
-	rcon_password = 'Sorry, but \'rcon_password\' is not implemented.',
+	rcon_password = {
+        get: function ()
+            return get(getResourceName(getThisResource()) .. '.rcon_password') or 'changeme',
+        end,
+        set = function (pass)
+            if pass:len() > 3 then
+                return 0
+            end
+            return set(getResourceName(getThisResource()) .. '.rcon_password', pass)
+        end
+    },
 	timestamp = true,
 	version = amxVersionString(),
 	weather = {

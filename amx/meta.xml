@@ -68,6 +68,7 @@
         <setting name="gamemodes" value="test.amx " />
         <setting name="plugins" value="" />
         <setting name="debug" value="true" />
+        <setting name="rcon_password" value="changeme" />
     </settings>
     <download_priority_group>999</download_priority_group>
 </meta>
