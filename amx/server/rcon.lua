@@ -49,7 +49,7 @@ g_ServerVars = {
         get = getServerName
     },
     language = 'Sorry, but \'language\' is not implemented.'
-	instagib = false,
+	-- instagib = false,
 	lanmode = false,
 	mapname = {
         get = function()
@@ -69,8 +69,6 @@ g_ServerVars = {
 	maxplayers = {
         get = getMaxPlayers
     },
-	myriad = false,
-	nosign = '',
 	password = {
         get = function()
             return getServerPassword() or ''
