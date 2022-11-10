@@ -19,7 +19,21 @@ g_ServerVars = {
 	gamemode13 = '',
 	gamemode14 = '',
 	gamemode15 = '',
-	gamemodetext = 'Sorry, but \'gamemodetext\' is not implemented.',
+	gamemodetext = {
+        get = function()
+            return getGameType() or ''
+        end,
+        set = function(gmN)
+            gmN = gmN:len() >= 1 and gmN or nil
+            if gmN == nil then
+                return 0
+            end
+            if gmN:len() > 30 then
+                return setGameType(gmN:sub(1, 30))
+            end
+            return setGameType(gmN)
+        end
+    },
 	gravity = {
 		get = function()
 			return tostring(getGravity())
@@ -41,7 +55,16 @@ g_ServerVars = {
         get = function()
             return getMapName() or ''
         end,
-        set = setMapName
+        set = function(mapN)
+            mapN = mapN:len() >= 1 and mapN or nil
+            if mapN == nil then
+                return 0
+            end
+            if mapN:len() > 30 then
+                return setMapName(mapN:sub(1, 30))
+            end
+            return setMapName(mapN)
+        end
     },
 	maxplayers = {
         get = getMaxPlayers
@@ -51,6 +74,10 @@ g_ServerVars = {
 	password = {
         get = function()
             return getServerPassword() or ''
+        end,
+        set = function(pass)
+            pass = pass:len() >= 3 and pass or nil
+            return setServerPassword(pass)
         end
     },
 	plugins = get(getResourceName(getThisResource()) .. '.plugins') or '',
@@ -247,7 +274,7 @@ g_RCONCommands = {
 	players = function ()
         local result = ''
         for id, data in pairs(g_Players) do
-            result = result .. ('%5d  %s\n'):format(id, getPlayerName(data.elem))
+            result = result .. ('%s(%5d)|Ping:%d|IP:%s\n'):format(getPlayerName(data.elem), id, getPlayerPing(data.elem), getPlayerIP(data.elem)
         end
         return result
     end,
