@@ -139,17 +139,17 @@ local function presentServerVar(k)
 end
 
 g_RCONCommands = {
-	ban = function (ip)
+	banip = function (ip)
         if not ip then
             return 'banip <ip>'
         end
         if addBan(ip) then
-            return 'Added ' .. ip .. ' to the ban list'
+            return 'IP ' .. ip .. ' has been banned.'
         else
             return 'Failed to ban ' .. ip
         end
     end,
-	banip = function (id)
+	ban = function (id)
         if not id then
             return 'ban <playerid>'
         end
@@ -159,7 +159,7 @@ g_RCONCommands = {
         end
         local name = getPlayerName(g_Players[id].elem)
         if banPlayer(g_Players[id].elem) then
-            return 'Added ' .. id .. ' (' .. name .. ') to the ban list'
+            return name .. ' < ' .. id .. '> has been banned.'
         else
             return 'Failed to ban ' .. id .. ' (' .. name .. ')'
         end
@@ -188,7 +188,7 @@ g_RCONCommands = {
         if not fname then
             return 'exec <filename>'
         end
-        return doRCONFromFile(fname) or ('exec: invalid file name ' .. fname)
+        return doRCONFromFile(fname) or ('Unable to exec file \'' .. fname .. '\'')
     end,
 	gravity = function (grav)
         grav = grav and tonumber(grav)
@@ -218,7 +218,7 @@ g_RCONCommands = {
         end
         local name = getPlayerName(g_Players[id].elem)
         if kickPlayer(g_Players[id].elem) then
-            return 'Kicked ' .. name .. ' (' .. id .. ')'
+            return name .. ' <' .. id .. '> has been kicked.'
         else
             return 'Failed to kick ' .. name .. ' (' .. id .. ')'
         end
@@ -297,7 +297,13 @@ g_RCONCommands = {
     sleep = function()
         return 'Sorry, but \'sleep\' is not implemented.'
     end,
-    say = function()
+    say = function(msg)
+        if not msg then
+            return 'say <message>'
+        end
+        for i,player in ipairs(getElementsByType("player")) do
+            outputChatBox("* Admin: " .. msg, player, 0, 0, 170)
+        end
         return 'Sorry, but \'say\' is not implemented.'
     end,
     tickrate = function()
