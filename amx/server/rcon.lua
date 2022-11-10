@@ -31,17 +31,32 @@ g_ServerVars = {
 			end
 		end
 	},
-    hostname = { get = getServerName },
+    hostname = {
+        get = getServerName
+    },
     language = 'Sorry, but \'language\' is not implemented.'
 	instagib = false,
 	lanmode = false,
-	mapname = { get = function() return getMapName() or '' end, set = setMapName },
-	maxplayers = { get = getMaxPlayers },
+	mapname = {
+        get = function()
+            return getMapName() or ''
+        end,
+        set = setMapName
+    },
+	maxplayers = {
+        get = getMaxPlayers
+    },
 	myriad = false,
 	nosign = '',
-	password = { get = function() return getServerPassword() or '' end },
+	password = {
+        get = function()
+            return getServerPassword() or ''
+        end
+    },
 	plugins = get(getResourceName(getThisResource()) .. '.plugins') or '',
-	port = { get = getServerPort },
+	port = {
+        get = getServerPort
+    },
 	query = true,
 	rcon_password = 'Sorry, but \'rcon_password\' is not implemented.',
 	timestamp = true,
@@ -69,7 +84,8 @@ g_ServerVars = {
 				setTime(tonumber(h), tonumber(m))
 			end
 		end
-	}
+	},
+    artwork = true
 }
 
 local readOnlyVars = table.create({ 'announce', 'anticheat', 'bind', 'filterscripts', 'hostname', 'maxplayers', 'nosign',
