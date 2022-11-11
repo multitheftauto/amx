@@ -196,7 +196,7 @@ addEventHandler('onResourceStart', resourceRoot,
 			gamemodes = gamemodes:split()
 			gamemodesCount = 0
 			for i, gamemode in ipairs(gamemodes) do
-				if filterscriptsCount < MAX_GAMEMODES then
+                if gamemodesCount < MAX_GAMEMODES then
 					if loadAMX(gamemode, true) then
 						gamemodesCount = gamemodesCount + 1
 					end
@@ -220,7 +220,12 @@ addEventHandler('onResourceStart', resourceRoot,
 				end
 			end
             outputDebugString("  Loaded " .. filterscriptsCount .. " filterscripts.")
-		end
+        end
+
+        if get(getResourceName(getThisResource()) .. '.rcon_password') == 'changeme' then
+            outputDebugString('Error: Your password must be changed from the default password, please change it.', 1)
+            stopResource(getThisResource())
+        end
 
 		-- TODO(q): this needs to be added back later
 		-- exports.amxscoreboard:addScoreboardColumn('Score')

@@ -12,87 +12,103 @@ g_ServerVars = {
 	filterscripts = get(getResourceName(getThisResource()) .. '.filterscripts') or '',
 	gamemode0 = {
         get = function()
-            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[1]
+            gamemodes = get(getResourceName(getThisResource()) .. '.gamemodes')
+            return gamemodes and gamemodes:split()[1] or ''
         end
     },
 	gamemode1 = {
         get = function()
-            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[2]
+            gamemodes = get(getResourceName(getThisResource()) .. '.gamemodes')
+            return gamemodes and gamemodes:split()[2] or ''
         end
     },
 	gamemode2 = {
         get = function()
-            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[3]
+            gamemodes = get(getResourceName(getThisResource()) .. '.gamemodes')
+            return gamemodes and gamemodes:split()[3] or ''
         end
     },
 	gamemode3 = {
         get = function()
-            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[4]
+            gamemodes = get(getResourceName(getThisResource()) .. '.gamemodes')
+            return gamemodes and gamemodes:split()[4] or ''
         end
     },
 	gamemode4 = {
         get = function()
-            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[5]
+            gamemodes = get(getResourceName(getThisResource()) .. '.gamemodes')
+            return gamemodes and gamemodes:split()[5] or ''
         end
     },
 	gamemode5 = {
         get = function()
-            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[6]
+            gamemodes = get(getResourceName(getThisResource()) .. '.gamemodes')
+            return gamemodes and gamemodes:split()[6] or ''
         end
     },
 	gamemode6 = {
         get = function()
-            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[7]
+            gamemodes = get(getResourceName(getThisResource()) .. '.gamemodes')
+            return gamemodes and gamemodes:split()[7] or ''
         end
     },
 	gamemode7 = {
         get = function()
-            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[8]
+            gamemodes = get(getResourceName(getThisResource()) .. '.gamemodes')
+            return gamemodes and gamemodes:split()[8] or ''
         end
     },
 	gamemode8 = {
         get = function()
-            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[9]
+            gamemodes = get(getResourceName(getThisResource()) .. '.gamemodes')
+            return gamemodes and gamemodes:split()[9] or ''
         end
     },
 	gamemode9 = {
         get = function()
-            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[10]
+            gamemodes = get(getResourceName(getThisResource()) .. '.gamemodes')
+            return gamemodes and gamemodes:split()[10] or ''
         end
     },
 	gamemode10 = {
         get = function()
-            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[11]
+            gamemodes = get(getResourceName(getThisResource()) .. '.gamemodes')
+            return gamemodes and gamemodes:split()[11] or ''
         end
     },
 	gamemode11 = {
         get = function()
-            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[12]
+            gamemodes = get(getResourceName(getThisResource()) .. '.gamemodes')
+            return gamemodes and gamemodes:split()[12] or ''
         end
     },
 	gamemode12 = {
         get = function()
-            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[13]
+            gamemodes = get(getResourceName(getThisResource()) .. '.gamemodes')
+            return gamemodes and gamemodes:split()[13] or ''
         end
     },
 	gamemode13 = {
         get = function()
-            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[14]
+            gamemodes = get(getResourceName(getThisResource()) .. '.gamemodes')
+            return gamemodes and gamemodes:split()[14] or ''
         end
     },
 	gamemode14 = {
         get = function()
-            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[15]
+            gamemodes = get(getResourceName(getThisResource()) .. '.gamemodes')
+            return gamemodes and gamemodes:split()[15] or ''
         end
     },
 	gamemode15 = {
         get = function()
-            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[16]
+            gamemodes = get(getResourceName(getThisResource()) .. '.gamemodes')
+            return gamemodes and gamemodes:split()[16] or ''
         end
     },
 	gamemodetext = {
         get = function()
-            return getGameType() or ''
+            return getGameType() or 'Unknown'
         end,
         set = function(gmN)
             gmN = gmN:len() >= 1 and gmN or nil
@@ -118,7 +134,8 @@ g_ServerVars = {
 	},
     hostname = {
         get = function ()
-            return getServerName() or ''
+            hostN = getServerName() or 'Multi theft Auto Server'
+            return hostN:len() > 50 and hostN:sub(1, 50) or hostN
         end
     },
     language = {
@@ -137,7 +154,7 @@ g_ServerVars = {
     },
 	mapname = {
         get = function()
-            return getMapName() or ''
+            return getMapName() or 'San Andreas'
         end,
         set = function(mapN)
             mapN = mapN:len() >= 1 and mapN or nil
@@ -164,7 +181,11 @@ g_ServerVars = {
             return setServerPassword(pass)
         end
     },
-	plugins = get(getResourceName(getThisResource()) .. '.plugins') or '',
+	plugins = {
+        get = function ()
+            return get(getResourceName(getThisResource()) .. '.plugins') or ''
+        end
+    },
 	port = {
         get = function()
             return getServerConfigSetting("serverport") or 0
