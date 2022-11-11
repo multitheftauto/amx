@@ -312,15 +312,18 @@ g_RCONCommands = {
         if not mode then
             return 'changemode <modename>'
         end
-        local newRes = getResourceFromName('amx-' .. mode)
-        if not newRes then
-            return 'No gamemode named ' .. mode
+        for name, amx in pairs(g_LoadedAMXs) do
+            if amx.type == 'gamemode' then
+                if amx.name == mode then
+                    return 'gamemode \'' .. mode .. '\' is already loded!'
+                else
+                    unloadAMX(amx)
+                    if not loadAMX(mode .. '.amx', true) then
+                        return 'Unable to load gamemode \'' .. mode .. '\''
+                    end
+                end
+            end
         end
-        local amx = getRunningGameMode(mode)
-        if amx then
-            unloadAMX(amx)
-        end
-        startResource(newRes)
     end,
 	cmdlist = function ()
         return table.concat(table.sort(table.keys(g_RCONCommands)), '\n')
@@ -469,7 +472,11 @@ g_RCONCommands = {
         return 'Sorry, but \'worldtime\' is not implemented.'
     end,
     reloadbans = function()
-        return 'Sorry, but \'reloadbans\' is not implemented.'
+        if (reloadBans()) then
+            return 'Bans has been reloaded successfully.'
+        else
+            return 'Failed to Reload Bans.'
+        end
     end,
     ackslimit = function()
         return 'Sorry, but \'ackslimit\' is not implemented.'

@@ -201,7 +201,8 @@ addEventHandler('onResourceStart', resourceRoot,
 						gamemodesCount = gamemodesCount + 1
 					end
 				else
-					outputDebugString('  Gamemodes Limit is already reached. Failed to load ' .. gamemode .. '.amx"', 1)
+                    outputDebugString('  Gamemodes Limit is already reached. Failed to load ' .. gamemode .. '.amx"', 1)
+                    break
 				end
 			end
 		end
@@ -217,6 +218,7 @@ addEventHandler('onResourceStart', resourceRoot,
 					end
 				else
 					outputDebugString('  Filterscripts Limit is already reached. Failed to load ' .. filterscript .. '.amx"', 1)
+                    break
 				end
 			end
             outputDebugString("  Loaded " .. filterscriptsCount .. " filterscripts.")
@@ -231,21 +233,6 @@ addEventHandler('onResourceStart', resourceRoot,
 		-- exports.amxscoreboard:addScoreboardColumn('Score')
 	end,
 	false
-)
-
-addEventHandler('onResourceStop', root,
-	function(res)
-		local amxs = getResourceAMXFiles(res)
-		if not amxs then
-			return
-		end
-		for i, amxfile in ipairs(amxs) do
-			local amx = g_LoadedAMXs[amxfile:match('(.*)%.')]
-			if amx then
-				unloadAMX(amx, true)
-			end
-		end
-	end
 )
 
 addEventHandler('onResourceStop', resourceRoot,
