@@ -1,6 +1,9 @@
 g_ServerVars = {
-	announce = true,
-	anticheat = false,
+	announce = {
+        get = function()
+            return getServerConfigSetting('donotbroadcastlan') and (getServerConfigSetting('donotbroadcastlan') == 0) or true
+    },
+	anticheat = true,
 	bind = {
         get = function()
             return getServerConfigSetting("serverip") or '127.0.0.1'
@@ -132,7 +135,6 @@ g_ServerVars = {
             return setRuleValue('language', lang)
         end
     },
-	lanmode = false,
 	mapname = {
         get = function()
             return getMapName() or ''
