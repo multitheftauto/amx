@@ -1,24 +1,92 @@
 g_ServerVars = {
 	announce = true,
 	anticheat = false,
-	bind = '',
+	bind = {
+        get = function()
+            return getServerConfigSetting("serverip") or '127.0.0.1'
+        end
+    },
 	filterscripts = get(getResourceName(getThisResource()) .. '.filterscripts') or '',
-	gamemode0 = '',
-	gamemode1 = '',
-	gamemode2 = '',
-	gamemode3 = '',
-	gamemode4 = '',
-	gamemode5 = '',
-	gamemode6 = '',
-	gamemode7 = '',
-	gamemode8 = '',
-	gamemode9 = '',
-	gamemode10 = '',
-	gamemode11 = '',
-	gamemode12 = '',
-	gamemode13 = '',
-	gamemode14 = '',
-	gamemode15 = '',
+	gamemode0 = {
+        get = function()
+            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[1]
+        end
+    },
+	gamemode1 = {
+        get = function()
+            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[2]
+        end
+    },
+	gamemode2 = {
+        get = function()
+            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[3]
+        end
+    },
+	gamemode3 = {
+        get = function()
+            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[4]
+        end
+    },
+	gamemode4 = {
+        get = function()
+            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[5]
+        end
+    },
+	gamemode5 = {
+        get = function()
+            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[6]
+        end
+    },
+	gamemode6 = {
+        get = function()
+            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[7]
+        end
+    },
+	gamemode7 = {
+        get = function()
+            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[8]
+        end
+    },
+	gamemode8 = {
+        get = function()
+            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[9]
+        end
+    },
+	gamemode9 = {
+        get = function()
+            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[10]
+        end
+    },
+	gamemode10 = {
+        get = function()
+            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[11]
+        end
+    },
+	gamemode11 = {
+        get = function()
+            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[12]
+        end
+    },
+	gamemode12 = {
+        get = function()
+            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[13]
+        end
+    },
+	gamemode13 = {
+        get = function()
+            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[14]
+        end
+    },
+	gamemode14 = {
+        get = function()
+            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[15]
+        end
+    },
+	gamemode15 = {
+        get = function()
+            return get(getResourceName(getThisResource()) .. '.gamemodes'):split()[16]
+        end
+    },
 	gamemodetext = {
         get = function()
             return getGameType() or ''
@@ -50,8 +118,20 @@ g_ServerVars = {
             return getServerName() or ''
         end
     },
-    language = 'Sorry, but \'language\' is not implemented.'
-	-- instagib = false,
+    language = {
+        get = function()
+            return getRuleValue('language') or ''
+        end,
+        set = function(lang)
+            lang = not lang == nil and (lang:len() >= 2 and lang or '') or lang
+            if lang == nil then
+                return removeRuleValue('language')
+            else if lang == '' then
+                return 0
+            end
+            return setRuleValue('language', lang)
+        end
+    },
 	lanmode = false,
 	mapname = {
         get = function()
@@ -85,7 +165,7 @@ g_ServerVars = {
 	plugins = get(getResourceName(getThisResource()) .. '.plugins') or '',
 	port = {
         get = function()
-            return getServerPort() or 0
+            return getServerConfigSetting("serverport") or 0
         end
     },
 	query = true,
@@ -129,7 +209,7 @@ g_ServerVars = {
     artwork = true
 }
 
-local readOnlyVars = table.create({ 'announce', 'anticheat', 'bind', 'filterscripts', 'hostname', 'maxplayers', 'nosign',
+local readOnlyVars = table.create({ 'announce', 'anticheat', 'bind', 'filterscripts', 'hostname', 'maxplayers',
 	'plugins', 'port', 'version' }, true)
 g_ServerVars = { shadow = g_ServerVars }
 setmetatable(
