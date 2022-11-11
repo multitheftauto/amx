@@ -550,28 +550,38 @@ function doRCONFromFile(fname)
 	return result
 end
 
+rconAttempts = {}
 addCommandHandler('rcon',
 	function(player, command, ...)
-		if not isObjectInACLGroup("rcon." .. getPlayerName(player), aclGetGroup("Admin")) and not isPlayerInACLGroup(player, 'Admin') then
-			outputChatBox('Access Denied!', player, 255, 0, 0)
-            return
-        end
 		local str = table.concat({ ... }, ' ')
         local cmd, args = str:match('^([^%s]+)%s*(.*)$')
+        if not cmd then
+            return
+        end
         if cmd == 'login' then
             if not args then
-                outputChatBox('You forgot the RCON command!', player, 255, 0, 0)
                 return
             end
             if args == get(getResourceName(getThisResource()) .. '.rcon_password') then
                 aclGroupAddObject(aclGetGroup("Admin"), "rcon." .. getPlayerName(player))
                 outputDebugString('RCON (In-Game): Player \'' .. getPlayerName(player) .. '\' has logged in.')
                 outputChatBox('SERVER: You are logged in as admin.', player, 255, 255, 255)
+                rconAttempts[player] = 0
             else
-                outputDebugString('RCON (In-Game): Player \'' .. getPlayerName(player) .. '\' <' .. args .. '> failed login.')
-                outputChatBox('SERVER: Bad admin password. Repeated attempts will get you banned.')
+                if rconAttempts[player] < 3 then
+                    outputDebugString('RCON (In-Game): Player \'' .. getPlayerName(player) .. '\' <' .. args .. '> failed login.')
+                    outputChatBox('SERVER: Bad admin password. Repeated attempts will get you kicked.')
+                    rconAttempts[player] = rconAttempts + 1
+                else
+                    rconAttempts[player] = 0
+                    kickPlayer(player)
+                end
             end
         else
+            if not isObjectInACLGroup("rcon." .. getPlayerName(player), aclGetGroup("Admin")) and not isPlayerInACLGroup(player, 'Admin') then
+                outputChatBox('Access Denied!', player, 255, 0, 0)
+                return
+            end
             local result = doRCON(str)
             if result then
                 local lines = result:split('\n')
