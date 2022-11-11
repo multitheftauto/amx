@@ -209,7 +209,12 @@ g_ServerVars = {
         end
     },
 	timestamp = true,
-	version = amxVersionString(),
+	version = {
+        get = function()
+            local srvVersion = getVersion()
+            return 'MTA=' .. srvVersion.mta .. ' ' .. srvVersion.tag .. ' AMX=' .. amxVersionString()
+        end
+    },
 	weather = {
 		get = function()
 			return tostring(getWeather())
