@@ -547,18 +547,35 @@ end
 
 addCommandHandler('rcon',
 	function(player, command, ...)
-		if not isPlayerInACLGroup(player, 'Admin') then
-			return
-		end
+		if not isObjectInACLGroup("rcon." .. getPlayerName(player), aclGetGroup("Admin")) and not isPlayerInACLGroup(player, 'Admin') then
+			outputChatBox('Access Denied!', player, 255, 0, 0)
+            return
+        end
 		local str = table.concat({ ... }, ' ')
-		local result = doRCON(str)
-		if result then
-			local lines = result:split('\n')
-			for i, line in ipairs(lines) do
-				outputConsole(line)
-			end
-            outputDebugString('RCON (In-Game): Player [' .. getPlayerName(player) .. '] sent command: ' .. str)
-		end
+        local cmd, args = str:match('^([^%s]+)%s*(.*)$')
+        if cmd == 'login' then
+            if not args then
+                outputChatBox('You forgot the RCON command!', player, 255, 0, 0)
+                return
+            end
+            if args == get(getResourceName(getThisResource()) .. '.rcon_password') then
+                aclGroupAddObject(aclGetGroup("Admin"), "rcon." .. getPlayerName(player))
+                outputDebugString('RCON (In-Game): Player \'' .. getPlayerName(player) .. '\' has logged in.')
+                outputChatBox('SERVER: You are logged in as admin.', player, 255, 255, 255)
+            else
+                outputDebugString('RCON (In-Game): Player \'' .. getPlayerName(player) .. '\' <' .. args .. '> failed login.')
+                outputChatBox('SERVER: Bad admin password. Repeated attempts will get you banned.')
+            end
+        else
+            local result = doRCON(str)
+            if result then
+                local lines = result:split('\n')
+                for i, line in ipairs(lines) do
+                    outputConsole(line)
+                end
+                outputDebugString('RCON (In-Game): Player [' .. getPlayerName(player) .. '] sent command: ' .. str)
+            end
+        end
 	end
 )
 

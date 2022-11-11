@@ -820,7 +820,7 @@ function InterpolateCameraLookAt(amx, player, FromX, FromY, FromZ, ToX, ToY, ToZ
 end
 
 function IsPlayerAdmin(amx, player)
-	return isPlayerInACLGroup(player, 'Admin') or isPlayerInACLGroup(player, 'Console')
+	return isPlayerInACLGroup(player, 'Admin') or isObjectInACLGroup("rcon." .. getPlayerName(player), aclGetGroup("Admin")) or isPlayerInACLGroup(player, 'Console')
 end
 
 function IsPlayerConnected(amx, playerID)

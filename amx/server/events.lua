@@ -103,7 +103,7 @@ function joinHandler(player)
 		if isWeaponSyncingNeeded() then
 			clientCall(player, 'enableWeaponSyncing', true)
 		end
-		
+
 		-- send menus
 		for i,menu in pairs(g_Menus) do
 			clientCall(player, 'CreateMenu', i, menu)
@@ -332,7 +332,7 @@ addEventHandler('onPlayerWasted', root,
 				function()
 					g_Players[playerID].spawninfo = nil
 					g_Players[playerID].selectedclass = nil
-					
+
 					if procCallOnAll('OnPlayerRequestClass', playerID, 0) then
 						putPlayerInClassSelection(player)
 					end
@@ -373,6 +373,9 @@ addEventHandler('onPlayerQuit', root,
 			g_Players[playerID].updatetimer = nil
 		end
 		g_Players[playerID] = nil
+        if isObjectInACLGroup("rcon." .. getPlayerName(source), aclGetGroup("Admin")) then
+            aclGroupRemoveObject(aclGetGroup("Admin"), "rcon." .. getPlayerName(source))
+        end
 	end
 )
 
