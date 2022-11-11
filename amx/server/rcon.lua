@@ -178,6 +178,11 @@ g_ServerVars = {
         end,
         set = function(pass)
             pass = pass:len() >= 3 and pass or nil
+            if pass == nil then
+                outputDebugString('Server password has been removed.');
+            else
+                outputDebugString('Setting server password to: "' .. pass .. '"');
+            end
             return setServerPassword(pass)
         end
     },
@@ -552,6 +557,7 @@ addCommandHandler('rcon',
 			for i, line in ipairs(lines) do
 				outputConsole(line)
 			end
+            outputDebugString('RCON (In-Game): Player [' .. getPlayerName(player) .. '] sent command: ' .. str)
 		end
 	end
 )
@@ -563,6 +569,7 @@ addEventHandler('onConsole', root,
 		end
 		local result = doRCON(str)
 		if result then
+            outputDebugString('Console input: ' .. str)
 			print(result)
 		end
 	end
