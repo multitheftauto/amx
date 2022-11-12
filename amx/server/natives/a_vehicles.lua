@@ -35,7 +35,7 @@ function SetVehicleParamsForPlayer(amx, vehicle, player, isObjective, doorsLocke
 end
 
 
-function ManualVehicleEngineAndLights() 
+function ManualVehicleEngineAndLights()
 	ManualVehEngineAndLights = true
 end
 
@@ -67,9 +67,9 @@ function SetVehicleParamsEx(amx, vehicle, engine, lights, alarm, doors, bonnet, 
 	end
 
 	local vehicleID = getElemID(vehicle)
-	g_Vehicles[vehicleID].alarm = alarm;
-	g_Vehicles[vehicleID].objective = objective;
-	g_Vehicles[vehicleID].engineState = engine;
+	g_Vehicles[vehicleID].alarm = alarm
+	g_Vehicles[vehicleID].objective = objective
+	g_Vehicles[vehicleID].engineState = engine
 	return 1
 end
 -- Siren
@@ -200,7 +200,7 @@ end
 -- 11 - CARMODTYPE_REAR_BUMPER
 -- 12 - CARMODTYPE_VENT_RIGHT
 -- 13 - CARMODTYPE_VENT_LEFT
-function GetVehicleComponentType(amx, componentid) 
+function GetVehicleComponentType(amx, componentid)
 	local components = {
 		['Spoiler'] = 0,
 		['Hood'] = 1,

@@ -563,7 +563,7 @@ addEventHandler('onMarkerHit', root,
 		if getElementType(elem) == "player" or getElementType(elem) == "vehicle" or getElementType(elem) == "ped" then
 			local elemtype = getElementType(elem)
 			local elemid = getElemID(elem)
-			procCallOnAll('OnMarkerHit', getElemID(source), elemtype, elemid, dimension);
+			procCallOnAll('OnMarkerHit', getElemID(source), elemtype, elemid, dimension)
 		end
 	end
 )
@@ -572,7 +572,7 @@ addEventHandler('onMarkerLeave', root,
 		if getElementType(elem) == "player" or getElementType(elem) == "vehicle" or getElementType(elem) == "ped" then
 			local elemtype = getElementType(elem)
 			local elemid = getElemID(elem)
-			procCallOnAll('OnMarkerLeave', getElemID(source), elemtype, elemid, dimension);
+			procCallOnAll('OnMarkerLeave', getElemID(source), elemtype, elemid, dimension)
 		end
 	end
 )

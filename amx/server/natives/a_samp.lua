@@ -397,7 +397,7 @@ end
 
 function EnableVehicleFriendlyFire(amx)
 	notImplemented('EnableVehicleFriendlyFire')
-	return 1;
+	return 1
 end
 
 function AllowInteriorWeapons(amx, allow)
@@ -967,7 +967,7 @@ function NetStats_GetIpPort(amx, player, ip_port, ip_port_len)
 	local port = 0 -- We haven't a solution for getting a client port
 	local ipandport = tostring(ip) .. ":" .. tostring(port)
 	writeMemString(amx, ip_port, ipandport)
-	return string.len(tostring(ip) .. ":" .. tostring(port));
+	return string.len(tostring(ip) .. ":" .. tostring(port))
 end
 
 function NetStats_MessagesReceived(amx, player)

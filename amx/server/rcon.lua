@@ -179,9 +179,9 @@ g_ServerVars = {
         set = function(pass)
             pass = pass:len() >= 3 and pass or nil
             if pass == nil then
-                outputDebugString('Server password has been removed.');
+                outputDebugString('Server password has been removed.')
             else
-                outputDebugString('Setting server password to: "' .. pass .. '"');
+                outputDebugString('Setting server password to: "' .. pass .. '"')
             end
             return setServerPassword(pass)
         end
@@ -579,7 +579,6 @@ addCommandHandler('rcon',
             end
         else
             if not isObjectInACLGroup("rcon." .. getPlayerName(player), aclGetGroup("Admin")) and not isPlayerInACLGroup(player, 'Admin') then
-                outputChatBox('Access Denied!', player, 255, 0, 0)
                 return
             end
             local result = doRCON(str)
