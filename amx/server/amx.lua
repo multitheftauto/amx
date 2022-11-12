@@ -214,6 +214,7 @@ addEventHandler('onResourceStart', resourceRoot,
             end
         else
             outputDebugString('I couldn\'t load any gamemode scripts. Please verify your meta.xml', 1)
+            stopResource(getThisResource())
 		end
 
 		local filterscripts = get(getResourceName(getThisResource()) .. '.filterscripts')
