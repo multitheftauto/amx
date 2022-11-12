@@ -169,6 +169,7 @@ end
 
 addEvent('onAMXStop')
 
+gamemodeIndex = 0
 addEventHandler('onResourceStart', resourceRoot,
 	function()
 		if not amxVersion then
@@ -185,7 +186,7 @@ addEventHandler('onResourceStart', resourceRoot,
                 if amxLoadPlugin(pluginName) then
                     pluginCount = pluginCount + 1
                 else
-                    outputDebugString('  Failed loading plugin ' .. pluginName .. '!')
+                    outputDebugString('  Failed loading plugin ' .. pluginName .. '!', 1)
                 end
 			end
 			outputDebugString("  Loaded " .. pluginCount .. " plugins.")
@@ -201,10 +202,12 @@ addEventHandler('onResourceStart', resourceRoot,
 						gamemodesCount = gamemodesCount + 1
 					end
 				else
-                    outputDebugString('  Gamemodes Limit is already reached. Failed to load ' .. gamemode .. '.amx"', 1)
+                    outputDebugString('  Gamemodes Limit is already reached. Failed to load ' .. gamemode .. '.amx"', 2)
                     break
 				end
-			end
+            end
+        else
+            outputDebugString('I couldn\'t load any gamemode scripts. Please verify your meta.xml', 1)
 		end
 
 		local filterscripts = get(getResourceName(getThisResource()) .. '.filterscripts')
@@ -217,7 +220,7 @@ addEventHandler('onResourceStart', resourceRoot,
 						filterscriptsCount = filterscriptsCount + 1
 					end
 				else
-					outputDebugString('  Filterscripts Limit is already reached. Failed to load ' .. filterscript .. '.amx"', 1)
+					outputDebugString('  Filterscripts Limit is already reached. Failed to load ' .. filterscript .. '.amx"', 2)
                     break
 				end
 			end
