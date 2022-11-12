@@ -192,7 +192,7 @@ addEventHandler('onResourceStart', resourceRoot,
             isGMLoaded = false
             for i, gamemode in ipairs(gamemodes) do
                 if i > MAX_GAMEMODES then
-                    outputDebugString('I couldn\'t load any gamemode scripts. Gamemodes limit is reached. Unable to load ' .. gamemode .. '.amx"', 2)
+                    outputDebugString('I couldn\'t load any gamemode script. Gamemodes limit is reached. Unable to load ' .. gamemode .. '.amx"', 1)
                     stopResource(getThisResource())
                     break
                 end
@@ -205,7 +205,7 @@ addEventHandler('onResourceStart', resourceRoot,
                 end
             end
         else
-            outputDebugString('I couldn\'t load any gamemode scripts. Please verify your meta.xml', 1)
+            outputDebugString('I couldn\'t load any gamemode script. Please verify your meta.xml', 1)
             stopResource(getThisResource())
 		end
 
