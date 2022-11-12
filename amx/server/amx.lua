@@ -30,13 +30,16 @@ end
 function loadAMX(fileName, isGamemode)
 	isGamemode = isGamemode or true
 	amx.type = isGamemode == false and 'filterscript' or 'gamemode'
-
+    if not fileExists(':' .. getResourceName(getThisResource()) .. '/resources/' .. amx.type .. 's/' .. fileName .. '.amx') then
+        outputDebugString(amx.type .. ' "' .. fileName .. '.amx" doesn\'t exsist', 1)
+        return false
+    end
     outputDebugString('  Loading \'' .. fileName .. '.amx\' ' .. amx.type)
-	local hAMX = fileOpen(':' .. getResourceName(getThisResource()) .. '/' .. amx.type .. 's/' .. fileName .. '.amx', true)
+	local hAMX = fileOpen(':' .. getResourceName(getThisResource()) .. '/resources/' .. amx.type .. 's/' .. fileName .. '.amx', true)
 	if hAMX then
-		outputDebugString('  "' .. fileName .. '.amx" ' .. amx.type .. ' is being loaded')
+		outputDebugString('"' .. fileName .. '.amx" ' .. amx.type .. ' is being loaded')
 	else
-		outputDebugString('  Failed to open ' .. amx.type .. ' "' .. fileName .. '.amx"', 1)
+		outputDebugString('Failed to open ' .. amx.type .. ' "' .. fileName .. '.amx"', 1)
 		return false
 	end
 
@@ -102,11 +105,8 @@ function loadAMX(fileName, isGamemode)
 	if not alreadySyncingWeapons and isWeaponSyncingNeeded(amx) then
 		clientCall(root, 'enableWeaponSyncing', true)
 	end
-	triggerEvent('onAMXStart', getResourceRootElement(res), amx.res, amx.name)
 	return amx
 end
-
-addEvent('onAMXStart')
 
 function destroyGlobalElements()
 	for i, vehinfo in pairs(g_Vehicles) do
@@ -147,7 +147,7 @@ function unloadAMX(amx, notifyClient)
 		procCallInternal(amx, 'OnFilterScriptExit')
 	end
 
-	amxUnload(amx.cptr)
+    amxUnload(amx.cptr)
 
 	table.each(amx.timers, killTimer)
 
@@ -161,13 +161,7 @@ function unloadAMX(amx, notifyClient)
 	if not isWeaponSyncingNeeded() then
 		clientCall(root, 'enableWeaponSyncing', false)
 	end
-	if getResourceState(amx.res) == 'running' then
-		stopResource(amx.res)
-	end
-	triggerEvent('onAMXStop', getResourceRootElement(amx.res), amx.res, amx.name)
 end
-
-addEvent('onAMXStop')
 
 gamemodeIndex = 0
 addEventHandler('onResourceStart', resourceRoot,
@@ -207,8 +201,6 @@ addEventHandler('onResourceStart', resourceRoot,
                         gamemodeIndex = i
                         isGMLoaded = true
                         break
-                    else
-                        isGMLoaded = false
                     end
                 end
             end
@@ -249,7 +241,7 @@ addEventHandler('onResourceStop', resourceRoot,
 	function()
 		-- TODO(q): this needs to be added back later
 		-- exports.amxscoreboard:removeScoreboardColumn('Score')
-		table.each(g_LoadedAMXs, unloadAMX, false)
+		table.each(g_LoadedAMXs, unloadAMX, true)
 		amxUnloadAllPlugins()
 		for i = 0, 49 do
 			setGarageOpen(i, false)

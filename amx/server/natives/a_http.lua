@@ -30,7 +30,7 @@ function HTTP(amx, index, type, url, data, callback)
 		[-15] = 'VIEW'
 	}
 	local sendOptions = {
-		queueName = "amx." .. getResourceName(amx.res) .. "." .. amx.name,
+		queueName = "amx" .. "." .. amx.name,
 		postData = data,
 		method = typesToText[tonumber(type)],
 	}

@@ -327,7 +327,7 @@ g_RCONCommands = {
                 if name == mode then
                     return 'gamemode \'' .. mode .. '\' is already loded!'
                 else
-                    unloadAMX(amx)
+                    unloadAMX(amx, true)
                     if not loadAMX(mode .. '.amx', true) then
                         return 'Unable to load gamemode \'' .. mode .. '\''
                     end
@@ -384,18 +384,30 @@ g_RCONCommands = {
         if not fsname then
             return 'loadfs <fsname>'
         end
-        local res = getResourceFromName('amx-fs-' .. fsname)
-        if not res then
-            return 'No such filterscript: ' .. fsname
+        if not fileExists(':' .. getResourceName(getThisResource()) .. '/resources/filterscripts/' .. fsname .. '.amx') then
+            return 'No such filterscript "' .. fsname .. '.amx"'
         end
-        startResource(res)
+        for name, amx in pairs(g_LoadedAMXs) do
+            if amx.type == 'filterscript' then
+                if name == fsname then
+                    return 'filterscript \'' .. fsname .. '\' is already loded!'
+                else
+                    if not loadAMX(fsname .. '.amx', true) then
+                        return '  Unable to load filterscript \'' .. fsname .. '\''
+                    end
+                end
+            end
+        end
     end,
 	loadplugin = function (pluginName)
         if not pluginName then
             return 'loadplugin <pluginname>'
         end
+        if not fileExists(':' .. getResourceName(getThisResource()) .. '/resources/plugins/' .. pluginName .. (ServerOS() == 0 and ".dll" or ".so")) then
+            return '  No such plugin "' .. pluginName .. (ServerOS() == 0 and ".dll" or ".so") .. '"'
+        end
         if amxIsPluginLoaded(pluginName) then
-            return 'Plugin ' .. pluginName .. ' is already loaded'
+            return '  Plugin ' .. pluginName .. ' is already loaded'
         end
         if not amxLoadPlugin(pluginName) then
             return '  Failed loading plugin ' .. pluginName .. '!'
@@ -412,11 +424,24 @@ g_RCONCommands = {
         if not fsname then
             return 'reloadfs <fsname>'
         end
-        local res = getResourceFromName('amx-fs-' .. fsname)
-        if not res then
-            return 'No such filterscript: ' .. fsname
+        if not fileExists(':' .. getResourceName(getThisResource()) .. '/resources/filterscripts/' .. fsname .. '.amx') then
+            return 'No such filterscript "' .. fsname .. '.amx"'
         end
-        restartResource(res)
+        isFSLoaded = false
+        for name, amx in pairs(g_LoadedAMXs) do
+            if amx.type == 'filterscript' then
+                if name == fsname then
+                    isFSLoaded = true
+                end
+            end
+        end
+        if isFSLoaded == false then
+            return 'filterscript \'' .. fsname .. '\' isn\'t loaded'
+        end
+        unloadAMX(fsname .. '.amx', true)
+        if not loadAMX(fsname .. '.amx', false) then
+            return '  Unable to load filterscript \'' .. fsname .. '\''
+        end
     end,
 	unbanip = function (ip)
         if not ip then
@@ -437,11 +462,21 @@ g_RCONCommands = {
         if not fsname then
             return 'unloadfs <fsname>'
         end
-        local res = getResourceFromName('amx-fs-' .. fsname)
-        if not res then
-            return 'No such filterscript: ' .. fsname
+        if not fileExists(':' .. getResourceName(getThisResource()) .. '/resources/filterscripts/' .. fsname .. '.amx') then
+            return 'No such filterscript "' .. fsname .. '.amx"'
         end
-        stopResource(res)
+        isFSLoaded = false
+        for name, amx in pairs(g_LoadedAMXs) do
+            if amx.type == 'filterscript' then
+                if name == fsname then
+                    isFSLoaded = true
+                end
+            end
+        end
+        if isFSLoaded == false then
+            return 'filterscript \'' .. fsname .. '\' isn\'t loaded'
+        end
+        unloadAMX(fsname .. '.amx', true)
     end,
     varlist = function ()
         local result = ''

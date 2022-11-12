@@ -417,13 +417,13 @@ int CFunctions::amxWriteString(lua_State *luaVM) {
 }
 
 // amxUnload(amxptr)
-int CFunctions::amxUnload(lua_State *luaVM) {
+bool CFunctions::amxUnload(lua_State *luaVM) {
 	if(!luaVM) return;
 	AMX *amx = (AMX *)lua_touserdata(luaVM, 1);
 	if(!amx) {
 		pModuleManager->ErrorPrintf("invalid AMX parameter -> Unload\n");
 		lua_pushboolean(luaVM, 0);
-		return 1;
+		return false;
 	}
 	// Call all plugins' AmxUnload function
 	for (const auto& plugin : loadedPlugins) {
@@ -450,7 +450,7 @@ int CFunctions::amxUnload(lua_State *luaVM) {
 	loadedAMXs.erase(amx);
 	delete amx;
 	lua_pushboolean(luaVM, 1);
-	return 1;
+	return true;
 }
 
 // amxUnloadAllPlugins()
@@ -640,4 +640,15 @@ int CFunctions::float2cell(lua_State *luaVM) {
 	float f = (float)luaL_checknumber(luaVM, 1);
 	lua_pushnumber(luaVM, *(cell *)&f);
 	return 1;
+}
+
+// ServerOS()
+bool CFunctions::ServerOS(lua_State *luaVM) {
+	if(!luaVM) return;
+	#if defined(_WIN32) || defined(WIN32) || defined(__WIN32__) || defined(_WIN64)
+        lua_pushnumber(luaVM, 0);
+	#elif defined(LINUX) || defined(FREEBSD) || defined(__FreeBSD__) || defined(__OpenBSD__)
+		lua_pushnumber(luaVM, 1);
+	#endif
+	return true;
 }

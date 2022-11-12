@@ -199,6 +199,7 @@ MTAEXPORT void RegisterFunctions ( lua_State * luaVM )
 		pModuleManager->RegisterFunction(luaVM, "cell2float", CFunctions::cell2float);
 		pModuleManager->RegisterFunction(luaVM, "float2cell", CFunctions::float2cell);
 
+        pModuleManager->RegisterFunction(luaVM, "ServerOS", CFunctions::ServerOS);
 		lua_newtable(luaVM);
 		lua_setfield(luaVM, LUA_REGISTRYINDEX, "amx");
 	}
