@@ -598,11 +598,13 @@ addCommandHandler('rcon',
                 return
             end
             if args == get(getResourceName(getThisResource()) .. '.rcon_password') then
+                procCallOnAll('OnRconLoginAttempt', getPlayerIP(player), args, 1)
                 aclGroupAddObject(aclGetGroup("Admin"), "rcon." .. getPlayerName(player))
                 outputDebugString('RCON (In-Game): Player \'' .. getPlayerName(player) .. '\' has logged in.')
                 outputChatBox('SERVER: You are logged in as admin.', player, 255, 255, 255)
                 rconAttempts[player] = 0
             else
+                procCallOnAll('OnRconLoginAttempt', getPlayerIP(player), args, 0)
                 if rconAttempts[player] < 3 then
                     outputDebugString('RCON (In-Game): Player \'' .. getPlayerName(player) .. '\' <' .. args .. '> failed login.')
                     outputChatBox('SERVER: Bad admin password. Repeated attempts will get you kicked.')
