@@ -324,7 +324,7 @@ g_RCONCommands = {
         end
         for name, amx in pairs(g_LoadedAMXs) do
             if amx.type == 'gamemode' then
-                if amx.name == mode then
+                if name == mode then
                     return 'gamemode \'' .. mode .. '\' is already loded!'
                 else
                     unloadAMX(amx)

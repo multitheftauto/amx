@@ -195,16 +195,22 @@ addEventHandler('onResourceStart', resourceRoot,
 		local gamemodes = get(getResourceName(getThisResource()) .. '.gamemodes')
 		if gamemodes then
 			gamemodes = gamemodes:split()
-			gamemodesCount = 0
-			for i, gamemode in ipairs(gamemodes) do
-                if gamemodesCount < MAX_GAMEMODES then
-					if loadAMX(gamemode, true) then
-						gamemodesCount = gamemodesCount + 1
-					end
-				else
-                    outputDebugString('  Gamemodes Limit is already reached. Failed to load ' .. gamemode .. '.amx"', 2)
+            isGMLoaded = false
+            for i, gamemode in ipairs(gamemodes) do
+                if i > MAX_GAMEMODES then
+                    outputDebugString('I couldn\'t load any gamemode scripts. Gamemodes limit is reached. Unable to load ' .. gamemode .. '.amx"', 2)
+                    stopResource(getThisResource())
                     break
-				end
+                end
+                if isGMLoaded == false then
+                    if loadAMX(gamemode, true) then
+                        gamemodeIndex = i
+                        isGMLoaded = true
+                        break
+                    else
+                        isGMLoaded = false
+                    end
+                end
             end
         else
             outputDebugString('I couldn\'t load any gamemode scripts. Please verify your meta.xml', 1)
@@ -247,7 +253,8 @@ addEventHandler('onResourceStop', resourceRoot,
 		for i = 0, 49 do
 			setGarageOpen(i, false)
 		end
-		setWeather(0)
+        setWeather(0)
+        gamemodeIndex = 0
 	end
 )
 
