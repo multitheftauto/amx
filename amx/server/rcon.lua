@@ -356,14 +356,30 @@ g_RCONCommands = {
         setGravity(grav)
     end,
 	gmx = function ()
-        local mapcycler = getResourceFromName('mapcycler')
-        if not mapcycler then
-            return 'The mapcycler resource, which is required for amx mode cycling, is not installed'
-        end
-        if getResourceState(mapcycler) == 'running' then
-            restartResource(mapcycler)
-        else
-            startResource(mapcycler)
+		local gamemodes = get(getResourceName(getThisResource()) .. '.gamemodes')
+		if gamemodes then
+			gamemodes = gamemodes:split()
+            gamemodeNextIndex = gamemodeIndex + 1
+            if gamemodeNextIndex > MAX_GAMEMODES or gamemodeNextIndex > #gamemodes:split() then
+                return 'I couldn\'t load any gamemode script. Gamemodes limit is reached. Unable to load next gamemode"'
+            else
+                for name, amx in pairs(g_LoadedAMXs) do
+                    if amx.type == 'gamemode' then
+                        unloadAMX(amx, true)
+                        if #gamemodes:split() < 2 then
+                            loadAMX(amx, true)
+                            return 'Reloading current gamemode since there isn\'t more than one entry in amx.gamemodes setting'
+                        end
+                        if loadAMX(gamemodes[gamemodeNextIndex], true) then
+                            gamemodeIndex = gamemodeNextIndex
+                            return 'Loading next gamemode(' .. gamemodes[gamemodeNextIndex] .. ')...'
+                        else
+                            loadAMX(name, true)
+                            return 'Unable to load gamemode \'' .. gamemodes[gamemodeNextIndex] .. '\'. reloading last gamemode!'
+                        end
+                    end
+                end
+            end
         end
     end,
 	kick = function (id)

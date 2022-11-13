@@ -19,6 +19,8 @@ g_PlayerObjects = {}
 MAX_FILTERSCRIPTS = 16
 MAX_GAMEMODES = 16
 
+gamemodeIndex = 0
+
 function initGameModeGlobals()
 	g_PlayerClasses = {}
 	g_Teams = setmetatable({}, { __index = function(t, k) t[k] = createTeam('Team ' .. (k + 1)) return t[k] end })
@@ -167,7 +169,6 @@ function unloadAMX(amx, notifyClient)
 	end
 end
 
-gamemodeIndex = 0
 addEventHandler('onResourceStart', resourceRoot,
 	function()
 		if not amxVersion then
