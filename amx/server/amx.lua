@@ -16,76 +16,30 @@ g_TextDraws = {}
 g_TextLabels = {}
 g_PlayerObjects = {}
 
+MAX_FILTERSCRIPTS = 16
+MAX_GAMEMODES = 16
+
 function initGameModeGlobals()
 	g_PlayerClasses = {}
-	g_Teams = setmetatable({}, { __index = function(t, k) t[k] = createTeam('Team ' .. (k+1)) return t[k] end })
+	g_Teams = setmetatable({}, { __index = function(t, k) t[k] = createTeam('Team ' .. (k + 1)) return t[k] end })
 	g_ShowPlayerMarkers = true
 	g_ShowZoneNames = true
 	g_GlobalChatRadius = false
 end
 
-addEventHandler('onResourceStart', resourceRoot,
-	function()
-		if not amxVersion then
-			outputDebugString('The amx module (king.dll/so) isn\'t loaded. It is required for amx to function. Please add it to your server config and restart your server.', 1)
-			return
-		end
-
-		table.each(getElementsByType('player'), joinHandler)
-
-		local plugins = get('amx.plugins')
-		if plugins then
-			table.each(plugins:split(), amxLoadPlugin)
-		end
-
-		local filterscripts = get('amx.filterscripts')
-		if filterscripts then
-			filterscripts = filterscripts:split()
-			for i,filterscript in ipairs(filterscripts) do
-				local filterres = getResourceFromName('amx-fs-' .. filterscript)
-				if filterres then
-					if getResourceState(filterres) == 'running' then
-						restartResource(filterres)
-					else
-						startResource(filterres)
-					end
-				else
-					outputDebugString('No filterscript named "' .. filterscript .. '" exists', 2)
-				end
-			end
-		end
-
-		-- TODO(q): this needs to be added back later
-		-- exports.amxscoreboard:addScoreboardColumn('Score')
-	end,
-	false
-)
-
-local function loadResourceAMXs(res)
-	local amxFiles = getResourceAMXFiles(res)
-	if amxFiles and #amxFiles > 0 then
-		table.each(amxFiles, loadAMX, res)
-	end
-end
-addEventHandler('onResourceStart', root, loadResourceAMXs)
-
-function loadAMX(fileName, res)
-	local resName = getResourceName(res)
-	if not resName:match('^amx%-') then
-		outputDebugString('Not loading ' .. fileName .. ', resource name must start with "amx-"', 1)
-		return false
-	end
-	outputDebugString('Loading ' .. fileName)
-	local amx = { name = fileName:match('(.*)%.'), res = res }
-	if resName:match('^amx%-fs%-') then
-		amx.type = 'filterscript'
+function loadAMX(fileName, isGamemode)
+	isGamemode = isGamemode or true
+	amx.type = isGamemode == false and 'filterscript' or 'gamemode'
+    if not fileExists(':' .. getResourceName(getThisResource()) .. '/resources/' .. amx.type .. 's/' .. fileName .. '.amx') then
+        outputDebugString(amx.type .. ' "' .. fileName .. '.amx" doesn\'t exsist', 1)
+        return false
+    end
+    outputDebugString('  Loading \'' .. fileName .. '.amx\' ' .. amx.type)
+	local hAMX = fileOpen(':' .. getResourceName(getThisResource()) .. '/resources/' .. amx.type .. 's/' .. fileName .. '.amx', true)
+	if hAMX then
+		outputDebugString('"' .. fileName .. '.amx" ' .. amx.type .. ' is being loaded')
 	else
-		amx.type = 'gamemode'
-	end
-
-	local hAMX = fileOpen(':' .. getResourceName(res) .. '/' .. fileName, true)
-	if not hAMX then
-		outputDebugString('Error opening ' .. fileName, 1)
+		outputDebugString('Failed to open ' .. amx.type .. ' "' .. fileName .. '.amx"', 1)
 		return false
 	end
 
@@ -110,13 +64,15 @@ function loadAMX(fileName, res)
 	local alreadyGameModeRunning = getRunningGameMode() and true
 	local alreadySyncingWeapons = isWeaponSyncingNeeded()
 	if alreadyGameModeRunning and amx.type == 'gamemode' then
-		outputDebugString('Not loading ' .. fileName .. ' - a gamemode is already running', 1)
+		outputDebugString('  Unable to load ' .. fileName .. '.amx since there is already a running gamemode', 1)
 		return false
 	end
 
-	amx.cptr = amxLoad(getResourceName(res), amx.name .. '.amx')
-	if not amx.cptr then
-		outputDebugString('Error loading ' .. fileName, 1)
+	amx.cptr = amxLoad(getResourceName(getThisResource()), amx.name .. '.amx')
+	if amx.cptr then
+		outputDebugString('"' .. fileName .. '.amx" ' .. amx.type .. ' is loaded')
+	else
+		outputDebugString('  Unable to load "' .. fileName .. '.amx" ' .. amx.type, 1)
 		return false
 	end
 
@@ -127,8 +83,8 @@ function loadAMX(fileName, res)
 	g_LoadedAMXs[amx.name] = amx
 
 	amx.timers = {}
-	
-	
+
+
 	-- run initialization
 	if amx.type == 'gamemode' then
 		clientCall(root, 'gamemodeLoad')
@@ -142,33 +98,31 @@ function loadAMX(fileName, res)
 	end
 	procCallInternal(amx, amx.main)
 
-	for id,player in pairs(g_Players) do
+	for id, player in pairs(g_Players) do
 		procCallInternal(amx, 'OnPlayerConnect', id)
 	end
 
 	if not alreadySyncingWeapons and isWeaponSyncingNeeded(amx) then
 		clientCall(root, 'enableWeaponSyncing', true)
 	end
-	triggerEvent('onAMXStart', getResourceRootElement(res), amx.res, amx.name)
 	return amx
 end
-addEvent('onAMXStart')
 
 function destroyGlobalElements()
-	for i,vehinfo in pairs(g_Vehicles) do
+	for i, vehinfo in pairs(g_Vehicles) do
 		if vehinfo.respawntimer then
 			killTimer(vehinfo.respawntimer)
 			vehinfo.respawntimer = nil
 		end
 	end
 
-	for i, elemtype in ipairs({g_TextDraws, g_TextLabels}) do
+	for i, elemtype in ipairs({ g_TextDraws, g_TextLabels }) do
 		for id, data in pairs(elemtype) do
 			elemtype[id] = nil
 		end
 	end
 
-	for i, elemtype in ipairs({g_Vehicles, g_Pickups, g_Objects, g_GangZones, g_Markers, g_Bots}) do
+	for i, elemtype in ipairs({ g_Vehicles, g_Pickups, g_Objects, g_GangZones, g_Markers, g_Bots }) do
 		for id, data in pairs(elemtype) do
 			removeElem(elemtype, data.elem)
 			destroyElement(data.elem)
@@ -193,12 +147,12 @@ function unloadAMX(amx, notifyClient)
 		procCallInternal(amx, 'OnFilterScriptExit')
 	end
 
-	amxUnload(amx.cptr)
+    amxUnload(amx.cptr)
 
 	table.each(amx.timers, killTimer)
 
 	if amx.boundkeys then
-		for i,key in ipairs(amx.boundkeys) do
+		for i, key in ipairs(amx.boundkeys) do
 			table.each(g_Players, 'elem', unbindKey, g_ControlMapping[key], 'down', procCallInternal)
 		end
 	end
@@ -207,43 +161,98 @@ function unloadAMX(amx, notifyClient)
 	if not isWeaponSyncingNeeded() then
 		clientCall(root, 'enableWeaponSyncing', false)
 	end
-	if getResourceState(amx.res) == 'running' then
-		stopResource(amx.res)
-	end
-	triggerEvent('onAMXStop', getResourceRootElement(amx.res), amx.res, amx.name)
 end
-addEvent('onAMXStop')
 
-addEventHandler('onResourceStop', root,
-	function(res)
-		local amxs = getResourceAMXFiles(res)
-		if not amxs then
+gamemodeIndex = 0
+addEventHandler('onResourceStart', resourceRoot,
+	function()
+		if not amxVersion then
+			outputDebugString('The AMX module isn\'t loaded. It is required for Pawn Language to function. Please add it to your server config and restart your server.', 1)
 			return
 		end
-		for i,amxfile in ipairs(amxs) do
-			local amx = g_LoadedAMXs[amxfile:match('(.*)%.')]
-			if amx then
-				unloadAMX(amx, true)
+
+		table.each(getElementsByType('player'), joinHandler)
+
+		local plugins = get(getResourceName(getThisResource()) .. '.plugins')
+		if plugins then
+			local pluginCount
+			for pluginName in plugins:split() do
+                if amxLoadPlugin(pluginName) then
+                    pluginCount = pluginCount + 1
+                else
+                    outputDebugString('  Failed loading plugin ' .. pluginName .. '!', 1)
+                end
 			end
+			outputDebugString("  Loaded " .. pluginCount .. " plugins.")
 		end
-	end
+
+		local gamemodes = get(getResourceName(getThisResource()) .. '.gamemodes')
+		if gamemodes then
+			gamemodes = gamemodes:split()
+            isGMLoaded = false
+            for i, gamemode in ipairs(gamemodes) do
+                if i > MAX_GAMEMODES then
+                    outputDebugString('I couldn\'t load any gamemode script. Gamemodes limit is reached. Unable to load ' .. gamemode .. '.amx"', 1)
+                    stopResource(getThisResource())
+                    break
+                end
+                if isGMLoaded == false then
+                    if loadAMX(gamemode, true) then
+                        gamemodeIndex = i
+                        isGMLoaded = true
+                        break
+                    end
+                end
+            end
+        else
+            outputDebugString('I couldn\'t load any gamemode script. Please verify your meta.xml', 1)
+            stopResource(getThisResource())
+		end
+
+		local filterscripts = get(getResourceName(getThisResource()) .. '.filterscripts')
+		if filterscripts then
+			filterscripts = filterscripts:split()
+			filterscriptsCount = 0
+			for i, filterscript in ipairs(filterscripts) do
+				if filterscriptsCount < MAX_FILTERSCRIPTS then
+					if loadAMX(filterscript, false) then
+						filterscriptsCount = filterscriptsCount + 1
+					end
+				else
+					outputDebugString('  Filterscripts Limit is already reached. Failed to load ' .. filterscript .. '.amx"', 2)
+                    break
+				end
+			end
+            outputDebugString("  Loaded " .. filterscriptsCount .. " filterscripts.")
+        end
+
+        if get(getResourceName(getThisResource()) .. '.rcon_password') == 'changeme' then
+            outputDebugString('Error: Your password must be changed from the default password, please change it.', 1)
+            stopResource(getThisResource())
+        end
+
+		-- TODO(q): this needs to be added back later
+		-- exports.amxscoreboard:addScoreboardColumn('Score')
+	end,
+	false
 )
 
 addEventHandler('onResourceStop', resourceRoot,
 	function()
 		-- TODO(q): this needs to be added back later
 		-- exports.amxscoreboard:removeScoreboardColumn('Score')
-		table.each(g_LoadedAMXs, unloadAMX, false)
+		table.each(g_LoadedAMXs, unloadAMX, true)
 		amxUnloadAllPlugins()
-		for i=0,49 do
+		for i = 0, 49 do
 			setGarageOpen(i, false)
 		end
-		setWeather(0)
+        setWeather(0)
+        gamemodeIndex = 0
 	end
 )
 
 function getRunningGameMode()
-	for name,amx in pairs(g_LoadedAMXs) do
+	for name, amx in pairs(g_LoadedAMXs) do
 		if amx.type == 'gamemode' then
 			return amx
 		end
@@ -253,9 +262,9 @@ end
 
 function getRunningFilterScripts()
 	local result = {}
-	for name,amx in pairs(g_LoadedAMXs) do
+	for name, amx in pairs(g_LoadedAMXs) do
 		if amx.type == 'filterscript' then
-			result[#result+1] = amx
+			result[#result + 1] = amx
 		end
 	end
 	return result
@@ -264,14 +273,14 @@ end
 function isWeaponSyncingNeeded(amx)
 	local fns = { 'GetPlayerWeaponData', 'RemovePlayerFromVehicle', 'SetVehicleToRespawn' }
 	if amx then
-		for i,fn in ipairs(fns) do
+		for i, fn in ipairs(fns) do
 			if table.find(amx.natives, fn) then
 				return true
 			end
 			return false
 		end
 	else
-		for name,amx in pairs(g_LoadedAMXs) do
+		for name, amx in pairs(g_LoadedAMXs) do
 			if isWeaponSyncingNeeded(amx) then
 				return true
 			end
@@ -284,7 +293,7 @@ function readPrefixTable(hFile, offset, length, nameAsKey)
 	-- build a name lookup table {name = offset} or {index = name}
 	local entryOffset, entryNameOffset
 	local result = {}
-	for i=0,length/8-1 do
+	for i = 0, length / 8 - 1 do
 		entryOffset = readDWORDAt(hFile, offset)
 		entryName = readString(hFile, readDWORD(hFile))
 		if nameAsKey then
@@ -311,11 +320,11 @@ function procCallInternal(amx, nameOrOffset, ...)
 	local ret
 	if type(nameOrOffset) == 'number' then
 		if nameOrOffset == amx.main then
-			 ret = amxCall(amx.cptr, -1, ...)
+			ret = amxCall(amx.cptr, -1, ...)
 		end
 	else
-		if(g_EventNames[nameOrOffset]) then
-			for k,v in pairs(g_Events) do
+		if (g_EventNames[nameOrOffset]) then
+			for k, v in pairs(g_Events) do
 				if v == nameOrOffset then
 					amxCall(amx.cptr, k, ...)
 				end
@@ -328,7 +337,7 @@ function procCallInternal(amx, nameOrOffset, ...)
 end
 
 function procCallOnAll(fnName, ...)
-	for name,amx in pairs(g_LoadedAMXs) do
+	for name, amx in pairs(g_LoadedAMXs) do
 		if amx.type == 'filterscript' and procCallInternal(amx, fnName, ...) ~= 0 and fnName == 'OnPlayerCommandText' then
 			return true
 		end

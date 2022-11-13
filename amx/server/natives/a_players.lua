@@ -61,7 +61,7 @@ end
 
 -- Weapon
 function GetPlayerWeaponState(amx, player)
-	-- -1 WEAPONSTATE_UNKNOWN 
+	-- -1 WEAPONSTATE_UNKNOWN
 	-- 0 WEAPONSTATE_NO_BULLETS
 	-- 1 WEAPONSTATE_LAST_BULLET
 	-- 2 WEAPONSTATE_MORE_BULLETS
@@ -72,11 +72,11 @@ function GetPlayerWeaponState(amx, player)
 
 	-- TODO: Function don't return 3 because a isPedReloadingWeapon function only client-side
 	local ammo = getPedAmmoInClip(player)
-	if ammo == 0 then 
+	if ammo == 0 then
 		return 0
-	elseif ammo == 1 then 
+	elseif ammo == 1 then
 		return 1
-	elseif ammo >= 2 then 
+	elseif ammo >= 2 then
 		return 2
 	else
 		return -1
@@ -662,14 +662,14 @@ function ClearAnimations(amx, player)
 	g_Players[getElemID(player)].specialaction = SPECIAL_ACTION_NONE
 end
 
-function GetPlayerAnimationIndex(player)
-	notImplemented('GetPlayerAnimationIndex')
-	return 0
+function GetPlayerAnimationIndex(amx, player)
+	local block, anim = getPedAnimation(player)
+	return SAMP_Animation_ID[(block..":"..anim)]
 end
 
-function GetAnimationName(amx)
-	notImplemented('GetAnimationName')
-	return false
+function GetAnimationName(amx, player)
+	local block, anim = getPedAnimation(player)
+	return (block..":"..anim)
 end
 
 function GetPlayerSpecialAction(amx, player)
@@ -820,7 +820,7 @@ function InterpolateCameraLookAt(amx, player, FromX, FromY, FromZ, ToX, ToY, ToZ
 end
 
 function IsPlayerAdmin(amx, player)
-	return isPlayerInACLGroup(player, 'Admin') or isPlayerInACLGroup(player, 'Console')
+	return isPlayerInACLGroup(player, 'Admin') or isObjectInACLGroup("rcon." .. getPlayerName(player), aclGetGroup("Admin")) or isPlayerInACLGroup(player, 'Console')
 end
 
 function IsPlayerConnected(amx, playerID)

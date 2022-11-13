@@ -211,7 +211,7 @@ function destroyClassSelGUI()
 	setGravity(0.008)
 	setElementCollisionsEnabled(localPlayer, true)
 	showCursor(false)
-	if g_ClassSelectionInfo then
+	if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
 		removeEventHandler ( "onClientGUIClick", g_ClassSelectionInfo.gui.btnLeft, ClassSelLeft )
 		removeEventHandler ( "onClientGUIClick", g_ClassSelectionInfo.gui.btnRight, ClassSelRight )
 		removeEventHandler ( "onClientGUIClick", g_ClassSelectionInfo.gui.btnSpawn, ClassSelSpawn )
@@ -276,7 +276,7 @@ function showIntroScene()
 end
 -----------------------------
 -- Pickup related
-function pickupOnInteriorChangeLoop() 
+function pickupOnInteriorChangeLoop()
 	local vw = getElementDimension(localPlayer)
 	local interior = getElementInterior(localPlayer)
 	for i, v in ipairs(getElementsByType("pickup", root)) do --Only for those that are streamed in
@@ -313,12 +313,12 @@ local ca = {}
 ca.active = 0
 ca.objCamPos = nil
 ca.dist = 0.025
-ca.speed = 5 
-ca.x = math.rad(60) 
-ca.y = math.rad(60) 
-ca.z = math.rad(15) 
-ca.maxZ = math.rad(89) 
-ca.minZ = math.rad(-45) 
+ca.speed = 5
+ca.x = math.rad(60)
+ca.y = math.rad(60)
+ca.z = math.rad(15)
+ca.maxZ = math.rad(89)
+ca.minZ = math.rad(-45)
 
 function removeCamAttachHandler()
 	outputConsole('removeCamAttachHandler was called')
@@ -334,12 +334,12 @@ function camAttachRender()
 		if ca.objCamPos ~= nil then
 			x1,y1,z1 = getElementPosition(ca.objCamPos)
 		end
-		local camDist = ca.dist 
-		local cosZ = math.cos(ca.z) 
-		local camX = x1 + math.cos(ca.x)*camDist*cosZ 
-		local camY = y1 + math.sin(ca.y)*camDist*cosZ 
-		local camZ = z1 + math.sin(ca.z)*camDist 
-		setCameraMatrix(camX, camY, camZ, x1, y1, z1) 
+		local camDist = ca.dist
+		local cosZ = math.cos(ca.z)
+		local camX = x1 + math.cos(ca.x)*camDist*cosZ
+		local camY = y1 + math.sin(ca.y)*camDist*cosZ
+		local camZ = z1 + math.sin(ca.z)*camDist
+		setCameraMatrix(camX, camY, camZ, x1, y1, z1)
 
 		--If aiming, set the target (does nothing, todo fix)
 		if getPedTask(localPlayer, "secondary", 0) == "TASK_SIMPLE_USE_GUN" or isPedDoingGangDriveby(localPlayer) then
@@ -347,7 +347,7 @@ function camAttachRender()
 			setPlayerHudComponentVisible ( localPlayer, "crosshair", true )
 			outputConsole('ped is aiming')
 		end
-		
+
 		--outputConsole(string.format("camAttachRender - Camera Matrix is: CamPos: %f %f %f CamLookAt: %f %f %f", camX, camY, camZ, x1,y1,z1))
 	else
 		removeEventHandler("onClientPreRender", root, camAttachRender)
@@ -356,20 +356,20 @@ end
 
 function cursorMouseMoveHandler(curX, curY, absX, absY)
 	if (ca.active == 1) then
-		local diffX = curX - 0.5 
-		local diffY = curY - 0.5 
-		local camX = ca.x - diffX*ca.speed 
-		local camY = ca.y - diffX*ca.speed 
-		local camZ = ca.z + (diffY*ca.speed)/math.pi 
-		if(camZ > ca.maxZ) then 
-			camZ = ca.maxZ 
-		end 
-		if(camZ < ca.minZ) then 
-			camZ = ca.minZ 
-		end 
-		ca.x = camX 
-		ca.y = camY 
-		ca.z = camZ 
+		local diffX = curX - 0.5
+		local diffY = curY - 0.5
+		local camX = ca.x - diffX*ca.speed
+		local camY = ca.y - diffX*ca.speed
+		local camZ = ca.z + (diffY*ca.speed)/math.pi
+		if(camZ > ca.maxZ) then
+			camZ = ca.maxZ
+		end
+		if(camZ < ca.minZ) then
+			camZ = ca.minZ
+		end
+		ca.x = camX
+		ca.y = camY
+		ca.z = camZ
 	else
 		removeEventHandler("onClientCursorMove", root, cursorMouseMoveHandler)
 	end
@@ -388,7 +388,7 @@ end
 local sm = {}
 sm.moov = 0
 sm.objCamPos,sm.objLookAt = nil,nil
- 
+
 function removeInterpCamHandler()
 	outputConsole('removeInterpCamHandler was called')
 	if(sm.moov == 1) then
@@ -396,7 +396,7 @@ function removeInterpCamHandler()
 		sm.moov = 0
 	end
 end
- 
+
 function camRender()
 	if (sm.moov == 1) then
 		local x1,y1,z1,x2,y2,z2 = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
@@ -416,7 +416,7 @@ end
 function setupCameraObject(camObj, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	sm.moov = 1
 	camObj = createObject(1337, FromX, FromY, FromZ)
-	setElementCollisionsEnabled (camObj, false) 
+	setElementCollisionsEnabled (camObj, false)
 	setElementAlpha(camObj, 0)
 	setObjectScale(camObj, 0.01)
 	moveObject(camObj, time, ToX, ToY, ToZ, ToX, ToY, ToZ, "InOutQuad")
@@ -878,7 +878,7 @@ function initTextDraw(textdraw)
 	--Set the height based on the text size
 	textdraw.theight = tHeight
 	textdraw.twidth = tWidth
-	
+
 	local text = textdraw.text:gsub('~k~~(.-)~', getSAMPBoundKey)
 	local lines = {}
 	local pos, stop, c
@@ -993,9 +993,9 @@ function renderTextDraws()
 			local vertHudScale = hudGetVerticalScale()
 			local horHudScale = hudGetHorizontalScale()
 
-			local scalex = screenWidth * horHudScale * letterWidth;
-			local scaley = screenHeight * vertHudScale * letterHeight * 0.5;
-			
+			local scalex = screenWidth * horHudScale * letterWidth
+			local scaley = screenHeight * vertHudScale * letterHeight * 0.5
+
 			local sourceY = screenHeight - ((DEFAULT_SCREEN_HEIGHT - textdraw.y) * (screenHeight * vertHudScale))
 			local sourceX = screenWidth - ((DEFAULT_SCREEN_WIDTH - textdraw.x) * (screenWidth * horHudScale))
 
@@ -1029,7 +1029,7 @@ function renderTextDraws()
 					end
 				end
 				y = sourceY
-				
+
 				--Calculates box height
 				if textdraw.boxsize and textdraw.text:match('^%s*$') then
 					h = textdraw.boxsize[2]
@@ -1040,7 +1040,7 @@ function renderTextDraws()
 				dxDrawRectangle(x, y, w * getAspectRatio(), h * getAspectRatio(), boxcolor)
 				--outputConsole(string.format("Drawing textdraw box: sourceX: %f, sourceY: %f %s", sourceX, sourceY, textdraw.text))
 			end
-				
+
 			for i,part in pairs(textdraw.parts) do
 
 				sourceY = screenHeight - ((DEFAULT_SCREEN_HEIGHT - part.y) * (screenHeight * vertHudScale))
@@ -1091,7 +1091,7 @@ function GameTextForPlayer(text, time, style)
 	destroyAllGameTextsWithStyle(style) --So same styles don't overlap
 
 	--[[
-		alignments 	
+		alignments
 			1 = left
 			2 = center
 			3 = right
@@ -1158,7 +1158,7 @@ function renderTextLabels()
 			local dist = getDistanceBetweenPoints3D(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z)
 			local vw = getElementDimension(localPlayer)
 			local LOS = isLineOfSightClear(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z, true, false, false)
-			
+
 			if screenX and dist <= textlabel.dist and (vw == textlabel.vw or textlabel.vw == -1) then --Because player textlabels don't have VW's, since we're processing both here
 				if not textlabel.los then
 					dxDrawText(textlabel.text, screenX, screenY, screenX, screenY, tocolor(textlabel.color.r, textlabel.color.g, textlabel.color.b, textlabel.color.a), 1.0, "default-bold", "center", "top", false, false, false, true)
@@ -1264,8 +1264,8 @@ function TextDrawPropertyChanged(id, prop, newval, skipInit)
 
 	local textdraw = g_TextDraws[clientTDIdx]
 
-	--outputConsole('[TextDrawPropertyChanged]: Received new property ' .. prop .. ' - ' .. newval .. ' for ' .. textdraw.text) 
-	
+	--outputConsole('[TextDrawPropertyChanged]: Received new property ' .. prop .. ' - ' .. newval .. ' for ' .. textdraw.text)
+
 	textdraw[prop] = newval
 	if prop == 'boxsize' then
 		textdraw.boxsize[1] = textdraw.boxsize[1]
@@ -1681,7 +1681,7 @@ function createListDialog(titleText, message, button1txt, button2txt)
 	if #button1txt == 0 or #button2txt == 0 then
 		xpos = 0.40 --Center
 	end
-	
+
 	listButton1 = guiCreateButton(xpos ~= 0.0 and xpos or 0.3, 0.9, 0.15, 0.1, button1txt,true,listWindow)
 	listButton2 = guiCreateButton(xpos ~= 0.0 and xpos or 0.5, 0.9, 0.15, 0.1, button2txt,true,listWindow)
 
@@ -1725,7 +1725,7 @@ function createInputDialog(titleText, message, button1txt, button2txt)
 		if #button2txt == 0 then
 			guiSetVisible(inputButton2, false)
 		end
-		
+
 		guiSetVisible(inputWindow, false)
 		addEventHandler("onClientGUIClick", inputButton1, OnInputDialogButton1Click, false)
 		addEventHandler("onClientGUIClick", inputButton2, OnInputDialogButton2Click, false)
@@ -1780,7 +1780,7 @@ function OnListDialogButton1Click( button, state )
 	if button == "left" then
 		local row, column = guiGridListGetSelectedItem(listGrid)
 		local text = guiGridListGetItemText(listGrid, row, column)
-		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), listDialog, 1, row, text);
+		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), listDialog, 1, row, text)
 		guiSetVisible(listWindow, false)
 		showCursor(false)
 		listDialog = nil
@@ -1792,7 +1792,7 @@ function OnListDialogButton2Click( button, state )
 	if button == "left" then
 		local row, column = guiGridListGetSelectedItem(listGrid)
 		local text = guiGridListGetItemText(listGrid, row, column)
-		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), listDialog, 0, row, text);
+		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), listDialog, 0, row, text)
 		guiSetVisible(listWindow, false)
 		showCursor(false)
 		listDialog = nil
@@ -1802,7 +1802,7 @@ end
 
 function OnInputDialogButton1Click( button, state )
 	if button == "left" then
-		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), inputDialog, 1, 0, guiGetText(inputEdit));
+		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), inputDialog, 1, 0, guiGetText(inputEdit))
 		guiSetVisible(inputWindow, false)
 		showCursor(false)
 		inputDialog = nil
@@ -1811,7 +1811,7 @@ end
 
 function OnInputDialogButton2Click( button, state )
 	if button == "left" then
-		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), inputDialog, 0, 0, guiGetText(inputEdit));
+		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), inputDialog, 0, 0, guiGetText(inputEdit))
 		guiSetVisible(inputWindow, false)
 		showCursor(false)
 		inputDialog = nil
@@ -1820,7 +1820,7 @@ end
 
 function OnMessageDialogButton1Click( button, state )
 	if button == "left" then
-		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), msgDialog, 1, 0, "");
+		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), msgDialog, 1, 0, "")
 		guiSetVisible(msgWindow, false)
 		showCursor(false)
 		msgDialog = nil
@@ -1829,7 +1829,7 @@ end
 
 function OnMessageDialogButton2Click( button, state )
 	if button == "left" then
-		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), msgDialog, 0, 0, "");
+		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), msgDialog, 0, 0, "")
 		guiSetVisible(msgWindow, false)
 		msgDialog = nil
 		showCursor(false)
@@ -1845,26 +1845,26 @@ function guiCreateColoredLabel(ax, ay, bx, by,str, parent, relative) --x, y, wid
 	local scrollpane = guiCreateScrollPane(ax,ay,bx,by,relative,parent)
 	--outputConsole('main string:' .. str)
 
-    local pat = "(.-)#(%x%x%x%x%x%x)" 
-    local s, e, cap, col = str:find(pat, 1) 
-    local last = 1 
-	local labels = {} 
+    local pat = "(.-)#(%x%x%x%x%x%x)"
+    local s, e, cap, col = str:find(pat, 1)
+    local last = 1
+	local labels = {}
 	local incy = 0
 	local incx = 0
-	while s do 
-		
-        if cap == "" and col then r,g,b = tonumber("0x"..col:sub(1, 2)), tonumber("0x"..col:sub(3, 4)), tonumber("0x"..col:sub(5, 6)) end 
-		if (s ~= 1) or cap ~= "" then 
+	while s do
+
+        if cap == "" and col then r,g,b = tonumber("0x"..col:sub(1, 2)), tonumber("0x"..col:sub(3, 4)), tonumber("0x"..col:sub(5, 6)) end
+		if (s ~= 1) or cap ~= "" then
 			--outputConsole('guiCreateColoredLabel: ' .. cap)
 
-			lbl = guiCreateLabel(ax + incx, ay + incy, 1.0, by, cap, relative, scrollpane) 
+			lbl = guiCreateLabel(ax + incx, ay + incy, 1.0, by, cap, relative, scrollpane)
 			guiLabelSetHorizontalAlign(lbl, "left")
-            table.insert(labels, lbl) 
-            if (r == nil) then r = 255 end 
-            if (g == nil) then g = 255 end 
-            if (b == nil) then b = 255 end 
-			guiLabelSetColor(lbl,r,g,b)  
-			r,g,b = tonumber("0x"..col:sub(1, 2)), tonumber("0x"..col:sub(3, 4)), tonumber("0x"..col:sub(5, 6)) 
+            table.insert(labels, lbl)
+            if (r == nil) then r = 255 end
+            if (g == nil) then g = 255 end
+            if (b == nil) then b = 255 end
+			guiLabelSetColor(lbl,r,g,b)
+			r,g,b = tonumber("0x"..col:sub(1, 2)), tonumber("0x"..col:sub(3, 4)), tonumber("0x"..col:sub(5, 6))
 
 			local match = cap:find("\n")
 			if match ~= nil then
@@ -1883,26 +1883,26 @@ function guiCreateColoredLabel(ax, ay, bx, by,str, parent, relative) --x, y, wid
 					incx = 0
 				end
 			end
-        end 
-        last = e + 1 
-        s, e, cap, col = str:find(pat, last) 
-    end 
-    if (last <= #str) then 
-        cap = str:sub(last) 
-        lbl2 = guiCreateLabel(ax + incx, ay + incy, 1.0, by, cap, relative, scrollpane) 
-        table.insert(labels, lbl2) 
-        guiLabelSetColor(lbl2,r,g,b) 
+        end
+        last = e + 1
+        s, e, cap, col = str:find(pat, last)
     end
-    return labels 
+    if (last <= #str) then
+        cap = str:sub(last)
+        lbl2 = guiCreateLabel(ax + incx, ay + incy, 1.0, by, cap, relative, scrollpane)
+        table.insert(labels, lbl2)
+        guiLabelSetColor(lbl2,r,g,b)
+    end
+    return labels
 end
 
 --replace colors
-function colorizeString(string) 
+function colorizeString(string)
 	return string:gsub("(=?{[0-9A-Fa-f]*})",
 	function(colorMatches)
 		colorMatches = colorMatches:gsub("[{}]+", "") --replace the curly brackets with nothing
 		colorMatches = '#' .. colorMatches --Append to the beginning
-		return colorMatches 
+		return colorMatches
 	end)
 end
 

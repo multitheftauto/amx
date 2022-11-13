@@ -1,54 +1,61 @@
 <meta>
     <info name="AMX" author="adamix" type="gamemode" />
-    <min_mta_version server="1.5.5-9.14060"></min_mta_version>
+    <min_mta_version server="1.5.7-9.20635" client="1.5.7-9.20582"></min_mta_version>
 
-    <script src="server/defines.lua" type="server" />
-    <script src="shared/anim_define.lua" type="shared" />
-    <script src="server/util.lua" type="server" />
-    <script src="server/_triggerqueue.lua" type="server" />
-    <script src="server/rcon.lua" type="server" />
+    <script src="server/defines.lua" type="server" validate="true" />
+    <script src="shared/anim_define.lua" type="shared" cache="false" validate="true" />
+    <script src="server/util.lua" type="server" validate="true" />
+    <script src="server/_triggerqueue.lua" type="server" validate="true" />
+    <script src="server/rcon.lua" type="server" validate="true" />
 
-    <script src="server/natives/a_samp.lua" type="server" />
-    <script src="server/natives/a_objects.lua" type="server" />
-    <script src="server/natives/a_players.lua" type="server" />
-    <script src="server/natives/a_vehicles.lua" type="server" />
-    <script src="server/natives/a_actors.lua" type="server" />
-    <script src="server/natives/a_npc.lua" type="server" />
-    <script src="server/natives/a_http.lua" type="server" />
-    <script src="server/natives/a_sampdb.lua" type="server" />
-    <script src="server/natives/a_mta.lua" type="server" />
+    <script src="server/natives/a_samp.lua" type="server" validate="true" />
+    <script src="server/natives/a_objects.lua" type="server" validate="true" />
+    <script src="server/natives/a_players.lua" type="server" validate="true" />
+    <script src="server/natives/a_vehicles.lua" type="server" validate="true" />
+    <script src="server/natives/a_actors.lua" type="server" validate="true" />
+    <script src="server/natives/a_npc.lua" type="server" validate="true" />
+    <script src="server/natives/a_http.lua" type="server" validate="true" />
+    <script src="server/natives/a_mta.lua" type="server" validate="true" />
 
-    <script src="server/syscalls.lua" type="server" />
-    <script src="server/events.lua" type="server" />
-    <script src="server/amx.lua" type="server" />
+    <script src="server/syscalls.lua" type="server" validate="true" />
+    <script src="server/events.lua" type="server" validate="true" />
+    <script src="server/amx.lua" type="server" validate="true" />
 
-    <script src="client/util.lua" type="client" />
-    <script src="client/anim.lua" type="client" />
-    <script src="client/arrowmarkers.lua" type="client" />
-    <script src="client/mouselook.lua" type="client" />
-    <script src="client/client.lua" type="client" />
-    <script src="client/bars.lua" type="client" />
-    <script src="client/garages.lua" type="client" />
+    <script src="client/util.lua" type="client" cache="false" validate="true" />
+    <script src="client/anim.lua" type="client" cache="false" validate="true" />
+    <script src="client/arrowmarkers.lua" type="client" cache="false" validate="true" />
+    <script src="client/mouselook.lua" type="client" cache="false" validate="true" />
+    <script src="client/client.lua" type="client" cache="false" validate="true" />
+    <script src="client/samp_nametags.lua" type="client" cache="false" validate="true" />
+    <script src="client/garages.lua" type="client" cache="false" validate="true" />
 
-    <!-- 
+    <!--
         Bone_attach: Credit to  Devan_LT (also known as CrystalMV)
         https://forum.mtasa.com/profile/1985-crystalmv/
-        https://wiki.multitheftauto.com/wiki/Resource:Bone_attach 
+        https://wiki.multitheftauto.com/wiki/Resource:Bone_attach
     -->
-    <script src="shared/bone_attach.lua" />
-	<script src="client/bone_attach_c.lua" type="client" />
-	<script src="shared/attach_func.lua" />
-	<script src="shared/attach_func.lua" type="client" />
-	<script src="client/bone_pos_rot.lua" type="client" />
+    <script src="shared/bone_attach.lua" type="shared" cache="false" validate="true" />
+	<script src="client/bone_attach_c.lua" type="client" cache="false" validate="true" />
+	<script src="shared/attach_func.lua" type="shared" cache="false" validate="true" />
+	<script src="shared/attach_func.lua" type="client" cache="false" validate="true" />
+	<script src="client/bone_pos_rot.lua" type="client" cache="false" validate="true" />
 
-    <file src="client/logo_small.png" />
-    <file src="client/closebtn.png" />
-    <file src="client/closebtn_hover.png" />
+    <script src="shared/extras/streamer.lua" type="shared" cache="false" validate="true" />
+    <script src="shared/extras/Pawn.RakNet.lua" type="shared" cache="false" validate="true" />
+    <script src="shared/extras/Pawn.CMD.lua" type="shared" cache="false" validate="true" />
+    <script src="shared/extras/Pawn.Regex.lua" type="shared" cache="false" validate="true" />
+    <script src="shared/extras/ColAndreas.lua" type="shared" cache="false" validate="true" />
+    <script src="shared/extras/bcrypt.lua" type="shared" cache="false" validate="true" />
+
+    <file src="client/logo_small.png" download="true" />
+    <file src="client/closebtn.png" download="true" />
+    <file src="client/closebtn_hover.png" download="true" />
+    <file src="client/arial.ttf" download="true" />
 
     <!-- <include resource="amxscoreboard" /> -->
 
     <aclrequest>
-
+        <right name="function.getClientIP" access="true" />
         <right name="general.ModifyOtherObjects" access="true"></right>
         <right name="function.fetchRemote" access="true"></right>
         <right name="function.startResource" access="true"></right>
@@ -57,7 +64,11 @@
     </aclrequest>
 
     <settings>
-        <setting name="filterscripts" value="" />
+        <setting name="filterscripts" value="test.amx" />
+        <setting name="gamemodes" value="test.amx " />
         <setting name="plugins" value="" />
+        <setting name="debug" value="true" />
+        <setting name="rcon_password" value="changeme" />
     </settings>
+    <download_priority_group>999</download_priority_group>
 </meta>

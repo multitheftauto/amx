@@ -432,7 +432,7 @@ end
 function clamp(n, min, max)
 	return math.max(min, math.min(max, n))
  end
- 
+
 -- Table extensions
 
 local _table_insert = table.insert
@@ -687,6 +687,7 @@ end
 
 local string, fileSetPos, fileRead = string, fileSetPos, fileRead
 
+--[[
 function getResourceAMXFiles(res)
 	local result = false
 
@@ -708,6 +709,7 @@ function getResourceAMXFiles(res)
 	xmlUnloadFile(meta)
 	return result
 end
+--]]
 
 function fileReadLine(hFile)
 	local fileRead, fileIsEOF = fileRead, fileIsEOF
@@ -1045,13 +1047,13 @@ end
 
 function deprecated(native, version, additional)
 	if native ~= nil then
-		if version ~= '' or version ~= nil then 
+		if version ~= '' or version ~= nil then
 			outputDebugString(native..' has been deprecated since '..version..' and will no longer be available.')
-			return;
+			return
 		end
-		if additional ~= '' or additional ~= nil then 
+		if additional ~= '' or additional ~= nil then
 			outputDebugString(native..' has been deprecated since '..version..' and will no longer be available. More info: '.. additional .. '.')
-			return;
+			return
 		end
 		outputDebugString(native..' is deprecated and will no longer be available.')
 	end
@@ -1060,12 +1062,12 @@ end
 function notImplemented(native, additional)
 	if ShowUnimplementedErrors then
 		if native ~= nil then
-			if additional == '' or additional == nil then 
-				outputDebugString('Sorry, but '..native..' is not implemented.')
-				return;
+			if additional == '' or additional == nil then
+				outputDebugString('Sorry, but \''..native..'\' is not implemented.')
+				return
 			else
-				outputDebugString('Sorry, but '..native..' is not implemented. More info: '.. additional..'.')
-				return;
+				outputDebugString('Sorry, but \''..native..'\' is not implemented. More info: '.. additional..'.')
+				return
 			end
 		end
 	end
