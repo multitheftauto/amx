@@ -87,7 +87,7 @@ int AMXAPI aux_LoadProgram(AMX *amx, char *filename, void *memblock)
     return AMX_ERR_FORMAT;
 
   /* initialize the abstract machine */
-  memset(amx, 0, sizeof *amx);
+  memset(amx, 0, sizeof(AMX));
   result = amx_Init(amx, memblock);
 
   /* free the memory block on error, if it was allocated here */
@@ -111,39 +111,39 @@ int AMXAPI aux_FreeProgram(AMX *amx)
 
 char * AMXAPI aux_StrError(int errnum)
 {
-static char *messages[] = {
-      /* AMX_ERR_NONE      */ "(none)",
-      /* AMX_ERR_EXIT      */ "Forced exit",
-      /* AMX_ERR_ASSERT    */ "Assertion failed",
-      /* AMX_ERR_STACKERR  */ "Stack/heap collision (insufficient stack size)",
-      /* AMX_ERR_BOUNDS    */ "Array index out of bounds",
-      /* AMX_ERR_MEMACCESS */ "Invalid memory access",
-      /* AMX_ERR_INVINSTR  */ "Invalid instruction",
-      /* AMX_ERR_STACKLOW  */ "Stack underflow",
-      /* AMX_ERR_HEAPLOW   */ "Heap underflow",
-      /* AMX_ERR_CALLBACK  */ "No (valid) native function callback",
-      /* AMX_ERR_NATIVE    */ "Native function failed",
-      /* AMX_ERR_DIVIDE    */ "Divide by zero",
-      /* AMX_ERR_SLEEP     */ "(sleep mode)",
-      /* 13 */                "(reserved)",
-      /* 14 */                "(reserved)",
-      /* 15 */                "(reserved)",
-      /* AMX_ERR_MEMORY    */ "Out of memory",
-      /* AMX_ERR_FORMAT    */ "Invalid/unsupported P-code file format",
-      /* AMX_ERR_VERSION   */ "File is for a newer version of the AMX",
-      /* AMX_ERR_NOTFOUND  */ "File or function is not found",
-      /* AMX_ERR_INDEX     */ "Invalid index parameter (bad entry point)",
-      /* AMX_ERR_DEBUG     */ "Debugger cannot run",
-      /* AMX_ERR_INIT      */ "AMX not initialized (or doubly initialized)",
-      /* AMX_ERR_USERDATA  */ "Unable to set user data field (table full)",
-      /* AMX_ERR_INIT_JIT  */ "Cannot initialize the JIT",
-      /* AMX_ERR_PARAMS    */ "Parameter error",
-      /* AMX_ERR_DOMAIN    */ "Domain error, expression result does not fit in range",
-      /* AMX_ERR_GENERAL   */ "General error (unknown or unspecific error)",
+    static char *messages[] = {
+        /* AMX_ERR_NONE      */ "(None)",
+        /* AMX_ERR_EXIT      */ "Forced exit",
+        /* AMX_ERR_ASSERT    */ "Assertion failed",
+        /* AMX_ERR_STACKERR  */ "Stack/heap collision (insufficient stack size)",
+        /* AMX_ERR_BOUNDS    */ "Array index out of bounds",
+        /* AMX_ERR_MEMACCESS */ "Invalid memory access",
+        /* AMX_ERR_INVINSTR  */ "Invalid instruction",
+        /* AMX_ERR_STACKLOW  */ "Stack underflow",
+        /* AMX_ERR_HEAPLOW   */ "Heap underflow",
+        /* AMX_ERR_CALLBACK  */ "No (valid) callback",
+        /* AMX_ERR_NATIVE    */ "Native function failed",
+        /* AMX_ERR_DIVIDE    */ "Divide by zero",
+        /* AMX_ERR_SLEEP     */ "sleep mode",
+        /* AMX_ERR_INVSTATE  */ "Invalid state",
+        /* 14 */                "(reserved)",
+        /* 15 */                "(reserved)",
+        /* AMX_ERR_MEMORY    */ "Out of memory",
+        /* AMX_ERR_FORMAT    */ "Invalid/unsupported P-code file format",
+        /* AMX_ERR_VERSION   */ "File is for a newer version of the AMX",
+        /* AMX_ERR_NOTFOUND  */ "File or function is not found",
+        /* AMX_ERR_INDEX     */ "Invalid index parameter (bad entry point)",
+        /* AMX_ERR_DEBUG     */ "Debugger cannot run",
+        /* AMX_ERR_INIT      */ "AMX not initialized (or doubly initialized)",
+        /* AMX_ERR_USERDATA  */ "Unable to set user data field (table full)",
+        /* AMX_ERR_INIT_JIT  */ "Cannot initialize the JIT",
+        /* AMX_ERR_PARAMS    */ "Parameter error",
+        /* AMX_ERR_DOMAIN    */ "Domain error, expression result does not fit in range",
+        /* AMX_ERR_GENERAL   */ "General error (unknown or unspecific error)"
     };
-  if (errnum < 0 || errnum >= sizeof messages / sizeof messages[0])
-    return "(unknown)";
-  return messages[errnum];
+    if (errnum < 0 || errnum >= sizeof messages / sizeof messages[0])
+        return "(unknown)";
+    return messages[errnum];
 }
 
 int AMXAPI aux_GetSection(AMX *amx, int section, cell **start, size_t *size)
@@ -154,7 +154,7 @@ int AMXAPI aux_GetSection(AMX *amx, int section, cell **start, size_t *size)
     return AMX_ERR_PARAMS;
 
   hdr = (AMX_HEADER*)amx->base;
-  switch(section) {
+  switch (section) {
   case CODE_SECTION:
     *start = (cell *)(amx->base + hdr->cod);
     *size = hdr->dat - hdr->cod;

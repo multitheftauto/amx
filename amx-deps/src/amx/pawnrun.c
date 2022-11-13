@@ -28,6 +28,7 @@
 #include <string.h>     /* for memset() (on some compilers) */
 #include "osdefs.h"     /* for _MAX_PATH */
 #include "amx.h"
+#include "amxaux.h"
 
 #include <time.h>
 #if !defined CLOCKS_PER_SEC     /* some (older) compilers do not have it */
@@ -49,8 +50,10 @@
  * extension modules may be dynamically linked (depending on whether
  * support for dynamic linking is enabled).
  */
-extern int AMXEXPORT amx_ConsoleInit(AMX *amx);
-extern int AMXEXPORT amx_CoreInit(AMX *amx);
+extern int AMXEXPORT AMXAPI amx_ConsoleInit(AMX *amx);
+extern int AMXEXPORT AMXAPI amx_ConsoleCleanup(AMX *amx);
+extern int AMXEXPORT AMXAPI amx_CoreInit(AMX *amx);
+extern int AMXEXPORT AMXAPI amx_CoreCleanup(AMX *amx);
 
 AMX *global_amx;
 int AMXAPI srun_Monitor(AMX *amx);
@@ -93,117 +96,6 @@ int AMXAPI srun_Monitor(AMX *amx)
   return abortflagged ? AMX_ERR_EXIT : AMX_ERR_NONE;
 }
 
-/* aux_LoadProgram()
- * Load a compiled Pawn script into memory and initialize the abstract machine.
- * This function is extracted out of AMXAUX.C.
- */
-int AMXAPI aux_LoadProgram(AMX *amx, char *filename, void *memblock)
-{
-  FILE *fp;
-  AMX_HEADER hdr;
-  int result, didalloc;
-
-  /* open the file, read and check the header */
-  if ((fp = fopen(filename, "rb")) == NULL)
-    return AMX_ERR_NOTFOUND;
-  fread(&hdr, sizeof hdr, 1, fp);
-  amx_Align16(&hdr.magic);
-  amx_Align32((uint32_t *)&hdr.size);
-  amx_Align32((uint32_t *)&hdr.stp);
-  if (hdr.magic != AMX_MAGIC) {
-    fclose(fp);
-    return AMX_ERR_FORMAT;
-  } /* if */
-
-  /* allocate the memblock if it is NULL */
-  didalloc = 0;
-  if (memblock == NULL) {
-    if ((memblock = malloc(hdr.stp)) == NULL) {
-      fclose(fp);
-      return AMX_ERR_MEMORY;
-    } /* if */
-    didalloc = 1;
-    /* after amx_Init(), amx->base points to the memory block */
-  } /* if */
-
-  /* read in the file */
-  rewind(fp);
-  fread(memblock, 1, (size_t)hdr.size, fp);
-  fclose(fp);
-
-  /* initialize the abstract machine */
-  memset(amx, 0, sizeof *amx);
-  result = amx_Init(amx, memblock);
-
-  /* free the memory block on error, if it was allocated here */
-  if (result != AMX_ERR_NONE && didalloc) {
-    free(memblock);
-    amx->base = NULL;                   /* avoid a double free */
-  } /* if */
-
-  /* save the filename, for optionally reading the debug information (we could
-   * also have read it here immediately
-   */
-  #if defined AMXDBG
-    strcpy(g_filename, filename);
-  #endif
-
-  return result;
-}
-
-/* aux_FreeProgram()
- * Clean up a program and free memory.
- * This function is extracted out of AMXAUX.C.
- */
-int AMXAPI aux_FreeProgram(AMX *amx)
-{
-  if (amx->base!=NULL) {
-    amx_Cleanup(amx);
-    free(amx->base);
-    memset(amx,0,sizeof(AMX));
-  } /* if */
-  return AMX_ERR_NONE;
-}
-
-/* aux_StrError()
- * Convert an error code to a "readable" string.
- * This function is extracted out of AMXAUX.C.
- */
-char * AMXAPI aux_StrError(int errnum)
-{
-static char *messages[] = {
-      /* AMX_ERR_NONE      */ "(none)",
-      /* AMX_ERR_EXIT      */ "Forced exit",
-      /* AMX_ERR_ASSERT    */ "Assertion failed",
-      /* AMX_ERR_STACKERR  */ "Stack/heap collision (insufficient stack size)",
-      /* AMX_ERR_BOUNDS    */ "Array index out of bounds",
-      /* AMX_ERR_MEMACCESS */ "Invalid memory access",
-      /* AMX_ERR_INVINSTR  */ "Invalid instruction",
-      /* AMX_ERR_STACKLOW  */ "Stack underflow",
-      /* AMX_ERR_HEAPLOW   */ "Heap underflow",
-      /* AMX_ERR_CALLBACK  */ "No (valid) native function callback",
-      /* AMX_ERR_NATIVE    */ "Native function failed",
-      /* AMX_ERR_DIVIDE    */ "Divide by zero",
-      /* AMX_ERR_SLEEP     */ "(sleep mode)",
-      /* 13 */                "(reserved)",
-      /* 14 */                "(reserved)",
-      /* 15 */                "(reserved)",
-      /* AMX_ERR_MEMORY    */ "Out of memory",
-      /* AMX_ERR_FORMAT    */ "Invalid/unsupported P-code file format",
-      /* AMX_ERR_VERSION   */ "File is for a newer version of the AMX",
-      /* AMX_ERR_NOTFOUND  */ "File or function is not found",
-      /* AMX_ERR_INDEX     */ "Invalid index parameter (bad entry point)",
-      /* AMX_ERR_DEBUG     */ "Debugger cannot run",
-      /* AMX_ERR_INIT      */ "AMX not initialized (or doubly initialized)",
-      /* AMX_ERR_USERDATA  */ "Unable to set user data field (table full)",
-      /* AMX_ERR_INIT_JIT  */ "Cannot initialize the JIT",
-      /* AMX_ERR_PARAMS    */ "Parameter error",
-    };
-  if (errnum < 0 || errnum >= sizeof messages / sizeof messages[0])
-    return "(unknown)";
-  return messages[errnum];
-}
-
 void ExitOnError(AMX *amx, int error)
 {
   if (error != AMX_ERR_NONE) {
@@ -214,7 +106,8 @@ void ExitOnError(AMX *amx, int error)
       const char *filename;
     #endif
 
-    printf("Run time error %d: \"%s\" on address %ld\n",
+    printf("%s %d: \"%s\" on address %ld\n",
+           (amx->flags & AMX_FLAG_RELOC) ? "Run time error" : "Error",
            error, aux_StrError(error), (long)amx->cip);
 
     /* optionally use the debug library to find the line number (if debug info.
@@ -253,6 +146,7 @@ int main(int argc,char *argv[])
   clock_t start,end;
   STACKINFO stackinfo = { 0 };
   AMX_IDLE idlefunc;
+  char filename[_MAX_PATH];
 
   if (argc < 2)
     PrintUsage(argv[0]);        /* function "usage" aborts the program */
@@ -267,16 +161,23 @@ int main(int argc,char *argv[])
   #endif
 
   /* Load the program and initialize the abstract machine. */
-  err = aux_LoadProgram(&amx, argv[1], NULL);
-  if (err != AMX_ERR_NONE) {
+  strcpy(filename, argv[1]);
+  err = aux_LoadProgram(&amx, filename, NULL);
+  if (err == AMX_ERR_NOTFOUND) {
     /* try adding an extension */
-    char filename[_MAX_PATH];
-    strcpy(filename, argv[1]);
     strcat(filename, ".amx");
     err = aux_LoadProgram(&amx, filename, NULL);
-    if (err != AMX_ERR_NONE)
+    if (err == AMX_ERR_NOTFOUND)
       PrintUsage(argv[0]);
   } /* if */
+  /* save the filename, for optionally reading the debug information (we could
+   * also have read it here immediately
+   */
+#if defined AMXDBG
+  if (err == AMX_ERR_NONE)
+    strcpy(g_filename, filename);
+#endif
+  ExitOnError(&amx, err);
 
   /* To install the debug hook "just-in-time", the signal function needs
    * a pointer to the abstract machine(s) to abort. There are various ways
@@ -364,9 +265,11 @@ int main(int argc,char *argv[])
 
   end=clock();
 
-  /* Free the compiled script and resources. This also unloads and DLLs or
+  /* Free the compiled script and resources. This also unloads all DLLs or
    * shared libraries that were registered automatically by amx_Init().
    */
+  amx_CoreCleanup(&amx);
+  amx_ConsoleCleanup(&amx);
   aux_FreeProgram(&amx);
 
   /* Print the return code of the compiled script (often not very useful),

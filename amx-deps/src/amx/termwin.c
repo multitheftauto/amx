@@ -1,6 +1,6 @@
 /*  Simple terminal for Microsoft Windows
  *
- *  Copyright (c) ITB CompuPhase, 2004-2006
+ *  Copyright (c) ITB CompuPhase, 2004-2008
  *
  *  This software is provided "as-is", without any express or implied warranty.
  *  In no event will the authors be held liable for any damages arising from
@@ -91,7 +91,7 @@ static BOOL InitWindowClass(HINSTANCE hinst)
     wc.lpfnWndProc=(WNDPROC)ConsoleFunc;
     wc.hInstance=hinst;
     wc.hCursor=LoadCursor(NULL, IDC_ARROW);
-    wc.hIcon=LoadIcon(GetModuleHandle(NULL), "AppIcon");
+    wc.hIcon=LoadIcon(GetModuleHandle(NULL), __T("AppIcon"));
     wc.hbrBackground=(HBRUSH)(COLOR_WINDOW+1);
     wc.lpszClassName=__T("TermWin:Console");
     initok=RegisterClass(&wc);
@@ -863,6 +863,18 @@ int amx_putchar(int c)
           con->buffer[pos]=__T(' ');
           con->buffer[pos+1]=con->attrib;
         } /* if */
+      } else if (c==__T('\t')) {
+        while (con->csrx % 8!=0 && con->csrx<con->columns) {
+          con->buffer[pos]=' ';
+          con->buffer[pos+1]=con->attrib;
+          con->csrx+=1;
+          if (con->csrx>=con->columns && con->autowrap) {
+            con->csrx=0;
+            con->csry++;
+            if (con->csry>=con->lines)
+              ScrollScreen(con,0,1);
+          } /* if */
+        } /* while */
       } else {
         con->buffer[pos]=(TCHAR)c;
         con->buffer[pos+1]=con->attrib;

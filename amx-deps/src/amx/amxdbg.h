@@ -38,8 +38,10 @@ extern  "C" {
 /* Some compilers do not support the #pragma align, which should be fine. Some
  * compilers give a warning on unknown #pragmas, which is not so fine...
  */
-#if defined SN_TARGET_PS2 || defined __GNUC__
-  #define AMX_NO_ALIGN
+#if !defined AMX_NO_ALIGN
+  #if defined SN_TARGET_PS2 || defined __GNUC__ && !defined __clang__ && (__GNUC__ < 4 || __GNUC__ == 4 && __GNUC_MINOR__ < 7)
+    #define AMX_NO_ALIGN
+  #endif
 #endif
 
 #if defined __GNUC__
