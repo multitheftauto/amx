@@ -1,21 +1,20 @@
 /*********************************************************
-*
-*  Multi Theft Auto: San Andreas - Deathmatch
-*
-*  ml_base, External lua add-on module
-*
-*  Copyright ï¿½ 2003-2008 MTA.  All Rights Reserved.
-*
-*  Grand Theft Auto is ï¿½ 2002-2003 Rockstar North
-*
-*  THE FOLLOWING SOURCES ARE PART OF THE MULTI THEFT
-*  AUTO SOFTWARE DEVELOPMENT KIT AND ARE RELEASED AS
-*  OPEN SOURCE FILES. THESE FILES MAY BE USED AS LONG
-*  AS THE DEVELOPER AGREES TO THE LICENSE THAT IS
-*  PROVIDED WITH THIS PACKAGE.
-*
-*********************************************************/
-
+ *
+ *  Multi Theft Auto: San Andreas - Deathmatch
+ *
+ *  ml_base, External lua add-on module
+ *
+ *  Copyright © 2003-2018 MTA.  All Rights Reserved.
+ *
+ *  Grand Theft Auto is © 2002-2018 Rockstar North
+ *
+ *  THE FOLLOWING SOURCES ARE PART OF THE MULTI THEFT
+ *  AUTO SOFTWARE DEVELOPMENT KIT AND ARE RELEASED AS
+ *  OPEN SOURCE FILES. THESE FILES MAY BE USED AS LONG
+ *  AS THE DEVELOPER AGREES TO THE LICENSE THAT IS
+ *  PROVIDED WITH THIS PACKAGE.
+ *
+ *********************************************************/
 #include "StdInc.h"
 
 #include <locale.h>
@@ -88,6 +87,11 @@ void *amxFunctions[] = {
 
 MTAEXPORT bool InitModule ( ILuaModuleManager10 *pManager, char *szModuleName, char *szAuthor, float *fVersion )
 {
+    printf("  '%s' module v%d is being Loaded!", MODULE_NAME, MODULE_VERSION);
+    printf("  Author: %s", MODULE_AUTHOR);
+    printf("  Maintainer: Zorono");
+    printf("  Built on: %s at %s", __DATE__, __TIME__);
+
 	pModuleManager = pManager;
 
 	// Set the module info
@@ -100,15 +104,26 @@ MTAEXPORT bool InitModule ( ILuaModuleManager10 *pManager, char *szModuleName, c
 	pluginInitData[PLUGIN_DATA_AMX_EXPORTS] = amxFunctions;
 	pluginInitData[PLUGIN_DATA_CALLPUBLIC_FS] = (void*)&AMXCallPublicFilterScript;
 	pluginInitData[PLUGIN_DATA_CALLPUBLIC_GM] = (void*)&AMXCallPublicGameMode;
+    //
+	fs::path filterscriptspath = fs::canonical(fs::current_path() / fs::path(std:format("{}/resources/filterscripts", RESOURCE_PATH)));
+	if (!exists(filterscriptspath)) {
+		pModuleManager->ErrorPrintf("filterscripts directory doesn't exist at: %s\n", filterscriptspath.string());
+	}
+	fs::path gamemodespath = fs::canonical(fs::current_path() / fs::path(std:format("{}/resources/gamemodes", RESOURCE_PATH)));
+	if (!exists(gamemodespath)) {
+		pModuleManager->ErrorPrintf("gamemodes directory doesn't exist at: %s\n", gamemodespath.string());
+	}
+	fs::path pluginspath = fs::canonical(fs::current_path() / fs::path(std:format("{}/resources/plugins", RESOURCE_PATH)));
+	if (!exists(pluginspath)) {
+		pModuleManager->ErrorPrintf("plugins directory doesn't exist at: %s\n", pluginspath.string());
+	}
 
-	char* localeInfo = setlocale(LC_ALL, "Russian");
-
-	string PATH = getenv("PATH");
-	PATH += ";mods/deathmatch/resources/amx/plugins/";
+	std::string PATH = getenv("PATH");
+	PATH += std::format(";{}/resources/plugins/", RESOURCE_PATH);
 	setenv_portable("PATH", PATH.c_str(), 1);
 
 	//Setup environment variables
-	fs::path scriptfilespath = fs::canonical(fs::current_path() / fs::path("mods/deathmatch/resources/amx/scriptfiles"));
+	fs::path scriptfilespath = fs::canonical(fs::current_path() / fs::path(std:format("{}/resources/scriptfiles", RESOURCE_PATH)));
 
 	const char* envvar = getenv_portable("MTA_SCRIPTFILESDIR");
 	if (envvar != NULL)
@@ -119,7 +134,6 @@ MTAEXPORT bool InitModule ( ILuaModuleManager10 *pManager, char *szModuleName, c
 	} else {
 		pModuleManager->ErrorPrintf("scriptfiles directory doesn't exist at: %s\n", scriptfilespath.string());
 	}
-
 	return true;
 }
 
@@ -165,10 +179,10 @@ MTAEXPORT void RegisterFunctions ( lua_State * luaVM )
 		pModuleManager->RegisterFunction(luaVM, "amxVersion", CFunctions::amxVersion);
 		pModuleManager->RegisterFunction(luaVM, "amxVersionString", CFunctions::amxVersionString);
 
-		char resNameBuf[4];
+		/*char resNameBuf[4];
 		bool ok = pModuleManager->GetResourceName(luaVM, resNameBuf, 4);
 		if (!ok || std::string(resNameBuf) != "amx")
-			return;
+			return;*/
 
 		mainVM = luaVM;
 
@@ -182,13 +196,10 @@ MTAEXPORT void RegisterFunctions ( lua_State * luaVM )
 		pModuleManager->RegisterFunction(luaVM, "amxUnload", CFunctions::amxUnload);
 		pModuleManager->RegisterFunction(luaVM, "amxUnloadAllPlugins", CFunctions::amxUnloadAllPlugins);
 
-		pModuleManager->RegisterFunction(luaVM, "sqlite3OpenDB", CFunctions::sqlite3OpenDB);
-		pModuleManager->RegisterFunction(luaVM, "sqlite3Query", CFunctions::sqlite3Query);
-		pModuleManager->RegisterFunction(luaVM, "sqlite3CloseDB", CFunctions::sqlite3CloseDB);
-
 		pModuleManager->RegisterFunction(luaVM, "cell2float", CFunctions::cell2float);
 		pModuleManager->RegisterFunction(luaVM, "float2cell", CFunctions::float2cell);
 
+        pModuleManager->RegisterFunction(luaVM, "ServerOS", CFunctions::ServerOS);
 		lua_newtable(luaVM);
 		lua_setfield(luaVM, LUA_REGISTRYINDEX, "amx");
 	}
@@ -205,6 +216,18 @@ MTAEXPORT bool DoPulse ( void )
 
 MTAEXPORT bool ShutdownModule ( void )
 {
-
+	printf("'%s' module is being shut down!\n", MODULE_NAME);
 	return true;
+}
+
+MTAEXPORT bool ResourceStopping(lua_State* luaVM)
+{
+	printf("'%s' resource is being stopped!\n", MODULE_NAME);
+    return true;
+}
+
+MTAEXPORT bool ResourceStopped(lua_State* luaVM)
+{
+	printf("'%s' resource is stopped!\n", MODULE_NAME);
+    return true;
 }

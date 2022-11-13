@@ -27,7 +27,7 @@ class CFunctions
 {
 public:
 
-	static int amxLoadPlugin(lua_State *luaVM);
+	static bool amxLoadPlugin(lua_State *luaVM);
 	static int amxIsPluginLoaded(lua_State *luaVM);
 	static int amxLoad(lua_State *luaVM);
 	static int amxCall(lua_State *luaVM);
@@ -35,7 +35,7 @@ public:
 	static int amxMTWriteDATCell(lua_State *luaVM);
 	static int amxReadString(lua_State *luaVM);
 	static int amxWriteString(lua_State *luaVM);
-	static int amxUnload(lua_State *luaVM);
+	static bool amxUnload(lua_State *luaVM);
 	static int amxUnloadAllPlugins(lua_State *luaVM);
 
 	static int amxRegisterLuaPrototypes(lua_State *luaVM);
@@ -43,14 +43,11 @@ public:
 	static int amxVersionString(lua_State *luaVM);
 	static int startResource(lua_State *luaVM);
 
-	static int sqlite3OpenDB(lua_State *luaVM);
-	static int sqlite3Query(lua_State *luaVM);
-	static int sqlite3CloseDB(lua_State *luaVM);
-
 	static int pawn(lua_State *luaVM);
 	static int cell2float(lua_State *luaVM);
 	static int float2cell(lua_State *luaVM);
 
+    static bool ServerOS(lua_State *luaVM);
 };
 
 #endif
