@@ -668,7 +668,7 @@ g_SAMPSyscallPrototypes = {
 	GetPlayerSurfingVehicleID = {'p'},
 
 	GetPlayerCameraMode = {'p'},
-	GetObjectModel = {'o'},
+	GetObjectModel = {'i'},
 	GetPlayerObjectModel = {'p', 'o'},
 	GetVehicleParamsCarWindows = {'v', 'i', 'i', 'i', 'i'},
 

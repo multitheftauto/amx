@@ -54,8 +54,11 @@ function SetObjectRot(amx, object, rX, rY, rY)
 	setObjectRotation(object, rX, rY, rZ)
 end
 
-function GetObjectModel(amx, object)
-	notImplemented('GetObjectModel')
+function GetObjectModel(amx, objID)
+	if g_Objects[objID] ~= nil then
+		return getElementModel(g_Objects[objID])
+	end
+	return -1
 end
 
 function SetObjectNoCameraCol(amx)
