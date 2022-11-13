@@ -147,6 +147,10 @@ function unloadAMX(amx, notifyClient)
 		procCallInternal(amx, 'OnFilterScriptExit')
 	end
 
+    for id, player in pairs(g_Players) do
+        procCallInternal(amx, 'OnPlayerDisconnect', id, 1)
+    end
+
     amxUnload(amx.cptr)
 
 	table.each(amx.timers, killTimer)
