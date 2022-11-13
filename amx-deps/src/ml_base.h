@@ -21,9 +21,16 @@
 #ifndef MLBASE_H
 #define MLBASE_H
 
-#define MODULE_NAME			"AMX compatibility layer"
+// Disable Visual Studio warnings
+#if defined(_WIN32) || defined(WIN32) || defined(__WIN32__) || defined(_WIN64)
+#   pragma warning(disable: 4267) // DISABLE: conversion from 'size_t' to 'int', possible loss of data
+#   pragma warning(disable: 4996) // DISABLE: 'strcpy': This function or variable may be unsafe.
+#endif
+
+/** MODULE SPECIFIC INFORMATION **/
+#define MODULE_NAME			"AMX compatibility layer(SAMP2MTA)"
 #define	MODULE_AUTHOR		"arc_"
-#define MODULE_VERSION		1.0
+#define MODULE_VERSION		1.1
 #define MODULE_VERSIONSTRING "MTA AMX compatibility layer RC2"
 
 void logprintf(char *fmt, ...);

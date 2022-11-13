@@ -2,7 +2,7 @@
 #define UTIL_H
 
 // Cross compatibility
-#ifdef WIN32
+#if defined(_WIN32) || defined(WIN32) || defined(__WIN32__) || defined(_WIN64)
 
 	#define STDCALL __stdcall
 
@@ -26,7 +26,6 @@
 	#define DWORD unsigned long
 #endif
 
-
 // Util functions
 int setenv_portable(const char* name, const char* value, int overwrite);
 const char* getenv_portable(const char* name);
@@ -40,6 +39,6 @@ std::vector<AMX *> getResourceAMXs(lua_State *luaVM);
 std::string getScriptFilePath(AMX *amx, const char *filename);
 extern "C" char* getScriptFilePath(AMX *amx, char *dest, const char *filename, size_t destsize);
 bool isSafePath(const char* path);
+extern "C" int set_amxstring(AMX *amx,cell amx_addr,const char *source,int max);
 
 #endif
-

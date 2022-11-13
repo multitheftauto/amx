@@ -20,7 +20,7 @@ static cell AMX_NATIVE_CALL n_samp(AMX *amx, const cell *params, const char* fnN
 	lua_getfield(mainVM, -1, fnName);
 	lua_remove(mainVM, -2);
 	if(lua_isnil(mainVM, -1)) {
-		pModuleManager->ErrorPrintf("No implementation for function %s", fnName);
+		pModuleManager->ErrorPrintf("function %s isn't implemented", fnName);
 		lua_settop(mainVM, mainTop);
 		return 0;
 	}
