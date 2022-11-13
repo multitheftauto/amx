@@ -2,6 +2,7 @@ g_ServerVars = {
 	announce = {
         get = function()
             return getServerConfigSetting('donotbroadcastlan') and (getServerConfigSetting('donotbroadcastlan') == 0) or true
+        end
     },
 	anticheat = true,
 	bind = {
