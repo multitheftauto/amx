@@ -1,4 +1,0 @@
-[core]
-	protectNTFS = false
-[hooks]
-	enforcecompatiblefilenames = false
