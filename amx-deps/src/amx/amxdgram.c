@@ -2,7 +2,7 @@
  *
  *  This module uses the UDP protocol (from the TCP/IP protocol suite).
  *
- *  Copyright (c) ITB CompuPhase, 2005-2006
+ *  Copyright (c) ITB CompuPhase, 2005-2008
  *
  *  This software is provided "as-is", without any express or implied warranty.
  *  In no event will the authors be held liable for any damages arising from
@@ -25,7 +25,12 @@
 
 #include <assert.h>
 #include <stdio.h>
-#if defined LINUX
+#include <string.h>
+#include "amx.h"
+#if defined __WIN32 || defined _WIN32 || defined WIN32
+  #include <malloc.h>
+  #include <winsock.h>
+#else
   #include <arpa/inet.h>
   #include <netinet/in.h>
   #include <sys/ioctl.h>
@@ -33,12 +38,13 @@
   #include <sys/socket.h>
   #include <netdb.h>
   #include <unistd.h>
-#else
-  #include <malloc.h>
-  #include <winsock.h>
 #endif
-#include "osdefs.h"
-#include "amx.h"
+
+#define EXPECT_PARAMS(num) \
+  do { \
+    if (params[0]!=(num)*sizeof(cell)) \
+      return amx_RaiseError(amx,AMX_ERR_PARAMS),0; \
+  } while(0)
 
 
 #define SRC_BUFSIZE     22
@@ -47,6 +53,10 @@
 
 #if !defined SOCKET_ERROR
   #define SOCKET_ERROR -1
+#endif
+
+#if !defined isdigit
+  #define isdigit(c)     ((unsigned)((c)-'0')<10u)
 #endif
 
 static int sLocal;
@@ -113,10 +123,10 @@ static int udp_Send(const char *host,short port,const char *message,int size)
   if (sLocal<0)
     return -1;
 
-  memset((void *)&sRemote,sizeof sRemote,0);
+  memset((void *)&sRemote,0,sizeof sRemote);
   sRemote.sin_family=AF_INET;
   sRemote.sin_port=htons(port);
-  sRemote.sin_addr.s_addr= (host==NULL) ? htonl(INADDR_BROADCAST) : udp_GetHostAddr(host,0);
+  sRemote.sin_addr.s_addr= (host[0]=='\0') ? htonl(INADDR_BROADCAST) : udp_GetHostAddr(host,0);
 
   if (sendto(sLocal,message,size,0,(struct sockaddr *)&sRemote,sizeof sRemote)==-1)
     return -1;
@@ -131,7 +141,11 @@ static int udp_Send(const char *host,short port,const char *message,int size)
 static int udp_Receive(char *message,size_t maxmsg,char *source)
 {
   struct sockaddr_in sSource;
-  int slen=sizeof(sSource);
+#if defined __WIN32 || defined _WIN32 || defined WIN32
+  int slen = sizeof(sSource);
+#else
+  socklen_t slen = sizeof(sSource);
+#endif
   int size;
 
   size=recvfrom(sLocal, message, maxmsg, 0, (struct sockaddr *)&sSource, &slen);
@@ -168,7 +182,7 @@ static int udp_Listen(short port)
 {
   struct sockaddr_in sFrom;
 
-  memset((void *)&sFrom,sizeof sFrom,0);
+  memset((void *)&sFrom,0,sizeof sFrom);
   sFrom.sin_family=AF_INET;
   sFrom.sin_port=htons(port);
   sFrom.sin_addr.s_addr=htonl(INADDR_ANY);
@@ -194,38 +208,45 @@ static int dgramBound = 0;
  */
 static cell AMX_NATIVE_CALL n_sendstring(AMX *amx, const cell *params)
 {
-  int r = 0, length;
+  int length;
   cell *cstr;
   char *host, *message, *ptr;
-  short port=AMX_DGRAMPORT;
+  short port;
 
-  amx_GetAddr(amx, params[1], &cstr);
+  EXPECT_PARAMS(2);
+
+  if (amx_GetAddr(amx, params[1], &cstr)!=AMX_ERR_NONE) {
+err_native:
+    amx_RaiseError(amx,AMX_ERR_NATIVE);
+    return 0;
+  } /* if */
   amx_UTF8Len(cstr, &length);
 
-  if ((message = alloca(length + 3 + 1)) != NULL) {
-    /* insert the byte order mark (BOM) */
-    message[0]='\xef';
-    message[1]='\xbb';
-    message[2]='\xbf';
-    /* if this is a wide string, convert it to UTF-8 */
-    if ((ucell)*cstr<=UNPACKEDMAX) {
-      ptr=message+3;
-      while (*cstr!=0)
-        amx_UTF8Put(ptr, &ptr, length - (ptr-message), *cstr++);
-      *ptr='\0';
-    } else {
-      amx_GetString(message+3, cstr, 0, UNLIMITED);
-    } /* if */
-
-    amx_StrParam(amx, params[2], host);
-    if (host != NULL && (ptr=strchr(host,':'))!=NULL && isdigit(ptr[1])) {
-      *ptr++='\0';
-      port=(short)atoi(ptr);
-    } /* if */
-    r= (udp_Send(host,port,message,strlen(message)+1) > 0);
+  if ((message = alloca(length + 3 + 1)) == NULL)
+    return 0;
+  /* insert the byte order mark (BOM) */
+  message[0]='\xef';
+  message[1]='\xbb';
+  message[2]='\xbf';
+  /* if this is a wide string, convert it to UTF-8 */
+  if ((ucell)*cstr<=UNPACKEDMAX) {
+    ptr=message+3;
+    while (*cstr!=0)
+      amx_UTF8Put(ptr, &ptr, length - (ptr-message), *cstr++);
+    *ptr='\0';
+  } else {
+    amx_GetString(message+3, cstr, 0, UNLIMITED);
   } /* if */
 
-  return r;
+  amx_StrParam(amx, params[2], host);
+  if (host == NULL)
+    goto err_native;
+  port=AMX_DGRAMPORT;
+  if ((ptr=strchr(host,':'))!=NULL && isdigit(ptr[1])) {
+    *ptr++='\0';
+    port=(short)atoi(ptr);
+  } /* if */
+  return (udp_Send(host,port,message,strlen(message)+1) > 0);
 }
 
 /* sendpacket(const packet[], size, const destination[]="")
@@ -237,11 +258,20 @@ static cell AMX_NATIVE_CALL n_sendpacket(AMX *amx, const cell *params)
 {
   cell *cstr;
   char *host, *ptr;
-  short port=AMX_DGRAMPORT;
+  short port;
 
-  amx_GetAddr(amx, params[1], &cstr);
+  EXPECT_PARAMS(3);
+
+  if (amx_GetAddr(amx, params[1], &cstr)!=AMX_ERR_NONE) {
+err_native:
+    amx_RaiseError(amx,AMX_ERR_NATIVE);
+    return 0;
+  } /* if */
   amx_StrParam(amx, params[3], host);
-  if (host != NULL && (ptr=strchr(host,':'))!=NULL && isdigit(ptr[1])) {
+  if (host == NULL)
+    goto err_native;
+  port=AMX_DGRAMPORT;
+  if ((ptr=strchr(host,':'))!=NULL && isdigit(ptr[1])) {
     *ptr++='\0';
     port=(short)atoi(ptr);
   } /* if */
@@ -254,6 +284,7 @@ static cell AMX_NATIVE_CALL n_sendpacket(AMX *amx, const cell *params)
  */
 static cell AMX_NATIVE_CALL n_listenport(AMX *amx, const cell *params)
 {
+  EXPECT_PARAMS(1);
   (void)amx;
   dgramPort = (short)params[1];
   return 0;
@@ -301,12 +332,14 @@ static int AMXAPI amx_DGramIdle(AMX *amx, int AMXAPI Exec(AMX *, cell *, int))
       if (amx_UTF8Check(msg,&chars)==AMX_ERR_NONE) {
         cell *array=alloca((chars+1)*sizeof(cell));
         cell *ptr=array;
-        if (array!=NULL) {
-          while (err==AMX_ERR_NONE && *msg!='\0')
-            amx_UTF8Get(msg,&msg,ptr++);
-          *ptr=0;               /* zero-terminate */
-          amx_PushArray(amx,&amx_addr_msg,NULL,array,chars+1);
+        if (array==NULL) {
+          err=AMX_ERR_MEMORY;
+          goto release_src;
         } /* if */
+        while (err==AMX_ERR_NONE && *msg!='\0')
+          amx_UTF8Get(msg,&msg,ptr++);
+        *ptr=0;               /* zero-terminate */
+        amx_PushArray(amx,&amx_addr_msg,NULL,array,chars+1);
       } else {
         amx_PushString(amx,&amx_addr_msg,NULL,msg,1,0);
       } /* if */
@@ -315,23 +348,22 @@ static int AMXAPI amx_DGramIdle(AMX *amx, int AMXAPI Exec(AMX *, cell *, int))
     while (err==AMX_ERR_SLEEP)
       err=Exec(amx,NULL,AMX_EXEC_CONT);
     amx_Release(amx,amx_addr_msg);
+release_src:
     amx_Release(amx,amx_addr_src);
   } /* if */
 
   return err;
 }
 
-#if defined __cplusplus
-  extern "C"
-#endif
-AMX_NATIVE_INFO dgram_Natives[] = {
+
+static const AMX_NATIVE_INFO natives[] = {
   { "sendstring", n_sendstring },
   { "sendpacket", n_sendpacket },
   { "listenport", n_listenport },
   { NULL, NULL }        /* terminator */
 };
 
-int AMXEXPORT amx_DGramInit(AMX *amx)
+int AMXEXPORT AMXAPI amx_DGramInit(AMX *amx)
 {
   dgramBound = 0;
   if (udp_Open()==-1)
@@ -346,10 +378,10 @@ int AMXEXPORT amx_DGramInit(AMX *amx)
     amx_SetUserData(amx,AMX_USERTAG('I','d','l','e'),amx_DGramIdle);
   } /* if */
 
-  return amx_Register(amx,dgram_Natives,-1);
+  return amx_Register(amx,natives,-1);
 }
 
-int AMXEXPORT amx_DGramCleanup(AMX *amx)
+int AMXEXPORT AMXAPI amx_DGramCleanup(AMX *amx)
 {
   (void)amx;
   udp_Close();

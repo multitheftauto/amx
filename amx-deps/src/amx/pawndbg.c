@@ -65,7 +65,6 @@
   #include <readline/readline.h>
   #include <readline/history.h>
 #endif
-#include "osdefs.h"     /* for _MAX_PATH */
 #include "amx.h"
 #include "amxdbg.h"
 
@@ -128,6 +127,35 @@
     #define CHR_HLINE   '-'
   #endif
   #define CHR_VLINE     '|'
+#elif defined USE_CURSES
+  #if defined HAVE_CURSES_H
+    #include <curses.h>
+  #elif defined HAVE_NCURSES_H
+    #include <ncurses.h>
+  #elif defined HAVE_NCURSES_NCURSES_H
+    #include <ncurses/ncurses.h>
+  #elif defined HAVE_NCURSES_CURSES_H
+    #include <ncurses/curses.h>
+  #else
+    #include <curses.h>
+  #endif
+  /* Use the "curses" library to implement the console */
+  const int _False = 0;     /* to avoid compiler warnings */
+  #define amx_printf        printw
+  #define amx_putchar(c)    addch(c)
+  #define amx_fflush()      (0)
+  #define amx_getch()       getch()
+  #define amx_gets(s,n)     getnstr(s,n)
+  #define amx_clrscr()      (void)(0)
+  #define amx_clreol()      (void)(0)
+  #define amx_gotoxy(x,y)   (void)(0)
+  #define amx_wherexy(x,y)  (*(x)=*(y)=0)
+  #define amx_setattr(c,b,h) (_False)
+  #define amx_termctl(c,v)  (_False)
+  #define amx_console(c,l,f) (void)(0)
+  #define STR_PROMPT        "dbg> "
+  #define CHR_HLINE         '-'
+  #define CHR_VLINE         '|'
 #elif defined VT100 || defined LINUX || defined ANSITERM
   /* ANSI/VT100 terminal, or shell emulating "xterm" */
   #if !defined VT100 && !defined ANSITERM && defined LINUX
@@ -165,24 +193,6 @@
   #define STR_PROMPT    "dbg> "
   #define CHR_HLINE     '\xc4'
   #define CHR_VLINE     '\xb3'
-#elif defined USE_CURSES
-  /* Use the "curses" library to implement the console */
-  const int _False = 0;     /* to avoid compiler warnings */
-  #define amx_printf        printw
-  #define amx_putchar(c)    addch(c)
-  #define amx_fflush()      (0)
-  #define amx_getch()       getch()
-  #define amx_gets(s,n)     getnstr(s,n)
-  #define amx_clrscr()      (void)(0)
-  #define amx_clreol()      (void)(0)
-  #define amx_gotoxy(x,y)   (void)(0)
-  #define amx_wherexy(x,y)  (*(x)=*(y)=0)
-  #define amx_setattr(c,b,h) (_False)
-  #define amx_termctl(c,v)  (_False)
-  #define amx_console(c,l,f) (void)(0)
-  #define STR_PROMPT        "dbg> "
-  #define CHR_HLINE         '-'
-  #define CHR_VLINE         '|'
 #else
   /* assume a streaming terminal; limited features (no colour, no cursor
    * control)
@@ -208,6 +218,11 @@
   #define CHR_HLINE_VT100   'q' // in alternate font
   #define CHR_VLINE_VT100   'x'
 #endif
+
+extern int AMXEXPORT AMXAPI amx_ConsoleInit(AMX *amx);
+extern int AMXEXPORT AMXAPI amx_ConsoleCleanup(AMX *amx);
+extern int AMXEXPORT AMXAPI amx_CoreInit(AMX *amx);
+extern int AMXEXPORT AMXAPI amx_CoreCleanup(AMX *amx);
 
 enum {
   BP_NONE,
@@ -427,10 +442,18 @@ static void term_open(int columns,int lines)
     amx_printf("\033)0");                  /* select graphics codes for set G1 */
   #endif
   #if defined WIN32_CONSOLE
-    #define ENABLE_INSERT_MODE      0x0020
-    #define ENABLE_QUICK_EDIT_MODE  0x0040
-    #define ENABLE_EXTENDED_FLAGS   0x0080
-    #define ENABLE_AUTO_POSITION    0x0100
+    #if !defined ENABLE_INSERT_MODE
+      #define ENABLE_INSERT_MODE        0x0020
+    #endif
+    #if !defined ENABLE_QUICK_EDIT_MODE
+      #define ENABLE_QUICK_EDIT_MODE    0x0040
+    #endif
+    #if !defined ENABLE_EXTENDED_FLAGS
+      #define ENABLE_EXTENDED_FLAGS     0x0080
+    #endif
+    #if !defined ENABLE_AUTO_POSITION
+      #define ENABLE_AUTO_POSITION      0x0100
+    #endif
     win32_getscreensize(&screencolumns,&screenlines);
     screenlines--;      /* keep last line empty */
     SetConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE),
@@ -2812,8 +2835,8 @@ extern AMX_NATIVE_INFO console_Natives[];
 
   if (remote==REMOTE_NONE) {
     /* libraries do not need to be present for remote debugging */
-    amx_Register(&amx, core_Natives, -1);
-    err = amx_Register(&amx, console_Natives, -1);
+    amx_CoreInit(&amx);
+    err = amx_ConsoleInit(&amx);
     if (err != AMX_ERR_NONE)
       amx_printf("Load error %d\n", err);
   } else {
@@ -2857,6 +2880,8 @@ extern AMX_NATIVE_INFO console_Natives[];
 
   //??? option for restart
 
+  amx_ConsoleCleanup(&amx);
+  amx_CoreCleanup(&amx);
   dbg_FreeInfo(&amxdbg);
   free(program);
 

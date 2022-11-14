@@ -1,20 +1,24 @@
 /* Text file I/O module for the Pawn Abstract Machine
  *
- *  Copyright (c) ITB CompuPhase, 2003-2016
+ *  Copyright (c) ITB CompuPhase, 2003-2008
  *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may not
- *  use this file except in compliance with the License. You may obtain a copy
- *  of the License at
+ *  This software is provided "as-is", without any express or implied warranty.
+ *  In no event will the authors be held liable for any damages arising from
+ *  the use of this software.
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *  Permission is granted to anyone to use this software for any purpose,
+ *  including commercial applications, and to alter it and redistribute it
+ *  freely, subject to the following restrictions:
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- *  License for the specific language governing permissions and limitations
- *  under the License.
+ *  1.  The origin of this software must not be misrepresented; you must not
+ *      claim that you wrote the original software. If you use this software in
+ *      a product, an acknowledgment in the product documentation would be
+ *      appreciated but is not required.
+ *  2.  Altered source versions must be plainly marked as such, and must not be
+ *      misrepresented as being the original software.
+ *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: amxfile.c 5588 2016-10-25 11:13:28Z  $
+ *  Version: $Id: amxfile.c 3764 2007-05-22 10:29:16Z thiadmer $
  */
 
 #if defined _UNICODE || defined __UNICODE__ || defined UNICODE
@@ -32,110 +36,105 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-#include "osdefs.h"
-#if (defined __linux || defined __linux__) && !defined __LINUX__
-  #define __LINUX__
-#endif
-#if defined FREEBSD && !defined __FreeBSD__
-  #define __FreeBSD__
-#endif
-#if defined __BORLANDC__
-  #include <dir.h>
-#endif
-#if defined __BORLANDC__ || defined __LINUX__ || defined __FreeBSD__ || defined __OpenBSD__ || defined MACOS || defined __APPLE__
+#if defined HAVE_UTIME_H
   #include <utime.h>
 #else
   #include <sys/utime.h>
 #endif
-#if defined __WIN32__ || defined __MSDOS__
+#if defined __WIN32__ || defined _WIN32 || defined WIN32 || defined __MSDOS__
   #include <malloc.h>
 #endif
-#if defined __WATCOMC__ || defined _MSC_VER
-  #include <direct.h>
-#endif
-#if defined __LINUX__ || defined __FreeBSD__ || defined __OpenBSD__ || defined MACOS || defined __APPLE__
+#include "amx.h"
+#if defined LINUX || defined __FreeBSD__ || defined __OpenBSD__ || defined MACOS
   #include <dirent.h>
 #else
   #include <io.h>
 #endif
-#if defined __GNUC__ || defined __clang__
-  #include <unistd.h>
+#if defined __WIN32__ || defined _WIN32 || defined WIN32 || defined __MSDOS__
+  #include <direct.h>
 #endif
-#include "amx.h"
-#if defined __WIN32__ || defined _Windows
+#if (defined HAVE_UNISTD_H || defined HAVE_SYS_UNISTD_H) \
+&&  (defined HAVE_FCNTL_H || defined HAVE_SYS_FCNTL_H)
+  #if defined HAVE_UNISTD_H
+    #include <unistd.h>
+  #else
+    #include <sys/unistd.h>
+    #define HAVE_UNISTD_H
+  #endif
+  #if defined HAVE_FCNTL_H
+    #include <fcntl.h>
+  #else
+    #include <sys/fcntl.h>
+    #define HAVE_FCNTL_H
+  #endif
+  #if defined HAVE_SYS_SENDFILE_H
+    #include <sys/sendfile.h>
+  #endif
+#endif
+#if defined __WIN32__ || defined _WIN32 || defined WIN32 || defined _Windows
   #include <windows.h>
 #endif
 
 #include "fpattern.c"
-
-#if !defined AMXFILE_VAR
-  #define AMXFILE_VAR   "AMXFILE"
-#endif
+#include "minini/dev/minIni.h"
 
 #if !defined sizearray
   #define sizearray(a)  (sizeof(a)/sizeof((a)[0]))
 #endif
 
 #if defined _UNICODE
-  #include <tchar.h>
+# include <tchar.h>
 #elif !defined __T
   typedef char          TCHAR;
-  #define __T(string)   string
-  #define _tchmod       chmod
-  #define _tcscat       strcat
-  #define _tcschr       strchr
-  #define _tcscmp       strcmp
-  #define _tcscpy       strcpy
-  #define _tcsdup       strdup
-  #define _tcslen       strlen
-  #define _tcsncpy      strncpy
-  #define _tcsnicmp     strnicmp
-  #define _tcspbrk      strpbrk
-  #define _tcsrchr      strrchr
-  #define _tcstol       strtol
-  #define _tfopen       fopen
-  #define _tfputs       fputs
-  #define _tgetenv      getenv
-  #define _tremove      remove
-  #define _trename      rename
-  #if defined __BORLANDC__ || defined __LINUX__ || defined __FreeBSD__ || defined __OpenBSD__ || defined MACOS || defined __APPLE__
-    #define _tmkdir     mkdir
-    #define _trmdir     rmdir
-    #define _tstat      stat
-    #define _tutime     utime
-  #else
-    #define _tmkdir     _mkdir
-    #define _trmdir     _rmdir
-    #define _tstat      _stat
-    #define _tstat64    _stat64
-    #define _tutime     _utime
-  #endif
-  #if defined __APPLE__
-    #define t_stat      stat
-  #elif defined __WIN32__
-    #if defined __WATCOMC__
-      #define t_stat    __stat
-    #else
-      #define t_stat    _stat
-    #endif
-  #else
-    #define t_stat      stat
-  #endif
-#endif
-#if !defined t_stat
-  #if defined _tstat
-    #define t_stat      _tstat
-  #else
-    #define t_stat      stat
-  #endif
-#endif
-#if !defined S_ISDIR
-  #define S_ISDIR(mode) (((mode) & _S_IFDIR) != 0)
+# define __T(string)    string
+# define _tchmod        chmod
+# define _tcscat        strcat
+# define _tcschr        strchr
+# define _tcscpy        strcpy
+# define _tcsdup        strdup
+# define _tcslen        strlen
+# define _tcsncpy       strncpy
+# define _tcspbrk       strpbrk
+# define _tcsrchr       strrchr
+# define _tfopen        fopen
+# define _tfputs        fputs
+# define _tgetenv       getenv
+# define _tremove       remove
+# define _trename       rename
+# if defined _Windows || defined __MSDOS__
+#   define _tmkdir      _mkdir
+#   define _trmdir      _rmdir
+# else
+#   define _tmkdir      mkdir
+#   define _trmdir      rmdir
+# endif
+# define _tstat         _stat
+# define _tutime        _utime
 #endif
 
-#include "minIni.c"
+#if !(defined __WIN32__ || defined _WIN32 || defined WIN32)
+# define _stat(n,b)   stat(n,b)
+# define _utime(n,t)  utime(n,t)
+#elif defined _MSC_VER || defined __GNUC__
+# define stat         _stat
+# define utimbuf      _utimbuf
+#endif
+
+#if !defined UNUSED_PARAM
+  #define UNUSED_PARAM(p) ((void)(p))
+#endif
+
+#if defined __clang__
+  #pragma clang diagnostic ignored "-Wbitwise-op-parentheses"
+  #pragma clang diagnostic ignored "-Wlogical-op-parentheses"
+#endif
+
+#define EXPECT_PARAMS(num) \
+  do { \
+    if (params[0]!=(num)*sizeof(cell)) \
+      return amx_RaiseError(amx,AMX_ERR_PARAMS),0; \
+  } while(0)
 
 enum filemode {
   io_read,      /* file must exist */
@@ -149,6 +148,17 @@ enum seek_whence {
   seek_current,
   seek_end,
 };
+
+
+
+#define AMX_PTRARRAY_DEFAULT_SIZE 4
+#include "amx_ptrarray.h"
+
+void filepool_cleanup(amx_ptrarray *ptrarray)
+{
+  ptrarray_foreach(ptrarray,(void(*)(void *))fclose);
+}
+DEFINE_PTRARRAY(filepool,filepool_cleanup);
 
 
 /* This function only stores unpacked strings. UTF-8 is used for
@@ -202,7 +212,7 @@ static size_t fgets_cell(FILE *fp,cell *string,size_t max,int utf8mode)
         if (--follow==0) {
           /* encoding a character in more bytes than is strictly needed,
            * is not really valid UTF-8; we are strict here to increase
-           * the chance of heuristic dectection of non-UTF-8 text
+           * the chance of heuristic detection of non-UTF-8 text
            * (JAVA writes zero bytes as a 2-byte code UTF-8, which is invalid)
            */
           if (string[index]<lowmark)
@@ -363,31 +373,12 @@ static size_t fgets_char(FILE *fp, char *string, size_t max)
   return index;
 }
 
-#if (defined __WIN32__ || defined _WIN32 || defined WIN32) && _MSC_VER < 1500
-#if defined _UNICODE
-wchar_t *_wgetenv(wchar_t *name)
-{
-static wchar_t buffer[_MAX_PATH];
-  buffer[0]=L'\0';
-  GetEnvironmentVariable(name,buffer,sizearray(buffer));
-  return buffer[0]!=L'\0' ? buffer : NULL;
-}
-#else
-char *getenv(const char *name)
-{
-static char buffer[_MAX_PATH];
-  buffer[0]='\0';
-  GetEnvironmentVariable(name,buffer,sizearray(buffer));
-  return buffer[0]!='\0' ? buffer : NULL;
-}
-#endif
-#endif
-
 static char *completename(TCHAR *dest, TCHAR *src, size_t size)
 {
+  TCHAR *ptr;
+  size_t len;
   #if defined AMXFILE_VAR
-    TCHAR *prefix,*ptr;
-    size_t len;
+    TCHAR *prefix;
 
     /* only files below a specific path are accessible */
     prefix=getenv(AMXFILE_VAR);
@@ -419,7 +410,7 @@ static char *completename(TCHAR *dest, TCHAR *src, size_t size)
     } /* if */
     assert(_tcslen(dest)<size);
 
-    /* for DOS/Windows and Unix/Linux, skip everyting up to a comma, because
+    /* for DOS/Windows and Unix/Linux, skip everything up to a comma, because
      * this is used to indicate a protocol (e.g. file://C:/myfile.txt)
      */
     #if DIRSEP_CHAR!=':'
@@ -457,7 +448,8 @@ static char *completename(TCHAR *dest, TCHAR *src, size_t size)
         return NULL;            /* path name is not allowed */
 
     /* concatenate the drive letter to the destination path */
-    if (_tcslen(dest)+_tcslen(src)>=size)
+    len=_tcslen(src);
+    if (len==0 || _tcslen(dest)+len>=size)
       return NULL;
     _tcscat(dest,src);
 
@@ -469,7 +461,8 @@ static char *completename(TCHAR *dest, TCHAR *src, size_t size)
     return dest;
 
   #else
-    if (_tcslen(src)>=size)
+    len=_tcslen(src);
+    if (len==0 || len>=size)
       return NULL;
     _tcscpy(dest,src);
     /* change forward slashes into proper directory separators */
@@ -481,14 +474,22 @@ static char *completename(TCHAR *dest, TCHAR *src, size_t size)
   #endif
 }
 
-/* File: fopen(const name[], filemode: mode) */
+static int verify_addr(AMX *amx,cell addr)
+{
+  cell *cdest;
+  return amx_GetAddr(amx,addr,&cdest);
+}
+
+/* File: fopen(const name[], filemode: mode = io_readwrite) */
 static cell AMX_NATIVE_CALL n_fopen(AMX *amx, const cell *params)
 {
+  FILE *f;
+  cell fileid;
   TCHAR *attrib,*altattrib;
   TCHAR *name,fullname[_MAX_PATH];
-  FILE *f = NULL;
 
-  (void)amx;
+  EXPECT_PARAMS(2);
+
   altattrib=NULL;
   switch (params[2] & 0x7fff) {
   case io_read:
@@ -510,113 +511,151 @@ static cell AMX_NATIVE_CALL n_fopen(AMX *amx, const cell *params)
 
   /* get the filename */
   amx_StrParam(amx,params[1],name);
-  if (name!=NULL && completename(fullname,name,sizearray(fullname))!=NULL) {
+  if (name==NULL) {
+    amx_RaiseError(amx,AMX_ERR_NATIVE);
+    return 0;
+  } /* if */
+  if (completename(fullname,name,sizearray(fullname))==NULL)
+    return 0;
+  /* insert a placeholder value to see if the pool has a free slot for it */
+  fileid=ptrarray_insert(&filepool,(void *)1);
+  if (fileid!=0) {
+    /* open the file and save its handle into the newly reserved slot */
     f=_tfopen(fullname,attrib);
     if (f==NULL && altattrib!=NULL)
       f=_tfopen(fullname,altattrib);
+    if (f==NULL) {
+      ptrarray_remove(&filepool,fileid);
+      fileid=0;
+    } else {
+      ptrarray_set(&filepool,fileid,(void *)f);
+    } /* if */
   } /* if */
-  return (cell)f;
+  return fileid;
 }
 
-/* fclose(File: handle) */
+/* bool: fclose(File: handle) */
 static cell AMX_NATIVE_CALL n_fclose(AMX *amx, const cell *params)
 {
-  (void)amx;
-  return fclose((FILE*)params[1]) == 0;
+  FILE *f;
+  EXPECT_PARAMS(1);
+  UNUSED_PARAM(amx);
+  if ((f=ptrarray_get(&filepool,params[1]))==NULL)
+    return 0;
+  ptrarray_remove(&filepool,params[1]);
+  return fclose(f)==0;
 }
 
 /* fwrite(File: handle, const string[]) */
 static cell AMX_NATIVE_CALL n_fwrite(AMX *amx, const cell *params)
 {
-  size_t r = 0;
+  FILE *f;
   cell *cptr;
   char *str;
   int len;
 
-  (void)amx;
-  cptr=amx_Address(amx,params[2]);
+  EXPECT_PARAMS(2);
+
+  if (amx_GetAddr(amx,params[2],&cptr)!=AMX_ERR_NONE) {
+err_native:
+    amx_RaiseError(amx,AMX_ERR_NATIVE);
+    return 0;
+  } /* if */
   amx_StrLen(cptr,&len);
   if (len==0)
+    return 0;
+  if ((f=ptrarray_get(&filepool,params[1]))==NULL)
     return 0;
 
   if ((ucell)*cptr>UNPACKEDMAX) {
     /* the string is packed, write it as an ASCII/ANSI string */
-    if ((str=(char*)alloca(len + 1))!=NULL) {
-      amx_GetString(str,cptr,0,len);
-      r=fputs(str,(FILE*)params[1]);
-    } /* if */
-  } else {
-    /* the string is unpacked, write it as UTF-8 */
-    r=fputs_cell((FILE*)params[1],cptr,1);
+    if ((str=(char*)alloca(len+1))==NULL)
+      goto err_native;
+    amx_GetString(str,cptr,0,len+1);
+    return fputs(str,f);
   } /* if */
-  return (cell)r;
+  /* the string is unpacked, write it as UTF-8 */
+  return fputs_cell(f,cptr,1);
 }
 
-/* fread(File: handle, string[], size=sizeof string, bool:pack=false) */
+/* fread(File: handle, string[], size = sizeof string, bool: pack = false) */
 static cell AMX_NATIVE_CALL n_fread(AMX *amx, const cell *params)
 {
-  size_t chars;
-  int max;
-  char *str;
+  FILE *f;
+  int chars,max;
   cell *cptr;
+  char *str;
+
+  EXPECT_PARAMS(4);
 
   max=(int)params[3];
   if (max<=0)
     return 0;
   if (params[4])
-    max*=sizeof(cell);
+    max *= sizeof(cell);
+  if ((f=ptrarray_get(&filepool,params[1]))==NULL)
+    return 0;
 
-  cptr=amx_Address(amx,params[2]);
-  str=(char *)alloca(max);
-  if (str==NULL || cptr==NULL) {
-    amx_RaiseError(amx, AMX_ERR_NATIVE);
+  if (amx_GetAddr(amx,params[2],&cptr)!=AMX_ERR_NONE) {
+err_native:
+    amx_RaiseError(amx,AMX_ERR_NATIVE);
     return 0;
   } /* if */
+  if (params[3]<=(cell)0 || verify_addr(amx,params[2]+params[3])!=AMX_ERR_NONE)
+    goto err_native;
 
   if (params[4]) {
+    if ((str=(char *)alloca(max))==NULL)
+      goto err_native;
     /* store as packed string, read an ASCII/ANSI string */
-    chars=fgets_char((FILE*)params[1],str,max);
-    assert((int)chars<max);
-    amx_SetString(cptr,str,1,0,max);
+    chars=fgets_char(f,str,max);
+    assert(chars<max);
+    amx_SetString(cptr,str,(int)params[4],0,max);
   } else {
     /* store and unpacked string, interpret UTF-8 */
-    chars=fgets_cell((FILE*)params[1],cptr,max,1);
+    chars=fgets_cell(f,cptr,max,1);
   } /* if */
 
-  assert((int)chars<max);
-  return (cell)chars;
+  assert(chars<max);
+  return chars;
 }
 
-/* fputchar(File: handle, value, bool:utf8 = true) */
+/* bool: fputchar(File: handle, value, bool: utf8 = true) */
 static cell AMX_NATIVE_CALL n_fputchar(AMX *amx, const cell *params)
 {
-  size_t result;
-
-  (void)amx;
+  FILE *f;
+  EXPECT_PARAMS(3);
+  UNUSED_PARAM(amx);
+  if ((f=ptrarray_get(&filepool,params[1]))==NULL)
+    return 0;
   if (params[3]) {
+    cell result;
     cell str[2];
     str[0]=params[2];
     str[1]=0;
-    result=fputs_cell((FILE*)params[1],str,1);
-  } else {
-    fputc((int)params[2],(FILE*)params[1]);
-	result=1;
+    result=(cell)fputs_cell((FILE*)params[1],str,1);
+    assert(result==0 || result==1);
+    return result;
   } /* if */
-  assert(result==0 || result==1);
-  return (cell)result;
+  return (fputc((int)params[2],(FILE*)params[1])!=EOF);
 }
 
-/* fgetchar(File: handle, bool:utf8 = true) */
+/* fgetchar(File: handle, bool: utf8 = true) */
 static cell AMX_NATIVE_CALL n_fgetchar(AMX *amx, const cell *params)
 {
+  FILE *f;
   cell str[2];
-  size_t result;
+  cell result;
 
-  (void)amx;
-  if (params[2]) {
-    result=fgets_cell((FILE*)params[1],str,2,1);
+  EXPECT_PARAMS(2);
+
+  UNUSED_PARAM(amx);
+  if ((f=ptrarray_get(&filepool,params[1]))==NULL) {
+    result=0;
+  } else if (params[2]) {
+    result=(cell)fgets_cell(f,str,2,1);
   } else {
-    str[0]=fgetc((FILE*)params[1]);
+    str[0]=fgetc(f);
     result= (str[0]!=EOF);
   } /* if */
   assert(result==0 || result==1);
@@ -636,59 +675,93 @@ static cell AMX_NATIVE_CALL n_fgetchar(AMX *amx, const cell *params)
   #error Unsupported cell size
 #endif
 
-/* fblockwrite(File: handle, buffer[], size=sizeof buffer) */
+/* fblockwrite(File: handle, const buffer[], size = sizeof buffer) */
 static cell AMX_NATIVE_CALL n_fblockwrite(AMX *amx, const cell *params)
 {
+  FILE *f;
   cell *cptr;
-  cell count=0;
+  cell count,max;
 
-  (void)amx;
-  cptr=amx_Address(amx,params[2]);
-  if (cptr!=NULL) {
-    cell max=params[3];
-    ucell v;
-    for (count=0; count<max; count++) {
-      v=(ucell)*cptr++;
-      if (fwrite(aligncell(&v),sizeof(cell),1,(FILE*)params[1])!=1)
-        break;          /* write error */
-    } /* for */
+  EXPECT_PARAMS(3);
+
+  if (amx_GetAddr(amx,params[2],&cptr)!=AMX_ERR_NONE) {
+err_native:
+    amx_RaiseError(amx,AMX_ERR_NATIVE);
+    return 0;
   } /* if */
+  if (params[3]<=(cell)0 || verify_addr(amx,params[2]+params[3])!=AMX_ERR_NONE)
+    goto err_native;
+  if ((f=ptrarray_get(&filepool,params[1]))==NULL)
+    return 0;
+  max=params[3];
+  for (count=0; count<max; count++) {
+    ucell v=(ucell)*cptr++;
+    if (fwrite(aligncell(&v),sizeof(cell),1,f)!=1)
+      break;          /* write error */
+  } /* for */
   return count;
 }
 
-/* fblockread(File: handle, buffer[], size=sizeof buffer) */
+/* fblockread(File: handle, buffer[], size = sizeof buffer) */
 static cell AMX_NATIVE_CALL n_fblockread(AMX *amx, const cell *params)
 {
+  FILE *f;
   cell *cptr;
-  cell count=0;
+  cell count,max;
 
-  (void)amx;
-  cptr=amx_Address(amx,params[2]);
-  if (cptr!=NULL) {
-    cell max=params[3];
-    ucell v;
-    for (count=0; count<max; count++) {
-      if (fread(&v,sizeof(cell),1,(FILE*)params[1])!=1)
-        break;          /* write error */
-      *cptr++=(cell)*aligncell(&v);
-    } /* for */
+  EXPECT_PARAMS(3);
+
+  if (amx_GetAddr(amx,params[2],&cptr)!=AMX_ERR_NONE) {
+err_native:
+    amx_RaiseError(amx,AMX_ERR_NATIVE);
+    return 0;
   } /* if */
+  if (params[3]<=(cell)0 || verify_addr(amx,params[2]+params[3])!=AMX_ERR_NONE)
+    goto err_native;
+  if ((f=ptrarray_get(&filepool,params[1]))==NULL)
+    return 0;
+  max=params[3];
+  for (count=0; count<max; count++) {
+    ucell v;
+    if (fread(&v,sizeof(cell),1,f)!=1)
+      break;          /* read error */
+    *(ucell *)(cptr++)=*aligncell(&v);
+  } /* for */
   return count;
 }
 
 /* File: ftemp() */
 static cell AMX_NATIVE_CALL n_ftemp(AMX *amx, const cell *params)
 {
-  (void)amx;
-  (void)params;
-  return (cell)tmpfile();
+  FILE *f;
+  cell fileid;
+  EXPECT_PARAMS(0);
+  UNUSED_PARAM(amx);
+  UNUSED_PARAM(params);
+  /* insert a placeholder value to see if the pool has a free slot for it */
+  fileid=ptrarray_insert(&filepool,(void *)1);
+  if (fileid!=0) {
+    /* create a file and save its handle into the newly reserved slot */
+    if ((f=tmpfile())==NULL) {
+      ptrarray_remove(&filepool,fileid);
+      fileid=0;
+    } else {
+      ptrarray_set(&filepool,fileid,(void *)f);
+    } /* if */
+  } /* if */
+  return fileid;
 }
 
-/* fseek(File: handle, position, seek_whence: whence=seek_start) */
+/* fseek(File: handle, position = 0, seek_whence: whence = seek_start) */
 static cell AMX_NATIVE_CALL n_fseek(AMX *amx, const cell *params)
 {
+  FILE *f;
   int whence;
-  (void)amx;
+
+  EXPECT_PARAMS(3);
+
+  if ((f=ptrarray_get(&filepool,(size_t)params[1]))==NULL)
+    return -1;
   switch (params[3]) {
   case seek_start:
     whence=SEEK_SET;
@@ -704,82 +777,170 @@ static cell AMX_NATIVE_CALL n_fseek(AMX *amx, const cell *params)
   default:
     return 0;
   } /* switch */
-  return lseek(fileno((FILE*)params[1]),params[2],whence);
+  UNUSED_PARAM(amx);
+  return lseek(fileno(f),params[2],whence);
 }
 
 /* bool: fremove(const name[]) */
 static cell AMX_NATIVE_CALL n_fremove(AMX *amx, const cell *params)
 {
-  int r=1;
   TCHAR *name,fullname[_MAX_PATH];
 
-  (void)amx;
-  amx_StrParam(amx,params[1],name);
-  if (name!=NULL && completename(fullname,name,sizearray(fullname))!=NULL) {
-    /* if this is a directory, try _trmdir() */
-    #if defined _WIN64
-      struct __stat64 stbuf;
-      _tstat64(fullname, &stbuf);
-    #else
-      struct t_stat stbuf;
-      _tstat(fullname, &stbuf);
-    #endif
-    if (S_ISDIR(stbuf.st_mode))
-      r=_trmdir(fullname);
-    else
-      r=_tremove(fullname);
-  } /* if */
-  return r==0;
-}
+  EXPECT_PARAMS(1);
 
-/* bool: fcopy(const source[], const target[]) */
-static cell AMX_NATIVE_CALL n_fcopy(AMX *amx, const cell *params)
-{
-  int r=1;
-  TCHAR *name,oldname[_MAX_PATH],newname[_MAX_PATH];
-
-  (void)amx;
   amx_StrParam(amx,params[1],name);
-  if (name!=NULL && completename(oldname,name,sizearray(oldname))!=NULL) {
-    amx_StrParam(amx,params[2],name);
-    if (name!=NULL && completename(newname,name,sizearray(newname))!=NULL) {
-      #if defined __WIN32__
-        r= CopyFile(oldname,newname,FALSE)==FALSE;
-      #else
-        TCHAR cmd[2*_MAX_PATH + 10];
-        sprintf(cmd,"cp %s %s",oldname,newname);
-        r= system(cmd)<0;
-      #endif
-    } /* if */
+  if (name==NULL) {
+    amx_RaiseError(amx,AMX_ERR_NATIVE);
+    return 0;
   } /* if */
-  return r==0;
+  if (completename(fullname,name,sizearray(fullname))!=NULL) {
+    struct stat stbuf;
+    if (_tstat(fullname,&stbuf)==0)
+      return (((stbuf.st_mode & S_IFDIR)!=0) ? _trmdir(fullname) : _tremove(fullname))==0;
+  } /* if */
+  return 0;
 }
 
 /* bool: frename(const oldname[], const newname[]) */
 static cell AMX_NATIVE_CALL n_frename(AMX *amx, const cell *params)
 {
-  int r=1;
   TCHAR *name,oldname[_MAX_PATH],newname[_MAX_PATH];
 
-  (void)amx;
+  EXPECT_PARAMS(2);
+
   amx_StrParam(amx,params[1],name);
-  if (name!=NULL && completename(oldname,name,sizearray(oldname))!=NULL) {
-    amx_StrParam(amx,params[2],name);
-    if (name!=NULL && completename(newname,name,sizearray(newname))!=NULL)
-      r=_trename(oldname,newname);
+  if (name==NULL) {
+err_native:
+    amx_RaiseError(amx,AMX_ERR_NATIVE);
+    return 0;
   } /* if */
-  return r==0;
+  if (completename(oldname,name,sizearray(oldname))==NULL)
+    return 0;
+  amx_StrParam(amx,params[2],name);
+  if (name==NULL)
+    goto err_native;
+  if (completename(newname,name,sizearray(newname))==NULL)
+    return 0;
+  return _trename(oldname,newname)==0;
+}
+
+/* bool: fcopy(const source[], const target[]) */
+static cell AMX_NATIVE_CALL n_fcopy(AMX *amx, const cell *params)
+{
+  TCHAR *name,source[_MAX_PATH],target[_MAX_PATH];
+
+  EXPECT_PARAMS(2);
+
+  amx_StrParam(amx,params[1],name);
+  if (name==NULL) {
+err_native:
+    amx_RaiseError(amx,AMX_ERR_NATIVE);
+    return 0;
+  } /* if */
+  if (completename(source,name,sizearray(source))==NULL)
+    return 0;
+  amx_StrParam(amx,params[2],name);
+  if (name==NULL)
+    goto err_native;
+  if (completename(target,name,sizearray(target))!=NULL) {
+    #if defined _Windows
+      return (CopyFile(source,target,FALSE)!=FALSE) ? 1 : 0;
+    #elif defined HAVE_UNISTD_H && defined HAVE_FCNTL_H /* POSIX way */
+      cell result=0;
+      int fsrc=-1,ftgt=-1;
+      ssize_t numbytes;
+      if ((fsrc=open(source,O_RDONLY,0))==-1)
+        goto ret;
+      if ((ftgt=open(target,(O_WRONLY | O_CREAT | O_TRUNC),(S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)))==-1)
+        goto ret;
+      #if defined HAVE_SYS_SENDFILE_H
+        do {
+          struct stat stbuf;
+          _tstat(source,&stbuf);
+          numbytes=sendfile(ftgt,fsrc,NULL,stbuf.st_size);
+          if (numbytes!=-1) {
+            result=1;
+            goto ret;
+          } /* if */
+        } while (0);
+        /* fallback to read()/write() */
+      #endif
+      do {
+        char buf[BUFSIZ];
+        while ((numbytes=read(fsrc,buf,sizeof(buf)))>0)
+          if (write(ftgt,buf,(size_t)numbytes)!=numbytes)
+            goto ret;
+      } while (0);
+      if (numbytes==-1)
+        goto ret;
+      result=1;
+    ret:
+      if (fsrc!=-1)
+        close(fsrc);
+      if (ftgt!=-1)
+        close(ftgt);
+      return result;
+   #else /* Plain ANSI C way */
+      cell result=0;
+      FILE *fsrc,*ftgt;
+      char buf[BUFSIZ];
+     size_t numbytes;
+      if ((fsrc=fopen(source,"rb"))==NULL)
+        goto ret;
+      if ((ftgt=fopen(target,"wb"))==NULL)
+        goto ret;
+     while ((numbytes=fread(buf,1,sizeof(buf),fsrc))!=0)
+        if (fwrite(buf,1,numbytes,ftgt)!=numbytes)
+          goto ret;
+      result=1;
+    ret:
+      if (fsrc!=NULL)
+        fclose(fsrc);
+      if (ftgt!=NULL)
+        fclose(ftgt);
+      return result;
+    #endif
+  } /* if */
+  return 0;
+}
+
+/* bool: fcreatedir(const name[]) */
+static cell AMX_NATIVE_CALL n_fcreatedir(AMX *amx, const cell *params)
+{
+  TCHAR *name,fullname[_MAX_PATH];
+
+  EXPECT_PARAMS(1);
+
+  amx_StrParam(amx,params[1],name);
+  if (name==NULL) {
+    amx_RaiseError(amx,AMX_ERR_NATIVE);
+    return 0;
+  } /* if */
+  if (completename(fullname,name,sizearray(fullname))==NULL)
+    return 0;
+  #if defined _Windows || defined __MSDOS__
+    return (_tmkdir(fullname)==0) ? 1 : 0;
+  #else
+    return (_tmkdir(fullname,(S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH))==0) ? 1 : 0;
+  #endif
 }
 
 /* flength(File: handle) */
 static cell AMX_NATIVE_CALL n_flength(AMX *amx, const cell *params)
 {
+  FILE *f;
   long l,c;
-  int fn=fileno((FILE*)params[1]);
+  int fn;
+
+  EXPECT_PARAMS(1);
+
+  if ((f=ptrarray_get(&filepool,(size_t)params[1]))==NULL)
+    return 0;
+  fn=fileno(f);
   c=lseek(fn,0,SEEK_CUR); /* save the current position */
   l=lseek(fn,0,SEEK_END); /* return the file position at its end */
   lseek(fn,c,SEEK_SET);   /* restore the file pointer */
-  (void)amx;
+  UNUSED_PARAM(amx);
   return l;
 }
 
@@ -830,9 +991,9 @@ static int matchfiles(const TCHAR *path,int skip,TCHAR *out,int outlen)
   #else
     /* copy directory part only (zero-terminate) */
     if (basename==path) {
-      _tcscpy(dirname,".");
+      strcpy(dirname,".");
     } else {
-      _tcsncpy(dirname,path,(int)(basename-path));
+      strncpy(dirname,path,(int)(basename-path));
       dirname[(int)(basename-path)]=__T('\0');
     } /* if */
     if ((dir=opendir(dirname))!=NULL) {
@@ -852,111 +1013,108 @@ static int matchfiles(const TCHAR *path,int skip,TCHAR *out,int outlen)
 /* fexist(const pattern[]) */
 static cell AMX_NATIVE_CALL n_fexist(AMX *amx, const cell *params)
 {
-  int r=0;
   TCHAR *name,fullname[_MAX_PATH];
 
-  (void)amx;
+  EXPECT_PARAMS(1);
+
   amx_StrParam(amx,params[1],name);
-  if (name!=NULL && completename(fullname,name,sizearray(fullname))!=NULL)
-    r=matchfiles(fullname,0,NULL,0);
-  return r;
+  if (name==NULL) {
+    amx_RaiseError(amx,AMX_ERR_NATIVE);
+    return 0;
+  } /* if */
+  if (completename(fullname,name,sizearray(fullname))==NULL)
+    return 0;
+  return matchfiles(fullname,0,NULL,0);
 }
 
-/* bool: fmatch(filename[], const pattern[], index=0, maxlength=sizeof filename) */
+/* bool: fmatch(name[], const pattern[], index = 0, size = sizeof name) */
 static cell AMX_NATIVE_CALL n_fmatch(AMX *amx, const cell *params)
 {
-  TCHAR *name,fullname[_MAX_PATH]="";
+  TCHAR *name,fullname[_MAX_PATH];
   cell *cptr;
 
-  (void)amx;
+  EXPECT_PARAMS(4);
+
   amx_StrParam(amx,params[2],name);
-  if (name!=NULL && completename(fullname,name,sizearray(fullname))!=NULL) {
-    if (!matchfiles(fullname,params[3],fullname,sizearray(fullname))) {
-      fullname[0]='\0';
-    } else {
-      /* copy the string into the destination */
-      cptr=amx_Address(amx,params[1]);
-      amx_SetString(cptr,fullname,1,0,params[4]);
-    } /* if */
+  if (name==NULL) {
+err_native:
+    amx_RaiseError(amx,AMX_ERR_NATIVE);
+    return 0;
   } /* if */
-  return fullname[0]!='\0';
+  if (completename(fullname,name,sizearray(fullname))==NULL)
+    return 0;
+  if (!matchfiles(fullname,params[3],fullname,sizearray(fullname)))
+    return 0;
+  /* copy the string into the destination */
+  if (amx_GetAddr(amx,params[1],&cptr)!=AMX_ERR_NONE)
+    goto err_native;
+  if (params[4]<=(cell)0 || verify_addr(amx,params[1]+params[4])!=AMX_ERR_NONE)
+    goto err_native;
+  amx_SetString(cptr,fullname,1,0,params[4]);
+  return 1;
 }
 
-/* bool: fstat(const name[], &size = 0, &timestamp = 0, &attrib = 0, &inode = 0) */
+/* bool: fstat(const name[], &size = 0, &timestamp = 0, &mode = 0, &inode = 0) */
 static cell AMX_NATIVE_CALL n_fstat(AMX *amx, const cell *params)
 {
-  TCHAR *name,fullname[_MAX_PATH]="";
+  TCHAR *name,fullname[_MAX_PATH];
   cell *cptr;
-  int result=0;
 
-  (void)amx;
+  EXPECT_PARAMS(5);
+
   amx_StrParam(amx,params[1],name);
-  if (name!=NULL && completename(fullname,name,sizearray(fullname))!=NULL) {
-    int err;
-    #if defined _WIN64
-      struct __stat64 stbuf;
-      err = _tstat64(fullname, &stbuf);
-    #else
-      struct t_stat stbuf;
-      err = _tstat(fullname, &stbuf);
-    #endif
-    if (err == 0) {
-      cptr=amx_Address(amx,params[2]);
-      *cptr=(cell)stbuf.st_size;
-      cptr=amx_Address(amx,params[3]);
-      *cptr=(cell)stbuf.st_mtime;
-      cptr=amx_Address(amx,params[4]);
-      *cptr=stbuf.st_mode;  /* mode/protection bits */
-      cptr=amx_Address(amx,params[5]);
-      *cptr=stbuf.st_ino;   /* inode number, unique id for a file */
-      result=1;
-    } /* if */
+  if (name==NULL) {
+err_native:
+    amx_RaiseError(amx,AMX_ERR_NATIVE);
+    return 0;
   } /* if */
-  return result;
+  if (completename(fullname,name,sizearray(fullname))!=NULL) {
+    struct stat stbuf;
+    if (_tstat(fullname,&stbuf)!=0)
+      return 0;
+    if (amx_GetAddr(amx,params[2],&cptr)!=AMX_ERR_NONE)
+      goto err_native;
+    *cptr=stbuf.st_size;
+    if (amx_GetAddr(amx,params[3],&cptr)!=AMX_ERR_NONE)
+      goto err_native;
+    *cptr=(cell)stbuf.st_mtime;
+    if (amx_GetAddr(amx,params[4],&cptr)!=AMX_ERR_NONE)
+      goto err_native;
+    *cptr=stbuf.st_mode;    /* mode/protection bits */
+    if (amx_GetAddr(amx,params[5],&cptr)!=AMX_ERR_NONE)
+      goto err_native;
+    *cptr=stbuf.st_ino;     /* inode number, unique id for a file */
+    return 1;
+  } /* if */
+  return 0;
 }
 
 /* bool: fattrib(const name[], timestamp=0, attrib=0x0f) */
 static cell AMX_NATIVE_CALL n_fattrib(AMX *amx, const cell *params)
 {
-  #if !(defined __WIN32__ || defined _WIN32 || defined WIN32) || defined __BORLANDC__
-    #define _utime(n,t)  utime(n,t)
-    #define _utimbuf     utimbuf
-  #endif
-  TCHAR *name,fullname[_MAX_PATH]="";
-  int result=0;
+  TCHAR *name,fullname[_MAX_PATH];
+  int result;
 
-  (void)amx;
+  EXPECT_PARAMS(3);
+
   amx_StrParam(amx,params[1],name);
-  if (name!=NULL && completename(fullname,name,sizearray(fullname))!=NULL) {
+  if (name==NULL) {
+    amx_RaiseError(amx,AMX_ERR_NATIVE);
+    return 0;
+  } /* if */
+  result=0;
+  if (completename(fullname,name,sizearray(fullname))!=NULL) {
     result=1;
     if (params[2]!=0) {
-      struct _utimbuf times;
+      struct utimbuf times;
       times.actime=(unsigned long)params[2];
       times.modtime=(unsigned long)params[2];
-      result=result && (_tutime(name,&times)==0);
+      result=result && (_tutime(fullname,&times)==0);
     } /* if */
     if (params[3]!=0x0f)
-      result=result && (_tchmod(name,(int)params[3])==0);
+      result=result && (_tchmod(fullname,(int)params[3])==0);
   } /* if */
   return result;
-}
-
-/* bool: fcreatedir(const name[]) */
-static cell AMX_NATIVE_CALL n_fcreatedir(AMX *amx, const cell *params)
-{
-  TCHAR *name,fullname[_MAX_PATH]="";
-  int r=1;
-
-  (void)amx;
-  amx_StrParam(amx,params[1],name);
-  if (name!=NULL && completename(fullname,name,sizearray(fullname))!=NULL) {
-    #if defined __WIN32__ || defined __DOS__
-      r=_tmkdir(fullname);
-    #else
-      r=_tmkdir(fullname,0755);
-    #endif
-  } /* if */
-  return r==0;
 }
 
 /* CRC32 functions are adapted from source code from www.networkdls.com
@@ -1048,146 +1206,197 @@ static cell AMX_NATIVE_CALL n_filecrc(AMX *amx, const cell *params)
   TCHAR *name,fullname[_MAX_PATH]="";
   FILE *fp;
   unsigned char buffer[256];
-  unsigned long ulCRC = 0xffffffff;
-  size_t numread;
+  unsigned long ulCRC;
+  int numread;
 
-  (void)amx;
+  EXPECT_PARAMS(1);
+
   amx_StrParam(amx,params[1],name);
-  if (name!=NULL && completename(fullname,name,sizearray(fullname))!=NULL
-      && (fp=_tfopen(fullname,"rb"))!=NULL)
-  {
+  if (name==NULL) {
+    amx_RaiseError(amx,AMX_ERR_NATIVE);
+    return 0;
+  } /* if */
+  ulCRC=0xffffffff;
+  if (completename(fullname,name,sizearray(fullname))!=NULL && (fp=_tfopen(fullname,"rb"))!=NULL) {
     do {
       numread=fread(buffer,sizeof(unsigned char),sizeof buffer,fp);
-      ulCRC=PartialCRC(ulCRC,buffer,(unsigned long)numread);
-    } while(numread==sizeof buffer);
+      ulCRC=PartialCRC(ulCRC,buffer,numread);
+    } while (numread==sizeof buffer);
     fclose(fp);
   } /* if */
-  return(ulCRC ^ 0xffffffff);
+  return (ulCRC ^ 0xffffffff);
 }
 
+/* Default file name for INI-related functions */
+static const TCHAR default_cfg_name[] = __T("config.ini");
 
-const TCHAR default_ini_name[] = "config.ini";
-
-/* readcfg(const filename[]="", const section[]="", const key[], value[], size=sizeof value, const defvalue[]="", bool:packed=false) */
+/* readcfg(const filename[]="", const section[]="", const key[], value[], size=sizeof value, const defvalue[]="", bool:pack=false) */
 static cell AMX_NATIVE_CALL n_readcfg(AMX *amx, const cell *params)
 {
-  TCHAR *name,fullname[_MAX_PATH]="";
-  TCHAR *section,*key,*defvalue;
-  TCHAR *buffer;
-  int size,result=0;
+  TCHAR *name,*section,*key,*defvalue;
+  TCHAR fullname[_MAX_PATH],*buffer;
   cell *cptr;
+  cell bufsize,numchars;
+  int pack;
 
-  size=(int)params[5];
-  if (size<=0)
-    return 0;
-  if (params[7])
-    size*=sizeof(cell);
+  EXPECT_PARAMS(7);
 
   amx_StrParam(amx,params[1],name);
-  if (name!=NULL && *name=='\0')
-    name=(TCHAR*)default_ini_name;
-  if (name!=NULL && completename(fullname,name,sizearray(fullname))!=NULL) {
-    amx_StrParam(amx,params[2],section);
-    amx_StrParam(amx,params[3],key);
-    amx_StrParam(amx,params[6],defvalue);
-
-    cptr=amx_Address(amx,params[4]);
-    buffer=(char *)alloca(size);
-    if (buffer==NULL || cptr==NULL) {
-      amx_RaiseError(amx, AMX_ERR_NATIVE);
-      return 0;
-    } /* if */
-    result=ini_gets(section,key,defvalue,buffer,size,fullname);
-    amx_SetString(cptr,buffer,params[7],0,size);
+  if (name==NULL) {
+err_native:
+    amx_RaiseError(amx,AMX_ERR_NATIVE);
+    return 0;
   } /* if */
-  return result;
+  if (name[0]=='\0')
+    name=(TCHAR *)default_cfg_name;
+  if (completename(fullname,name,sizearray(fullname))==NULL)
+    fullname[0]='\0';
+  amx_StrParam(amx,params[2],section);
+  if (section==NULL)
+    goto err_native;
+  amx_StrParam(amx,params[3],key);
+  if (key==NULL)
+    goto err_native;
+  if (amx_GetAddr(amx,params[4],&cptr)!=AMX_ERR_NONE)
+    goto err_native;
+  bufsize=params[5];
+  if (bufsize<=0 || verify_addr(amx,params[4]+bufsize)!=AMX_ERR_NONE)
+    goto err_native;
+  pack=(int)params[7];
+  if (pack)
+    bufsize *= (cell)sizeof(cell);
+  if ((buffer=(TCHAR *)alloca((size_t)bufsize*sizeof(cell)))==NULL)
+    goto err_native;
+  amx_StrParam(amx,params[6],defvalue);
+  if (defvalue==NULL)
+    goto err_native;
+  if (fullname[0]=='\0') {
+    _tcsncpy(buffer,defvalue,bufsize);
+    numchars=_tcslen(buffer);
+  } else {
+    numchars=(cell)ini_gets(section,key,defvalue,buffer,(int)bufsize,fullname);
+  } /* if */
+  amx_SetString(cptr,buffer,pack,0,(int)bufsize);
+  return numchars;
 }
 
 /* readcfgvalue(const filename[]="", const section[]="", const key[], defvalue=0) */
 static cell AMX_NATIVE_CALL n_readcfgvalue(AMX *amx, const cell *params)
 {
-  TCHAR *name,fullname[_MAX_PATH]="";
-  TCHAR *section,*key;
-  long result=0;
+  TCHAR *name,*section,*key;
+  TCHAR fullname[_MAX_PATH];
 
-  (void)amx;
+  EXPECT_PARAMS(4);
+
   amx_StrParam(amx,params[1],name);
-  if (name!=NULL && *name=='\0')
-    name=(TCHAR*)default_ini_name;
-  if (name!=NULL && completename(fullname,name,sizearray(fullname))!=NULL) {
-    amx_StrParam(amx,params[2],section);
-    amx_StrParam(amx,params[3],key);
-    result=ini_getl(section,key,(long)params[4],fullname);
+  if (name==NULL) {
+err_native:
+    amx_RaiseError(amx,AMX_ERR_NATIVE);
+    return 0;
   } /* if */
-  return result;
+  if (name[0]=='\0')
+    name=(TCHAR *)default_cfg_name;
+  if (completename(fullname,name,sizearray(fullname))==NULL)
+    fullname[0]='\0';
+  amx_StrParam(amx,params[2],section);
+  if (section==NULL)
+    goto err_native;
+  amx_StrParam(amx,params[3],key);
+  if (key==NULL)
+    goto err_native;
+  if (fullname[0]=='\0')
+    return params[4];
+  return (cell)ini_getl(section,key,(long)params[4],fullname);
 }
 
-/* writecfg(const filename[]="", const section[]="", const key[], const value[]) */
+/* bool: writecfg(const filename[]="", const section[]="", const key[], const value[]) */
 static cell AMX_NATIVE_CALL n_writecfg(AMX *amx, const cell *params)
 {
-  TCHAR *name,fullname[_MAX_PATH]="";
-  TCHAR *section,*key,*value;
-  int result=0;
+  TCHAR *name,*section,*key,*value;
+  TCHAR fullname[_MAX_PATH];
 
-  (void)amx;
+  EXPECT_PARAMS(4);
+
   amx_StrParam(amx,params[1],name);
-  if (name!=NULL && *name=='\0')
-    name=(TCHAR*)default_ini_name;
-  if (name!=NULL && completename(fullname,name,sizearray(fullname))!=NULL) {
-    amx_StrParam(amx,params[2],section);
-    amx_StrParam(amx,params[3],key);
-    amx_StrParam(amx,params[4],value);
-    result=ini_puts(section,key,value,fullname);
+  if (name==NULL) {
+err_native:
+    amx_RaiseError(amx,AMX_ERR_NATIVE);
+    return 0;
   } /* if */
-  return result;
+  if (name[0]=='\0')
+    name=(TCHAR *)default_cfg_name;
+  if (completename(fullname,name,sizearray(fullname))==NULL)
+    return 0;
+  amx_StrParam(amx,params[2],section);
+  if (section==NULL)
+    goto err_native;
+  amx_StrParam(amx,params[3],key);
+  if (key==NULL)
+    goto err_native;
+  amx_StrParam(amx,params[4],value);
+  if (value==NULL)
+    goto err_native;
+  return ini_puts(section,key,value,fullname);
 }
 
-/* writecfgvalue(const filename[]="", const section[]="", const key[], value) */
+/* bool: writecfgvalue(const filename[]="", const section[]="", const key[], value) */
 static cell AMX_NATIVE_CALL n_writecfgvalue(AMX *amx, const cell *params)
 {
-  TCHAR *name,fullname[_MAX_PATH]="";
-  TCHAR *section,*key;
-  int result=0;
+  TCHAR *name,*section,*key;
+  TCHAR fullname[_MAX_PATH];
 
-  (void)amx;
+  EXPECT_PARAMS(4);
+
   amx_StrParam(amx,params[1],name);
-  if (name!=NULL && *name=='\0')
-    name=(TCHAR*)default_ini_name;
-  if (name!=NULL && completename(fullname,name,sizearray(fullname))!=NULL) {
-    amx_StrParam(amx,params[2],section);
-    amx_StrParam(amx,params[3],key);
-    result=ini_putl(section,key,(long)params[4],fullname);
+  if (name==NULL) {
+err_native:
+    amx_RaiseError(amx,AMX_ERR_NATIVE);
+    return 0;
   } /* if */
-  return result;
+  if (name[0]=='\0')
+    name=(TCHAR *)default_cfg_name;
+  if (completename(fullname,name,sizearray(fullname))==NULL)
+    return 0;
+  amx_StrParam(amx,params[2],section);
+  if (section==NULL)
+    goto err_native;
+  amx_StrParam(amx,params[3],key);
+  if (key==NULL)
+    goto err_native;
+  return ini_putl(section,key,(long)params[4],fullname);
 }
 
-/* deletecfg(const filename[]="", const section[]="", const key[]="") */
+/* bool: deletecfg(const filename[]="", const section[]="", const key[]="") */
 static cell AMX_NATIVE_CALL n_deletecfg(AMX *amx, const cell *params)
 {
-  TCHAR *name,fullname[_MAX_PATH]="";
-  TCHAR *section,*key;
-  int result=0;
+  TCHAR *name,*section,*key;
+  TCHAR fullname[_MAX_PATH];
 
-  (void)amx;
+  EXPECT_PARAMS(3);
+
   amx_StrParam(amx,params[1],name);
-  if (name!=NULL && *name=='\0')
-    name=(TCHAR*)default_ini_name;
-  if (name!=NULL && completename(fullname,name,sizearray(fullname))!=NULL) {
-    amx_StrParam(amx,params[2],section);
-    if (section!=NULL && *section=='\0')
-      section=NULL;
-    amx_StrParam(amx,params[3],key);
-    if (key!=NULL && *key=='\0')
-      key=NULL;
-    result=ini_puts(section,key,NULL,fullname);
+  if (name==NULL) {
+err_native:
+    amx_RaiseError(amx,AMX_ERR_NATIVE);
+    return 0;
   } /* if */
-  return result;
+  if (name[0]=='\0')
+    name=(TCHAR *)default_cfg_name;
+  if (completename(fullname,name,sizearray(fullname))==NULL)
+    return 0;
+  amx_StrParam(amx,params[2],section);
+  if (section==NULL)
+    goto err_native;
+  if (section[0]=='\0')
+    section=NULL;
+  amx_StrParam(amx,params[3],key);
+  if (key==NULL)
+    goto err_native;
+  return ini_puts(section,key,NULL,fullname);
 }
 
-#if defined __cplusplus
-  extern "C"
-#endif
-AMX_NATIVE_INFO file_Natives[] = {
+
+static const AMX_NATIVE_INFO natives[] = {
   { "fopen",        n_fopen },
   { "fclose",       n_fclose },
   { "fwrite",       n_fwrite },
@@ -1200,14 +1409,14 @@ AMX_NATIVE_INFO file_Natives[] = {
   { "fseek",        n_fseek },
   { "flength",      n_flength },
   { "fremove",      n_fremove },
-  { "fcopy",        n_fcopy },
   { "frename",      n_frename },
+  { "fcopy",        n_fcopy },
+  { "fcreatedir",   n_fcreatedir },
   { "fexist",       n_fexist },
   { "fmatch",       n_fmatch },
   { "fstat",        n_fstat },
   { "fattrib",      n_fattrib },
   { "filecrc",      n_filecrc },
-  { "fcreatedir",   n_fcreatedir },
   { "readcfg",      n_readcfg },
   { "readcfgvalue", n_readcfgvalue },
   { "writecfg",     n_writecfg },
@@ -1218,11 +1427,14 @@ AMX_NATIVE_INFO file_Natives[] = {
 
 int AMXEXPORT AMXAPI amx_FileInit(AMX *amx)
 {
-  return amx_Register(amx, file_Natives, -1);
+  if (!ptrarray_acquire(&filepool))
+    return AMX_ERR_MEMORY;
+  return amx_Register(amx,natives,-1);
 }
 
 int AMXEXPORT AMXAPI amx_FileCleanup(AMX *amx)
 {
-  (void)amx;
+  UNUSED_PARAM(amx);
+  ptrarray_release(&filepool);
   return AMX_ERR_NONE;
 }

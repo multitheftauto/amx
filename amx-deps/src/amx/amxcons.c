@@ -4,21 +4,25 @@
  *  cannot always be implemented with portable C functions. In other words,
  *  these routines must be ported to other environments.
  *
- *  Copyright (c) ITB CompuPhase, 1997-2016
+ *  Copyright (c) ITB CompuPhase, 1997-2008
  *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may not
- *  use this file except in compliance with the License. You may obtain a copy
- *  of the License at
+ *  This software is provided "as-is", without any express or implied warranty.
+ *  In no event will the authors be held liable for any damages arising from
+ *  the use of this software.
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *  Permission is granted to anyone to use this software for any purpose,
+ *  including commercial applications, and to alter it and redistribute it
+ *  freely, subject to the following restrictions:
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- *  License for the specific language governing permissions and limitations
- *  under the License.
+ *  1.  The origin of this software must not be misrepresented; you must not
+ *      claim that you wrote the original software. If you use this software in
+ *      a product, an acknowledgment in the product documentation would be
+ *      appreciated but is not required.
+ *  2.  Altered source versions must be plainly marked as such, and must not be
+ *      misrepresented as being the original software.
+ *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: amxcons.c 5587 2016-10-25 09:59:46Z  $
+ *  Version: $Id: amxcons.c 3821 2007-10-15 16:54:20Z thiadmer $
  */
 
 #if defined _UNICODE || defined __UNICODE__ || defined UNICODE
@@ -36,25 +40,25 @@
 #include <string.h>
 #include <assert.h>
 #if defined __WIN32__ || defined _WIN32 || defined WIN32 || defined __MSDOS__
-  #define HAVE_CONIO
   #include <conio.h>
   #include <malloc.h>
 #endif
-#if defined USE_CURSES || defined HAVE_CURSES_H
-  #include <curses.h>
+#include "amx.h"
+#if defined USE_CURSES
+  #if defined HAVE_CURSES_H
+    #include <curses.h>
+  #elif defined HAVE_NCURSES_H
+    #include <ncurses.h>
+  #elif defined HAVE_NCURSES_NCURSES_H
+    #include <ncurses/ncurses.h>
+  #elif defined HAVE_NCURSES_CURSES_H
+    #include <ncurses/curses.h>
+  #else
+    #include <curses.h>
+  #endif
   #if !defined CURSES
     #define CURSES  1
   #endif
-#endif
-#include "osdefs.h"
-#if defined __ECOS__
-  /* eCos puts include files in cyg/package_name */
-  #include <cyg/hal/hal_if.h>
-  #include <cyg/infra/diag.h>
-  #include <cyg/hal/hal_diag.h>
-  #include <cyg/pawn/amx.h>
-#else
-  #include "amx.h"
 #endif
 #if defined __WIN32__ || defined _WIN32 || defined WIN32
   #include <windows.h>
@@ -76,10 +80,25 @@
 #endif
 #include "amxcons.h"
 
-#if defined AMX_TERMINAL
+#if defined __clang__
+  #pragma clang diagnostic ignored "-Wlogical-op-parentheses"
+#endif
+
+#define EXPECT_PARAMS(num) \
+  do { \
+    if (params[0]!=(num)*sizeof(cell)) \
+      return amx_RaiseError(amx,AMX_ERR_PARAMS),0; \
+  } while(0)
+#define EXPECT_PARAMS_VA(num) \
+  do { \
+    if (params[0]<(num)*sizeof(cell)) \
+      return amx_RaiseError(amx,AMX_ERR_PARAMS),0; \
+  } while(0)
+
+#if defined __MSDOS__
   #define EOL_CHAR       '\r'
 #endif
-#if defined __WIN32__ || defined _WIN32 || defined WIN32 || defined __MSDOS__
+#if defined __WIN32__ || defined _WIN32 || defined WIN32
   #define EOL_CHAR       '\r'
 #endif
 #if !defined EOL_CHAR
@@ -119,10 +138,10 @@
   #define amx_console(c,l,f)  ((void)(c),(void)(l),(void)(f))
   unsigned int amx_setattr(int foregr,int backgr,int highlight)
   {
+    int attribs=A_NORMAL;
     if (highlight>0)
-      attron(A_STANDOUT);
-    else
-      attroff(A_STANDOUT);
+      attribs=(attribs & ~A_NORMAL) | A_STANDOUT;
+    attrset(attribs);
     //??? in future, also handle colours
   }
   void CreateConsole(void);
@@ -173,44 +192,14 @@
     if (height!=NULL)
       *height=row;
   }
-#elif defined VT100 || defined __LINUX__ || defined ANSITERM || defined __ECOS__
+#elif defined VT100 || defined LINUX || defined ANSITERM
   /* ANSI/VT100 terminal, or shell emulating "xterm" */
-  #if defined __ECOS__
-    #define AMXCONSOLE_NOIDLE
-  #endif
-
-  #if CYGPKG_PAWN_AMXCONSOLE_DIAG==1
-    /* eCos has basically two ways to make simple exchanges with a terminal:
-     * - with the diag_*() functions (no input provided!)
-     * - with f*() functions (fprintf(),fputs(), etc).
-     */
-    #define amx_fflush()
-
-    static int amx_putstr(TCHAR *s)
-    {
-      diag_write_string(s);
-      return 1;
-    }
-    static int amx_putchar(TCHAR c)
-    {
-      diag_write_char(c);
-      return c;
-    }
-    static char amx_getch(void)
-    {
-      char c=-1;
-      HAL_DIAG_READ_CHAR(c);
-      return c;
-    }
-  #else
-
-    #define amx_putstr(s)     fputs((s),stdout)
-    #define amx_putchar(c)    putchar(c)
-    #define amx_fflush()      fflush(stdout)
-    #define amx_getch()       getch()
-    #define amx_gets(s,n)     fgets(s,n,stdin)
-    #define amx_kbhit()       kbhit()
-  #endif
+  #define amx_putstr(s)       printf("%s",(s))
+  #define amx_putchar(c)      putchar(c)
+  #define amx_fflush()        fflush(stdout)
+  #define amx_getch()         getch()
+  #define amx_gets(s,n)       fgets(s,n,stdin)
+  #define amx_kbhit()         kbhit()
 
   int amx_termctl(int code,int value)
   {
@@ -324,7 +313,7 @@
      * (indeed, the terminal was that of the alphanumeric display). In xterm (a
      * terminal emulator) we can set the terminal size though, and most
      * terminals that in use today are in fact emulators.
-     * Putty understands this code too, by many others do not.
+     * Putty understands this code too, but many others do not.
      */
     sprintf(str,"\033[8;%d;%dt",lines,columns);
     amx_putstr(str);
@@ -343,7 +332,9 @@
   #define amx_putstr(s)       _tprintf("%s",(s))
   #define amx_putchar(c)      _puttchar(c)
   #define amx_fflush()        fflush(stdout)
+  #define amx_getch()         getch()
   #define amx_gets(s,n)       _fgetts(s,n,stdin)
+  #define amx_kbhit()         kbhit()
 
   int amx_termctl(int code,int value)
   {
@@ -354,13 +345,10 @@
     case 1: {           /* switch auto-wrap on/off */
       /* only works in Windows 2000/XP */
       HANDLE hConsole=GetStdHandle(STD_OUTPUT_HANDLE);
-      DWORD mode;
-      GetConsoleMode(hConsole,&mode);
+      DWORD Flags=ENABLE_PROCESSED_OUTPUT;
       if (value)
-        mode |= ENABLE_WRAP_AT_EOL_OUTPUT;
-      else
-        mode &= ~ENABLE_WRAP_AT_EOL_OUTPUT;
-      SetConsoleMode(hConsole,mode);
+        Flags |= ENABLE_WRAP_AT_EOL_OUTPUT;
+      SetConsoleMode(hConsole,Flags);
       return 1;
     } /* case */
 
@@ -450,17 +438,15 @@
   {
     SMALL_RECT rect;
     COORD dwSize;
-    HANDLE hConsole;
     (void)flags;
     dwSize.X=(short)columns;
     dwSize.Y=(short)lines;
-    hConsole=GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleScreenBufferSize(hConsole,dwSize);
+    SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE),dwSize);
     rect.Left=0;
     rect.Top=0;
     rect.Right=(short)(columns-1);
     rect.Bottom=(short)(lines-1);
-    SetConsoleWindowInfo(hConsole,TRUE,&rect);
+    SetConsoleWindowInfo(GetStdHandle(STD_OUTPUT_HANDLE),TRUE,&rect);
   }
   void amx_viewsize(int *width,int *height)
   {
@@ -471,37 +457,6 @@
     if (height!=NULL)
       *height=(int)(csbi.srWindow.Bottom-csbi.srWindow.Top+1);
   }
-  int amx_getch(void)
-  {
-    TCHAR ch;
-    DWORD count,mode;
-    HANDLE hConsole=GetStdHandle(STD_INPUT_HANDLE);
-    GetConsoleMode(hConsole,&mode);
-    SetConsoleMode(hConsole,mode & ~(ENABLE_LINE_INPUT|ENABLE_ECHO_INPUT));
-    while (ReadFile(hConsole,&ch,1,&count,NULL) && count==0)
-      /* nothing */;
-    SetConsoleMode(hConsole,mode);
-    if (count>0)
-      return ch;
-    return EOF;
-  }
-  int amx_kbhit(void)
-  {
-    DWORD count=0;
-    HANDLE hConsole;
-    hConsole=GetStdHandle(STD_INPUT_HANDLE);
-    if (GetFileType(hConsole)==FILE_TYPE_PIPE) {
-      PeekNamedPipe(hConsole,NULL,0,NULL,&count,NULL);
-    } else {
-      INPUT_RECORD rec;
-      while (PeekConsoleInput(hConsole,&rec,1,&count)) {
-        if (count==0 || (rec.EventType==KEY_EVENT && rec.Event.KeyEvent.bKeyDown))
-          break;
-        ReadConsoleInput(hConsole,&rec,1,&count);
-      }
-    }
-    return (count>0);
-  }
 #else
   /* assume a streaming terminal; limited features (no colour, no cursor
    * control)
@@ -509,6 +464,7 @@
   #define amx_putstr(s)       printf("%s",(s))
   #define amx_putchar(c)      putchar(c)
   #define amx_fflush()        fflush(stdout)
+  #define amx_getch()         getch()
   #define amx_gets(s,n)       fgets(s,n,stdin)
   #define amx_clrscr()        (void)(0)
   #define amx_clreol()        (void)(0)
@@ -518,22 +474,16 @@
   #define amx_termctl(c,v)    ((void)(c),(void)(v),(0))
   #define amx_console(c,l,f)  ((void)(c),(void)(l),(void)(f))
   #define amx_viewsize        (*(x)=80,*(y)=25)
-  #if defined HAVE_CONIO
-    #define amx_getch()       getch()
-    #define amx_kbhit()       kbhit()
-  #else
-    #define amx_getch()       getchar()
-    #define amx_kbhit()       (0)
-  #endif
+  #define amx_kbhit()         kbhit()
 #endif
 
 #if !defined AMX_TERMINAL && (defined __WIN32__ || defined _WIN32 || defined WIN32)
   void CreateConsole(void)
   { static int createdconsole=0;
     if (!createdconsole) {
-  	  AllocConsole();
-  	  createdconsole=1;
-  	} /* if */
+      AllocConsole();
+      createdconsole=1;
+    } /* if */
   }
 #elif defined CURSES && CURSES != 0
   // The Mac OS X build variant uses curses.
@@ -541,8 +491,6 @@
   { static int createdconsole=0;
     if (!createdconsole) {
       curseswin=initscr();
-      if (has_colors())
-        start_color();
       cbreak();
       noecho();
       nonl();
@@ -578,19 +526,19 @@ enum {
 
 static TCHAR *reverse(TCHAR *string,int stop)
 {
-	int start=0;
-	TCHAR temp;
+  int start=0;
+  TCHAR temp;
 
-	/* swap the string */
-	stop--;				/* avoid swapping the '\0' byte to the first position */
-	while (stop - start > 0) {
-		temp = string[start];
-		string[start] = string[stop];
-		string[stop] = temp;
-		start++;
-		stop--;
-	} /* while */
-	return string;
+  /* swap the string */
+  stop--;               /* avoid swapping the '\0' byte to the first position */
+  while (stop - start > 0) {
+    temp = string[start];
+    string[start] = string[stop];
+    string[stop] = temp;
+    start++;
+    stop--;
+  } /* while */
+  return string;
 }
 
 /* Converts an integral value to a string, with optional padding with spaces or
@@ -603,61 +551,68 @@ static TCHAR *reverse(TCHAR *string,int stop)
  */
 static TCHAR *amx_strval(TCHAR buffer[], long value, int format, int width)
 {
-	int start, stop;
-	TCHAR temp;
+  int start, stop;
+  TCHAR temp;
 
-	start = stop = 0;
-	if (format == SV_DECIMAL) {
-		if (value < 0) {
-			buffer[0] = __T('-');
-			start = stop = 1;
-      do {
-        temp = (TCHAR)(value % 10);
-        if (temp > 0)
-          temp = (TCHAR)(temp - 10);
-        buffer[stop++] = (TCHAR)(__T('0') - temp);
-        value /= 10;
-      } while (value != 0);
-		} else {
+  start = stop = 0;
+  switch (format) {
+  case SV_DECIMAL:
+    if (value >= 0) {
       do {
         buffer[stop++] = (TCHAR)((value % 10) + __T('0'));
         value /= 10;
       } while (value != 0);
-    }
-  } else if (format == SV_HEX) {
-		/* hexadecimal */
-		unsigned long v = (unsigned long)value;	/* copy to unsigned value for shifting */
-		do {
-			buffer[stop] = (TCHAR)((v & 0x0f) + __T('0'));
-			if (buffer[stop] > __T('9'))
-				buffer[stop] += (TCHAR)(__T('A') - __T('0') - 10);
-			v >>= 4;
-			stop++;
-		} while (v != 0);
-	} else {
-    /* binary */
-    unsigned long v = (unsigned long)value;	/* copy to unsigned value for shifting */
+    } else {
+      buffer[0] = __T('-');
+      start = stop = 1;
+      do {
+        temp = (TCHAR)(signed char)(value % 10);
+        if ((signed char)temp < 0)
+          temp = (TCHAR)-(signed char)temp;
+        buffer[stop++] = (TCHAR)(temp + __T('0'));
+        value /= 10;
+      } while (value != 0);
+    } /* if */
+    break;
+  case SV_HEX: {
+    unsigned long v = (unsigned long)value; /* copy to unsigned value for shifting */
     do {
-      buffer[stop++] = (TCHAR)((v & 0x01) + __T('0'));
-      v >>= 1;
+      buffer[stop] = (TCHAR)((v & 0x0f) + __T('0'));
+      if (buffer[stop] > __T('9'))
+        buffer[stop] += (TCHAR)(__T('A') - __T('0') - 10);
+      v >>= 4;
+      stop++;
     } while (v != 0);
+    break;
+  } /* case */
+  case SV_BIN: {
+    unsigned long v = (unsigned long)value; /* copy to unsigned value for shifting */
+    do {
+      buffer[stop] = (TCHAR)((v & 0x01) + __T('0'));
+      v >>= 1;
+      stop++;
+    } while (v != 0);
+    break;
+  } /* case */
+  default:
+    assert(0);
+  } /* switch */
+
+  /* pad to given width */
+  if (width < 0) {
+    temp = __T('0');
+    width = -width;
+  } else {
+    temp = __T(' ');
   } /* if */
+  while (stop < width)
+    buffer[stop++] = temp;
 
-	/* pad to given width */
-	if (width < 0) {
-		temp = __T('0');
-		width = -width;
-	} else {
-		temp = __T(' ');
-	} /* if */
-	while (stop < width)
-		buffer[stop++] = temp;
+  buffer[stop] = __T('\0');
 
-	buffer[stop] = __T('\0');
-
-	/* swap the string, and we are done */
-	reverse(buffer+start,stop-start);
-	return buffer;
+  /* swap the string, and we are done */
+  reverse(buffer+start,stop-start);
+  return buffer;
 }
 
 #if defined FIXEDPOINT
@@ -698,7 +653,7 @@ static TCHAR *formatfixed(TCHAR *string,cell value,TCHAR align,int width,TCHAR d
   string[0]=__T('\0');
 
   /* add sign */
-  i=(int)_tcslen(string);
+  i=_tcslen(string);
   string[i]=vsign;
   string[i+1]=__T('\0');
 
@@ -707,12 +662,12 @@ static TCHAR *formatfixed(TCHAR *string,cell value,TCHAR align,int width,TCHAR d
 
   /* add fractional part */
   if (digits>0) {
-    i=(int)_tcslen(string);
+    i=_tcslen(string);
     string[i]=decpoint;
     amx_strval(string+i+1,(long)value,SV_DECIMAL,-digits);
   } /* if */
 
-  len=(int)_tcslen(string);
+  len=_tcslen(string);
   if (len<width) {
     /* pad to the requested width */
     for (i=len; i<width; i++)
@@ -733,12 +688,11 @@ static TCHAR *formatfixed(TCHAR *string,cell value,TCHAR align,int width,TCHAR d
 #endif
 
 
-static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,TCHAR decpoint,int width,int digits,TCHAR filler,
+static int dochar(AMX *amx,TCHAR ch,cell param,TCHAR sign,TCHAR decpoint,int width,int digits,TCHAR filler,
                   int (*f_putstr)(void*,const TCHAR *),int (*f_putchar)(void*,TCHAR),void *user)
 {
   cell *cptr;
-  int ret = 1;
-  TCHAR buffer[40];
+  TCHAR buffer[64+1];
   #if defined FLOATPOINT
     TCHAR formatstring[40];
   #endif
@@ -748,20 +702,14 @@ static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,T
   #endif
   assert(f_putstr!=NULL);
   assert(f_putchar!=NULL);
-  if (width < 0) {
-    width = *amx_Address(amx, params[paramidx]);
-    ++paramidx;
-    ++ret;
-  }
-  if (digits < 0) {
-    digits = *amx_Address(amx, params[paramidx]);
-    ++paramidx;
-    ++ret;
-  }
 
   switch (ch) {
   case __T('c'):
-    cptr=amx_Address(amx, params[paramidx]);
+    if (amx_GetAddr(amx,param,&cptr)!=AMX_ERR_NONE) {
+err_native:
+      amx_RaiseError(amx,AMX_ERR_NATIVE);
+      return 0;
+    } /* if */
     width--;            /* single character itself has a with of 1 */
     if (sign!=__T('-'))
       while (width-->0)
@@ -769,22 +717,22 @@ static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,T
     f_putchar(user,(TCHAR)*cptr);
     while (width-->0)
       f_putchar(user,filler);
-    return ret;
+    return 1;
 
-  case __T('d'):
-  case __T('i'): {
+  case __T('d'): {
     cell value;
     int length=1;
-    cptr=amx_Address(amx, params[paramidx]);
+    if (amx_GetAddr(amx,param,&cptr)!=AMX_ERR_NONE)
+      goto err_native;
     value=*cptr;
     if (value<0 || sign==__T('+'))
       length++;
     if (value<0)
       value=-value;
-    while (value>=10) {
+    do {
       length++;
       value/=10;
-    } /* while */
+    } while (value!=0);
     width-=length;
     if (sign!=__T('-'))
       while (width-->0)
@@ -795,7 +743,7 @@ static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,T
     f_putstr(user,buffer);
     while (width-->0)
       f_putchar(user,filler);
-    return ret;
+    return 1;
   } /* case */
 
 #if defined FLOATPOINT
@@ -803,7 +751,7 @@ static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,T
   case __T('r'): /* if floating point is enabled, %r == %f */
     /* build a format string */
     if (digits==INT_MAX)
-      digits=6;
+      digits=5;
     else if (digits>25)
       digits=25;
     _tcscpy(formatstring,__T("%"));
@@ -812,7 +760,8 @@ static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,T
     if (width>0)
       _stprintf(formatstring+_tcslen(formatstring),__T("%d"),width);
     _stprintf(formatstring+_tcslen(formatstring),__T(".%df"),digits);
-    cptr=amx_Address(amx, params[paramidx]);
+    if (amx_GetAddr(amx,param,&cptr)!=AMX_ERR_NONE)
+      goto err_native;
     #if PAWN_CELL_SIZE == 64
       _stprintf(buffer,formatstring,*(double*)cptr);
     #else
@@ -824,7 +773,7 @@ static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,T
         *ptr=__T(',');
     } /* if */
     f_putstr(user,buffer);
-    return ret;
+    return 1;
 #endif
 
 #if defined FIXEDPOINT
@@ -833,7 +782,8 @@ static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,T
 #if !defined FLOATPOINT
   case __T('r'): /* if fixed point is enabled, and floating point is not, %r == %q */
 #endif
-    cptr=amx_Address(amx, params[paramidx]);
+    if (amx_GetAddr(amx,param,&cptr)!=AMX_ERR_NONE)
+      goto err_native;
     /* format the number */
     if (digits==INT_MAX)
       digits=3;
@@ -842,7 +792,7 @@ static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,T
     formatfixed(buffer,*cptr,sign,width,decpoint,digits,filler);
     assert(_tcslen(buffer)<sizeof buffer);
     f_putstr(user,buffer);
-    return ret;
+    return 1;
 #endif
 
 #if !defined FLOATPOINT && !defined FIXEDPOINT
@@ -860,15 +810,17 @@ static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,T
     info.f_putstr=f_putstr;
     info.f_putchar=f_putchar;
     info.user=user;
-    cptr=amx_Address(amx, params[paramidx]);
+    if (amx_GetAddr(amx,param,&cptr)!=AMX_ERR_NONE)
+      goto err_native;
     amx_printstring(amx,cptr,&info);
-    return ret;
+    return 1;
   } /* case */
 
   case __T('x'): {
     ucell value;
     int length=1;
-    cptr=amx_Address(amx, params[paramidx]);
+    if (amx_GetAddr(amx,param,&cptr)!=AMX_ERR_NONE)
+      goto err_native;
     value=*(ucell*)cptr;
     while (value>=0x10) {
       length++;
@@ -882,27 +834,28 @@ static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,T
     f_putstr(user,buffer);
     while (width-->0)
       f_putchar(user,filler);
-    return ret;
+    return 1;
   } /* case */
 
   case __T('b'): {
     ucell value;
-    int length = 1;
-    cptr = amx_Address(amx, params[paramidx]);
-    value = *(ucell*)cptr;
-    while (value >= 0x1) {
+    int length=1;
+    if (amx_GetAddr(amx,param,&cptr)!=AMX_ERR_NONE)
+      goto err_native;
+    value=*(ucell*)cptr;
+    while (value>=0x02) {
       length++;
-      value >>= 1;
+      value>>=1;
     } /* while */
-    width -= length;
-    if (sign != __T('-'))
+    width-=length;
+    if (sign!=__T('-'))
       while (width-->0)
-        f_putchar(user, filler);
-    amx_strval(buffer, (long)*cptr, SV_BIN, 0);
-    f_putstr(user, buffer);
+        f_putchar(user,filler);
+    amx_strval(buffer,(long)*cptr,SV_BIN,0);
+    f_putstr(user,buffer);
     while (width-->0)
-      f_putchar(user, filler);
-    return ret;
+      f_putchar(user,filler);
+    return 1;
   } /* case */
 
   } /* switch */
@@ -912,16 +865,18 @@ static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,T
 }
 
 enum {
-  FMT_NONE = 0,   /* not in format state; accept '%' */
-  FMT_START_D = 1,  /* found '%', accept '+', '-' (START), '0' (filler; START), digit (WIDTH), '.' (DECIM), or '%' or format letter (done) */
-  FMT_WIDTH_D = 2,  /* found digit after '%' or sign, accept digit (WIDTH), '.' (DECIM) or format letter (done) */
-  FMT_DECIM_D = 3,  /* found digit after '.', accept accept digit (DECIM) or format letter (done) */
-  FMT_START = 4,  /* above, without $ */
-  FMT_WIDTH = 5,  /* above, without $ */
-  FMT_DECIM = 6,  /* above, without $ */
+  FMT_NONE,   /* not in format state; accept '%' */
+  FMT_START,  /* found '%', accept '+', '-' (START), '0' (filler; START), digit (WIDTH), '.' (DECIM), or '%' or format letter (done) */
+  FMT_WIDTH,  /* found digit after '%' or sign, accept digit (WIDTH), '.' (DECIM) or format letter (done) */
+  FMT_DECIM,  /* found digit after '.', accept accept digit (DECIM) or format letter (done) */
+};
+enum {
+  PRINT_NONE,
+  PRINT_SINGLE,
+  PRINT_FMT
 };
 
-static int formatstate(TCHAR c,int *state,TCHAR *sign,TCHAR *decpoint,int *width,int *digits,int *paramidx,TCHAR *filler)
+static int formatstate(TCHAR c,int *state,TCHAR *sign,TCHAR *decpoint,int *width,int *digits,TCHAR *filler)
 {
   assert(state!=NULL && sign!=NULL && decpoint!=NULL && width!=NULL && digits!=NULL && filler!=NULL);
   switch (*state) {
@@ -934,82 +889,54 @@ static int formatstate(TCHAR c,int *state,TCHAR *sign,TCHAR *decpoint,int *width
       *digits=INT_MAX;
       *filler=__T(' ');
     } else {
-      return -1;  /* print a single character */
+      return PRINT_SINGLE;  /* print a single character */
     } /* if */
     break;
   case FMT_START:
-    if (c == __T('$')) {
-      *paramidx=0;
-      *filler=__T(' ');
-      *state=FMT_START_D;
-      return 0;
-    }
-    /* fallthrough */
-  case FMT_START_D:
     if (c==__T('+') || c==__T('-')) {
       *sign=c;
     } else if (c==__T('0')) {
       *filler=c;
     } else if (c>=__T('1') && c<=__T('9')) {
       *width=(int)(c-__T('0'));
-      *state+=1; /* FMT_WIDTH */
-    } else if (c == __T('*')) {
-      *width = -1;
-      *state+=1; /* FMT_WIDTH */
+      *state=FMT_WIDTH;
     } else if (c==__T('.') || c==__T(',')) {
       *decpoint=c;
       *digits=0;
-      *state+=2; /* FMT_DECIM */
+      *state=FMT_DECIM;
     } else if (c==__T('%')) {
       *state=FMT_NONE;
-      return -1;  /* print literal '%' */
+      return PRINT_SINGLE;  /* print literal '%' */
     } else {
-      return 1;   /* print formatted character */
+      return PRINT_FMT;   /* print formatted character */
     } /* if */
     break;
   case FMT_WIDTH:
-    if (*width < 0) {
-      return 1;
-    } else if (c == __T('$')) {
-      *paramidx=*width;
-      *width=0;
-      *state = FMT_WIDTH_D;
-      return 0;
-    }
-    /* fallthrough */
-  case FMT_WIDTH_D:
-    if (c==__T('.') || c==__T(',')) {
+    if (c>=__T('0') && c<=__T('9')) {
+      *width=*width*10+(int)(c-__T('0'));
+    } else if (c==__T('.') || c==__T(',')) {
       *decpoint=c;
       *digits=0;
-      *state+=1; /* FMT_DECIM */
-    } else if (*width < 0) {
-      return 1;
-    } else if (c >= __T('0') && c <= __T('9')) {
-      *width=*width*10+(int)(c-__T('0'));
+      *state=FMT_DECIM;
     } else {
-      return 1;   /* print formatted character */
+      return PRINT_FMT;   /* print formatted character */
     } /* if */
     break;
   case FMT_DECIM:
-  case FMT_DECIM_D:
-    if (*digits < 0) {
-      return 1;
-    } else if (c >= __T('0') && c <= __T('9')) {
-      *digits = *digits * 10 + (int)(c - __T('0'));
-    } else if (c == __T('*')) {
-      *digits = -1;
+    if (c>=__T('0') && c<=__T('9')) {
+      *digits=*digits*10+(int)(c-__T('0'));
     } else {
-      return 1;   /* print formatted character */
+      return PRINT_FMT;   /* print formatted character */
     } /* if */
     break;
   } /* switch */
 
-  return 0;
+  return PRINT_NONE;
 }
 
 int amx_printstring(AMX *amx,cell *cstr,AMX_FMTINFO *info)
 {
-  int i,paramidx=0,thisparam=0;
+  int i,paramidx=0;
   int fmtstate=FMT_NONE,width,digits;
   TCHAR sign,decpoint,filler;
   int (*f_putstr)(void*,const TCHAR *);
@@ -1047,10 +974,11 @@ int amx_printstring(AMX *amx,cell *cstr,AMX_FMTINFO *info)
 
     if ((ucell)*cstr>UNPACKEDMAX) {
       int j=sizeof(cell)-sizeof(char);
+      char c;
       /* the string is packed */
       i=0;
       for ( ; ; ) {
-        char c=(char)((ucell)cstr[i] >> 8*j);
+        c=(char)((ucell)cstr[i] >> 8*j);
         if (c==0)
           break;
         if (skip>0) {
@@ -1073,8 +1001,8 @@ int amx_printstring(AMX *amx,cell *cstr,AMX_FMTINFO *info)
     } else {
       /* unpacked string */
       for (i=0; cstr[i]!=0; i++) {
-      	if (skip-->0)
-      	  continue;
+        if (skip-->0)
+          continue;
         assert(idx<sizeof cache);
         cache[idx++]=(TCHAR)cstr[i];
         if (idx==sizeof cache - 1) {
@@ -1094,28 +1022,26 @@ int amx_printstring(AMX *amx,cell *cstr,AMX_FMTINFO *info)
     /* check whether this is a packed string */
     if ((ucell)*cstr>UNPACKEDMAX) {
       int j=sizeof(cell)-sizeof(char);
+      char c;
       /* the string is packed */
       i=0;
       for ( ; ; ) {
-        char c=(char)((ucell)cstr[i] >> 8*j);
+        c=(char)((ucell)cstr[i] >> 8*j);
         if (c==0)
           break;
-        switch (formatstate(c,&fmtstate,&sign,&decpoint,&width,&digits,&thisparam,&filler)) {
-        case -1:
+        switch (formatstate(c,&fmtstate,&sign,&decpoint,&width,&digits,&filler)) {
+        case PRINT_SINGLE:
           f_putchar(user,c);
           break;
-        case 0:
+        case PRINT_NONE:
           break;
-        case 1:
+        case PRINT_FMT:
           assert(info!=NULL && info->params!=NULL);
           if (paramidx>=info->numparams)  /* insufficient parameters passed */
             amx_RaiseError(amx, AMX_ERR_NATIVE);
           else
-            thisparam=dochar(amx,c,info->params,thisparam,sign,decpoint,width,digits,filler,
+            paramidx+=dochar(amx,c,info->params[paramidx],sign,decpoint,width,digits,filler,
                              f_putstr,f_putchar,user);
-          if (fmtstate & 4)
-            paramidx += thisparam;
-          thisparam = paramidx;
           fmtstate=FMT_NONE;
           break;
         default:
@@ -1128,23 +1054,20 @@ int amx_printstring(AMX *amx,cell *cstr,AMX_FMTINFO *info)
     } else {
       /* the string is unpacked */
       for (i=0; cstr[i]!=0; i++) {
-        switch (formatstate((TCHAR)cstr[i],&fmtstate,&sign,&decpoint,&width,&digits,&thisparam,&filler)) {
-        case -1:
+        switch (formatstate((TCHAR)cstr[i],&fmtstate,&sign,&decpoint,&width,&digits,&filler)) {
+        case PRINT_SINGLE:
           f_putchar(user,(TCHAR)cstr[i]);
           break;
-        case 0:
+        case PRINT_NONE:
           break;
-        case 1:
+        case PRINT_FMT:
           assert(info!=NULL && info->params!=NULL);
           if (paramidx>=info->numparams)  /* insufficient parameters passed */
             amx_RaiseError(amx, AMX_ERR_NATIVE);
           else
-            thisparam=dochar(amx,(TCHAR)cstr[i],info->params,thisparam,sign,decpoint,width,digits,filler,
+            paramidx+=dochar(amx,(TCHAR)cstr[i],info->params[paramidx],sign,decpoint,width,digits,filler,
                              f_putstr,f_putchar,user);
-          if (fmtstate & 4)
-            paramidx += thisparam;
-          thisparam = paramidx;
-          fmtstate = FMT_NONE;
+          fmtstate=FMT_NONE;
           break;
         default:
           assert(0);
@@ -1157,6 +1080,12 @@ int amx_printstring(AMX *amx,cell *cstr,AMX_FMTINFO *info)
   return paramidx;
 }
 
+static int verify_addr(AMX *amx,cell addr)
+{
+  cell *cdest;
+  return amx_GetAddr(amx,addr,&cdest);
+}
+
 #if !defined AMX_STRING_LIB
 
 #if defined AMX_ALTPRINT
@@ -1166,12 +1095,17 @@ static cell AMX_NATIVE_CALL n_print(AMX *amx,const cell *params)
   cell *cstr;
   AMX_FMTINFO info;
 
+  EXPECT_PARAMS(3);
+
   memset(&info,0,sizeof info);
   info.skip= ((size_t)params[0]>=2*sizeof(cell)) ? (int)params[2] : 0;
   info.length= ((size_t)params[0]>=3*sizeof(cell)) ? (int)(params[3]-info.skip) : INT_MAX;
 
   CreateConsole();
-  cstr=amx_Address(amx,params[1]);
+  if (amx_GetAddr(amx,params[1],&cstr)!=AMX_ERR_NONE) {
+    amx_RaiseError(amx,AMX_ERR_NATIVE);
+    return 0;
+  } /* if */
   amx_printstring(amx,cstr,&info);
   amx_fflush();
   return 0;
@@ -1183,14 +1117,18 @@ static cell AMX_NATIVE_CALL n_print(AMX *amx,const cell *params)
   cell *cstr;
   int oldcolours;
 
+  EXPECT_PARAMS(4);
+
   CreateConsole();
 
   /* set the new colours */
   oldcolours=amx_setattr((int)params[2],(int)params[3],(int)params[4]);
 
-  cstr=amx_Address(amx,params[1]);
+  if (amx_GetAddr(amx,params[1],&cstr)!=AMX_ERR_NONE) {
+    amx_RaiseError(amx,AMX_ERR_NATIVE);
+    return 0;
+  } /* if */
   amx_printstring(amx,cstr,NULL);
-  cons_putchar(NULL, __T('\n'));
 
   /* reset the colours */
   (void)amx_setattr(oldcolours & 0xff,(oldcolours >> 8) & 0x7f,(oldcolours >> 15) & 0x01);
@@ -1199,10 +1137,13 @@ static cell AMX_NATIVE_CALL n_print(AMX *amx,const cell *params)
 }
 #endif
 
+/* printf(const format[], {Float,Fixed,_}:...) */
 static cell AMX_NATIVE_CALL n_printf(AMX *amx,const cell *params)
 {
   cell *cstr;
   AMX_FMTINFO info;
+
+  EXPECT_PARAMS_VA(1);
 
   memset(&info,0,sizeof info);
   info.params=params+2;
@@ -1211,9 +1152,11 @@ static cell AMX_NATIVE_CALL n_printf(AMX *amx,const cell *params)
   info.length=INT_MAX;
 
   CreateConsole();
-  cstr=amx_Address(amx,params[1]);
+  if (amx_GetAddr(amx,params[1],&cstr)!=AMX_ERR_NONE) {
+    amx_RaiseError(amx,AMX_ERR_NATIVE);
+    return 0;
+  } /* if */
   amx_printstring(amx,cstr,&info);
-  cons_putchar(NULL, __T('\n'));
   amx_fflush();
   return 0;
 }
@@ -1223,12 +1166,14 @@ static cell AMX_NATIVE_CALL n_getchar(AMX *amx,const cell *params)
 {
   int c;
 
+  EXPECT_PARAMS(1);
+
   (void)amx;
   CreateConsole();
   c=amx_getch();
   if (params[1]) {
     #if defined(SUPPRESS_ECHO)
- 	  /* For Mac OS X, non-Curses, don't echo the character */
+      /* For Mac OS X, non-Curses, don't echo the character */
     #else
       amx_putchar((TCHAR)c);
       amx_fflush();
@@ -1237,13 +1182,14 @@ static cell AMX_NATIVE_CALL n_getchar(AMX *amx,const cell *params)
   return c;
 }
 
-/* getstring(string[], size=sizeof string, bool:pack=false) */
+/* getstring(string[], maxlength=sizeof string, bool:pack=false) */
 static cell AMX_NATIVE_CALL n_getstring(AMX *amx,const cell *params)
 {
   int c,chars,max;
   cell *cptr;
 
-  (void)amx;
+  EXPECT_PARAMS(3);
+
   CreateConsole();
   chars=0;
   max=(int)params[2];
@@ -1253,14 +1199,14 @@ static cell AMX_NATIVE_CALL n_getstring(AMX *amx,const cell *params)
     #else
       TCHAR *str=(TCHAR *)alloca(max*sizeof(TCHAR));
       if (str==NULL)
-        return chars;
+        goto err_native;
     #endif
 
     c=amx_getch();
     while (c!=EOF && c!=EOL_CHAR && chars<max-1) {
       str[chars++]=(TCHAR)c;
       #if defined(SUPPRESS_ECHO)
- 	    /* For Mac OS X, non-Curses, don't echo the character */
+        /* For Mac OS X, non-Curses, don't echo the character */
       #else
         amx_putchar((TCHAR)c);
         amx_fflush();
@@ -1274,7 +1220,13 @@ static cell AMX_NATIVE_CALL n_getstring(AMX *amx,const cell *params)
     assert(chars<max);
     str[chars]='\0';
 
-    cptr=amx_Address(amx,params[1]);
+    if (amx_GetAddr(amx,params[1],&cptr)!=AMX_ERR_NONE) {
+err_native:
+      amx_RaiseError(amx,AMX_ERR_NATIVE);
+      return 0;
+    } /* if */
+    if (params[2]<=(cell)0 || verify_addr(amx,params[1]+params[2])!=AMX_ERR_NONE)
+      goto err_native;
     amx_SetString(cptr,(char*)str,(int)params[3],sizeof(TCHAR)>1,max);
 
   } /* if */
@@ -1300,7 +1252,7 @@ static void acceptchar(int c,int *num)
     break;
   default:
     #if defined(SUPPRESS_ECHO)
- 	  /* For Mac OS X, non-Curses, don't echo the character */
+      /* For Mac OS X, non-Curses, don't echo the character */
     #else
       amx_putchar((TCHAR)c);
     #endif
@@ -1313,14 +1265,16 @@ static int inlist(AMX *amx,int c,const cell *params,int num)
 {
   int i, key;
 
-  (void)amx;
   for (i=0; i<num; i++) {
     if (i==0) {
       /* first key is passed by value, others are passed by reference */
       key = (int)params[i];
     } else {
       cell *cptr;
-      cptr=amx_Address(amx,params[i]);
+      if (amx_GetAddr(amx,params[i],&cptr)!=AMX_ERR_NONE) {
+        amx_RaiseError(amx,AMX_ERR_NATIVE);
+        return 0;
+      } /* if */
       key=(int)*cptr;
     } /* if */
     if (c==key || c==-key)
@@ -1329,11 +1283,14 @@ static int inlist(AMX *amx,int c,const cell *params,int num)
   return 0;
 }
 
+/* getvalue(base=10, term=0x0d, ...) */
 static cell AMX_NATIVE_CALL n_getvalue(AMX *amx,const cell *params)
 {
   cell value;
   int base,sign,c,d;
   int chars,n;
+
+  EXPECT_PARAMS_VA(2);
 
   CreateConsole();
   base=(int)params[1];
@@ -1358,8 +1315,8 @@ static cell AMX_NATIVE_CALL n_getvalue(AMX *amx,const cell *params)
     } /* if */
 
     /* check end of input */
-    #if EOL_CHAR!='\r'
-      if (c==EOL_CHAR && inlist(amx,'\r',params+2,(int)params[0]/sizeof(cell)-1)!=0)
+    #if defined LINUX || defined __FreeBSD__ || defined __OpenBSD__ || defined MACOS
+      if (c=='\n' && inlist(amx,'\r',params+2,(int)params[0]/sizeof(cell)-1)!=0)
         c='\r';
     #endif
     if ((chars>1 || (chars>0 && sign>0))
@@ -1369,10 +1326,6 @@ static cell AMX_NATIVE_CALL n_getvalue(AMX *amx,const cell *params)
         acceptchar(c,&chars);
       break;
     } /* if */
-    #if EOL_CHAR!='\r'
-      if (c=='\r')
-        c=EOL_CHAR;
-    #endif
 
     /* get value */
     d=base;     /* by default, do not accept the character */
@@ -1397,8 +1350,10 @@ static cell AMX_NATIVE_CALL n_getvalue(AMX *amx,const cell *params)
   return sign*value;
 }
 
+/* clrscr() */
 static cell AMX_NATIVE_CALL n_clrscr(AMX *amx,const cell *params)
 {
+  EXPECT_PARAMS(0);
   (void)amx;
   (void)params;
   CreateConsole();
@@ -1406,8 +1361,10 @@ static cell AMX_NATIVE_CALL n_clrscr(AMX *amx,const cell *params)
   return 0;
 }
 
+/* clreol() */
 static cell AMX_NATIVE_CALL n_clreol(AMX *amx,const cell *params)
 {
+  EXPECT_PARAMS(0);
   (void)amx;
   (void)params;
   CreateConsole();
@@ -1415,45 +1372,61 @@ static cell AMX_NATIVE_CALL n_clreol(AMX *amx,const cell *params)
   return 0;
 }
 
+/* gotoxy(x=1,y=1) */
 static cell AMX_NATIVE_CALL n_gotoxy(AMX *amx,const cell *params)
 {
+  EXPECT_PARAMS(2);
   (void)amx;
   CreateConsole();
   return amx_gotoxy((int)params[1],(int)params[2]);
 }
 
+/* wherexy(&x, &y) */
 static cell AMX_NATIVE_CALL n_wherexy(AMX *amx,const cell *params)
 {
   cell *px,*py;
   int x,y;
 
-  (void)amx;
+  EXPECT_PARAMS(2);
+
   CreateConsole();
   amx_wherexy(&x,&y);
-  px=amx_Address(amx,params[1]);
-  py=amx_Address(amx,params[2]);
+  if (amx_GetAddr(amx,params[1],&px)!=AMX_ERR_NONE) {
+err_native:
+    amx_RaiseError(amx,AMX_ERR_NATIVE);
+    return 0;
+  } /* if */
+  if (amx_GetAddr(amx,params[2],&py)!=AMX_ERR_NONE)
+    goto err_native;
   *px=x;
   *py=y;
   return 0;
 }
 
+/* setattr(foreground=-1, background=-1, highlight=-1) */
 static cell AMX_NATIVE_CALL n_setattr(AMX *amx,const cell *params)
 {
+  EXPECT_PARAMS(3);
   (void)amx;
   CreateConsole();
   (void)amx_setattr((int)params[1],(int)params[2],(int)params[3]);
   return 0;
 }
 
+/* consctrl(code, value) */
 static cell AMX_NATIVE_CALL n_consctrl(AMX *amx,const cell *params)
 {
+  EXPECT_PARAMS(2);
   (void)amx;
   CreateConsole();
-  return amx_termctl((int)params[1],(int)params[2]);
+  (void)amx_termctl((int)params[1],(int)params[2]);
+  return 0;
 }
 
+/* console(columns, lines, flags) */
 static cell AMX_NATIVE_CALL n_console(AMX *amx,const cell *params)
 {
+  EXPECT_PARAMS(3);
   (void)amx;
   CreateConsole();
   amx_console((int)params[1],(int)params[2],(int)params[3]);
@@ -1486,10 +1459,7 @@ static int AMXAPI amx_ConsoleIdle(AMX *amx, int AMXAPI Exec(AMX *, cell *, int))
 }
 #endif
 
-#if defined __cplusplus
-  extern "C"
-#endif
-const AMX_NATIVE_INFO console_Natives[] = {
+static const AMX_NATIVE_INFO natives[] = {
   { "getchar",   n_getchar },
   { "getstring", n_getstring },
   { "getvalue",  n_getvalue },
@@ -1500,8 +1470,8 @@ const AMX_NATIVE_INFO console_Natives[] = {
   { "gotoxy",    n_gotoxy },
   { "wherexy",   n_wherexy },
   { "setattr",   n_setattr },
-  { "console",   n_console },
-  { "consctrl",  n_consctrl },
+  { "console",   n_console },   /* NOTE: Not defined in console.inc */
+  { "consctrl",  n_consctrl },  /* NOTE: Not defined in console.inc */
   { NULL, NULL }        /* terminator */
 };
 
@@ -1516,7 +1486,7 @@ int AMXEXPORT AMXAPI amx_ConsoleInit(AMX *amx)
     } /* if */
   #endif
 
-  return amx_Register(amx, console_Natives, -1);
+  return amx_Register(amx,natives,-1);
 }
 
 int AMXEXPORT AMXAPI amx_ConsoleCleanup(AMX *amx)

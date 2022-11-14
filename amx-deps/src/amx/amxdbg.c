@@ -27,7 +27,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "osdefs.h"     /* for _MAX_PATH */
 #include "amx.h"
 #include "amxdbg.h"
 
@@ -152,18 +151,12 @@ uint64_t * AMXAPI dbg_Align64(uint64_t *v)
 int AMXAPI dbg_FreeInfo(AMX_DBG *amxdbg)
 {
   assert(amxdbg != NULL);
-  if (amxdbg->hdr != NULL)
-    free(amxdbg->hdr);
-  if (amxdbg->filetbl != NULL)
-    free(amxdbg->filetbl);
-  if (amxdbg->symboltbl != NULL)
-    free(amxdbg->symboltbl);
-  if (amxdbg->tagtbl != NULL)
-    free(amxdbg->tagtbl);
-  if (amxdbg->automatontbl != NULL)
-    free(amxdbg->automatontbl);
-  if (amxdbg->statetbl != NULL)
-    free(amxdbg->statetbl);
+  free(amxdbg->hdr);
+  free(amxdbg->filetbl);
+  free(amxdbg->symboltbl);
+  free(amxdbg->tagtbl);
+  free(amxdbg->automatontbl);
+  free(amxdbg->statetbl);
   memset(amxdbg, 0, sizeof(AMX_DBG));
   return AMX_ERR_NONE;
 }

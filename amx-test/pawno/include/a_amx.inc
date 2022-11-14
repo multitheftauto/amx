@@ -85,7 +85,6 @@ native SetObjectAlpha(objectid, alpha);
 native AddPlayerClothes(playerid, type, index);
 native GetPlayerClothes(playerid, type);
 native RemovePlayerClothes(playerid, type);
-native ShowPlayerMarker(playerid, show);
 native IsPlayerInWater(playerid);
 native IsPlayerOnFire(playerid);
 native IsPlayerDucked(playerid);
@@ -108,7 +107,6 @@ native SetPlayerControlState(playerid, control[], stateid);
 
 // Vehicles
 native GetVehicleMaxPassengers(vehicleid);
-native SetVehicleModel(vehicleid, model);
 native GetVehicleEngineState(vehicleid);
 native SetVehicleEngineState(vehicleid, stateid);
 native GetVehicleDoorState(vehicleid, door);

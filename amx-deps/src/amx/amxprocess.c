@@ -1,6 +1,6 @@
 /*  Process control and Foreign Function Interface module for the Pawn AMX
  *
- *  Copyright (c) ITB CompuPhase, 2005-2006
+ *  Copyright (c) ITB CompuPhase, 2005-2008
  *
  *  This software is provided "as-is", without any express or implied warranty.
  *  In no event will the authors be held liable for any damages arising from
@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include "amx.h"
 #if defined __WIN32__ || defined _WIN32 || defined WIN32 || defined _Windows
   #include <malloc.h>
 #endif
@@ -55,8 +56,6 @@
    */
   #include <ffi.h>
 #endif
-#include "osdefs.h"
-#include "amx.h"
 
 #if defined _UNICODE
 # include <tchar.h>
@@ -907,10 +906,7 @@ static cell AMX_NATIVE_CALL n_procwait(AMX *amx, const cell *params)
 }
 
 
-#if defined __cplusplus
-  extern "C"
-#endif
-AMX_NATIVE_INFO ffi_Natives[] = {
+static const AMX_NATIVE_INFO natives[] = {
   { "libcall",   n_libcall },
   { "libfree",   n_libfree },
   { "procexec",  n_procexec },
@@ -920,12 +916,12 @@ AMX_NATIVE_INFO ffi_Natives[] = {
   { NULL, NULL }        /* terminator */
 };
 
-int AMXEXPORT amx_ProcessInit(AMX *amx)
+int AMXEXPORT AMXAPI amx_ProcessInit(AMX *amx)
 {
-  return amx_Register(amx, ffi_Natives, -1);
+  return amx_Register(amx,natives,-1);
 }
 
-int AMXEXPORT amx_ProcessCleanup(AMX *amx)
+int AMXEXPORT AMXAPI amx_ProcessCleanup(AMX *amx)
 {
   freelib(&ModRoot, amx, NULL);
   closepipe();

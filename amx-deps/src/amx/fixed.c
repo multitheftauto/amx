@@ -4,7 +4,7 @@
  *  library decimal fixed point numbers with an configurable number of
  *  decimals. The current setting is 3 decimals.
  *
- *  Copyright (c) ITB CompuPhase, 1998-2006
+ *  Copyright (c) ITB CompuPhase, 1998-2008
  *
  *  This software is provided "as-is", without any express or implied warranty.
  *  In no event will the authors be held liable for any damages arising from
@@ -430,7 +430,7 @@ static cell AMX_NATIVE_CALL n_fdiv(AMX *amx,const cell *params)
   /* add half of the divisor, to round the data */
   b[0]+=(ucell)divisor/2;
   if (b[0]<(ucell)divisor/2)
-    b[1]+=1;  /* wrap-around ocurred */
+    b[1]+=1;  /* wrap-around occurred */
 
   /* if the divisor is smaller than b[1], the result will not fit in a cell */
   if ((ucell)divisor<b[1]) {
@@ -716,10 +716,8 @@ static cell AMX_NATIVE_CALL n_fabs(AMX *amx,const cell *params)
   return (result>=0) ? result : -result;
 }
 
-#if defined __cplusplus
-  extern "C"
-#endif
-const AMX_NATIVE_INFO fixed_Natives[] = {
+
+static const AMX_NATIVE_INFO natives[] = {
   { "fixed",    n_fixed },
   { "strfixed", n_strfixed },
   { "fmul",     n_fmul },
@@ -733,12 +731,12 @@ const AMX_NATIVE_INFO fixed_Natives[] = {
   { NULL, NULL }        /* terminator */
 };
 
-int AMXEXPORT amx_FixedInit(AMX *amx)
+int AMXEXPORT AMXAPI amx_FixedInit(AMX *amx)
 {
-  return amx_Register(amx,fixed_Natives,-1);
+  return amx_Register(amx,natives,-1);
 }
 
-int AMXEXPORT amx_FixedCleanup(AMX *amx)
+int AMXEXPORT AMXAPI amx_FixedCleanup(AMX *amx)
 {
   (void)amx;
   return AMX_ERR_NONE;
