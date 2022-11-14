@@ -1,0 +1,13 @@
+amx-deps/src/.___TMP
+**/*~
+amx/resources/plugins/*.dll
+amx/resources/plugins/*.so
+amx/resources/plugins/*.pdb
+**/*.o
+**/*.d
+**/*.exe
+**/*.dll
+**/*.so
+**/*.pdb
+**/*.pid
+**/*.dmp
