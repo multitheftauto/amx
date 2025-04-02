@@ -327,9 +327,9 @@ function SetPlayerAttachedObject(amx, player, index, modelid, bone, fOffsetX, fO
 		--Todo: Implement material colors
 	else
 		outputDebugString('SetPlayerAttachedObject: Cannot attach object since the model is invalid. Model id was ' .. modelid)
-		return 0
+		return false
 	end
-	return 1
+	return true
 end
 
 function RemovePlayerAttachedObject(amx, player, index)
@@ -339,9 +339,9 @@ function RemovePlayerAttachedObject(amx, player, index)
 		detachElementFromBone( obj )
 		destroyElement( obj )
 		g_Players[playerID].attachedObjects[index] = nil
-		return 1
+		return true
 	end
-	return 0
+	return false
 end
 
 function IsPlayerAttachedObjectSlotUsed(amx)
@@ -965,5 +965,5 @@ end
 -- Explosion
 function CreateExplosionForPlayer(amx, player, x, y, z, type, radius)
 	clientCall(player, 'createExplosion', x, y, z, type, true, -1.0, false)
-	return 1
+	return true
 end
