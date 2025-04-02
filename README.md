@@ -66,8 +66,6 @@ features:
   - [GetPlayerClothes](#GetPlayerClothes)
   - [RemovePlayerClothes](#RemovePlayerClothes)
   - [ShowPlayerMarker](#ShowPlayerMarker)
-  - [GetVehicleVelocity](#GetVehicleVelocity)
-  - [SetVehicleVelocity](#SetVehicleVelocity)
   - [SetVehicleModel](#SetVehicleModel)
 
 - In addition to these new native functions, gamemodes run in *amx*
@@ -323,23 +321,6 @@ native ShowPlayerMarker ( playerid, show );
 ```
 
 Shows or hides the blip of one specific player.
-
-### GetVehicleVelocity
-
-```pawn
-native GetVehicleVelocity ( vehicleid, &Float:vx, &Float:vy, &Float:vz );
-```
-
-Returns the velocity of a vehicle along the x, y and z axes. No more
-manual speed calculation with timers.
-
-### SetVehicleVelocity
-
-```pawn
-native SetVehicleVelocity ( vehicleid, Float:vx, Float:vy, Float:vz );
-```
-
-Sets the velocity of a vehicle. Make it jump or suddenly come to a halt.
 
 ### SetVehicleModel
 

@@ -57,8 +57,6 @@
 				<li><a href="#pwn_GetPlayerClothes">GetPlayerClothes</a></li>
 				<li><a href="#pwn_RemovePlayerClothes">RemovePlayerClothes</a></li>
 				<li><a href="#pwn_ShowPlayerMarker">ShowPlayerMarker</a></li>
-				<li><a href="#pwn_GetVehicleVelocity">GetVehicleVelocity</a></li>
-				<li><a href="#pwn_SetVehicleVelocity">SetVehicleVelocity</a></li>
 				<li><a href="#pwn_SetVehicleModel">SetVehicleModel</a></li>
 			</ul>
 		</li>
@@ -179,14 +177,6 @@ stop amx-fs-<i>name</i></code>
 	<h3 id="pwn_ShowPlayerMarker">ShowPlayerMarker</h3>
 	<code class="block" lang="pawn"><span class="kw1">native</span> ShowPlayerMarker <span class="br">(</span> playerid, show <span class="br">)</span>;</code>
 	<p>Shows or hides the blip of one specific player.</p>
-
-	<h3 id="pwn_GetVehicleVelocity">GetVehicleVelocity</h3>
-	<code class="block" lang="pawn"><span class="kw1">native</span> GetVehicleVelocity <span class="br">(</span> vehicleid, &amp;<span class="type">Float</span>:vx, &amp;<span class="type">Float</span>:vy, &amp;<span class="type">Float</span>:vz <span class="br">)</span>;</code>
-	<p>Returns the velocity of a vehicle along the x, y and z axes. No more manual speed calculation with timers.</p>
-
-	<h3 id="pwn_SetVehicleVelocity">SetVehicleVelocity</h3>
-	<code class="block" lang="pawn"><span class="kw1">native</span> SetVehicleVelocity <span class="br">(</span> vehicleid, <span class="type">Float</span>:vx, <span class="type">Float</span>:vy, <span class="type">Float</span>:vz <span class="br">)</span>;</code>
-	<p>Sets the velocity of a vehicle. Make it jump or suddenly come to a halt.</p>
 
 	<h3 id="pwn_SetVehicleModel">SetVehicleModel</h3>
 	<code class="block" lang="pawn"><span class="kw1">native</span> SetVehicleModel <span class="br">(</span> vehicleid, model <span class="br">)</span></code>
