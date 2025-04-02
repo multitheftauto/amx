@@ -44,8 +44,7 @@ function SendClientMessage(amx, player, r, g, b, a, message)
 	end
 
 	--replace colors
-	outputChatBox(colorizeString(message), player, r, g, b, true)
-	return true
+	return outputChatBox(colorizeString(message), player, r, g, b, true)
 end
 
 function SendClientMessageToAll(amx, r, g, b, a, message)

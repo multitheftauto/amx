@@ -663,8 +663,7 @@ function RemovePlayerFromVehicle(amx, player)
 end
 
 function TogglePlayerControllable(amx, player, enable)
-	toggleAllControls(player, enable, true, false)
-	return true
+	return toggleAllControls(player, enable, true, false)
 end
 
 function PlayerPlaySound(amx, player, soundID, x, y, z)
@@ -934,11 +933,11 @@ end
 
 function PlayerSpectateVehicle(amx, player, vehicleToSpectate, mode)
 	if getVehicleController(vehicleToSpectate) then
-		setCameraTarget(player, getVehicleController(vehicleToSpectate))
+		return setCameraTarget(player, getVehicleController(vehicleToSpectate))
 	else
 		clientCall(player, 'setCameraTarget', vehicleToSpectate)
+		return true
 	end
-	return true
 end
 
 function StartRecordingPlayerData(amx)
