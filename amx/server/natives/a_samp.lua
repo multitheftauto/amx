@@ -413,7 +413,7 @@ end
 
 function EnableVehicleFriendlyFire(amx)
 	notImplemented('EnableVehicleFriendlyFire')
-	return 1;
+	return true
 end
 
 function AllowInteriorWeapons(amx, allow)
