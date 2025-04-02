@@ -40,7 +40,7 @@ function IsPlayerInWater(amx, player)
 end
 
 function IsPlayerOnFire(amx, player)
-	return isPedOnFire(player)
+	return isElementOnFire(player)
 end
 
 function IsPlayerDucked(amx, player)
@@ -52,7 +52,7 @@ function IsPlayerOnGround(amx, player)
 end
 
 function SetPlayerOnFire(amx, player, state)
-	return setPedOnFire(player, state)
+	return setElementOnFire(player, state)
 end
 
 function GetPlayerStat(amx, player, stat)

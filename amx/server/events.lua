@@ -593,7 +593,7 @@ addEventHandler('OnPlayerPickUpPickup_Ev', root,
 
 		if model == 370 then
 			-- Jetpack pickup
-			givePedJetPack(player)
+			setPedWearingJetpack(player, true)
 		end
 	end
 )

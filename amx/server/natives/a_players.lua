@@ -280,11 +280,13 @@ function SetPlayerSkillLevel(amx, player, skill, level)
 end
 
 function GetPlayerSurfingVehicleID(amx, player)
-	return -1
+	notImplemented('GetPlayerSurfingVehicleID')
+	return INVALID_VEHICLE_ID
 end
 
 function GetPlayerSurfingObjectID(amx)
 	notImplemented('GetPlayerSurfingObjectID')
+	return INVALID_OBJECT_ID
 end
 
 function RemoveBuildingForPlayer(amx, player, model, x, y, z, radius)
@@ -673,7 +675,7 @@ function GetAnimationName(amx)
 end
 
 function GetPlayerSpecialAction(amx, player)
-	if doesPedHaveJetPack(player) then
+	if isPedWearingJetpack(player) then
 		return SPECIAL_ACTION_USEJETPACK
 	else
 		return g_Players[getElemID(player)].specialaction or SPECIAL_ACTION_NONE
@@ -682,10 +684,10 @@ end
 
 function SetPlayerSpecialAction(amx, player, actionID)
 	if actionID == SPECIAL_ACTION_NONE then
-		removePedJetPack(player)
+		setPedWearingJetpack(player, false)
 		setPedAnimation(player, false)
 	elseif actionID == SPECIAL_ACTION_USEJETPACK then
-		givePedJetPack(player)
+		setPedWearingJetpack(player, true)
 	elseif g_SpecialActions[actionID] then
 		setPedAnimation(player, unpack(g_SpecialActions[actionID]))
 	end
