@@ -1,6 +1,6 @@
 function AddPlayerClothes(amx, player, type, index)
 	local texture, model = getClothesByTypeIndex(type, index)
-	addPedClothes(player, texture, model, type)
+	return addPedClothes(player, texture, model, type)
 end
 
 function GetPlayerClothes(amx, player, type)
@@ -13,7 +13,7 @@ function GetPlayerClothes(amx, player, type)
 end
 
 function RemovePlayerClothes(amx, player, type)
-	removePedClothes(player, type)
+	return removePedClothes(player, type)
 end
 
 -----------------------------------------------------
@@ -69,8 +69,7 @@ end
 
 function SetPlayerDoingDriveBy(amx, ped, state)
 	clientCall(root, 'setPedDoingGangDriveby', ped, state)
-	setElementData(ped, 'DoingDriveBy', state)
-	return true
+	return setElementData(ped, 'DoingDriveBy', state)
 end
 
 function GetPlayerCanBeKnockedOffBike(amx, ped)
@@ -79,7 +78,7 @@ end
 
 function SetPlayerCanBeKnockedOffBike(amx, ped, state)
 	clientCall(root, 'setPedCanBeKnockedOffBike', ped, state)
-	setElementData(ped, 'CanBeKnockedOffBike', state)
+	return setElementData(ped, 'CanBeKnockedOffBike', state)
 end
 
 function SetPlayerWeaponSlot(amx, ped, slot)
@@ -141,6 +140,7 @@ end
 function DestroyBot(amx, bot)
 	removeElem(g_Bots, bot)
 	destroyElement(bot)
+	return true
 end
 
 function GetBotState(amx, bot)
@@ -181,10 +181,11 @@ function GetBotRot(amx, ped, refX, refY, refZ)
 	writeMemFloat(amx, refX, rX)
 	writeMemFloat(amx, refY, rY)
 	writeMemFloat(amx, refZ, rZ)
+	return true
 end
 
 function SetBotRot(amx, Ped, rX, rY, rY)
-	setPedRotation(ped, rX, rY, rZ)
+	return setPedRotation(ped, rX, rY, rZ)
 end
 
 function GetBotName(amx, bot, nameBuf, bufSize)
@@ -580,7 +581,7 @@ end
 -----------------------------------------------------
 
 function ShowCursor(amx, player, show, controls)
-	showCursor(player, show, controls)
+	return showCursor(player, show, controls)
 end
 
 function AddEventHandler(amx, event, func)

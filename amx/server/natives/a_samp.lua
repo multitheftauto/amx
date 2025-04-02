@@ -45,11 +45,12 @@ function SendClientMessage(amx, player, r, g, b, a, message)
 
 	--replace colors
 	outputChatBox(colorizeString(message), player, r, g, b, true)
+	return true
 end
 
 function SendClientMessageToAll(amx, r, g, b, a, message)
 	if (amx.proc == 'OnPlayerConnect' and message:match('joined')) or (amx.proc == 'OnPlayerDisconnect' and message:match('left')) then
-		return
+		return false
 	end
 
 	--replace colors
@@ -58,14 +59,15 @@ function SendClientMessageToAll(amx, r, g, b, a, message)
 	for i,data in pairs(g_Players) do
 		SendClientMessage(amx, data.elem, r, g, b, a, message)
 	end
+	return true
 end
 
 function SendPlayerMessageToAll(amx, sender, message)
-	outputChatBox(getPlayerName(sender) .. ' ' .. message, root, 255, 255, 255, true)
+	return outputChatBox(getPlayerName(sender) .. ' ' .. message, root, 255, 255, 255, true)
 end
 
 function SendPlayerMessageToPlayer(amx, playerTo, playerFrom, message)
-	outputChatBox(getPlayerName(playerFrom) .. ' ' .. message, playerTo, 255, 255, 255, true)
+	return outputChatBox(getPlayerName(playerFrom) .. ' ' .. message, playerTo, 255, 255, 255, true)
 end
 
 function SendDeathMessage(amx, killer, victim, reason)
@@ -80,6 +82,7 @@ function GameTextForAll(amx, str, time, style)
 	for i,player in pairs(g_Players) do
 		GameTextForPlayer(amx, player.elem, str, time, style)
 	end
+	return true
 end
 
 function GameTextForPlayer(amx, player, str, time, style)
@@ -88,6 +91,7 @@ function GameTextForPlayer(amx, player, str, time, style)
 		str = str:gsub('/' .. samp, '/' .. mta)
 	end
 	clientCall(player, 'GameTextForPlayer', str, time, style)
+	return true
 end
 
 function SetTimerEx(amx, fnName, interval, repeating, fmt, ...)
@@ -261,7 +265,7 @@ end
 
 
 function SetGameModeText(amx, gamemodeName)
-	setGameType(gamemodeName)
+	return setGameType(gamemodeName)
 end
 
 function SetTeamCount(amx, count)
@@ -295,7 +299,7 @@ end
 function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnDelay)
 	local vehicle = createVehicle(model, x, y, z, 0, 0, angle)
 	if(vehicle == false) then
-		return false
+		return INVALID_VEHICLE_ID
 	end
 
 	if not g_PoliceVehicles[model] then
@@ -362,10 +366,12 @@ CreatePickup = AddStaticPickup
 function DestroyPickup(amx, pickup)
 	removeElem(g_Pickups, pickup)
 	destroyElement(pickup)
+	return true
 end
 
 function ShowNameTags(amx, show)
 	table.each(g_Players, 'elem', setPlayerNametagShowing, show)
+	return true
 end
 
 function ShowPlayerMarkers(amx, show)
@@ -373,6 +379,7 @@ function ShowPlayerMarkers(amx, show)
 	for i,data in pairs(g_Players) do
 		ShowPlayerMarker(amx, data.elem, show)
 	end
+	return true
 end
 
 function GameModeExit(amx)
@@ -381,10 +388,11 @@ function GameModeExit(amx)
 	else
 		exports.votemanager:voteMap(getThisResource())
 	end
+	return true
 end
 
 function SetWorldTime(amx, hours)
-	setTime(hours, 0)
+	return setTime(hours, 0)
 end
 
 
@@ -414,13 +422,14 @@ function AllowInteriorWeapons(amx, allow)
 end
 
 function SetWeather(amx, weatherID)
-	setWeather(weatherID % 256)
+	return setWeather(weatherID % 256)
 end
 
 
 function SetGravity(amx, gravity)
 	setGravity(gravity)
 	table.each(g_Players, 'elem', setPedGravity, gravity)
+	return true
 end
 
 function AllowAdminTeleport(amx, allow)
@@ -432,7 +441,7 @@ function SetDeathDropAmount(amx, amount)
 end
 
 function CreateExplosion(amx, x, y, z, type, radius)
-	createExplosion(x, y, z, type)
+	return createExplosion(x, y, z, type)
 end
 
 function ShowPlayerMarker(amx, player, show)
@@ -486,23 +495,27 @@ end
 
 function Kick(amx, player)
 	kickPlayer(player)
+	return true
 end
 
 function Ban(amx, player)
 	banPlayer(player)
+	return true
 end
 
 function BanEx(amx, player, reason)
 	banPlayer(player, nil, reason)
+	return true
 end
 
 function SendRconCommand(amx, command)
 	print(doRCON(command))
+	return true
 end
 
 --Call requestSpawn instead so we clear up any binds (since there's a workaround in SA-MP to skip the spawn selection screen, and I use this workaround)
 function SpawnPlayer(amx, player)
-	requestSpawn(player, false, false)
+	return requestSpawn(player, false, false)
 end
 
 -- GetPlayerNetworkStats
@@ -558,26 +571,31 @@ function DestroyMenu(amx, menu)
 	end
 	clientCall(root, 'DestroyMenu', menu.id)
 	g_Menus[menu.id] = nil
+	return true
 end
 
 function AddMenuItem(amx, menu, column, caption)
 	table.insert(menu.items[column], caption)
 	clientCall(root, 'AddMenuItem', menu.id, column, caption)
+	return true
 end
 
 function SetMenuColumnHeader(amx, menu, column, text)
 	menu.items[column][13] = text
 	clientCall(root, 'SetMenuColumnHeader', menu.id, column, text)
+	return true
 end
 
 function ShowMenuForPlayer(amx, menu, player)
 	clientCall(player, 'ShowMenuForPlayer', menu.id)
 	g_Players[getElemID(player)].menu = menu
+	return true
 end
 
 function HideMenuForPlayer(amx, menu, player)
 	clientCall(player, 'HideMenuForPlayer', menu.id)
 	g_Players[getElemID(player)].menu = nil
+	return true
 end
 
 function IsValidMenu(amx, menuID)
@@ -587,7 +605,7 @@ end
 function DisableMenu(amx, menuID)
 	local menu = g_Menus[menuID]
 	if not menu then
-		return
+		return false
 	end
 	menu.disabled = true
 	for id,player in pairs(g_Players) do
@@ -595,14 +613,16 @@ function DisableMenu(amx, menuID)
 			clientCall(player.elem, 'HideMenuForPlayer', menuID)
 		end
 	end
+	return true
 end
 
 function DisableMenuRow(amx, menuID, rowID)
 	local menu = g_Menus[menuID]
 	if not menu then
-		return
+		return false
 	end
 	clientCall(root, 'DisableMenuRow', menuID, rowID)
+	return true
 end
 
 function GetPlayerMenu(amx, player)
@@ -665,54 +685,65 @@ end
 
 function TextDrawUseBox(amx, textdraw, usebox)
 	textdraw.usebox = usebox
+	return true
 end
 
 --End of player textdraws
 function TextDrawDestroy(amx, textdrawID)
 	if not g_TextDraws[textdrawID] then
-		return
+		return false
 	end
 	clientCall(root, 'TextDrawDestroy', g_TextDraws[textdrawID].clientTDId)
 	g_TextDraws[textdrawID] = nil
+	return true
 end
 
 
 function TextDrawLetterSize(amx, textdraw, width, height)
 	textdraw.lwidth = width
 	textdraw.lheight = height
+	return true
 end
 
 function TextDrawTextSize(amx, textdraw, x, y)
 	textdraw.boxsize = { x, y } --Game does 448 not 480
+	return true
 end
 
 function TextDrawAlignment(amx, textdraw, align)
 	textdraw.align = (align == 0 and 1 or align)
+	return true
 end
 
 function TextDrawColor(amx, textdraw, r, g, b, a)
 	textdraw.color = { r, g, b }
+	return true
 end
 
 function TextDrawBoxColor(amx, textdraw, r, g, b, a)
 	textdraw.boxcolor = { r, g, b, a }
+	return true
 end
 
 
 function TextDrawSetShadow(amx, textdraw, size)
 	textdraw.shade = size
+	return true
 end
 
 function TextDrawSetOutline(amx, textdraw, size)
 	textdraw.outlinesize = size
+	return true
 end
 
 function TextDrawBackgroundColor(amx, textdraw, r, g, b, a)
 	textdraw.outlinecolor = { r, g, b, a }
+	return true
 end
 
 function TextDrawFont(amx, textdraw, font)
 	textdraw.font = font
+	return true
 end
 
 function TextDrawSetProportional(amx, textdraw, proportional)
@@ -726,23 +757,26 @@ end
 function TextDrawShowForPlayer(amx, player, textdrawID)
 	local textdraw = g_TextDraws[textdrawID]
 	if not textdraw then
-		return
+		return false
 	end
 	clientCall(player, 'TextDrawShowForPlayer', textdraw.clientTDId)
+	return true
 end
 
 function TextDrawHideForPlayer(amx, player, textdrawID)
 	local textdraw = g_TextDraws[textdrawID]
 	if not textdraw then
-		return
+		return false
 	end
 	clientCall(player, 'TextDrawHideForPlayer', textdraw.clientTDId)
+	return true
 end
 
 function TextDrawShowForAll(amx, textdrawID)
 	for id,player in pairs(g_Players) do
 		TextDrawShowForPlayer(amx, player.elem, textdrawID)
 	end
+	return true
 end
 
 
@@ -750,10 +784,12 @@ function TextDrawHideForAll(amx, textdrawID)
 	for id,player in pairs(g_Players) do
 		TextDrawHideForPlayer(amx, player.elem, textdrawID)
 	end
+	return true
 end
 
 function TextDrawSetString(amx, textdraw, str)
 	textdraw.text = str
+	return true
 end
 
 function TextDrawSetPreviewModel(amx)
@@ -774,6 +810,7 @@ end
 function GangZoneDestroy(amx, zone)
 	removeElem(g_GangZones, zone)
 	destroyElement(zone)
+	return true
 end
 
 function GangZoneShowForPlayer(amx, player, zone, r, g, b, a)
@@ -783,6 +820,7 @@ function GangZoneShowForPlayer(amx, player, zone, r, g, b, a)
 	if a < 1 then a = 1 end
 	setRadarAreaColor(zone, r, g, b, a)
 	setElementVisibleTo(zone, player, true)
+	return true
 end
 
 function GangZoneShowForAll(amx, zone, r, g, b, a)
@@ -792,30 +830,33 @@ function GangZoneShowForAll(amx, zone, r, g, b, a)
 	if a < 1 then a = 1 end
 	setRadarAreaColor(zone, r, g, b, a)
 	setElementVisibleTo(zone, root, true)
+	return true
 end
 
 function GangZoneHideForPlayer(amx, player, zone)
-	setElementVisibleTo(zone, player, false)
+	return setElementVisibleTo(zone, player, false)
 end
 
 function GangZoneHideForAll(amx, zone)
-	setElementVisibleTo(zone, root, false)
+	return setElementVisibleTo(zone, root, false)
 end
 
 function GangZoneFlashForPlayer(amx, player, zone, r, g, b, a)
 	clientCall(player, 'setRadarAreaFlashing', zone, true)
+	return true
 end
 
 function GangZoneFlashForAll(amx, zone, r, g, b, a)
-	setRadarAreaFlashing(zone, true)
+	return setRadarAreaFlashing(zone, true)
 end
 
 function GangZoneStopFlashForPlayer(amx, player, zone)
 	clientCall(player, 'setRadarAreaFlashing', zone, false)
+	return true
 end
 
 function GangZoneStopFlashForAll(amx, zone)
-	setRadarAreaFlashing(zone, false)
+	return setRadarAreaFlashing(zone, false)
 end
 
 function Create3DTextLabel(amx, text, r, g, b, a, x, y, z, dist, vw, los)
@@ -953,6 +994,7 @@ function SetSpawnInfo(amx, player, team, skin, x, y, z, angle, weap1, weap1_ammo
 		x, y, z, angle, skinReplace[skin] or skin, 0, 0, team,
 		weapons={ {weap1, weap1_ammo}, {weap2, weap2_ammo}, {weap3, weap3_ammo} }
 	}
+	return true
 end
 
 function NetStats_BytesReceived(amx, player)

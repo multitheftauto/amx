@@ -1,12 +1,13 @@
 function SetPlayerPos(amx, player, x, y, z)
-	setElementPosition(player, x, y, z)
+	return setElementPosition(player, x, y, z)
 end
 GetPlayerPos = GetObjectPos
 function SetPlayerFacingAngle(amx, player, angle)
-	setPedRotation(player, angle)
+	return setPedRotation(player, angle)
 end
 function GetPlayerFacingAngle(amx, player, refRot)
 	writeMemFloat(amx, refRot, getPedRotation(player))
+	return true
 end
 function IsPlayerInRangeOfPoint(amx, player, range, pX, pY, pZ)
 	return getDistanceBetweenPoints3D(pX, pY, pZ, getElementPosition(player)) <= range
@@ -23,12 +24,13 @@ end
 function SetPlayerInterior(amx, player, interior)
 	local playerId = getElemID(player)
 	if g_Players[playerId].viewingintro then
-		return
+		return false
 	end
 	local oldInt = getElementInterior(player)
 	setElementInterior(player, interior)
 	procCallOnAll('OnPlayerInteriorChange', playerId, interior, oldInt)
 	clientCall(player, 'AMX_OnPlayerInteriorChange', interior, oldInt)
+	return true
 end
 
 function GetPlayerInterior(amx, player)
@@ -36,23 +38,25 @@ function GetPlayerInterior(amx, player)
 end
 
 function SetPlayerHealth(amx, player, health)
-	setElementHealth(player, health)
+	return setElementHealth(player, health)
 end
 
 function GetPlayerHealth(amx, player, refHealth)
 	writeMemFloat(amx, refHealth, getElementHealth(player))
+	return true
 end
 
 function SetPlayerArmour(amx, player, armor)
-	setPedArmor(player, armor)
+	return setPedArmor(player, armor)
 end
 
 function GetPlayerArmour(amx, player, refArmor)
 	writeMemFloat(amx, refArmor, getPedArmor(player))
+	return true
 end
 
 function SetPlayerAmmo(amx, player, slot, ammo)
-	setWeaponAmmo(player, slot, ammo)
+	return setWeaponAmmo(player, slot, ammo)
 end
 
 function GetPlayerAmmo(amx, player)
@@ -94,7 +98,7 @@ function GetPlayerTargetActor(amx, player)
 end
 
 function SetPlayerTeam(amx, player, team)
-	setPlayerTeam(player, team)
+	return setPlayerTeam(player, team)
 end
 
 function GetPlayerTeam(amx, player)
@@ -102,7 +106,7 @@ function GetPlayerTeam(amx, player)
 end
 
 function SetPlayerScore(amx, player, score)
-	setElementData(player, 'Score', score)
+	return setElementData(player, 'Score', score)
 end
 
 function GetPlayerScore(amx, player)
@@ -124,6 +128,7 @@ function SetPlayerColor(amx, player, r, g, b)
 	if g_ShowPlayerMarkers then
 		setBlipColor(g_Players[getElemID(player)].blip, r, g, b, 255)
 	end
+	return true
 end
 
 function GetPlayerColor(amx, player)
@@ -132,7 +137,7 @@ function GetPlayerColor(amx, player)
 end
 
 function SetPlayerSkin(amx, player, skin)
-	setElementModel(player, skinReplace[skin] or skin)
+	return setElementModel(player, skinReplace[skin] or skin)
 end
 
 function GetPlayerSkin(amx, player)
@@ -140,11 +145,11 @@ function GetPlayerSkin(amx, player)
 end
 
 function GivePlayerWeapon(amx, player, weaponID, ammo)
-	giveWeapon(player, weaponID, ammo, true)
+	return giveWeapon(player, weaponID, ammo, true)
 end
 
 function ResetPlayerWeapons(amx, player)
-	takeAllWeapons(player)
+	return takeAllWeapons(player)
 end
 
 function SetPlayerArmedWeapon(amx, player, weapon)
@@ -157,14 +162,15 @@ function GetPlayerWeaponData(amx, player, slot, refWeapon, refAmmo)
 	if weapon then
 		amx.memDAT[refWeapon], amx.memDAT[refAmmo] = weapon.id, weapon.ammo
 	end
+	return true
 end
 
 function GivePlayerMoney(amx, player, amount)
-	givePlayerMoney(player, amount)
+	return givePlayerMoney(player, amount)
 end
 
 function ResetPlayerMoney(amx, player)
-	setPlayerMoney(player, 0)
+	return setPlayerMoney(player, 0)
 end
 
 function SetPlayerName(amx, player, name)
@@ -198,6 +204,7 @@ function GetPlayerKeys(amx, player, refKeys, refUpDown, refLeftRight)
 	amx.memDAT[refKeys] = buildKeyState(player, g_KeyMapping)
 	amx.memDAT[refUpDown] = buildKeyState(player, g_UpDownMapping)
 	amx.memDAT[refLeftRight] = buildKeyState(player, g_LeftRightMapping)
+	return true
 end
 
 function GetPlayerName(amx, player, nameBuf, bufSize)
@@ -209,28 +216,32 @@ end
 
 function SetPlayerTime(amx, player, hours, minutes)
 	clientCall(player, 'setTime', hours, minutes)
+	return true
 end
 
 
 function GetPlayerTime(amx, player, refHour, refMinute)
 	amx.memDAT[refHour], amx.memDAT[refMinute] = getTime()
+	return true
 end
 
 -- TODO: TogglePlayerClock client
 
 function SetPlayerWeather(amx, player, weatherID)
 	clientCall(player, 'setWeather', weatherID % 256)
+	return true
 end
 
 function ForceClassSelection(amx, playerID)
 	if not g_Players[playerID] then
-		return
+		return false
 	end
 	g_Players[playerID].returntoclasssel = true
+	return true
 end
 
 function SetPlayerWantedLevel(amx, player, level)
-	setPlayerWantedLevel(player, level)
+	return setPlayerWantedLevel(player, level)
 end
 
 function GetPlayerWantedLevel(amx, player)
@@ -246,7 +257,7 @@ function SetPlayerFightingStyle(amx, player, style)
 end
 
 function SetPlayerVelocity(amx, player, vx, vy, vz)
-	setElementVelocity(player, vx, vy, vz)
+	return setElementVelocity(player, vx, vy, vz)
 end
 
 function GetPlayerVelocity(amx, player, refVX, refVY, refVZ)
@@ -254,6 +265,7 @@ function GetPlayerVelocity(amx, player, refVX, refVY, refVZ)
 	writeMemFloat(amx, refVX, vx)
 	writeMemFloat(amx, refVY, vy)
 	writeMemFloat(amx, refVZ, vz)
+	return true
 end
 
 -- dummy
@@ -264,10 +276,12 @@ end
 
 function PlayAudioStreamForPlayer(amx, player, url, posX, posY, posZ, distance, usepos)
 	clientCall(player, 'PlayAudioStreamForPlayer', url, posX, posY, posZ, distance, usepos)
+	return true
 end
 
 function StopAudioStreamForPlayer(amx, player)
 	clientCall(player, 'StopAudioStreamForPlayer')
+	return true
 end
 
 function SetPlayerShopName(amx)
@@ -291,6 +305,7 @@ end
 
 function RemoveBuildingForPlayer(amx, player, model, x, y, z, radius)
 	clientCall(player, 'RemoveBuildingForPlayer', model, x, y, z, radius)
+	return true
 end
 
 function GetPlayerLastShotVectors(amx)
@@ -388,12 +403,13 @@ function CreatePlayerTextDraw(amx, player, x, y, text)
 end
 
 function PlayerTextDrawDestroy(amx, player, textdrawID)
-    if not IsPlayerTextDrawValid(player, textdrawID) then
+  if not IsPlayerTextDrawValid(player, textdrawID) then
       return false
   end
   outputDebugString('Sending textdraw id s->' .. g_PlayerTextDraws[player][textdrawID].serverTDId .. ' c->' .. g_PlayerTextDraws[player][textdrawID].clientTDId .. ' for destruction')
   clientCall(player, 'TextDrawDestroy', g_PlayerTextDraws[player][textdrawID].clientTDId)
   g_PlayerTextDraws[player][textdrawID] = nil
+  return true
 end
 
 function PlayerTextDrawLetterSize(amx, player, textdrawID, x, y)
@@ -422,7 +438,7 @@ function PlayerTextDrawAlignment(amx, player, textdrawID, align)
 end
 
 function PlayerTextDrawColor(amx, player, textdrawID, r, g, b, a)
-    if not IsPlayerTextDrawValid(player, textdrawID) then
+  if not IsPlayerTextDrawValid(player, textdrawID) then
       return false
   end
   g_PlayerTextDraws[player][textdrawID].color = { r, g, b }
@@ -443,10 +459,11 @@ function PlayerTextDrawBoxColor(amx, player, textdrawID, r, g, b, a)
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].boxcolor = { r, g, b, a }
+	return true
 end
 
 function PlayerTextDrawSetShadow(amx, player, textdrawID, size)
-    if not IsPlayerTextDrawValid(player, textdrawID) then
+ if not IsPlayerTextDrawValid(player, textdrawID) then
      return false
  end
  g_PlayerTextDraws[player][textdrawID].shade = size
@@ -462,7 +479,7 @@ function PlayerTextDrawSetOutline(amx, player, textdrawID, size)
 end
 function PlayerTextDrawSetProportional(amx, player, textdrawID, proportional)
 	notImplemented('PlayerTextDrawSetProportional')
-  --TextDrawSetProportional(amx, textdraw, proportional)
+	--TextDrawSetProportional(amx, textdraw, proportional)
 end
 
 function PlayerTextDrawBackgroundColor(amx, player, textdrawID, r, g, b, a)
@@ -499,7 +516,7 @@ function PlayerTextDrawShow(amx, player, textdrawID)
 	return true
 end
 function PlayerTextDrawHide(amx, player, textdrawID)
-  	if not IsPlayerTextDrawValid(player, textdrawID) then
+	if not IsPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	--if g_PlayerTextDraws[player][textdrawID].visible == 0 then
@@ -508,10 +525,11 @@ function PlayerTextDrawHide(amx, player, textdrawID)
 	g_PlayerTextDraws[player][textdrawID].visible = false
 	clientCall(player, 'TextDrawHideForPlayer', g_PlayerTextDraws[player][textdrawID].clientTDId)
 	--outputDebugString('PlayerTextDrawHide: proccessed for ' .. textdrawID .. ' with ' .. g_PlayerTextDraws[player][textdrawID].text)
+	return true
 end
 
 function PlayerTextDrawSetString(amx, player, textdrawID, str)
-    if not IsPlayerTextDrawValid(player, textdrawID) then
+ if not IsPlayerTextDrawValid(player, textdrawID) then
      return false
  end
  g_PlayerTextDraws[player][textdrawID].text = str
@@ -613,6 +631,7 @@ function PutPlayerInVehicle(amx, player, vehicle, seat)
 	end
 	--setPlayerState(player, seat == 0 and PLAYER_STATE_DRIVER or PLAYER_STATE_PASSENGER)
 	--No need to do this since the vehicle event gets called when we enter a vehicle
+	return true
 end
 
 function GetPlayerVehicleID(amx, player)
@@ -640,10 +659,12 @@ function RemovePlayerFromVehicle(amx, player)
 		end
 	end
 	setPlayerState(player, PLAYER_STATE_ONFOOT)
+	return true
 end
 
 function TogglePlayerControllable(amx, player, enable)
 	toggleAllControls(player, enable, true, false)
+	return true
 end
 
 function PlayerPlaySound(amx, player, soundID, x, y, z)
@@ -657,11 +678,13 @@ function ApplyAnimation(amx, player, animlib, animname, fDelta, loop, lockx, loc
 	end
 	setPedAnimation(player, animlib, animname, time, loop, lockx or locky, false, freeze)
 	setPedAnimationSpeed(player, animname, fDelta)
+	return true
 end
 
 function ClearAnimations(amx, player)
 	setPedAnimation(player, false)
 	g_Players[getElemID(player)].specialaction = SPECIAL_ACTION_NONE
+	return true
 end
 
 function GetPlayerAnimationIndex(player)
@@ -692,6 +715,7 @@ function SetPlayerSpecialAction(amx, player, actionID)
 		setPedAnimation(player, unpack(g_SpecialActions[actionID]))
 	end
 	g_Players[getElemID(player)].specialaction = actionID
+	return true
 end
 
 function DisableRemoteVehicleCollisions(amx)
@@ -702,21 +726,25 @@ end
 function SetPlayerCheckpoint(amx, player, x, y, z, size)
 	g_Players[getElemID(player)].checkpoint = { x = x, y = y, z = z, radius = size }
 	clientCall(player, 'SetPlayerCheckpoint', x, y, z, size)
+	return true
 end
 
 function DisablePlayerCheckpoint(amx, player)
 	g_Players[getElemID(player)].checkpoint = nil
 	clientCall(player, 'DisablePlayerCheckpoint')
+	return true
 end
 
 function SetPlayerRaceCheckpoint(amx, player, type, x, y, z, nextX, nextY, nextZ, size)
 	g_Players[getElemID(player)].racecheckpoint = { type = type, x = x, y = y, z = z, radius = size }
 	clientCall(player, 'SetPlayerRaceCheckpoint', type, x, y, z, nextX, nextY, nextZ, size)
+	return true
 end
 
 function DisablePlayerRaceCheckpoint(amx, player)
 	g_Players[getElemID(player)].racecheckpoint = nil
 	clientCall(player, 'DisablePlayerRaceCheckpoint')
+	return true
 end
 
 -- SetPlayerWorldBounds client
@@ -725,6 +753,7 @@ end
 
 function ShowPlayerNameTagForPlayer(amx, player, playerToShow, show)
 	clientCall(player, 'setPlayerNametagShowing', playerToShow, show)
+	return true
 end
 
 -- SetPlayerMapIcon client
@@ -736,19 +765,19 @@ end
 
 function SetPlayerCameraPos(amx, player, x, y, z)
 	fadeCamera(player, true)
-	setCameraMatrix(player, x, y, z)
+	return setCameraMatrix(player, x, y, z)
 end
 
 function SetPlayerCameraLookAt(amx, player, lx, ly, lz)
 	fadeCamera(player, true)
 	local x, y, z = getCameraMatrix(player)
-	setCameraMatrix(player, x, y, z, lx, ly, lz)
+	return setCameraMatrix(player, x, y, z, lx, ly, lz)
 end
 
 function SetCameraBehindPlayer(amx, player)
 	--In samp calling SetCameraBehindPlayer also unsets camera interpolation
 	clientCall(player, 'removeCamHandlers')
-	setCameraTarget(player, player)
+	return setCameraTarget(player, player)
 end
 
 function GetPlayerCameraPos(amx, player, refX, refY, refZ)
@@ -756,6 +785,7 @@ function GetPlayerCameraPos(amx, player, refX, refY, refZ)
 	writeMemFloat(amx, refX, x)
 	writeMemFloat(amx, refY, y)
 	writeMemFloat(amx, refZ, z)
+	return true
 end
 
 function GetPlayerCameraFrontVector(amx, player, refX, refY, refZ)
@@ -763,10 +793,12 @@ function GetPlayerCameraFrontVector(amx, player, refX, refY, refZ)
 	writeMemFloat(amx, refX, lx)
 	writeMemFloat(amx, refY, ly)
 	writeMemFloat(amx, refZ, lz)
+	return true
 end
 
 function GetPlayerCameraMode(amx)
 	notImplemented('GetPlayerCameraMode')
+	return -1
 end
 
 function EnablePlayerCameraTarget(amx)
@@ -776,22 +808,22 @@ end
 
 function GetPlayerCameraTargetObject(amx)
 	notImplemented('GetPlayerCameraTargetObject')
-	return false
+	return INVALID_OBJECT_ID
 end
 
 function GetPlayerCameraTargetVehicle(amx)
 	notImplemented('GetPlayerCameraTargetVehicle')
-	return false
+	return INVALID_VEHICLE_ID
 end
 
 function GetPlayerCameraTargetPlayer(amx)
 	notImplemented('GetPlayerCameraTargetPlayer')
-	return false
+	return INVALID_PLAYER_ID
 end
 
 function GetPlayerCameraTargetActor(amx)
 	notImplemented('GetPlayerCameraTargetActor')
-	return false
+	return INVALID_ACTOR_ID
 end
 
 function GetPlayerCameraAspectRatio(amx)
@@ -806,6 +838,7 @@ end
 
 function AttachCameraToObject(amx, player, object)
 	clientCall(player, 'AttachCameraToObject', object)
+	return true
 end
 
 function AttachCameraToPlayerObject(amx)
@@ -816,9 +849,11 @@ end
 --playerid, Float:FromX, Float:FromY, Float:FromZ, Float:ToX, Float:ToY, Float:ToZ, time, cut = CAMERA_CUT
 function InterpolateCameraPos(amx, player, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	clientCall(player, 'InterpolateCameraPos', FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
+	return true
 end
 function InterpolateCameraLookAt(amx, player, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	clientCall(player, 'InterpolateCameraLookAt', FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
+	return true
 end
 
 function IsPlayerAdmin(amx, player)
@@ -856,7 +891,7 @@ function IsPlayerInVehicle(amx, player, vehicle)
 end
 
 function SetPlayerVirtualWorld(amx, player, dimension)
-	setElementDimension(player, dimension)
+	return setElementDimension(player, dimension)
 end
 
 function EnableStuntBonusForAll(amx, enable)
@@ -890,10 +925,11 @@ function TogglePlayerSpectating(amx, player, enable)
 		setPlayerHudComponentVisible(player, 'radar', true)
 		setPlayerState(player, PLAYER_STATE_ONFOOT)
 	end
+	return true
 end
 
 function PlayerSpectatePlayer(amx, player, playerToSpectate, mode)
-	setCameraTarget(player, playerToSpectate)
+	return setCameraTarget(player, playerToSpectate)
 end
 
 function PlayerSpectateVehicle(amx, player, vehicleToSpectate, mode)
@@ -902,6 +938,7 @@ function PlayerSpectateVehicle(amx, player, vehicleToSpectate, mode)
 	else
 		clientCall(player, 'setCameraTarget', vehicleToSpectate)
 	end
+	return true
 end
 
 function StartRecordingPlayerData(amx)
