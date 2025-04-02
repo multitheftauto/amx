@@ -764,13 +764,15 @@ end
 
 function SetPlayerCameraPos(amx, player, x, y, z)
 	fadeCamera(player, true)
-	return setCameraMatrix(player, x, y, z)
+	setCameraMatrix(player, x, y, z)
+	return true
 end
 
 function SetPlayerCameraLookAt(amx, player, lx, ly, lz)
 	fadeCamera(player, true)
 	local x, y, z = getCameraMatrix(player)
-	return setCameraMatrix(player, x, y, z, lx, ly, lz)
+	setCameraMatrix(player, x, y, z, lx, ly, lz)
+	return true
 end
 
 function SetCameraBehindPlayer(amx, player)
