@@ -39,6 +39,9 @@ function SetObjectPos(amx, object, x, y, z)
 end
 
 function GetObjectPos(amx, object, refX, refY, refZ)
+	if not object then
+		return false
+	end
 	local x, y, z = getElementPosition(object)
 	writeMemFloat(amx, refX, x)
 	writeMemFloat(amx, refY, y)
@@ -47,6 +50,9 @@ function GetObjectPos(amx, object, refX, refY, refZ)
 end
 
 function GetObjectRot(amx, object, refX, refY, refZ)
+	if not object then
+		return false
+	end
 	local rX, rX, rZ = getObjectRotation(object)
 	writeMemFloat(amx, refX, rX)
 	writeMemFloat(amx, refY, rY)
@@ -55,7 +61,8 @@ function GetObjectRot(amx, object, refX, refY, refZ)
 end
 
 function SetObjectRot(amx, object, rX, rY, rY)
-	return setObjectRotation(object, rX, rY, rZ)
+	setObjectRotation(object, rX, rY, rZ)
+	return true
 end
 
 function GetObjectModel(amx, objID)
@@ -84,7 +91,7 @@ function MoveObject(amx, object, x, y, z, speed)
 	local time = distance/speed*1000
 	moveObject(object, time, x, y, z, 0, 0, 0)
 	setTimer(procCallOnAll, time, 1, 'OnObjectMoved', getElemID(object))
-	return true
+	return math.floor(time)
 end
 
 function StopObject(amx, object)
@@ -157,7 +164,7 @@ end
 function GetPlayerObjectPos(amx, player, objID, refX, refY, refZ)
 	local x, y, z = getPlayerObjectPos(amx, player, objID)
 	if not x then
-		return
+		return false
 	end
 	writeMemFloat(amx, refX, x)
 	writeMemFloat(amx, refY, y)
@@ -168,7 +175,7 @@ end
 function GetPlayerObjectRot(amx, player, objID, refX, refY, refZ)
 	local obj = g_PlayerObjects[player] and g_PlayerObjects[player][objID]
 	if not obj then
-		return
+		return false
 	end
 	writeMemFloat(amx, refX, obj.rx)
 	writeMemFloat(amx, refY, obj.ry)
@@ -204,7 +211,7 @@ function MovePlayerObject(amx, player, objID, x, y, z, speed)
 	local timer = setTimer(procCallOnAll, duration, 1, 'OnPlayerObjectMoved', getElemID(player), objID)
 	obj.moving = { x = x, y = y, z = z, starttick = getTickCount(), duration = duration, timer = timer }
 	clientCall(player, 'MovePlayerObject', objID, x, y, z, speed)
-	return true
+	return math.floor(duration)
 end
 
 function StopPlayerObject(amx, player, objID)

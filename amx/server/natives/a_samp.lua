@@ -985,6 +985,7 @@ function gpci(amx, player, nameBuf, bufSize)
 	local serial = getPlayerSerial(player)
 	if #serial <= bufSize then
 		writeMemString(amx, nameBuf, serial)
+		return string.len(serial)
 	end
 end
 
@@ -1019,7 +1020,7 @@ function NetStats_GetIpPort(amx, player, ip_port, ip_port_len)
 	local port = 0 -- We haven't a solution for getting a client port
 	local ipandport = tostring(ip).. ":".. tostring(port)
 	writeMemString(amx, ip_port, ipandport)
-	return string.len(tostring(ip).. ":".. tostring(port));
+	return string.len(ipandport);
 end
 
 function NetStats_MessagesReceived(amx, player)

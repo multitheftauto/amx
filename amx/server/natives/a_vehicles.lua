@@ -20,6 +20,9 @@ GetVehiclePos = GetObjectPos
 SetVehiclePos = SetObjectPos
 
 function GetVehicleZAngle(amx, vehicle, refZ)
+	if not vehicle then
+		return false
+	end
 	local rX, rY, rZ = getVehicleRotation(vehicle)
 	writeMemFloat(amx, refZ, rZ)
 	return true
@@ -156,6 +159,9 @@ function SetVehicleHealth(amx, vehicle, health)
 end
 
 function GetVehicleHealth(amx, vehicle, refHealth)
+	if not vehicle then
+		return false
+	end
 	writeMemFloat(amx, refHealth, getElementHealth(vehicle))
 	return true
 end
@@ -241,6 +247,9 @@ function RepairVehicle(amx, vehicle)
 end
 
 function GetVehicleVelocity(amx, vehicle, refVX, refVY, refVZ)
+	if not vehicle then
+		return false
+	end
 	local vx, vy, vz = getElementVelocity(vehicle)
 	writeMemFloat(amx, refVX, vx)
 	writeMemFloat(amx, refVY, vy)

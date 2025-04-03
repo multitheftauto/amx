@@ -36,12 +36,18 @@ function SetActorFacingAngle(amx, actor, ang)
 end
 
 function GetActorFacingAngle(amx, actor, refAng)
+	if not actor then
+		return false
+	end
 	local rX, rY, rZ = getElementRotation(actor)
 	writeMemFloat(amx, refAng, rZ)
 	return true
 end
 
 function GetActorPos(amx, actor, refX, refY, refZ)
+	if not actor then
+		return false
+	end
 	local x, y, z = getElementPosition(actor)
 	writeMemFloat(amx, refX, x)
 	writeMemFloat(amx, refY, y)

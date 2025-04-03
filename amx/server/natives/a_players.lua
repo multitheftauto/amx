@@ -6,6 +6,9 @@ function SetPlayerFacingAngle(amx, player, angle)
 	return setPedRotation(player, angle)
 end
 function GetPlayerFacingAngle(amx, player, refRot)
+	if not player then
+		return false
+	end
 	writeMemFloat(amx, refRot, getPedRotation(player))
 	return true
 end
@@ -42,6 +45,9 @@ function SetPlayerHealth(amx, player, health)
 end
 
 function GetPlayerHealth(amx, player, refHealth)
+	if not player then
+		return false
+	end
 	writeMemFloat(amx, refHealth, getElementHealth(player))
 	return true
 end
@@ -51,6 +57,9 @@ function SetPlayerArmour(amx, player, armor)
 end
 
 function GetPlayerArmour(amx, player, refArmor)
+	if not player then
+		return false
+	end
 	writeMemFloat(amx, refArmor, getPedArmor(player))
 	return true
 end
@@ -186,9 +195,13 @@ function GetPlayerState(amx, player)
 end
 
 function GetPlayerIp(amx, player, refName, len)
+	if not player then
+		return -1
+	end
 	local ip = getPlayerIP(player)
 	if #ip < len then
 		writeMemString(amx, refName, ip)
+		return string.len(ip)
 	end
 end
 
@@ -211,6 +224,7 @@ function GetPlayerName(amx, player, nameBuf, bufSize)
 	local name = getPlayerName(player)
 	if #name <= bufSize then
 		writeMemString(amx, nameBuf, name)
+		return string.len(name)
 	end
 end
 
@@ -261,6 +275,9 @@ function SetPlayerVelocity(amx, player, vx, vy, vz)
 end
 
 function GetPlayerVelocity(amx, player, refVX, refVY, refVZ)
+	if not player then
+		return false
+	end
 	local vx, vy, vz = getElementVelocity(player)
 	writeMemFloat(amx, refVX, vx)
 	writeMemFloat(amx, refVY, vy)
@@ -697,7 +714,9 @@ function GetAnimationName(amx)
 end
 
 function GetPlayerSpecialAction(amx, player)
-	if isPedWearingJetpack(player) then
+	if not player then
+		return SPECIAL_ACTION_NONE
+	elseif isPedWearingJetpack(player) then
 		return SPECIAL_ACTION_USEJETPACK
 	else
 		return g_Players[getElemID(player)].specialaction or SPECIAL_ACTION_NONE
@@ -705,7 +724,9 @@ function GetPlayerSpecialAction(amx, player)
 end
 
 function SetPlayerSpecialAction(amx, player, actionID)
-	if actionID == SPECIAL_ACTION_NONE then
+	if not player then
+		return false
+	elseif actionID == SPECIAL_ACTION_NONE then
 		setPedWearingJetpack(player, false)
 		setPedAnimation(player, false)
 	elseif actionID == SPECIAL_ACTION_USEJETPACK then
@@ -763,12 +784,18 @@ function AllowPlayerTeleport(amx, player, allow)
 end
 
 function SetPlayerCameraPos(amx, player, x, y, z)
+	if not player then
+		return false
+	end
 	fadeCamera(player, true)
 	setCameraMatrix(player, x, y, z)
 	return true
 end
 
 function SetPlayerCameraLookAt(amx, player, lx, ly, lz)
+	if not player then
+		return false
+	end
 	fadeCamera(player, true)
 	local x, y, z = getCameraMatrix(player)
 	setCameraMatrix(player, x, y, z, lx, ly, lz)
@@ -782,6 +809,9 @@ function SetCameraBehindPlayer(amx, player)
 end
 
 function GetPlayerCameraPos(amx, player, refX, refY, refZ)
+	if not player then
+		return false
+	end
 	local x, y, z = getCameraMatrix(player)
 	writeMemFloat(amx, refX, x)
 	writeMemFloat(amx, refY, y)
@@ -790,6 +820,9 @@ function GetPlayerCameraPos(amx, player, refX, refY, refZ)
 end
 
 function GetPlayerCameraFrontVector(amx, player, refX, refY, refZ)
+	if not player then
+		return false
+	end
 	local x, y, z, lx, ly, lz = getCameraMatrix(player)
 	writeMemFloat(amx, refX, lx)
 	writeMemFloat(amx, refY, ly)
@@ -829,12 +862,12 @@ end
 
 function GetPlayerCameraAspectRatio(amx)
 	notImplemented('GetPlayerCameraAspectRatio')
-	return false
+	return float2cell(0.0)
 end
 
 function GetPlayerCameraZoom(amx)
 	notImplemented('GetPlayerCameraZoom')
-	return false
+	return float2cell(0.0)
 end
 
 function AttachCameraToObject(amx, player, object)
