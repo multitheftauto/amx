@@ -177,6 +177,9 @@ function KillBot(amx, bot)
 end
 
 function GetBotRot(amx, ped, refX, refY, refZ)
+	if not ped then
+		return false
+	end
 	local rX, rX, rZ = getPedRotation(ped)
 	writeMemFloat(amx, refX, rX)
 	writeMemFloat(amx, refY, rY)
@@ -192,6 +195,7 @@ function GetBotName(amx, bot, nameBuf, bufSize)
 	local name = getElementData(bot, 'BotName')
 	if #name <= bufSize then
 		writeMemString(amx, nameBuf, name)
+		return string.len(name)
 	end
 end
 
