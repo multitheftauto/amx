@@ -1,7 +1,7 @@
 #include <a_samp>
 #include <a_amx>
 
-new bot, bots, marker;
+new bot, bots;
 
 main()
 {
@@ -145,7 +145,7 @@ public OnPlayerSpawn(playerid)
 {
 	new Float:x, Float:y, Float:z;
 	GetPlayerPos(playerid, x, y, z);
-	marker = CreateMarker(x, y, z, "checkpoint", 3.0, 255, 0, 0, 250);
+	CreateMarker(x, y, z, "checkpoint", 3.0, 255, 0, 0, 250);
 
 	CreateBot(0, x, y, z);
 	SetBotPos(bot, x, y, z);
@@ -275,11 +275,6 @@ public OnPlayerCommandText(playerid, cmdtext[])
 }
 
 public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
-{
-	return 1;
-}
-
-public OnPlayerInfoChange(playerid)
 {
 	return 1;
 }
