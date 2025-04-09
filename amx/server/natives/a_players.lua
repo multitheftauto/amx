@@ -1,6 +1,25 @@
 function SetPlayerPos(amx, player, x, y, z)
-	return setElementPosition(player, x, y, z)
+	local vehicle = getPedOccupiedVehicle(player)
+	if vehicle then
+		removePedFromVehicle(player)
+		setTimer(setElementPosition, 500, 1, player, x, y, z)
+	else
+		return setElementPosition(player, x, y, z)
+	end
+	return true
 end
+
+function SetPlayerPosFindZ(amx, player, x, y, z)
+	local vehicle = getPedOccupiedVehicle(player)
+	if vehicle then
+		removePedFromVehicle(player)
+		setTimer(clientCall, 500, 1, player, 'SetPlayerPosFindZ', x, y, z)
+	else
+		clientCall(player, 'SetPlayerPosFindZ', x, y, z)
+	end
+	return true
+end
+
 GetPlayerPos = GetObjectPos
 function SetPlayerFacingAngle(amx, player, angle)
 	return setPedRotation(player, angle)
@@ -30,9 +49,11 @@ function SetPlayerInterior(amx, player, interior)
 		return false
 	end
 	local oldInt = getElementInterior(player)
-	setElementInterior(player, interior)
-	procCallOnAll('OnPlayerInteriorChange', playerId, interior, oldInt)
-	clientCall(player, 'AMX_OnPlayerInteriorChange', interior, oldInt)
+	if interior ~= oldInt then
+		setElementInterior(player, interior)
+		procCallOnAll('OnPlayerInteriorChange', playerId, interior, oldInt)
+		clientCall(player, 'AMX_OnPlayerInteriorChange', interior, oldInt)
+	end
 	return true
 end
 
@@ -239,7 +260,7 @@ function GetPlayerTime(amx, player, refHour, refMinute)
 	return true
 end
 
--- TODO: TogglePlayerClock client
+-- TogglePlayerClock client
 
 function SetPlayerWeather(amx, player, weatherID)
 	clientCall(player, 'setWeather', weatherID % 256)
@@ -670,12 +691,15 @@ end
 function RemovePlayerFromVehicle(amx, player)
 	local vehicle = getPedOccupiedVehicle(player)
 	if vehicle then
-		removePedFromVehicle(player)
 		if g_RCVehicles[getElementModel(vehicle)] then
+			removePedFromVehicle(player)
 			clientCall(root, 'setElementAlpha', player, 255)
+		else
+			removePedFromVehicleEx(player)
 		end
 	end
-	setPlayerState(player, PLAYER_STATE_ONFOOT)
+	--setPlayerState(player, PLAYER_STATE_ONFOOT)
+	--No need to do this since the vehicle event gets called when we exit a vehicle
 	return true
 end
 
@@ -698,6 +722,7 @@ function ApplyAnimation(amx, player, animlib, animname, fDelta, loop, lockx, loc
 end
 
 function ClearAnimations(amx, player)
+	removePedFromVehicle(player)
 	setPedAnimation(player, false)
 	g_Players[getElemID(player)].specialaction = SPECIAL_ACTION_NONE
 	return true
@@ -862,12 +887,12 @@ end
 
 function GetPlayerCameraAspectRatio(amx)
 	notImplemented('GetPlayerCameraAspectRatio')
-	return float2cell(0.0)
+	return float2cell(0)
 end
 
 function GetPlayerCameraZoom(amx)
 	notImplemented('GetPlayerCameraZoom')
-	return float2cell(0.0)
+	return float2cell(0)
 end
 
 function AttachCameraToObject(amx, player, object)
@@ -945,19 +970,17 @@ function TogglePlayerSpectating(amx, player, enable)
 	else
 		local playerdata = g_Players[getElemID(player)]
 		local spawninfo = playerdata.spawninfo or (g_PlayerClasses and g_PlayerClasses[playerdata.selectedclass])
-		if not spawninfo then
+		if not spawninfo or playerdata.returntoclasssel then
+			playerdata.returntoclasssel = nil
 			putPlayerInClassSelection(player)
-			return
+			return true
 		end
-		if isPedDead(player) then
-			spawnPlayerBySelectedClass(player)
-		end
+		spawnPlayerBySelectedClass(player)
 		--In samp calling TogglePlayerSpectating also unsets camera interpolation
 		clientCall(player, 'removeCamHandlers')
 		setCameraTarget(player, player)
 		clientCall(player, 'setCameraTarget', player) --Clear the one on the client as well, otherwise we can't go back to normal camera after spectating vehicles
 		setPlayerHudComponentVisible(player, 'radar', true)
-		setPlayerState(player, PLAYER_STATE_ONFOOT)
 	end
 	return true
 end

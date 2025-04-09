@@ -23,19 +23,7 @@ function AttachObjectToPlayer(amx, object, player, offsetX, offsetY, offsetZ, rX
 end
 
 function SetObjectPos(amx, object, x, y, z)
-	if(getElementType(object) == 'vehicle') then
-		setElementFrozen(object, true)
-	end
-
-	setElementPosition(object, x, y, z)
-
-	if getElementType(object) == 'vehicle' then
-		setElementAngularVelocity(object, 0, 0, 0)
-		setElementVelocity(object, 0, 0, 0)
-		setTimer(setElementFrozen, 500, 1, object, false)
-	end
-
-	return true
+	return setElementPosition(object, x, y, z)
 end
 
 function GetObjectPos(amx, object, refX, refY, refZ)
@@ -60,8 +48,10 @@ function GetObjectRot(amx, object, refX, refY, refZ)
 	return true
 end
 
-function SetObjectRot(amx, object, rX, rY, rY)
-	setObjectRotation(object, rX, rY, rZ)
+function SetObjectRot(amx, object, rX, rY, rZ)
+	if object then
+		setObjectRotation(object, rX, rY, rZ)
+	end
 	return true
 end
 
@@ -81,12 +71,17 @@ function IsValidObject(amx, objID)
 end
 
 function DestroyObject(amx, object)
-	removeElem(g_Objects, object)
-	destroyElement(object)
+	if object then
+		removeElem(g_Objects, object)
+		destroyElement(object)
+	end
 	return true
 end
 
 function MoveObject(amx, object, x, y, z, speed)
+	if not object then
+		return 0
+	end
 	local distance = getDistanceBetweenPoints3D(x, y, z, getElementPosition(object))
 	local time = distance/speed*1000
 	moveObject(object, time, x, y, z, 0, 0, 0)
@@ -193,15 +188,17 @@ function IsValidPlayerObject(amx, player, objID)
 end
 
 function DestroyPlayerObject(amx, player, objID)
-	g_PlayerObjects[player][objID] = nil
-	clientCall(player, 'DestroyPlayerObject', objID)
+	if g_PlayerObjects[player] and g_PlayerObjects[player][objID] then
+		g_PlayerObjects[player][objID] = nil
+		clientCall(player, 'DestroyPlayerObject', objID)
+	end
 	return true
 end
 
 function MovePlayerObject(amx, player, objID, x, y, z, speed)
 	local obj = g_PlayerObjects[player] and g_PlayerObjects[player][objID]
 	if not obj then
-		return false
+		return 0
 	end
 	local distance = getDistanceBetweenPoints3D(x, y, z, getPlayerObjectPos(amx, player, objID))
 	local duration = distance/speed*1000

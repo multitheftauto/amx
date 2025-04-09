@@ -1,5 +1,5 @@
 
-local font = dxCreateFont('client/arial.ttf', 10, true, 'default') or 'default' -- fallback to default
+local font = 'arial' -- default font
 
 HealthBarBorderVertices =
 {

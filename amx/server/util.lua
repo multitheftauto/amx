@@ -407,23 +407,23 @@ function setElemID(elem, id)
 end
 
 function getPlayerState(player)
-	return g_Players[getElemID(player)] and g_Players[getElemID(player)].state or PLAYER_STATE_ONFOOT
+	return g_Players[getElemID(player)] and g_Players[getElemID(player)].state or PLAYER_STATE_NONE
 end
 
 function getBotState(bot)
-	return g_Bots[getElemID(bot)] and g_Bots[getElemID(bot)].state or PLAYER_STATE_ONFOOT
+	return g_Bots[getElemID(bot)] and g_Bots[getElemID(bot)].state or PLAYER_STATE_NONE
 end
 
 function setPlayerState(player, state)
 	local playerID = getElemID(player)
-	local oldState = g_Players[playerID].state or PLAYER_STATE_ONFOOT
+	local oldState = g_Players[playerID].state or PLAYER_STATE_NONE
 	g_Players[playerID].state = state
 	procCallOnAll('OnPlayerStateChange', playerID, state, oldState)
 end
 
 function setBotState(bot, state)
 	local botID = getElemID(bot)
-	local oldState = g_Bots[botID].state or PLAYER_STATE_ONFOOT
+	local oldState = g_Bots[botID].state or PLAYER_STATE_NONE
 	g_Bots[botID].state = state
 	procCallOnAll('OnBotStateChange', botID, state, oldState)
 end
@@ -898,7 +898,7 @@ end
 
 --[[
 function cell2float(cell)
-	if cell == 0 then
+	if not cell or cell == 0 then
 		return 0
 	end
 
@@ -909,7 +909,7 @@ function cell2float(cell)
 end
 
 function float2cell(float)
-	if float == 0 then
+	if not float or float == 0 then
 		return 0
 	end
 	local ldexp = math.ldexp

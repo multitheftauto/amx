@@ -85,8 +85,8 @@ function GetActorPoolSize(amx)
 end
 
 SetActorHealth = SetPlayerHealth
-SetActorPos = SetPlayerPos
 SetActorVirtualWorld = SetPlayerVirtualWorld
+SetActorPos = SetObjectPos
 
 -- stub
 function GetPlayerCameraTargetActor(amx)

@@ -1,13 +1,15 @@
 CreateVehicle = AddStaticVehicleEx
 
 function DestroyVehicle(amx, vehicle)
-	local vehicleID = getElemID(vehicle)
-	clientCall(root, 'DestroyVehicle', vehicleID)
-	for i,playerdata in pairs(g_Players) do
-		playerdata.streamedVehicles[vehicleID] = nil
+	if vehicle then
+		local vehicleID = getElemID(vehicle)
+		clientCall(root, 'DestroyVehicle', vehicleID)
+		for i,playerdata in pairs(g_Players) do
+			playerdata.streamedVehicles[vehicleID] = nil
+		end
+		removeElem(g_Vehicles, vehicle)
+		destroyElement(vehicle)
 	end
-	removeElem(g_Vehicles, vehicle)
-	destroyElement(vehicle)
 	return true
 end
 
@@ -17,7 +19,16 @@ end
 
 GetVehiclePos = GetObjectPos
 
-SetVehiclePos = SetObjectPos
+function SetVehiclePos(amx, vehicle, x, y, z)
+	setElementFrozen(vehicle, true)
+
+	setElementPosition(vehicle, x, y, z)
+	setElementAngularVelocity(vehicle, 0, 0, 0)
+	setElementVelocity(vehicle, 0, 0, 0)
+
+	setTimer(setElementFrozen, 500, 1, vehicle, false)
+	return true
+end
 
 function GetVehicleZAngle(amx, vehicle, refZ)
 	if not vehicle then
@@ -115,12 +126,6 @@ function GetVehicleParamsCarWindows(amx, vehicle, int1, int2, int3, int4)
 end
 
 function SetVehicleToRespawn(amx, vehicle)
-	for seat=0,getVehicleMaxPassengers(vehicle) do
-		local player = getVehicleOccupant(vehicle, seat)
-		if player then
-			removePedFromVehicle(player)
-		end
-	end
 	return respawnStaticVehicle(vehicle)
 end
 
@@ -133,7 +138,7 @@ function AddVehicleComponent(amx, vehicle, upgradeID)
 end
 
 function RemoveVehicleComponent(amx, vehicle, upgradeID)
-	return removeVehicleUpgrade(vehicle, upgrade)
+	return removeVehicleUpgrade(vehicle, upgradeID)
 end
 
 function ChangeVehicleColor(amx, vehicle, color1, color2)
@@ -141,13 +146,9 @@ function ChangeVehicleColor(amx, vehicle, color1, color2)
 end
 
 function setVehicleColorClamped(vehicle, color1, color2)
-	--This is to prevent negative color behavior, keep the original color if they sent -1 (I believe this is what samp does)
-	if color1 ~= -1 and color2 ~= -1 then
-		color1 = clamp(color1, 0, 126)
-		color2 = clamp(color2, 0, 126)
-		return setVehicleColor(vehicle, color1, color2, 0, 0)
-	end
-	return false
+	color1 = clamp(color1, 0, 126)
+	color2 = clamp(color2, 0, 126)
+	return setVehicleColor(vehicle, color1, color2, 0, 0)
 end
 
 function ChangeVehiclePaintjob(amx, vehicle, paintjob)

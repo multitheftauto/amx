@@ -148,7 +148,7 @@ function GetBotState(amx, bot)
 end
 
 function PutBotInVehicle(amx, bot, vehicle, seat)
-	return oldwarpPedIntoVehicle(bot, vehicle, seat)
+	return warpPedIntoVehicle(bot, vehicle, seat)
 end
 
 function RemoveBotFromVehicle(amx, bot)

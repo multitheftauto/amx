@@ -512,9 +512,16 @@ function SendRconCommand(amx, command)
 	return true
 end
 
---Call requestSpawn instead so we clear up any binds (since there's a workaround in SA-MP to skip the spawn selection screen, and I use this workaround)
 function SpawnPlayer(amx, player)
-	return requestSpawn(player, false, false)
+	local playerdata = g_Players[getElemID(player)]
+	if playerdata.doingclasssel then
+		--Call requestSpawn instead so we clear up any binds
+		--since there's a workaround in SA-MP to skip the spawn selection screen
+		requestSpawn(player, false, false)
+	else
+		spawnPlayerBySelectedClass(player)
+	end
+	return true
 end
 
 -- GetPlayerNetworkStats
