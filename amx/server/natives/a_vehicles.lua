@@ -1,13 +1,16 @@
 CreateVehicle = AddStaticVehicleEx
 
 function DestroyVehicle(amx, vehicle)
-	local vehicleID = getElemID(vehicle)
-	clientCall(root, 'DestroyVehicle', vehicleID)
-	for i,playerdata in pairs(g_Players) do
-		playerdata.streamedVehicles[vehicleID] = nil
+	if vehicle then
+		local vehicleID = getElemID(vehicle)
+		clientCall(root, 'DestroyVehicle', vehicleID)
+		for i,playerdata in pairs(g_Players) do
+			playerdata.streamedVehicles[vehicleID] = nil
+		end
+		removeElem(g_Vehicles, vehicle)
+		destroyElement(vehicle)
 	end
-	removeElem(g_Vehicles, vehicle)
-	destroyElement(vehicle)
+	return true
 end
 
 function IsVehicleStreamedIn(amx, vehicle, player)
@@ -16,22 +19,36 @@ end
 
 GetVehiclePos = GetObjectPos
 
-SetVehiclePos = SetObjectPos
+function SetVehiclePos(amx, vehicle, x, y, z)
+	setElementFrozen(vehicle, true)
+
+	setElementPosition(vehicle, x, y, z)
+	setElementAngularVelocity(vehicle, 0, 0, 0)
+	setElementVelocity(vehicle, 0, 0, 0)
+
+	setTimer(setElementFrozen, 500, 1, vehicle, false)
+	return true
+end
 
 function GetVehicleZAngle(amx, vehicle, refZ)
+	if not vehicle then
+		return false
+	end
 	local rX, rY, rZ = getVehicleRotation(vehicle)
 	writeMemFloat(amx, refZ, rZ)
+	return true
 end
 
 GetVehicleDistanceFromPoint = GetPlayerDistanceFromPoint
 
 function SetVehicleZAngle(amx, vehicle, rZ)
 	local rX, rY = getVehicleRotation(vehicle)
-	setVehicleRotation(vehicle, 0, 0, rZ)
+	return setVehicleRotation(vehicle, 0, 0, rZ)
 end
 
 function SetVehicleParamsForPlayer(amx, vehicle, player, isObjective, doorsLocked)
 	clientCall(player, 'SetVehicleParamsForPlayer', vehicle, isObjective, doorsLocked)
+	return true
 end
 
 
@@ -101,6 +118,7 @@ function SetVehicleParamsCarDoors(amx, vehicle, driver, passenger, backleft, bac
 	setVehicleDoorOpenRatio(vehicle, 3, passenger and 1 or 0) -- bonnet
 	setVehicleDoorOpenRatio(vehicle, 4, backleft and 1 or 0) -- bonnet
 	setVehicleDoorOpenRatio(vehicle, 5, backright and 1 or 0) -- bonnet
+	return true
 end
 
 function GetVehicleParamsCarWindows(amx, vehicle, int1, int2, int3, int4)
@@ -108,58 +126,53 @@ function GetVehicleParamsCarWindows(amx, vehicle, int1, int2, int3, int4)
 end
 
 function SetVehicleToRespawn(amx, vehicle)
-	for seat=0,getVehicleMaxPassengers(vehicle) do
-		local player = getVehicleOccupant(vehicle, seat)
-		if player then
-			removePedFromVehicle(player)
-		end
-	end
-	respawnStaticVehicle(vehicle)
+	return respawnStaticVehicle(vehicle)
 end
 
 function LinkVehicleToInterior(amx, vehicle, interior)
-	setElementInterior(vehicle, interior)
+	return setElementInterior(vehicle, interior)
 end
 
 function AddVehicleComponent(amx, vehicle, upgradeID)
-	addVehicleUpgrade(vehicle, upgradeID)
+	return addVehicleUpgrade(vehicle, upgradeID)
 end
 
 function RemoveVehicleComponent(amx, vehicle, upgradeID)
-	removeVehicleUpgrade(vehicle, upgrade)
+	return removeVehicleUpgrade(vehicle, upgradeID)
 end
 
 function ChangeVehicleColor(amx, vehicle, color1, color2)
-	setVehicleColorClamped(vehicle, color1, color2)
+	return setVehicleColorClamped(vehicle, color1, color2)
 end
 
 function setVehicleColorClamped(vehicle, color1, color2)
-	--This is to prevent negative color behavior, keep the original color if they sent -1 (I believe this is what samp does)
-	if color1 ~= -1 and color2 ~= -1 then
-		color1 = clamp(color1, 0, 126)
-		color2 = clamp(color2, 0, 126)
-		setVehicleColor(vehicle, color1, color2, 0, 0)
-	end
+	color1 = clamp(color1, 0, 126)
+	color2 = clamp(color2, 0, 126)
+	return setVehicleColor(vehicle, color1, color2, 0, 0)
 end
 
 function ChangeVehiclePaintjob(amx, vehicle, paintjob)
-	setVehiclePaintjob(vehicle, paintjob)
+	return setVehiclePaintjob(vehicle, paintjob)
 end
 
 function SetVehicleHealth(amx, vehicle, health)
-	setElementHealth(vehicle, health)
+	return setElementHealth(vehicle, health)
 end
 
 function GetVehicleHealth(amx, vehicle, refHealth)
+	if not vehicle then
+		return false
+	end
 	writeMemFloat(amx, refHealth, getElementHealth(vehicle))
+	return true
 end
 
 function AttachTrailerToVehicle(amx, trailer, vehicle)
-	attachTrailerToVehicle(vehicle, trailer)
+	return attachTrailerToVehicle(vehicle, trailer)
 end
 
 function DetachTrailerFromVehicle(amx, puller)
-	detachTrailerFromVehicle(puller)
+	return detachTrailerFromVehicle(puller)
 end
 
 function IsTrailerAttachedToVehicle(amx, vehicle)
@@ -175,7 +188,7 @@ function GetVehicleTrailer(amx, vehicle)
 end
 
 function SetVehicleNumberPlate(amx, vehicle, plate)
-	setVehiclePlateText(vehicle, plate)
+	return setVehiclePlateText(vehicle, plate)
 end
 
 function GetVehicleModelInfo(amx)
@@ -231,18 +244,22 @@ function GetVehicleComponentType(amx, componentid)
 end
 
 function RepairVehicle(amx, vehicle)
-	fixVehicle(vehicle)
+	return fixVehicle(vehicle)
 end
 
 function GetVehicleVelocity(amx, vehicle, refVX, refVY, refVZ)
+	if not vehicle then
+		return false
+	end
 	local vx, vy, vz = getElementVelocity(vehicle)
 	writeMemFloat(amx, refVX, vx)
 	writeMemFloat(amx, refVY, vy)
 	writeMemFloat(amx, refVZ, vz)
+	return true
 end
 
 function SetVehicleVelocity(amx, vehicle, vx, vy, vz)
-	setElementVelocity(vehicle, vx, vy, vz)
+	return setElementVelocity(vehicle, vx, vy, vz)
 	--setElementAngularVelocity(vehicle, vx, vy, vz) --This isn't needed, it makes the car spin and I believe samp doesn't do this
 end
 
@@ -273,6 +290,8 @@ function GetVehicleDamageStatus(amx, vehicle, refPanels, refDoors, refLights, re
 	amx.memDAT[refDoors] = doorsState
 	amx.memDAT[refLights] = lightsState
 	amx.memDAT[refTires] = tiresState
+
+	return true
 end
 
 function UpdateVehicleDamageStatus(amx, vehicle, panels, doors, lights, tires)
@@ -295,10 +314,12 @@ function UpdateVehicleDamageStatus(amx, vehicle, panels, doors, lights, tires)
 	setVehicleLightState(vehicle, 4, binand(binshr(lights, 6), 1))
 
 	setVehicleWheelStates(vehicle, binand(binshr(tires, 3), 1), binand(binshr(tires, 2), 1), binand(binshr(tires, 1), 1), binand(tires, 1) )
+
+	return true
 end
 
 function SetVehicleVirtualWorld(amx, vehicle, dimension)
-	setElementDimension(vehicle, dimension)
+	return setElementDimension(vehicle, dimension)
 end
 
 function GetVehicleVirtualWorld(amx, vehicle)

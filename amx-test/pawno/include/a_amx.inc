@@ -20,6 +20,7 @@ forward OnBotConnect(botid, name[]);
 forward OnBotEnterVehicle(botid, vehicleid, seatid);
 forward OnBotExitVehicle(botid, vehicleid);
 forward OnBotDeath(botid, killerid, weaponid, bodypart);
+forward OnBotStateChange(botid, newstate, oldstate);
 forward OnVehicleDamage(vehicleid, Float:loss);
 forward OnPlayerShootingPlayer(playerid, attackerid, bodypart, Float:loss);
 forward OnPlayerWeaponSwitch(playerid, previousWeaponID, currentWeaponID);

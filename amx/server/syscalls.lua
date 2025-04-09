@@ -386,7 +386,7 @@ g_SAMPSyscallPrototypes = {
 	SetPlayerObjectPos = {'p', 'i', 'f', 'f', 'f'},
 	SetPlayerObjectRot = {'p', 'i', 'f', 'f', 'f'},
 	SetPlayerPos = {'p', 'f', 'f', 'f'},
-	SetPlayerPosFindZ = {'p', 'f', 'f', 'f', client=true},
+	SetPlayerPosFindZ = {'p', 'f', 'f', 'f'},
 	SetPlayerRaceCheckpoint = {'p', 'i', 'f', 'f', 'f', 'f', 'f', 'f', 'f'},
 	SetPlayerScore = {'p', 'i'},
 	SetPlayerSkin = {'p', 'i'},

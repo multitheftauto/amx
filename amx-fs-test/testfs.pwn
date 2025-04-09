@@ -1,5 +1,4 @@
 #include <a_samp>
-#include <file>
 
 main()
 {
@@ -17,5 +16,4 @@ public OnFilterScriptExit()
 {
 	return 1;
 }
-
 

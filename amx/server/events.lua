@@ -14,6 +14,7 @@ function gameModeInit(player)
 	takeAllWeapons(player)
 	setElementInterior(player, 0)
 	setElementDimension(player, 0)
+	for i=69,79 do setPedStat(player, i, 999) end
 	local r, g, b = math.random(50, 255), math.random(50, 255), math.random(50, 255)
 	ShowPlayerMarker(false, player, g_ShowPlayerMarkers)
 	setPlayerHudComponentVisible(player, 'area_name', g_ShowZoneNames)
@@ -28,43 +29,24 @@ function gameModeInit(player)
 	g_Players[playerID].streamedVehicles = {}
 	g_Players[playerID].streamedPlayers = {}
 	g_Players[playerID].attachedObjects = {}
-	if g_PlayerClasses[0] then
-		g_Players[playerID].viewingintro = true
-		fadeCamera(player, true)
-		setTimer(
-			function()
-				if not isElement(player) or getElementType(player) ~= 'player' then
-					return
-				end
-				g_Players[playerID].doingclasssel = true
-				killPed(player)
-				if procCallOnAll('OnPlayerRequestClass', playerID, 0) then
-					putPlayerInClassSelection(player)
-				else
-					outputDebugString('Not allowed to select a class', 1)
-				end
-			end,
-			5000,
-			1
-		)
-	else
-		setTimer(
-			function()
-				if not isElement(player) or getElementType(player) ~= 'player' then
-					return
-				end
-				repeat until onPlayerInitSpawnPlayer(player, math.random(-20, 20), math.random(-20, 20), 3, math.random(0, 359), math.random(9, 288))
-			end,
-			5000,
-			1
-		)
-	end
-end
-
-function onPlayerInitSpawnPlayer(player, x, y, z, rotation, skinid)
-	local playerID = getElemID(player)
-	g_Players[playerID].spawnedfromgamemodeinit = true
-	return spawnPlayer(player, x, y, z, rotation, skinid)
+	g_Players[playerID].viewingintro = true
+	fadeCamera(player, true)
+	setTimer(
+		function()
+			if not isElement(player) or getElementType(player) ~= 'player' then
+				return
+			end
+			g_Players[playerID].doingclasssel = true
+			killPed(player)
+			if procCallOnAll('OnPlayerRequestClass', playerID, 0) then
+				putPlayerInClassSelection(player)
+			else
+				outputDebugString('Not allowed to select a class', 1)
+			end
+		end,
+		5000,
+		1
+	)
 end
 
 function joinHandler(player)
@@ -94,7 +76,6 @@ function joinHandler(player)
 	for k,v in ipairs(g_Keys) do
 		bindKey(player, v, 'both', mtaKeyStateChange)
 	end
-	g_Players[playerID].updatetimer = setTimer(procCallOnAll, 100, 0, 'OnPlayerUpdate', playerID)
 
 	if playerJoined then
 		if getRunningGameMode() then
@@ -119,13 +100,7 @@ function joinHandler(player)
 			clientCall(player, 'Create3DTextLabel', i, label)
 		end
 
-		table.each(
-			g_LoadedAMXs,
-			function(amx)
-				procCallInternal(amx, 'OnPlayerConnect', playerID)
-
-			end
-		)
+		procCallOnAll('OnPlayerConnect', playerID)
 	end
 	setPlayerNametagShowing(player, false)
 end
@@ -191,6 +166,10 @@ function putPlayerInClassSelection(player)
 	if g_Players[playerID].blip then
 		setElementVisibleTo(g_Players[playerID].blip, root, false)
 	end
+	if g_Players[playerID].updatetimer then
+		killTimer( g_Players[playerID].updatetimer )
+		g_Players[playerID].updatetimer = nil
+	end
 	clientCall(player, 'startClassSelection', g_PlayerClasses)
 	bindKey(player, 'arrow_l', 'down', requestClass, -1)
 	bindKey(player, 'arrow_r', 'down', requestClass, 1)
@@ -200,6 +179,9 @@ function putPlayerInClassSelection(player)
 end
 
 function requestClass(player, btn, state, dir)
+	if not isElement(player) then
+		return
+	end
 	local playerID = getElemID(player)
 	local data = g_Players[playerID]
 	data.selectedclass = data.selectedclass + dir
@@ -208,11 +190,15 @@ function requestClass(player, btn, state, dir)
 	elseif data.selectedclass < 0 then
 		data.selectedclass = #g_PlayerClasses
 	end
+	local skin = 0
 	local x, y, z = getElementPosition(player)
+	if g_PlayerClasses[0] then
+		skin = g_PlayerClasses[data.selectedclass][5]
+	end
 	if isPedDead(player) then
-		spawnPlayer(player, x, y, z, getPedRotation(player), g_PlayerClasses[data.selectedclass][5], getElementInterior(player), playerID)
+		spawnPlayer(player, x, y, z, getPedRotation(player), skin, getElementInterior(player), playerID)
 	else
-		setElementModel(player, g_PlayerClasses[data.selectedclass][5])
+		setElementModel(player, skin)
 	end
 	clientCall(player, 'selectClass', data.selectedclass)
 	procCallOnAll('OnPlayerRequestClass', playerID, data.selectedclass)
@@ -230,18 +216,29 @@ function requestSpawn(player, btn, state)
 end
 
 function spawnPlayerBySelectedClass(player, x, y, z, r)
+	if not isElement(player) then
+		return
+	end
 	local playerID = getElemID(player)
 	local playerdata = g_Players[playerID]
 	playerdata.viewingintro = nil
 	playerdata.doingclasssel = nil
 	local spawninfo = playerdata.spawninfo or (g_PlayerClasses and g_PlayerClasses[playerdata.selectedclass])
 	if not spawninfo then
-		return
+		if not g_PlayerClasses[0] then
+			spawninfo = {
+				0, 0, 3, 0, 0, 0, 0, false,
+				weapons={ {-1, 0}, {-1, 0}, {-1, 0} }
+			}
+		else
+			spawninfo = g_PlayerClasses[0]
+		end
 	end
 	if x then
 		spawninfo = table.shallowcopy(spawninfo)
 		spawninfo[1], spawninfo[2], spawninfo[3], spawninfo[4] = x, y, z, r or spawninfo[4]
 	end
+	setPlayerState(player, PLAYER_STATE_SPAWNED)
 	spawnPlayer(player, unpack(spawninfo))
 	for i,weapon in ipairs(spawninfo.weapons) do
 		if weapon[1] ~= -1 then
@@ -258,15 +255,18 @@ addEventHandler('onPlayerSpawn', root,
 	function()
 		local playerID = getElemID(source)
 		local playerdata = g_Players[playerID]
-		if playerdata.doingclasssel or playerdata.spawnedfromgamemodeinit then
-			if playerdata.spawnedfromgamemodeinit ~= nil then
-				playerdata.spawnedfromgamemodeinit = nil
-			end
+		if playerdata.doingclasssel then
 			return
 		end
 		toggleAllControls(source, true)
 		procCallOnAll('OnPlayerSpawn', playerID)
 		setPlayerState(source, PLAYER_STATE_ONFOOT)
+
+		if g_Players[playerID].updatetimer then
+			killTimer( g_Players[playerID].updatetimer )
+		end
+		g_Players[playerID].updatetimer = setTimer(procCallOnAll, 100, 0, 'OnPlayerUpdate', playerID)
+
 		playerdata.vehicle = nil
 		playerdata.specialaction = SPECIAL_ACTION_NONE
 	end
@@ -322,12 +322,16 @@ addEventHandler('onPlayerWasted', root,
 		if g_Players[playerID].doingclasssel then
 			return
 		end
-		local killerID = killer and killer ~= source and getElemID(killer) or 255
+		local killerID = INVALID_PLAYER_ID
+		if isElement(killer) and getElementType(killer) == 'player' and killer ~= source then
+			killerID = getElemID(killer)
+		end
 		setPlayerState(source, PLAYER_STATE_WASTED)
 		procCallOnAll('OnPlayerDeath', playerID, killerID, weapon)
 		if g_Players[playerID].returntoclasssel then
 			g_Players[playerID].returntoclasssel = nil
 			--setTimer(putPlayerInClassSelection, 3000, 1, source)
+			local player = source
 			setTimer(
 				function()
 					g_Players[playerID].spawninfo = nil
@@ -335,12 +339,20 @@ addEventHandler('onPlayerWasted', root,
 					
 					if procCallOnAll('OnPlayerRequestClass', playerID, 0) then
 						putPlayerInClassSelection(player)
+					else
+						outputDebugString('Not allowed to select a class', 1)
 					end
-				end, 3000, 1, source
+				end, 3000, 1
 			)
 		else
 			setTimer(spawnPlayerBySelectedClass, 3000, 1, source, false)
 		end
+
+		if g_Players[playerID].updatetimer then
+			killTimer( g_Players[playerID].updatetimer )
+			g_Players[playerID].updatetimer = nil
+		end
+
 		g_Players[playerID].vehicle = nil
 		g_Players[playerID].specialaction = SPECIAL_ACTION_NONE
 	end
@@ -400,20 +412,32 @@ end
 
 function respawnStaticVehicle(vehicle)
 	if not isElement(vehicle) then
-		return
+		return false
 	end
 	local vehID = getElemID(vehicle)
 	if not g_Vehicles[vehID] then
-		return
+		return false
 	end
 	if isTimer(g_Vehicles[vehID].respawntimer) then
 		killTimer(g_Vehicles[vehID].respawntimer)
 	end
+	local numPassengers = tonumber(getVehicleMaxPassengers(vehicle)) or 0; 
+	for seat=0,numPassengers do
+		local player = getVehicleOccupant(vehicle, seat)
+		if player then
+			removePedFromVehicle(player)
+		end
+	end
 	g_Vehicles[vehID].respawntimer = nil
 	g_Vehicles[vehID].vehicleIsAlive = true
 	local spawninfo = g_Vehicles[vehID].spawninfo
-	spawnVehicle(vehicle, spawninfo.x, spawninfo.y, spawninfo.z, 0, 0, spawninfo.angle)
-	procCallInternal(amx, 'OnVehicleSpawn', vehID)
+	setTimer(
+		function()
+			spawnVehicle(vehicle, spawninfo.x, spawninfo.y, spawninfo.z, 0, 0, spawninfo.angle)
+			procCallOnAll('OnVehicleSpawn', vehID)
+		end, 500, 1
+	)
+	return true
 end
 
 addEventHandler('onVehicleEnter', root,
@@ -471,7 +495,8 @@ addEventHandler('onVehicleExit', root,
 		g_Players[playerID].vehicle = nil
 		setPlayerState(player, PLAYER_STATE_ONFOOT)
 
-		for i=0,getVehicleMaxPassengers(source) do
+		local numPassengers = tonumber(getVehicleMaxPassengers(source)) or 0; 
+		for i=0,numPassengers do
 			if getVehicleOccupant(source, i) then
 				return
 			end
@@ -521,7 +546,7 @@ addEventHandler('onVehicleExplode', root,
 			end
 
 			g_Vehicles[vehID].vehicleIsAlive = false
-			g_Vehicles[vehID].respawntimer = setTimer(respawnStaticVehicle, g_Vehicles[vehID].respawndelay, 1, source)
+			g_Vehicles[vehID].respawntimer = setTimer(respawnStaticVehicle, 10000, 1, source)
 		end
 	end
 )
@@ -548,9 +573,19 @@ function removePedFromVehicle(player)
 	if not playerdata.vehicle then
 		return false
 	end
-	procCallOnAll('OnPlayerExitVehicle', getElemID(player), getElemID(playerdata.vehicle))
+	--procCallOnAll('OnPlayerExitVehicle', getElemID(player), getElemID(playerdata.vehicle))
 	playerdata.vehicle = nil
 	setTimer(_removePedFromVehicle, 500, 1, player)
+	return true
+end
+
+function removePedFromVehicleEx(player)
+	local playerdata = g_Players[getElemID(player)]
+	if not playerdata.vehicle then
+		return false
+	end
+	playerdata.vehicle = nil
+	setControlState(player, "enter_exit", true)
 	return true
 end
 -------------------------------
@@ -587,13 +622,14 @@ addEventHandler('onPedWasted', root,
 addEvent('OnPlayerPickUpPickup_Ev', true)
 addEventHandler('OnPlayerPickUpPickup_Ev', root,
 	function(pickup)
+		local player = root
 		local model = getElementModel(pickup)
 
 		procCallOnAll('OnPlayerPickUpPickup', getElemID(player), getElemID(pickup))
 
 		if model == 370 then
 			-- Jetpack pickup
-			givePedJetPack(player)
+			setPedWearingJetpack(player, true)
 		end
 	end
 )

@@ -19,39 +19,40 @@ function AttachObjectToObject(amx)
 end
 
 function AttachObjectToPlayer(amx, object, player, offsetX, offsetY, offsetZ, rX, rY, rZ)
-	attachElements(object, player, offsetX, offsetY, offsetZ, rX, rY, rZ)
+	return attachElements(object, player, offsetX, offsetY, offsetZ, rX, rY, rZ)
 end
 
 function SetObjectPos(amx, object, x, y, z)
-	if(getElementType(object) == 'vehicle') then
-		setElementFrozen(object, true)
-	end
-
-	setElementPosition(object, x, y, z)
-
-	if getElementType(object) == 'vehicle' then
-		setElementAngularVelocity(object, 0, 0, 0)
-		setElementVelocity(object, 0, 0, 0)
-		setTimer(setElementFrozen, 500, 1, object, false)
-	end
+	return setElementPosition(object, x, y, z)
 end
 
 function GetObjectPos(amx, object, refX, refY, refZ)
+	if not object then
+		return false
+	end
 	local x, y, z = getElementPosition(object)
 	writeMemFloat(amx, refX, x)
 	writeMemFloat(amx, refY, y)
 	writeMemFloat(amx, refZ, z)
+	return true
 end
 
 function GetObjectRot(amx, object, refX, refY, refZ)
+	if not object then
+		return false
+	end
 	local rX, rX, rZ = getObjectRotation(object)
 	writeMemFloat(amx, refX, rX)
 	writeMemFloat(amx, refY, rY)
 	writeMemFloat(amx, refZ, rZ)
+	return true
 end
 
-function SetObjectRot(amx, object, rX, rY, rY)
-	setObjectRotation(object, rX, rY, rZ)
+function SetObjectRot(amx, object, rX, rY, rZ)
+	if object then
+		setObjectRotation(object, rX, rY, rZ)
+	end
+	return true
 end
 
 function GetObjectModel(amx, objID)
@@ -70,19 +71,26 @@ function IsValidObject(amx, objID)
 end
 
 function DestroyObject(amx, object)
-	removeElem(g_Objects, object)
-	destroyElement(object)
+	if object then
+		removeElem(g_Objects, object)
+		destroyElement(object)
+	end
+	return true
 end
 
 function MoveObject(amx, object, x, y, z, speed)
+	if not object then
+		return 0
+	end
 	local distance = getDistanceBetweenPoints3D(x, y, z, getElementPosition(object))
 	local time = distance/speed*1000
 	moveObject(object, time, x, y, z, 0, 0, 0)
 	setTimer(procCallOnAll, time, 1, 'OnObjectMoved', getElemID(object))
+	return math.floor(time)
 end
 
 function StopObject(amx, object)
-	stopObject(object)
+	return stopObject(object)
 end
 
 function IsObjectMoving(amx)
@@ -101,7 +109,7 @@ end
 function SetPlayerObjectPos(amx, player, objID, x, y, z)
 	local obj = g_PlayerObjects[player] and g_PlayerObjects[player][objID]
 	if not obj then
-		return
+		return false
 	end
 	if obj.moving then
 		if isTimer(obj.moving.timer) then
@@ -111,15 +119,17 @@ function SetPlayerObjectPos(amx, player, objID, x, y, z)
 	end
 	obj.x, obj.y, obj.z = x, y, z
 	clientCall(player, 'SetPlayerObjectPos', objID, x, y, z)
+	return true
 end
 
 function SetPlayerObjectRot(amx, player, objID, rX, rY, rZ)
 	local obj = g_PlayerObjects[player] and g_PlayerObjects[player][objID]
 	if not obj then
-		return
+		return false
 	end
 	obj.rx, obj.ry, obj.rz = rX, rY, rZ
 	clientCall(player, 'SetPlayerObjectRot', objID, rX, rY, rZ)
+	return true
 end
 
 local function getPlayerObjectPos(amx, player, objID)
@@ -149,21 +159,23 @@ end
 function GetPlayerObjectPos(amx, player, objID, refX, refY, refZ)
 	local x, y, z = getPlayerObjectPos(amx, player, objID)
 	if not x then
-		return
+		return false
 	end
 	writeMemFloat(amx, refX, x)
 	writeMemFloat(amx, refY, y)
 	writeMemFloat(amx, refZ, z)
+	return true
 end
 
 function GetPlayerObjectRot(amx, player, objID, refX, refY, refZ)
 	local obj = g_PlayerObjects[player] and g_PlayerObjects[player][objID]
 	if not obj then
-		return
+		return false
 	end
 	writeMemFloat(amx, refX, obj.rx)
 	writeMemFloat(amx, refY, obj.ry)
 	writeMemFloat(amx, refZ, obj.rz)
+	return true
 end
 
 function GetPlayerObjectModel(amx, player, object)
@@ -176,14 +188,17 @@ function IsValidPlayerObject(amx, player, objID)
 end
 
 function DestroyPlayerObject(amx, player, objID)
-	g_PlayerObjects[player][objID] = nil
-	clientCall(player, 'DestroyPlayerObject', objID)
+	if g_PlayerObjects[player] and g_PlayerObjects[player][objID] then
+		g_PlayerObjects[player][objID] = nil
+		clientCall(player, 'DestroyPlayerObject', objID)
+	end
+	return true
 end
 
 function MovePlayerObject(amx, player, objID, x, y, z, speed)
 	local obj = g_PlayerObjects[player] and g_PlayerObjects[player][objID]
 	if not obj then
-		return
+		return 0
 	end
 	local distance = getDistanceBetweenPoints3D(x, y, z, getPlayerObjectPos(amx, player, objID))
 	local duration = distance/speed*1000
@@ -193,12 +208,13 @@ function MovePlayerObject(amx, player, objID, x, y, z, speed)
 	local timer = setTimer(procCallOnAll, duration, 1, 'OnPlayerObjectMoved', getElemID(player), objID)
 	obj.moving = { x = x, y = y, z = z, starttick = getTickCount(), duration = duration, timer = timer }
 	clientCall(player, 'MovePlayerObject', objID, x, y, z, speed)
+	return math.floor(duration)
 end
 
 function StopPlayerObject(amx, player, objID)
 	local obj = g_PlayerObjects[player] and g_PlayerObjects[player][objID]
 	if not obj then
-		return
+		return false
 	end
 	if obj.moving then
 		obj.x, obj.y, obj.z = getPlayerObjectPos(amx, player, objID)
@@ -208,6 +224,7 @@ function StopPlayerObject(amx, player, objID)
 		obj.moving = nil
 	end
 	clientCall(player, 'StopPlayerObject', objID)
+	return true
 end
 
 

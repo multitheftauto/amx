@@ -1,6 +1,6 @@
 function AddPlayerClothes(amx, player, type, index)
 	local texture, model = getClothesByTypeIndex(type, index)
-	addPedClothes(player, texture, model, type)
+	return addPedClothes(player, texture, model, type)
 end
 
 function GetPlayerClothes(amx, player, type)
@@ -13,7 +13,7 @@ function GetPlayerClothes(amx, player, type)
 end
 
 function RemovePlayerClothes(amx, player, type)
-	removePedClothes(player, type)
+	return removePedClothes(player, type)
 end
 
 -----------------------------------------------------
@@ -40,7 +40,7 @@ function IsPlayerInWater(amx, player)
 end
 
 function IsPlayerOnFire(amx, player)
-	return isPedOnFire(player)
+	return isElementOnFire(player)
 end
 
 function IsPlayerDucked(amx, player)
@@ -52,7 +52,7 @@ function IsPlayerOnGround(amx, player)
 end
 
 function SetPlayerOnFire(amx, player, state)
-	return setPedOnFire(player, state)
+	return setElementOnFire(player, state)
 end
 
 function GetPlayerStat(amx, player, stat)
@@ -69,8 +69,7 @@ end
 
 function SetPlayerDoingDriveBy(amx, ped, state)
 	clientCall(root, 'setPedDoingGangDriveby', ped, state)
-	setElementData(ped, 'DoingDriveBy', state)
-	return true
+	return setElementData(ped, 'DoingDriveBy', state)
 end
 
 function GetPlayerCanBeKnockedOffBike(amx, ped)
@@ -79,7 +78,7 @@ end
 
 function SetPlayerCanBeKnockedOffBike(amx, ped, state)
 	clientCall(root, 'setPedCanBeKnockedOffBike', ped, state)
-	setElementData(ped, 'CanBeKnockedOffBike', state)
+	return setElementData(ped, 'CanBeKnockedOffBike', state)
 end
 
 function SetPlayerWeaponSlot(amx, ped, slot)
@@ -141,6 +140,7 @@ end
 function DestroyBot(amx, bot)
 	removeElem(g_Bots, bot)
 	destroyElement(bot)
+	return true
 end
 
 function GetBotState(amx, bot)
@@ -148,7 +148,7 @@ function GetBotState(amx, bot)
 end
 
 function PutBotInVehicle(amx, bot, vehicle, seat)
-	return oldwarpPedIntoVehicle(bot, vehicle, seat)
+	return warpPedIntoVehicle(bot, vehicle, seat)
 end
 
 function RemoveBotFromVehicle(amx, bot)
@@ -177,20 +177,25 @@ function KillBot(amx, bot)
 end
 
 function GetBotRot(amx, ped, refX, refY, refZ)
+	if not ped then
+		return false
+	end
 	local rX, rX, rZ = getPedRotation(ped)
 	writeMemFloat(amx, refX, rX)
 	writeMemFloat(amx, refY, rY)
 	writeMemFloat(amx, refZ, rZ)
+	return true
 end
 
 function SetBotRot(amx, Ped, rX, rY, rY)
-	setPedRotation(ped, rX, rY, rZ)
+	return setPedRotation(ped, rX, rY, rZ)
 end
 
 function GetBotName(amx, bot, nameBuf, bufSize)
 	local name = getElementData(bot, 'BotName')
 	if #name <= bufSize then
 		writeMemString(amx, nameBuf, name)
+		return string.len(name)
 	end
 end
 
@@ -580,7 +585,7 @@ end
 -----------------------------------------------------
 
 function ShowCursor(amx, player, show, controls)
-	showCursor(player, show, controls)
+	return showCursor(player, show, controls)
 end
 
 function AddEventHandler(amx, event, func)

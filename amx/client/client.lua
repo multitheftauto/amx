@@ -172,7 +172,7 @@ function renderClassSelText()
 	drawShadowText('Use left and right arrow keys to select class.', 20, screenHeight - 150, tocolor(240, 240, 240))
 	drawShadowText('Press SHIFT when ready to spawn.', 20, screenHeight - 136, tocolor(240, 240, 240))
 
-	if not g_ClassSelectionInfo or not g_ClassSelectionInfo.selectedclass then
+	if not g_ClassSelectionInfo[0] or not g_ClassSelectionInfo.selectedclass then
 		return
 	end
 	drawShadowText('Class ' .. g_ClassSelectionInfo.selectedclass .. ' weapons:', 20, screenHeight - 110, tocolor(240, 240, 240))
@@ -333,6 +333,9 @@ function camAttachRender()
 		local x1,y1,z1 = 0.0, 0.0, 0.0
 		if ca.objCamPos ~= nil then
 			x1,y1,z1 = getElementPosition(ca.objCamPos)
+			if not x1 then x1 = 0.0 end
+			if not y1 then y1 = 0.0 end
+			if not z1 then z1 = 0.0 end
 		end
 		local camDist = ca.dist 
 		local cosZ = math.cos(ca.z) 
@@ -402,9 +405,15 @@ function camRender()
 		local x1,y1,z1,x2,y2,z2 = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 		if sm.objCamPos ~= nil then
 			x1,y1,z1 = getElementPosition(sm.objCamPos)
+			if not x1 then x1 = 0.0 end
+			if not y1 then y1 = 0.0 end
+			if not z1 then z1 = 0.0 end
 		end
 		if sm.objLookAt ~= nil then
 			x2,y2,z2 = getElementPosition(sm.objLookAt)
+			if not x2 then x2 = 0.0 end
+			if not y2 then y2 = 0.0 end
+			if not z2 then z2 = 0.0 end
 		end
 		--outputConsole(string.format("Current Camera Matrix is: CamPos: %f %f %f CamLookAt: %f %f %f", x1,y1,z1,x2,y2,z2))
 		setCameraMatrix(x1,y1,z1,x2,y2,z2)
@@ -453,9 +462,10 @@ end
 function AttachPlayerObjectToPlayer(objID, attachPlayer, offsetX, offsetY, offsetZ, rX, rY, rZ)
 	local obj = g_PlayerObjects[objID]
 	if not obj then
-		return
+		return false
 	end
 	attachElements(obj, attachPlayer, offsetX, offsetY, offsetZ, rX, rY, rZ)
+	return true
 end
 
 function CreatePlayerObject(objID, model, x, y, z, rX, rY, rZ)
@@ -483,25 +493,28 @@ end
 function SetPlayerObjectPos(objID, x, y, z)
 	local obj = g_PlayerObjects[objID]
 	if not obj then
-		return
+		return false
 	end
 	setElementPosition(obj, x, y, z)
+	return true
 end
 
 function SetPlayerObjectRot(objID, rX, rY, rZ)
 	local obj = g_PlayerObjects[objID]
 	if not obj then
-		return
+		return false
 	end
 	setElementRotation(obj, rX, rY, rZ)
+	return true
 end
 
 function StopPlayerObject(objID)
 	local obj = g_PlayerObjects[objID]
 	if not obj then
-		return
+		return false
 	end
 	stopObject(obj)
+	return true
 end
 
 --- Audio
@@ -625,6 +638,7 @@ end
 
 function SetPlayerPosFindZ(x, y, z)
 	setElementPosition(localPlayer, x, y, getGroundPosition(x, y, z) + 1)
+	return true
 end
 
 function SetVehicleParamsForPlayer(vehicle, isObjective, doorsLocked)
@@ -1565,7 +1579,9 @@ function RemovePlayerMapIcon(blipID)
 	if g_Blips[blipID] then
 		destroyElement(g_Blips[blipID])
 		g_Blips[blipID] = nil
+		return true
 	end
+	return false
 end
 
 function SetPlayerMapIcon(blipID, x, y, z, type, r, g, b, a)
@@ -1574,6 +1590,7 @@ function SetPlayerMapIcon(blipID, x, y, z, type, r, g, b, a)
 		g_Blips[blipID] = nil
 	end
 	g_Blips[blipID] = createBlip(x, y, z, type, 2, r, g, b, a)
+	return true
 end
 
 function SetPlayerWorldBounds(xMax, xMin, yMax, yMin)
@@ -1658,6 +1675,7 @@ end
 function TogglePlayerClock(toggle)
 	setMinuteDuration(toggle and 1000 or 2147483647)
 	setPlayerHudComponentVisible('clock', toggle)
+	return true
 end
 
 function createListDialog(titleText, message, button1txt, button2txt)
@@ -1706,8 +1724,8 @@ function createInputDialog(titleText, message, button1txt, button2txt)
 		end
 		inputDialog = nil
 		inputWindow = guiCreateWindow(screenWidth/2 - 541/2,screenHeight/2 - 352/2,541,352, titleText, false)
-		guiWindowSetMovable(listWindow,false)
-		guiWindowSetSizable(listWindow,false)
+		guiWindowSetMovable(inputWindow,false)
+		guiWindowSetSizable(inputWindow,false)
 		inputLabel = guiCreateColoredLabel(0.1, 0.1, 1.0, 0.8, message, inputWindow, true)
 		inputEdit = guiCreateEdit(0.0, 0.7, 1.0, 0.1, "", true, inputWindow)
 
@@ -1845,9 +1863,9 @@ function guiCreateColoredLabel(ax, ay, bx, by,str, parent, relative) --x, y, wid
 	local scrollpane = guiCreateScrollPane(ax,ay,bx,by,relative,parent)
 	--outputConsole('main string:' .. str)
 
-    local pat = "(.-)#(%x%x%x%x%x%x)" 
-    local s, e, cap, col = str:find(pat, 1) 
-    local last = 1 
+	local pat = "(.-)#(%x%x%x%x%x%x)" 
+	local s, e, cap, col = str:find(pat, 1) 
+	local last = 1 
 	local labels = {} 
 	local incy = 0
 	local incx = 0
@@ -1859,10 +1877,10 @@ function guiCreateColoredLabel(ax, ay, bx, by,str, parent, relative) --x, y, wid
 
 			lbl = guiCreateLabel(ax + incx, ay + incy, 1.0, by, cap, relative, scrollpane) 
 			guiLabelSetHorizontalAlign(lbl, "left")
-            table.insert(labels, lbl) 
-            if (r == nil) then r = 255 end 
-            if (g == nil) then g = 255 end 
-            if (b == nil) then b = 255 end 
+			table.insert(labels, lbl) 
+			if (r == nil) then r = 255 end 
+			if (g == nil) then g = 255 end 
+			if (b == nil) then b = 255 end 
 			guiLabelSetColor(lbl,r,g,b)  
 			r,g,b = tonumber("0x"..col:sub(1, 2)), tonumber("0x"..col:sub(3, 4)), tonumber("0x"..col:sub(5, 6)) 
 
@@ -1891,6 +1909,9 @@ function guiCreateColoredLabel(ax, ay, bx, by,str, parent, relative) --x, y, wid
         cap = str:sub(last) 
         lbl2 = guiCreateLabel(ax + incx, ay + incy, 1.0, by, cap, relative, scrollpane) 
         table.insert(labels, lbl2) 
+	if (r == nil) then r = 255 end 
+	if (g == nil) then g = 255 end 
+	if (b == nil) then b = 255 end 
         guiLabelSetColor(lbl2,r,g,b) 
     end
     return labels 
@@ -1934,7 +1955,7 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 				local row = guiGridListAddRow ( listGrid )
 				guiGridListSetItemText ( listGrid, row, listColumn, v, false, true)
 			end
-			return
+			return true
 		end
 
 		--DIALOG_STYLE_TABLIST, DIALOG_STYLE_TABLIST_HEADER
@@ -1943,7 +1964,7 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 		if #items < 1 then
 			outputConsole('Error, your dialog either has no items, its format is wrong or you\'re missing a newline character in the string')
 			outputConsole('The raw string was: ' .. info)
-			return --Abort if there's no items
+			return false --Abort if there's no items
 		end
 
 		--Create the header
@@ -1967,6 +1988,7 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 			end
 		end
 	end
+	return true
 end
 
 addEvent("onPlayerClickPlayer")
