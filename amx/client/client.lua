@@ -1,6 +1,6 @@
 local dxDrawText = dxDrawText
 local tocolor = tocolor
-local SPEED_EPSILON = 0.005
+
 local VEHICLE_DROP_TRY_INTERVAL = 100
 local VEHICLE_DROP_MAX_TRIES = 50
 
@@ -673,7 +673,6 @@ function SetVehicleParamsForPlayer(vehicle, isObjective, doorsLocked)
 	setVehicleLocked(vehicle, doorsLocked)
 end
 
-
 local vehicleDrops = {}		-- { [vehicle] = { timer = timer, tries = tries } }
 
 function dropVehicle(vehicle)
@@ -702,14 +701,15 @@ function dropVehicle(vehicle)
 		bottom = -top
 	end
 	local x, y, z = getElementPosition(vehicle)
-	local rx, ry, rz = getElementRotation(vehicle)
 
 	local hit, hitX, hitY, hitZ = processLineOfSight(x, y, z + top, x, y, z - 10, true, false)
+	hitZ = hitZ or getGroundPosition(x, y, z + top)
 	if hitZ then
 		setElementCollisionsEnabled(vehicle, true)
 		if z < hitZ - bottom - 0.5 or top > 2 then
+			local rx, ry, rz = getElementRotation(vehicle)
 			setElementPosition(vehicle, x, y, hitZ + 2*math.abs(bottom))
-			setElementRotation(vehicle, 0, ry, rz)
+			setElementRotation(vehicle, 0, 0, rz)
 			setElementVelocity(vehicle, 0, 0, -0.05)
 		end
 		if dropdata.tries < VEHICLE_DROP_MAX_TRIES then

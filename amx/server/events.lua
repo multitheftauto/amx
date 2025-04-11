@@ -300,11 +300,15 @@ addEventHandler('onPlayerChat', root,
 
 addEventHandler('onPlayerDamage', root,
 	function(attacker, weapon, body, loss)
+		local attackerId = INVALID_PLAYER_ID
+		if source == attacker then attacker = nil end
 
-		if not attacker or not isElement(attacker) or getElementType(attacker) ~= 'player' then
-			return
+		if attacker and isElement(attacker) and getElementType(attacker) == 'player' then
+			attackerId = getElemID(attacker)
+			procCallOnAll('OnPlayerGiveDamage', attackerId, getElemID(source), float2cell(loss), weapon, body)
 		end
-		procCallOnAll('OnPlayerShootingPlayer', getElemID(source), getElemID(attacker), body, loss)
+
+		procCallOnAll('OnPlayerTakeDamage', getElemID(source), attackerId, float2cell(loss), weapon, body)
 	end
 )
 
