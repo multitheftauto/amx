@@ -287,38 +287,48 @@ DEFAULT_VIEWWINDOW = 0.7
 
 local USCREEN_WIDTH, USCREEN_HEIGHT = guiGetScreenSize( )
 
-function SCREEN_ASPECT_RATIO(a) 
+function SCREEN_ASPECT_RATIO(a)
 	return ((a) * USCREEN_WIDTH / DEFAULT_SCREEN_WIDTH)
 end
+
 --This scales from PS2 pixel coordinates to the real resolution
-function SCREEN_STRETCH_X(a) 
+function SCREEN_STRETCH_X(a)
 	return ((a) * USCREEN_WIDTH / DEFAULT_SCREEN_WIDTH)
 end
-function SCREEN_STRETCH_Y(a) 
+
+function SCREEN_STRETCH_Y(a)
 	return ((a) * USCREEN_HEIGHT / DEFAULT_SCREEN_HEIGHT)
 end
-function SCREEN_STRETCH_FROM_RIGHT(a) 
+
+function SCREEN_STRETCH_FROM_RIGHT(a)
 	return (USCREEN_WIDTH - SCREEN_STRETCH_X(a))
 end
-function SCREEN_STRETCH_FROM_BOTTOM(a) 
+
+function SCREEN_STRETCH_FROM_BOTTOM(a)
 	return (USCREEN_HEIGHT - SCREEN_STRETCH_Y(a))
 end
+
 --This scales from PS2 pixel coordinates while optionally maintaining the aspect ratio
-function SCREEN_SCALE_X(a) 
+function SCREEN_SCALE_X(a)
 	return SCREEN_SCALE_AR(SCREEN_STRETCH_X(a))
 end
-function SCREEN_SCALE_Y(a) 
+
+function SCREEN_SCALE_Y(a)
 	return SCREEN_STRETCH_Y(a)
 end
-function SCREEN_SCALE_FROM_RIGHT(a) 
+
+function SCREEN_SCALE_FROM_RIGHT(a)
 	return USCREEN_WIDTH - SCREEN_SCALE_X(a)
 end
-function SCREEN_SCALE_FROM_BOTTOM(a) 
+
+function SCREEN_SCALE_FROM_BOTTOM(a)
 	return USCREEN_HEIGHT - SCREEN_SCALE_Y(a)
 end
+
 function getAspectRatio()
 	return USCREEN_WIDTH/USCREEN_HEIGHT
 end
+
 function SCREEN_SCALE_AR(a)
 	return ((a) * DEFAULT_ASPECT_RATIO / getAspectRatio())
 end

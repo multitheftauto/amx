@@ -1,6 +1,6 @@
 
 ----------------------------------------------
---  Start of SA-MP API implementation
+-- Start of SA-MP API implementation
 
 skinReplace = {
 	-- invalid skins
@@ -19,12 +19,12 @@ skinReplace = {
 	[273] = 0,
 }
 --replace colors
-function colorizeString(string) 
+function colorizeString(string)
 	return string:gsub("(=?{[0-9A-Fa-f]*})",
 	function(colorMatches)
 		colorMatches = colorMatches:gsub("[{}]+", "") --replace the curly brackets with nothing
 		colorMatches = '#' .. colorMatches --Append to the beginning
-		return colorMatches 
+		return colorMatches
 	end)
 end
 
@@ -193,7 +193,6 @@ function GetPlayerPoolSize(amx)
 	return highestId
 end
 
-
 function GetVehiclePoolSize(amx)
 	local highestId = 0
 	for id,v in pairs(g_Vehicles) do
@@ -261,8 +260,6 @@ function GetSVarType(amx)
 	return false
 end
 
-
-
 function SetGameModeText(amx, gamemodeName)
 	return setGameType(gamemodeName)
 end
@@ -289,7 +286,6 @@ function AddPlayerClassEx(amx, team, skin, x, y, z, angle, weap1, weap1_ammo, we
 	)
 	return id
 end
-
 
 function AddStaticVehicle(amx, model, x, y, z, angle, color1, color2)
 	return AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, 120)
@@ -394,7 +390,6 @@ function SetWorldTime(amx, hours)
 	return setTime(hours, 0)
 end
 
-
 function GetWeaponName(amx, weaponID, buf, len)
 	local name = getWeaponNameFromID(weaponID)
 	if name ~= false and #name < len then
@@ -404,11 +399,10 @@ function GetWeaponName(amx, weaponID, buf, len)
 		writeMemString(amx, buf, '') --I was going to return 'None' in here, but I believe SA-MP just returns a blank string
 		return 0
 	end
-	return 1
 end
 
 function EnableTirePopping(amx, enable)
-
+	-- doesn't work in SA-MP as well, tire popping is always on
 end
 
 function EnableVehicleFriendlyFire(amx)
@@ -417,13 +411,12 @@ function EnableVehicleFriendlyFire(amx)
 end
 
 function AllowInteriorWeapons(amx, allow)
-	deprecated('AllowInteriorWeapons', '0.3d')
+	deprecated('AllowInteriorWeapons', '0.3')
 end
 
 function SetWeather(amx, weatherID)
 	return setWeather(weatherID % 256)
 end
-
 
 function SetGravity(amx, gravity)
 	setGravity(gravity)
@@ -433,6 +426,10 @@ end
 
 function AllowAdminTeleport(amx, allow)
 	deprecated('AllowAdminTeleport', '0.3d')
+end
+
+function SetDisabledWeapons(amx, ...)
+	deprecated('SetDisabledWeapons', '0.3')
 end
 
 function SetDeathDropAmount(amx, amount)
@@ -454,7 +451,6 @@ function ShowPlayerMarker(amx, player, show)
 	end
 end
 
-
 function EnableZoneNames(amx, enable)
 	g_ShowZoneNames = enable
 	for i,data in pairs(g_Players) do
@@ -466,11 +462,9 @@ function UsePlayerPedAnims(amx)
 	notImplemented('UsePlayerPedAnims')
 end
 
-
 function DisableInteriorEnterExits(amx)
 	notImplemented('DisableInteriorEnterExits')
 end
-
 
 function SetNameTagDrawDistance(amx, distance)
 	notImplemented('SetNameTagDrawDistance')
@@ -524,9 +518,6 @@ function SpawnPlayer(amx, player)
 	return true
 end
 
--- GetPlayerNetworkStats
--- GetNetworkStats
--- GetPlayerVersion
 function GetPlayerNetworkStats(amx)
 	notImplemented('GetPlayerNetworkStats')
 	return false
@@ -543,23 +534,70 @@ function GetPlayerVersion(amx)
 end
 
 function GetServerVarAsBool(amx, varname)
-	return get('amx.' .. varname) and true
+	if not varname or varname == '' then
+		return false
+	end
+
+	if g_ServerVars[varname] ~= nil then
+		local val = tonumber(g_ServerVars[varname])
+
+		if val then
+			return val ~= 0
+		elseif type(g_ServerVars[varname]) == 'boolean' then
+			return g_ServerVars[varname]
+		end
+
+		return false
+	end
+
+	local val = get('amx.' .. varname)
+
+	local numVal = tonumber(val)
+	if numVal then
+		return numVal ~= 0
+	end
+
+	return val and true
 end
 
 function GetServerVarAsInt(amx, varname)
+	if not varname or varname == '' then
+		return 0
+	end
+
+	if g_ServerVars[varname] ~= nil then
+		local val = tonumber(g_ServerVars[varname])
+
+		if val then
+			return val
+		elseif type(g_ServerVars[varname]) == 'boolean' then
+			return g_ServerVars[varname] and 1 or 0
+		end
+
+		return 0
+	end
+
 	local val = get('amx.' .. varname)
-	return val and tonumber(val)
+	return val and tonumber(val) or 0
 end
 
 function GetServerVarAsString(amx, varname, buf, buflen)
-	local val = get('amx.' .. varname)
-	writeMemString(amx, buf, val and #val < buflen and val or '')
+	if not varname or varname == '' then
+		writeMemString(amx, buf, '')
+		return 0
+	end
+
+	local rawVal = g_ServerVars[varname] or get('amx.' .. varname)
+	local valStr = (type(rawVal) == 'string') and rawVal or ''
+
+	local copyLen = math.min(#valStr, buflen - 1)
+	writeMemString(amx, buf, valStr:sub(1, copyLen))
+	return #valStr
 end
 
 GetConsoleVarAsBool = GetServerVarAsBool
 GetConsoleVarAsInt = GetServerVarAsInt
 GetConsoleVarAsString = GetServerVarAsString
-
 
 function CreateMenu(amx, title, columns, x, y, leftColumnWidth, rightColumnWidth)
 	local menu = { title = title, x = x, y = y, leftColumnWidth = leftColumnWidth, rightColumnWidth = rightColumnWidth, items = { [0] = {}, [1] = {} } }
@@ -704,7 +742,6 @@ function TextDrawDestroy(amx, textdrawID)
 	return true
 end
 
-
 function TextDrawLetterSize(amx, textdraw, width, height)
 	textdraw.lwidth = width
 	textdraw.lheight = height
@@ -731,7 +768,6 @@ function TextDrawBoxColor(amx, textdraw, r, g, b, a)
 	return true
 end
 
-
 function TextDrawSetShadow(amx, textdraw, size)
 	textdraw.shade = size
 	return true
@@ -753,7 +789,7 @@ function TextDrawFont(amx, textdraw, font)
 end
 
 function TextDrawSetProportional(amx, textdraw, proportional)
-
+	notImplemented('TextDrawSetProportional')
 end
 
 function TextDrawSetSelectable(amx)
@@ -784,7 +820,6 @@ function TextDrawShowForAll(amx, textdrawID)
 	end
 	return true
 end
-
 
 function TextDrawHideForAll(amx, textdrawID)
 	for id,player in pairs(g_Players) do
@@ -879,7 +914,7 @@ function CreatePlayer3DTextLabel(amx, player, text, r, g, b, a, x, y, z, dist, a
 	local textlabel = { text = colorizeString(text), color = {r = r, g = g, b = b, a = a}, X = x, Y = y, Z = z, dist = dist, vw = -1, los = los, attached = false }
 	local id = table.insert(g_TextLabels, textlabel)
 
-	textlabel.id = id	
+	textlabel.id = id
 	if attachedplayer ~= INVALID_PLAYER_ID or attachedvehicle ~= INVALID_VEHICLE_ID then
 		textlabel.attached = true
 	end
@@ -891,11 +926,11 @@ function CreatePlayer3DTextLabel(amx, player, text, r, g, b, a, x, y, z, dist, a
 	if attachedvehicle ~= INVALID_VEHICLE_ID then
 		textlabel.attachedTo = g_Vehicles[attachedvehicle] and g_Vehicles[attachedvehicle].elem
 	end
-	
+
 	textlabel.offX = 0.0
 	textlabel.offY = 0.0
 	textlabel.offZ = 0.0
-	
+
 	clientCall(root, 'Create3DTextLabel', id, textlabel)
 
 	return id
@@ -952,7 +987,6 @@ function UpdatePlayer3DTextLabelText(amx, textlabel, r, g, b, a, text)
 	textlabel.color = {r = r, g = g, b = b, a = a}
 	return true
 end
-
 
 function floatstr(amx, str)
 	return float2cell(tonumber(str) or 0)
@@ -1027,7 +1061,7 @@ function NetStats_GetIpPort(amx, player, ip_port, ip_port_len)
 	local port = 0 -- We haven't a solution for getting a client port
 	local ipandport = tostring(ip).. ":".. tostring(port)
 	writeMemString(amx, ip_port, ipandport)
-	return string.len(ipandport);
+	return string.len(ipandport)
 end
 
 function NetStats_MessagesReceived(amx, player)

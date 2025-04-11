@@ -173,10 +173,8 @@ g_EventNames = {
 	OnDialogResponse = true,
 	OnGameModeInit = true,
 	OnFilterScriptInit = true,
-	OnPlayerConnect = true,
 	OnGameModeExit = true,
 	OnFilterScriptExit = true,
-	OnPlayerRequestClass = true,
 	OnPlayerUpdate = true,
 	OnPlayerConnect = true,
 	OnPlayerKeyStateChange = true,
@@ -188,7 +186,6 @@ g_EventNames = {
 	OnPlayerShootingPlayer = true,
 	OnPlayerWeaponSwitch = true,
 	OnPlayerDeath = true,
-	OnPlayerDisconnect = true,
 	OnVehicleSpawn = true,
 	OnBotEnterVehicle = true,
 	OnPlayerEnterVehicle = true,
@@ -309,7 +306,7 @@ function giveWeapons(player, weapons, currentslot)
 		giveWeapon(player, weapon.id, weapon.ammo)
 	end
 	if currentslot then
-		setPedWeaponSlot(player, currenslot)
+		setPedWeaponSlot(player, currentslot)
 	end
 end
 
@@ -432,7 +429,7 @@ end
 function clamp(n, min, max)
 	return math.max(min, math.min(max, n))
  end
- 
+
 -- Table extensions
 
 local _table_insert = table.insert
@@ -1045,13 +1042,13 @@ end
 
 function deprecated(native, version, additional)
 	if native ~= nil then
-		if version ~= '' or version ~= nil then 
+		if version ~= '' or version ~= nil then
 			outputDebugString(native..' has been deprecated since '..version..' and will no longer be available.')
-			return;
+			return
 		end
-		if additional ~= '' or additional ~= nil then 
+		if additional ~= '' or additional ~= nil then
 			outputDebugString(native..' has been deprecated since '..version..' and will no longer be available. More info: '.. additional .. '.')
-			return;
+			return
 		end
 		outputDebugString(native..' is deprecated and will no longer be available.')
 	end
@@ -1060,12 +1057,12 @@ end
 function notImplemented(native, additional)
 	if ShowUnimplementedErrors then
 		if native ~= nil then
-			if additional == '' or additional == nil then 
+			if additional == '' or additional == nil then
 				outputDebugString('Sorry, but '..native..' is not implemented.')
-				return;
+				return
 			else
 				outputDebugString('Sorry, but '..native..' is not implemented. More info: '.. additional..'.')
-				return;
+				return
 			end
 		end
 	end

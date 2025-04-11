@@ -385,8 +385,6 @@ function table.removevalue(t, val)
 	return false
 end
 
-
-
 --[[
 
   The preset functions return phases for commonly used animation effects.

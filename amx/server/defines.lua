@@ -209,6 +209,6 @@ ShowUnimplementedErrors = false
 
 -- Just add <setting name="amx.debug" value="true"></setting> in settings.xml
 -- if you want to see debug infromation
-if get('amx.debug') == 'true' then 
-	ShowUnimplementedErrors = true 
+if get('amx.debug') == 'true' then
+	ShowUnimplementedErrors = true
 end

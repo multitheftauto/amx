@@ -127,8 +127,7 @@ function loadAMX(fileName, res)
 	g_LoadedAMXs[amx.name] = amx
 
 	amx.timers = {}
-	
-	
+
 	-- run initialization
 	if amx.type == 'gamemode' then
 		clientCall(root, 'gamemodeLoad')
@@ -168,7 +167,7 @@ function destroyGlobalElements()
 		end
 	end
 
-	for i, elemtype in ipairs({g_Vehicles, g_Pickups, g_Objects, g_GangZones, g_Markers, g_Bots}) do
+	for i, elemtype in ipairs({g_Vehicles, g_Pickups, g_Objects, g_GangZones, g_Markers, g_Bots, g_Actors}) do
 		for id, data in pairs(elemtype) do
 			removeElem(elemtype, data.elem)
 			destroyElement(data.elem)

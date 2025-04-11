@@ -41,7 +41,7 @@ function GetObjectRot(amx, object, refX, refY, refZ)
 	if not object then
 		return false
 	end
-	local rX, rX, rZ = getObjectRotation(object)
+	local rX, rY, rZ = getObjectRotation(object)
 	writeMemFloat(amx, refX, rX)
 	writeMemFloat(amx, refY, rY)
 	writeMemFloat(amx, refZ, rZ)
@@ -227,12 +227,11 @@ function StopPlayerObject(amx, player, objID)
 	return true
 end
 
-
 function SetObjectMaterialText(amx)
 	notImplemented('SetObjectMaterialText')
 end
--- AttachPlayerObjectToPlayer client
 
+-- AttachPlayerObjectToPlayer client
 
 function SetObjectsDefaultCameraCol(amx, disable)
 	notImplemented('SetObjectsDefaultCameraCol')

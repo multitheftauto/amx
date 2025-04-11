@@ -18,7 +18,7 @@ function gameModeInit(player)
 	local r, g, b = math.random(50, 255), math.random(50, 255), math.random(50, 255)
 	ShowPlayerMarker(false, player, g_ShowPlayerMarkers)
 	setPlayerHudComponentVisible(player, 'area_name', g_ShowZoneNames)
-	setPlayerHudComponentVisible(player, 'vehicle_name', false) --Samp doesn't show vehicle names when entering vehicles
+	setPlayerHudComponentVisible(player, 'vehicle_name', false) -- SA-MP doesn't show vehicle names when entering vehicles
 	SetPlayerColor(false, player, r, g, b)
 	setElementData(player, 'Score', 0)
 	toggleAllControls(player, false, true, false)
@@ -84,7 +84,7 @@ function joinHandler(player)
 		if isWeaponSyncingNeeded() then
 			clientCall(player, 'enableWeaponSyncing', true)
 		end
-		
+
 		-- send menus
 		for i,menu in pairs(g_Menus) do
 			clientCall(player, 'CreateMenu', i, menu)
@@ -305,11 +305,9 @@ addEventHandler('onPlayerDamage', root,
 			return
 		end
 		procCallOnAll('OnPlayerShootingPlayer', getElemID(source), getElemID(attacker), body, loss)
-		if g_ServerVars.instagib then
-			killPed(source)
-		end
 	end
 )
+
 addEventHandler('onPlayerWeaponSwitch', root,
 	function(prev, current)
 		procCallOnAll('OnPlayerWeaponSwitch', getElemID(source), prev, current)
@@ -336,7 +334,7 @@ addEventHandler('onPlayerWasted', root,
 				function()
 					g_Players[playerID].spawninfo = nil
 					g_Players[playerID].selectedclass = nil
-					
+
 					if procCallOnAll('OnPlayerRequestClass', playerID, 0) then
 						putPlayerInClassSelection(player)
 					else
@@ -388,7 +386,6 @@ addEventHandler('onPlayerQuit', root,
 	end
 )
 
-
 -------------------------------
 -- Vehicles
 
@@ -421,7 +418,7 @@ function respawnStaticVehicle(vehicle)
 	if isTimer(g_Vehicles[vehID].respawntimer) then
 		killTimer(g_Vehicles[vehID].respawntimer)
 	end
-	local numPassengers = tonumber(getVehicleMaxPassengers(vehicle)) or 0; 
+	local numPassengers = tonumber(getVehicleMaxPassengers(vehicle)) or 0
 	for seat=0,numPassengers do
 		local player = getVehicleOccupant(vehicle, seat)
 		if player then
@@ -495,7 +492,7 @@ addEventHandler('onVehicleExit', root,
 		g_Players[playerID].vehicle = nil
 		setPlayerState(player, PLAYER_STATE_ONFOOT)
 
-		local numPassengers = tonumber(getVehicleMaxPassengers(source)) or 0; 
+		local numPassengers = tonumber(getVehicleMaxPassengers(source)) or 0
 		for i=0,numPassengers do
 			if getVehicleOccupant(source, i) then
 				return
@@ -588,6 +585,7 @@ function removePedFromVehicleEx(player)
 	setControlState(player, "enter_exit", true)
 	return true
 end
+
 -------------------------------
 -- Markers
 addEventHandler('onMarkerHit', root,
@@ -595,19 +593,21 @@ addEventHandler('onMarkerHit', root,
 		if getElementType(elem) == "player" or getElementType(elem) == "vehicle" or getElementType(elem) == "ped" then
 			local elemtype = getElementType(elem)
 			local elemid = getElemID(elem)
-			procCallOnAll('OnMarkerHit', getElemID(source), elemtype, elemid, dimension);
+			procCallOnAll('OnMarkerHit', getElemID(source), elemtype, elemid, dimension)
 		end
 	end
 )
+
 addEventHandler('onMarkerLeave', root,
 	function(elem, dimension)
 		if getElementType(elem) == "player" or getElementType(elem) == "vehicle" or getElementType(elem) == "ped" then
 			local elemtype = getElementType(elem)
 			local elemid = getElemID(elem)
-			procCallOnAll('OnMarkerLeave', getElemID(source), elemtype, elemid, dimension);
+			procCallOnAll('OnMarkerLeave', getElemID(source), elemtype, elemid, dimension)
 		end
 	end
 )
+
 -------------------------------
 -- Peds
 
@@ -617,6 +617,7 @@ addEventHandler('onPedWasted', root,
 			procCallOnAll('OnBotDeath', getElemID(source), getElemID(killer), killerWeapon, bodypart)
 	end
 )
+
 -------------------------------
 -- Misc
 addEvent('OnPlayerPickUpPickup_Ev', true)

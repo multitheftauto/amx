@@ -150,29 +150,29 @@ function drawNameTag(position, nameText, health, armor, distance)
 
 	dxDrawPrimitive("trianglefan", false, unpack(healthBarBordersDxVertices))
 	dxDrawPrimitive("trianglefan", false, unpack(healthBarBackgroundDxVertices))
-    dxDrawPrimitive("trianglefan", false, unpack(healthBarInnerDxVertices))
-    
-    -- Armor Bar
+	dxDrawPrimitive("trianglefan", false, unpack(healthBarInnerDxVertices))
+
+	-- Armor Bar
 	if armor > 0 then
 		for i = 1,4 do
 			HealthBarBorderVertices[i].y = HealthBarBorderVertices[i].y - 8
 			HealthBarBackgroundVertices[i].y = HealthBarBackgroundVertices[i].y - 8
 			HealthBarInnerVertices[i].y = HealthBarInnerVertices[i].y - 8
-        end
+		end
 
-        for i = 1,4 do
+		for i = 1,4 do
 			HealthBarInnerVertices[i].c = tocolor(200, 200, 200, 255)
 			HealthBarBackgroundVertices[i].c = tocolor(40, 40, 40, 255)
 		end
 
 		if armor > 100 then
-            armor = 100
-        end
+			armor = 100
+		end
 		armor = armor / 2.6
 		armor = armor - 19
 
 		HealthBarInnerVertices[3].x = screenCoordsX + armor -- Bottom right
-        HealthBarInnerVertices[4].x = screenCoordsX + armor -- Top Right
+		HealthBarInnerVertices[4].x = screenCoordsX + armor -- Top Right
 
 		local armorBarBordersDxVertices = {}
 		local armorBarBackgroundDxVertices = {}
@@ -184,10 +184,10 @@ function drawNameTag(position, nameText, health, armor, distance)
 		end
 
 		dxDrawPrimitive("trianglefan", false, unpack(armorBarBordersDxVertices))
-        dxDrawPrimitive("trianglefan", false, unpack(armorBarBackgroundDxVertices))
-        dxDrawPrimitive("trianglefan", false, unpack(armorBarInnerDxVertices))
+		dxDrawPrimitive("trianglefan", false, unpack(armorBarBackgroundDxVertices))
+		dxDrawPrimitive("trianglefan", false, unpack(armorBarInnerDxVertices))
 
-        for i = 1,4 do
+		for i = 1,4 do
 			HealthBarInnerVertices[i].c = tocolor(185, 34, 40, 255)
 			HealthBarBackgroundVertices[i].c = tocolor(75, 11, 20, 255)
 		end

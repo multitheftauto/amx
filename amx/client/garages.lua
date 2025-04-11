@@ -1,7 +1,7 @@
-addEventHandler( "onClientRender", root,
-	function(  )
+addEventHandler("onClientRender", root,
+	function()
 		for i=0,49 do
-			local gx, gy, gz = getGaragePosition( i )
+			local gx, gy, gz = getGaragePosition(i)
 			local px, py, pz = getElementPosition(localPlayer)
 			local dist = getDistanceBetweenPoints3D(gx, gy, gz, px, py, pz)
 			if(dist < 20) then

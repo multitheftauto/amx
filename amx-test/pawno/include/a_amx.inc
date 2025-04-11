@@ -12,8 +12,8 @@
 native lua(const fn[], {Float,_}:...);
 native amxRegisterPawnPrototypes(const prototype[][]);
 native amxVersion(&Float:ver);
-native amxVersionString(buffer[], maxsize);
-native md5hash(str[], const buf[], bufsize);
+native amxVersionString(buffer[], maxsize = sizeof(buffer));
+native md5hash(str[], const buf[], bufsize = sizeof(buf));
 
 // Events
 forward OnBotConnect(botid, name[]);
@@ -22,9 +22,7 @@ forward OnBotExitVehicle(botid, vehicleid);
 forward OnBotDeath(botid, killerid, weaponid, bodypart);
 forward OnBotStateChange(botid, newstate, oldstate);
 forward OnVehicleDamage(vehicleid, Float:loss);
-forward OnPlayerShootingPlayer(playerid, attackerid, bodypart, Float:loss);
 forward OnPlayerWeaponSwitch(playerid, previousWeaponID, currentWeaponID);
-forward OnPlayerShoot(playerid, weapon, ammo, ammoInClip, Float:hitX, Float:hitY, Float:hitZ);
 forward OnMarkerCreate(markerid);
 forward OnMarkerHit(markerid, elemtype[], elemid, matchingDimension);
 forward OnMarkerLeave(markerid, elemtype[], elemid, matchingDimension);

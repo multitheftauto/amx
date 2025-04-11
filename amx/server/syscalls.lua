@@ -150,32 +150,6 @@ function syscall(amx, svc, prototype, ...)		-- svc = service number (= index in 
 	return result or 0
 end
 
-function IsPluginLoaded(amx, pluginName)
-	return amxIsPluginLoaded(pluginName)
-end
-
-
-function SetDisabledWeapons(amx, ...)
-	deprecated('SetDisabledWeapons', '0.3d')
-end
-
-function SetEchoDestination(amx)
-	deprecated('SetEchoDestination', '0.3d')
-end
-
-function SetPlayerDisabledWeapons(amx, player, ...)
-	deprecated('SetPlayerDisabledWeapons', '0.3d')
-end
-
-function SetPlayerGravity(amx, player, gravity)
-	setPedGravity(player, gravity)
-end
-
-function SetVehicleModel(amx, vehicle, model)
-	setElementModel(vehicle, model)
-end
-
-
 function Dummy(amx, text)
 	return 0
 end
@@ -408,6 +382,7 @@ g_SAMPSyscallPrototypes = {
 	SetVehiclePos = {'v', 'f', 'f', 'f'},
 	SetVehicleToRespawn = {'v'},
 	SetVehicleVelocity = {'v', 'f', 'f', 'f'},
+	SetVehicleAngularVelocity = {'v', 'f', 'f', 'f'},
 	SetVehicleVirtualWorld = {'v', 'i'},
 	SetVehicleZAngle = {'v', 'f'},
 	SetWeather = {'i'},
@@ -445,12 +420,12 @@ g_SAMPSyscallPrototypes = {
 	TextDrawUseBox = {'x', 'i'},
 	--Player textdraws
 	PlayerTextDrawDestroy = {'p', 'i'},
-  	PlayerTextDrawShow = {'p', 'i'},
-  	PlayerTextDrawHide = {'p', 'i'},
-  	PlayerTextDrawBoxColor = {'p', 'i', 'c'},
-  	PlayerTextDrawUseBox = {'p', 'i', 'i'},
-  	PlayerTextDrawTextSize = {'p', 'i', 'f', 'f'},
- 	PlayerTextDrawLetterSize = {'p', 'i', 'f', 'f'},
+	PlayerTextDrawShow = {'p', 'i'},
+	PlayerTextDrawHide = {'p', 'i'},
+	PlayerTextDrawBoxColor = {'p', 'i', 'c'},
+	PlayerTextDrawUseBox = {'p', 'i', 'i'},
+	PlayerTextDrawTextSize = {'p', 'i', 'f', 'f'},
+	PlayerTextDrawLetterSize = {'p', 'i', 'f', 'f'},
 	PlayerTextDrawAlignment = {'p', 'i', 'i'},
 	PlayerTextDrawBackgroundColor = {'p', 'i', 'c'},
 	PlayerTextDrawFont = {'p', 'i', 'i'},
@@ -487,8 +462,8 @@ g_SAMPSyscallPrototypes = {
 	SetBotPos = {'z', 'f', 'f', 'f'},
 	GetBotRot = {'z', 'r', 'r', 'r'},
 	SetBotRot = {'z', 'f', 'f', 'f'},
-	GetPlayerFightingStyle = {'z'},
-	SetPlayerFightingStyle = {'z','i'},
+	GetBotFightingStyle = {'z'},
+	SetBotFightingStyle = {'z','i'},
 	SetBotOnFire = {'z', 'b'},
 	GetBotSkin = {'z'},
 	SetBotSkin = {'z', 'i'},
@@ -513,7 +488,6 @@ g_SAMPSyscallPrototypes = {
 	GetBotVehicleSeat = {'z'},
 	GetBotVelocity = {'z', 'r', 'r', 'r'},
 	SetBotVelocity = {'z', 'f', 'f', 'f'},
-
 
 	-- players
 	IsPlayerInWater = {'p'},
@@ -663,7 +637,7 @@ g_SAMPSyscallPrototypes = {
 	Update3DTextLabelText = {'a', 'c', 's'},
 	UpdatePlayer3DTextLabelText = {'p', 'a', 'c', 's'},
 
-	PlayCrimeReportForPlayer  = {'p', 'i', 'i'},
+	PlayCrimeReportForPlayer = {'p', 'i', 'i'},
 
 	GetPlayerSurfingVehicleID = {'p'},
 
@@ -682,7 +656,6 @@ g_SAMPSyscallPrototypes = {
 	NetStats_MessagesRecvPerSecond = {'p'},
 	NetStats_MessagesSent = {'p'},
 	NetStats_PacketLossPercent = {'p'},
-
 
 	-- player data
 	SetPlayerDataInt = {'p', 's', 'i'},
@@ -735,16 +708,15 @@ g_SAMPSyscallPrototypes = {
 	AttachCameraToObject = {'p', 'o'},
 
 	-- more dummies (unimplemented)
-	EnableVehicleFriendlyFire = {},	
+	EnableVehicleFriendlyFire = {},
 	DisableRemoteVehicleCollisions = {'p', 'i'},
 	GetPlayerTargetPlayer = {'p'},
-  	GetPlayerLastShotVectors = {'p', 'r', 'r', 'r', 'r', 'r', 'r'},
-  	SelectObject = {'p'},
-  	CancelEdit = {'p'},
+	GetPlayerLastShotVectors = {'p', 'r', 'r', 'r', 'r', 'r', 'r'},
+	SelectObject = {'p'},
+	CancelEdit = {'p'},
 	EditAttachedObject = {'p', 'i'},
-  	EditObject = {'p', 'i'},
+	EditObject = {'p', 'i'},
 	IsPlayerAttachedObjectSlotUsed = {'p', 'i'},
-	GetPlayerVersion = {'p', 's', 'i'},
 	GetPlayerNetworkStats = {'p', 'r', 'i'},
 	GetNetworkStats = {'r', 'i'},
 	StartRecordingPlayerData = {'p', 'i', 's'},
@@ -754,9 +726,9 @@ g_SAMPSyscallPrototypes = {
 	GetPlayerDrunkLevel = {'p'},
 	SetPlayerDrunkLevel = {'p', 'i'},
 	SelectTextDraw = {'p', 'x'},
-  	CancelSelectTextDraw = {'p'},
+	CancelSelectTextDraw = {'p'},
 	GetPVarsUpperIndex = {'p'},
-  	GetPVarNameAtIndex = {'p', 'i', 'r', 'i'},
+	GetPVarNameAtIndex = {'p', 'i', 'r', 'i'},
 	SetVehicleParamsCarWindows = {'v', 'i', 'i', 'i', 'i'},
 	GetPlayerVersion = {'p', 's', 'i'},
 	--End of unimplemented funcs
@@ -802,7 +774,6 @@ g_SAMPSyscallPrototypes = {
 
 	-- siren
 	GetVehicleParamsSirenState = {'v'},
-
 
 	GetPlayerWeaponState = {'p'},
 

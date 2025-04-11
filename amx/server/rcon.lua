@@ -1,6 +1,5 @@
 g_ServerVars = {
 	announce = true,
-	anticheat = false,
 	bind = '',
 	filterscripts = get('amx.filterscripts') or '',
 	gamemode0 = '',
@@ -32,12 +31,12 @@ g_ServerVars = {
 		end
 	},
 	hostname = { get = getServerName },
-	instagib = false,
+	lagcomp = 'On',
+	lagcompmode = 1,
+	language = 'English',
 	lanmode = false,
 	mapname = { get = function() return getMapName() or '' end, set = setMapName },
 	maxplayers = { get = getMaxPlayers },
-	myriad = false,
-	nosign = '',
 	password = { get = function() return getServerPassword() or '' end },
 	plugins = get('amx.plugins') or '',
 	port = { get = getServerPort },
@@ -59,19 +58,19 @@ g_ServerVars = {
 	weburl = 'www.mtasa.com',
 	worldtime = {
 		get = function()
-			local h, m = getTime()
-			return h .. ':' .. m
+			local h = getTime()
+			return string.format('%02d:00', h)
 		end,
 		set = function(str)
-			local h, m = str:match('^(%d+):(%d+)$')
+			local h = str:match('^(%d+):$')
 			if h then
-				setTime(tonumber(h), tonumber(m))
+				setTime(tonumber(h), 0)
 			end
 		end
 	}
 }
 
-local readOnlyVars = table.create({ 'announce', 'anticheat', 'bind', 'filterscripts', 'hostname', 'maxplayers', 'nosign', 'plugins', 'port', 'version' }, true)
+local readOnlyVars = table.create({ 'announce', 'bind', 'filterscripts', 'hostname', 'lagcomp', 'lagcompmode', 'maxplayers', 'plugins', 'port', 'version' }, true)
 g_ServerVars = { shadow = g_ServerVars }
 setmetatable(
 	g_ServerVars,

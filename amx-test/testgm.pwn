@@ -192,9 +192,9 @@ public OnPlayerWeaponSwitch(playerid, previousWeaponID, currentWeaponID)
 	return 1;
 }
 
-public OnPlayerShoot(playerid, weapon, ammo, ammoInClip, Float:hitX, Float:hitY, Float:hitZ)
+public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY, Float:fZ)
 {
-	printf("OnPlayerShoot(%d, %d, %d, %d, %f, %f, %f)", playerid, weapon, ammo, ammoInClip, hitX, hitY, hitZ);
+	printf("OnPlayerWeaponShot(%d, %d, %d, %d, %f, %f, %f)", playerid, weaponid, hittype, hitid, Float:fX, Float:fY, Float:fZ);
 	return 1;
 }
 

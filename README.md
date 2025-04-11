@@ -4,7 +4,7 @@
 
 *amx* is a software package that allows the execution of unmodified San
 Andreas: Multiplayer 0.3.7 gamemodes, filterscripts and plugins on Multi
-Theft Auto: San Andreas 1.5.8 and higher servers. It is open source, and [**a prebuilt
+Theft Auto: San Andreas 1.6 and higher servers. It is open source, and [**a prebuilt
 binary for Windows is available for testing purposes right now**](https://github.com/multitheftauto/amx/releases).
 
 - [License](#license)
@@ -86,7 +86,7 @@ features:
 ## Installation
 
 *amx* consists of a binary server module (.dll/.so) and a Lua resource.
-It will only run on MTA:SA 1.0 and later. Installation steps are lined
+It will only run on MTA:SA 1.6 and later. Installation steps are lined
 out below.
 
 ### Extracting
@@ -179,7 +179,7 @@ Information about this is lined out below.
 
 - In SA-MP, there is one folder that contains all gamemodes and
   another that contains all filterscripts. In MTA, it is the
-  convention to create a separate resource (i.e. folder) for each
+  convention to create a separate resource (i.e. folder) for each
   gamemode. *amx* follows the MTA convention for better integration,
   which means that a resource needs to be created for each gamemode
   and filterscript. The naming convention for these is amx-*name* for
@@ -378,7 +378,7 @@ amxRegisterPawnPrototypes(prototypes);
 native amxVersion ( &Float:ver );
 ```
 
-Retrieves the *amx* version as a floating point number, e.g. `1.3`.
+Retrieves the *amx* version as a floating point number, e.g. `1.3`.
 
 ### amxVersionString
 
@@ -523,7 +523,7 @@ with [amxRegisterLuaPrototypes](#amxRegisterLuaPrototypes). Both
 functions associate a number of function names with their argument types
 and (optionally) return type. To specify a return type, prepend the
 function name with the type letter followed by a colon (:), for example:
-`f:testfn`. If you do not specify a return type (i.e. only specify the
+`f:testfn`. If you do not specify a return type (i.e. only specify the
 name, `testfn`), "i" will be assumed.
 
 See the syntax sections of the two registration functions for the
@@ -670,12 +670,10 @@ addressed in later versions of *amx* and Multi Theft Auto.
   AllowInteriorWeapons, AllowPlayerTeleport,
   DisableInteriorEnterExits, EnableStuntBonusForAll,
   EnableStuntBonusForPlayer, EnableTirePopping (tire popping is always
-  on), EnableZoneNames, LimitGlobalChatRadius, PlayerPlaySound,
-  SendDeathMessage (use the "killmessages" resource on your server
-  instead for graphical death messages), SetDeathDropAmount,
-  SetDisabledWeapons, SetEchoDestination, SetNameTagDrawDistance,
-  SetPlayerDisabledWeapons, SetTeamCount, SetVehicleNumberPlate,
-  ShowPlayerNameTagForPlayer, TextDrawSetProportional,
+  on), PlayerPlaySound, SendDeathMessage (use the "killmessages"
+  resource on your server instead for graphical death messages),
+  SetDeathDropAmount, SetDisabledWeapons, SetNameTagDrawDistance,
+  SetPlayerDisabledWeapons, SetTeamCount, TextDrawSetProportional,
   UsePlayerPedAnims.
 
 ## Credits

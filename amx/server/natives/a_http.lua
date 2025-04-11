@@ -1,5 +1,5 @@
 -- Now we have all of RESTful types of requests. Our function is better!
--- The SAMP documentation said about 'url' - "The URL you want to request. (Without 'http://')"
+-- The SA-MP documentation said about 'url' - "The URL you want to request. (Without 'http://')"
 -- I made a check. The state without a protocol is called as 'default'.
 -- HTTP and HTTPS you can put into URL if you want. It works fine.
 -- TODO: An "index" argument only for compatibility.
@@ -34,7 +34,7 @@ function HTTP(amx, index, type, url, data, callback)
 		postData = data,
 		method = typesToText[tonumber(type)],
 	}
-	local successRemote = fetchRemote(url, sendOptions, 
+	local successRemote = fetchRemote(url, sendOptions,
 	function (responseData, responseInfo)
 		local error = responseInfo.statusCode
 		if error == 0 then
@@ -43,8 +43,8 @@ function HTTP(amx, index, type, url, data, callback)
 			procCallInternal(amx, callback, index, 3, responseData)
 		elseif error == 1006 or error == 1005 then
 			procCallInternal(amx, callback, index, 1, responseData)
-		elseif error == 1007 then 
-			procCallInternal(amx, callback, index, 5, responseData)	
+		elseif error == 1007 then
+			procCallInternal(amx, callback, index, 5, responseData)
 		else
 			procCallInternal(amx, callback, index, error, responseData)
 		end

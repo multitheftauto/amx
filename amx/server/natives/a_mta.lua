@@ -25,6 +25,7 @@ end
 function SetAlpha(amx, elem, alpha)
 	return setElementAlpha(elem, alpha)
 end
+
 GetPlayerAlpha = GetAlpha
 GetVehicleAlpha = GetAlpha
 GetObjectAlpha = GetAlpha
@@ -33,6 +34,7 @@ SetPlayerAlpha = SetAlpha
 SetVehicleAlpha = SetAlpha
 SetObjectAlpha = SetAlpha
 SetBotAlpha = SetAlpha
+
 -----------------------------------------------------
 -- Misc player funcs
 function IsPlayerInWater(amx, player)
@@ -63,31 +65,35 @@ function SetPlayerStat(amx, player, stat, value)
 	return setPedStat(player, stat, value)
 end
 
-function GetPlayerDoingDriveBy(amx, ped)
-	return getElementData(pedt, 'DoingDriveBy')
+function GetPlayerDoingDriveBy(amx, player)
+	return getElementData(player, 'DoingDriveBy')
 end
 
-function SetPlayerDoingDriveBy(amx, ped, state)
-	clientCall(root, 'setPedDoingGangDriveby', ped, state)
-	return setElementData(ped, 'DoingDriveBy', state)
+function SetPlayerDoingDriveBy(amx, player, state)
+	clientCall(root, 'setPedDoingGangDriveby', player, state)
+	return setElementData(player, 'DoingDriveBy', state)
 end
 
-function GetPlayerCanBeKnockedOffBike(amx, ped)
-	return getElementData(ped, 'CanBeKnockedOffBike')
+function GetPlayerCanBeKnockedOffBike(amx, player)
+	return getElementData(player, 'CanBeKnockedOffBike')
 end
 
-function SetPlayerCanBeKnockedOffBike(amx, ped, state)
-	clientCall(root, 'setPedCanBeKnockedOffBike', ped, state)
-	return setElementData(ped, 'CanBeKnockedOffBike', state)
+function SetPlayerCanBeKnockedOffBike(amx, player, state)
+	clientCall(root, 'setPedCanBeKnockedOffBike', player, state)
+	return setElementData(player, 'CanBeKnockedOffBike', state)
 end
 
-function SetPlayerWeaponSlot(amx, ped, slot)
-	clientCall(root, 'setPedWeaponSlot', ped, slot)
+function SetPlayerWeaponSlot(amx, player, slot)
+	clientCall(root, 'setPedWeaponSlot', player, slot)
 	return true
 end
 
-function SetPlayerHeadless(amx, ped, state)
-	return setPedHeadless(ped, state)
+function SetPlayerHeadless(amx, player, state)
+	return setPedHeadless(player, state)
+end
+
+function SetPlayerGravity(amx, player, gravity)
+	return setPedGravity(player, gravity)
 end
 
 function GetPlayerBlurLevel(amx, player)
@@ -126,15 +132,16 @@ SetBotHeadless = SetPlayerHeadless
 GetBotVehicleSeat = GetPlayerVehicleSeat
 GetBotVelocity = GetPlayerVelocity
 SetBotVelocity = SetPlayerVelocity
+
 -----------------------------------------------------
 -- Bots
 function CreateBot(amx, model, x, y, z, name)
-	local ped = createPed(model, x, y, z)
-	setElementData(ped, 'amx.shownametag', true, true)
-	setElementData(ped, 'BotName', name, true)
-	local pedID = addElem(g_Bots, ped)
-	procCallOnAll('OnBotConnect', pedID, name)
-	return pedID
+	local bot = createPed(model, x, y, z)
+	setElementData(bot, 'amx.shownametag', true, true)
+	setElementData(bot, 'BotName', name, true)
+	local botId = addElem(g_Bots, bot)
+	procCallOnAll('OnBotConnect', botId, name)
+	return botId
 end
 
 function DestroyBot(amx, bot)
@@ -176,19 +183,19 @@ function KillBot(amx, bot)
 	return killPed(bot)
 end
 
-function GetBotRot(amx, ped, refX, refY, refZ)
-	if not ped then
+function GetBotRot(amx, bot, refX, refY, refZ)
+	if not bot then
 		return false
 	end
-	local rX, rX, rZ = getPedRotation(ped)
+	local rX, rY, rZ = getPedRotation(bot)
 	writeMemFloat(amx, refX, rX)
 	writeMemFloat(amx, refY, rY)
 	writeMemFloat(amx, refZ, rZ)
 	return true
 end
 
-function SetBotRot(amx, Ped, rX, rY, rY)
-	return setPedRotation(ped, rX, rY, rZ)
+function SetBotRot(amx, bot, rX, rY, rZ)
+	return setPedRotation(bot, rX, rY, rZ)
 end
 
 function GetBotName(amx, bot, nameBuf, bufSize)
@@ -205,6 +212,7 @@ GetBotArmour = GetPlayerArmour
 SetBotArmour = SetPlayerArmour
 GetBotPos = GetObjectPos
 SetBotPos = SetObjectPos
+
 -----------------------------------------------------
 -- Native Markers
 function CreateMarker(amx, x, y, z, typeid, size, r, g, b, a)
@@ -239,7 +247,7 @@ end
 
 function GetMarkerSize(amx, marker, refSize)
 	local size = getMarkerSize(marker)
-	writeMemFloat(amx, refSize, marker)
+	writeMemFloat(amx, refSize, size)
 	return true
 end
 
@@ -301,9 +309,6 @@ IsVehicleInMarker = IsPlayerInMarker
 IsBotInMarker = IsPlayerInMarker
 
 -----------------------------------------------------
--- SlothBots
---
------------------------------------------------------
 -- Player Data
 function SetPlayerDataInt(amx, player, key, value)
 	return setElementData(player, key, value)
@@ -338,9 +343,16 @@ function ResetAllPlayerData(amx, player)
 	return true
 end
 
-
 -----------------------------------------------------
 -- Vehicles
+function GetVehicleMaxPassengers(amx, vehicle)
+	return getVehicleMaxPassengers(vehicle)
+end
+
+function SetVehicleModel(amx, vehicle, model)
+	return setElementModel(vehicle, model)
+end
+
 function GetVehicleEngineState(amx, vehicle)
 	return getVehicleEngineState(vehicle)
 end
@@ -357,12 +369,6 @@ function SetVehicleDoorState(amx, vehicle, door, state)
 	return setVehicleDoorState(vehicle, door, state)
 end
 
-
-function GetVehicleMaxPassengers(amx, vehicle)
-	return getVehicleMaxPassengers(vehicle)
-end
-
-
 function GetVehicleLightState(amx, vehicle, light)
 	return getVehicleLightState(vehicle, light)
 end
@@ -372,7 +378,7 @@ function SetVehicleLightState(amx, vehicle, light, state)
 end
 
 function GetVehicleOverrideLights(amx, vehicle)
-	return  getVehicleOverrideLights(vehicle)
+	return getVehicleOverrideLights(vehicle)
 end
 
 function SetVehicleOverrideLights(amx, vehicle, state)
@@ -380,7 +386,7 @@ function SetVehicleOverrideLights(amx, vehicle, state)
 end
 
 function GetVehicleWheelState(amx, vehicle, wheelid)
-	local w1, w2, w3, w4 = getVehicleWheelStates(vehicleid)
+	local w1, w2, w3, w4 = getVehicleWheelStates(vehicle)
 	if wheelid == 0 then return w1 end
 	if wheelid == 1 then return w2 end
 	if wheelid == 2 then return w3 end
@@ -403,12 +409,9 @@ function GetVehiclePaintjob(amx, vehicle)
 	return getVehiclePaintjob(vehicle)
 end
 
-
-
 function GetVehicleSirensOn(amx, vehicle)
 	return getVehicleSirensOn(vehicle)
 end
-
 
 function SetVehicleSirensOn(amx, vehicle, state)
 	return setVehicleSirensOn(vehicle, state)
@@ -448,7 +451,6 @@ function SetTrainSpeed(amx, train, speed)
 	return setTrainSpeed(train, speed)
 end
 
-
 -----------------------------------------------------
 -- Water
 function GetWaveHeight(amx)
@@ -462,6 +464,7 @@ end
 function SetWaterLevel(amx, level)
 	return setWaterLevel(level)
 end
+
 -----------------------------------------------------
 -- Pickups
 function GetPickupType(amx, pickup)
@@ -483,6 +486,7 @@ end
 function GetPickupAmmo(amx, pickup)
 	return getPickupAmmo(pickup)
 end
+
 -----------------------------------------------------
 -- Misc
 function SetSkyGradient(amx, topRed, topGreen, topBlue, bottomRed, bottomGreen, bottomBlue)
@@ -600,4 +604,8 @@ end
 
 function AttachElementToElement(amx, elem, toelem, xPos, yPos, zPos, xRot, yRot, zRot)
 	return attachElements(elem, toelem, xPos, yPos, zPos, xRot, yRot, zRot)
+end
+
+function IsPluginLoaded(amx, pluginName)
+	return amxIsPluginLoaded(pluginName)
 end

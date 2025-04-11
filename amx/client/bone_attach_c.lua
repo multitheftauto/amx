@@ -75,14 +75,14 @@ function putAttachedElementsOnBones()
 			local tzz = rzx*xz+rzy*yz+rzz*zz
 			offrx,offry,offrz = getEulerAnglesFromMatrix(txx,txy,txz,tyx,tyy,tyz,tzx,tzy,tzz)
 			if (string.find(objx..objy..objz, "a")) then
-			  setElementPosition(element, x, y, z)
+				setElementPosition(element, x, y, z)
 			else
-			  setElementPosition(element, objx, objy, objz)
+				setElementPosition(element, objx, objy, objz)
 			end
 			if (not string.find(offrx..offry..offrz, "a")) then
-			  setElementRotation(element, offrx, offry, offrz, "ZXY")
-		else
-			setElementPosition(element,getElementPosition(ped))
+				setElementRotation(element, offrx, offry, offrz, "ZXY")
+			else
+				setElementPosition(element,getElementPosition(ped))
 			end
 		end
 	end

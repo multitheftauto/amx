@@ -51,11 +51,9 @@ function SetVehicleParamsForPlayer(amx, vehicle, player, isObjective, doorsLocke
 	return true
 end
 
-
-function ManualVehicleEngineAndLights() 
+function ManualVehicleEngineAndLights()
 	ManualVehEngineAndLights = true
 end
-
 
 function GetVehicleParamsEx(amx, vehicle, refEngine, refLights, refAlarm, refDoors, refBonnet, refBoot, refObjective)
 	local vehicleID = getElemID(vehicle)
@@ -84,9 +82,9 @@ function SetVehicleParamsEx(amx, vehicle, engine, lights, alarm, doors, bonnet, 
 	end
 
 	local vehicleID = getElemID(vehicle)
-	g_Vehicles[vehicleID].alarm = alarm;
-	g_Vehicles[vehicleID].objective = objective;
-	g_Vehicles[vehicleID].engineState = engine;
+	g_Vehicles[vehicleID].alarm = alarm
+	g_Vehicles[vehicleID].objective = objective
+	g_Vehicles[vehicleID].engineState = engine
 	return 1
 end
 -- Siren
@@ -94,7 +92,7 @@ end
 function GetVehicleParamsSirenState(amx, vehicle)
 	local sirenstat = getVehicleSirensOn ( vehicle )
 
-	-- in samp this native returns 3 states
+	-- in SA-MP this native returns 3 states
 	-- 1 - siren on
 	-- 0 - siren off
 	-- -1 - siren not exist, but we never get it.
@@ -105,23 +103,23 @@ function GetVehicleParamsSirenState(amx, vehicle)
 	end
 end
 
-function GetVehicleParamsCarDoors(amx, vehicle, refDriver, refPassenger, refBackleft, refBackright)
+function GetVehicleParamsCarDoors(amx, vehicle, refDriver, refPassenger, refBackLeft, refBackRight)
 	amx.memDAT[refDriver] = getVehicleDoorOpenRatio(vehicle, 2) > 0
 	amx.memDAT[refPassenger] = getVehicleDoorOpenRatio(vehicle, 3) > 0
-	amx.memDAT[refBackleft] = getVehicleDoorOpenRatio(vehicle, 4) > 0
-	amx.memDAT[refBackright] = getVehicleDoorOpenRatio(vehicle, 5) > 0
+	amx.memDAT[refBackLeft] = getVehicleDoorOpenRatio(vehicle, 4) > 0
+	amx.memDAT[refBackRight] = getVehicleDoorOpenRatio(vehicle, 5) > 0
 	return 1
 end
 
-function SetVehicleParamsCarDoors(amx, vehicle, driver, passenger, backleft, backright)
+function SetVehicleParamsCarDoors(amx, vehicle, driver, passenger, backLeft, backRight)
 	setVehicleDoorOpenRatio(vehicle, 2, driver and 1 or 0) -- bonnet
 	setVehicleDoorOpenRatio(vehicle, 3, passenger and 1 or 0) -- bonnet
-	setVehicleDoorOpenRatio(vehicle, 4, backleft and 1 or 0) -- bonnet
-	setVehicleDoorOpenRatio(vehicle, 5, backright and 1 or 0) -- bonnet
+	setVehicleDoorOpenRatio(vehicle, 4, backLeft and 1 or 0) -- bonnet
+	setVehicleDoorOpenRatio(vehicle, 5, backRight and 1 or 0) -- bonnet
 	return true
 end
 
-function GetVehicleParamsCarWindows(amx, vehicle, int1, int2, int3, int4)
+function GetVehicleParamsCarWindows(amx, vehicle, frontLeft, frontRight, rearLeft, rearRight)
 	notImplemented('GetVehicleParamsCarWindows')
 end
 
@@ -213,7 +211,7 @@ end
 -- 11 - CARMODTYPE_REAR_BUMPER
 -- 12 - CARMODTYPE_VENT_RIGHT
 -- 13 - CARMODTYPE_VENT_LEFT
-function GetVehicleComponentType(amx, componentid) 
+function GetVehicleComponentType(amx, componentid)
 	local components = {
 		['Spoiler'] = 0,
 		['Hood'] = 1,
@@ -260,7 +258,10 @@ end
 
 function SetVehicleVelocity(amx, vehicle, vx, vy, vz)
 	return setElementVelocity(vehicle, vx, vy, vz)
-	--setElementAngularVelocity(vehicle, vx, vy, vz) --This isn't needed, it makes the car spin and I believe samp doesn't do this
+end
+
+function SetVehicleAngularVelocity(amx, vehicle, vx, vy, vz)
+	return setElementAngularVelocity(vehicle, vx, vy, vz)
 end
 
 function GetVehicleDamageStatus(amx, vehicle, refPanels, refDoors, refLights, refTires)

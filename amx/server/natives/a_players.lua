@@ -21,9 +21,11 @@ function SetPlayerPosFindZ(amx, player, x, y, z)
 end
 
 GetPlayerPos = GetObjectPos
+
 function SetPlayerFacingAngle(amx, player, angle)
 	return setPedRotation(player, angle)
 end
+
 function GetPlayerFacingAngle(amx, player, refRot)
 	if not player then
 		return false
@@ -31,6 +33,7 @@ function GetPlayerFacingAngle(amx, player, refRot)
 	writeMemFloat(amx, refRot, getPedRotation(player))
 	return true
 end
+
 function IsPlayerInRangeOfPoint(amx, player, range, pX, pY, pZ)
 	return getDistanceBetweenPoints3D(pX, pY, pZ, getElementPosition(player)) <= range
 end
@@ -95,7 +98,7 @@ end
 
 -- Weapon
 function GetPlayerWeaponState(amx, player)
-	-- -1 WEAPONSTATE_UNKNOWN 
+	-- -1 WEAPONSTATE_UNKNOWN
 	-- 0 WEAPONSTATE_NO_BULLETS
 	-- 1 WEAPONSTATE_LAST_BULLET
 	-- 2 WEAPONSTATE_MORE_BULLETS
@@ -106,16 +109,17 @@ function GetPlayerWeaponState(amx, player)
 
 	-- TODO: Function don't return 3 because a isPedReloadingWeapon function only client-side
 	local ammo = getPedAmmoInClip(player)
-	if ammo == 0 then 
+	if ammo == 0 then
 		return 0
-	elseif ammo == 1 then 
+	elseif ammo == 1 then
 		return 1
-	elseif ammo >= 2 then 
+	elseif ammo >= 2 then
 		return 2
 	else
 		return -1
 	end
 end
+
 -- TODO: GetPlayerTargetPlayer
 
 function GetPlayerTargetActor(amx, player)
@@ -253,7 +257,6 @@ function SetPlayerTime(amx, player, hours, minutes)
 	clientCall(player, 'setTime', hours, minutes)
 	return true
 end
-
 
 function GetPlayerTime(amx, player, refHour, refMinute)
 	amx.memDAT[refHour], amx.memDAT[refMinute] = getTime()
@@ -441,16 +444,16 @@ function CreatePlayerTextDraw(amx, player, x, y, text)
 end
 
 function PlayerTextDrawDestroy(amx, player, textdrawID)
-  if not IsPlayerTextDrawValid(player, textdrawID) then
-      return false
-  end
-  outputDebugString('Sending textdraw id s->' .. g_PlayerTextDraws[player][textdrawID].serverTDId .. ' c->' .. g_PlayerTextDraws[player][textdrawID].clientTDId .. ' for destruction')
-  clientCall(player, 'TextDrawDestroy', g_PlayerTextDraws[player][textdrawID].clientTDId)
-  g_PlayerTextDraws[player][textdrawID] = nil
-  return true
+	if not IsPlayerTextDrawValid(player, textdrawID) then
+		return false
+	end
+	outputDebugString('Sending textdraw id s->' .. g_PlayerTextDraws[player][textdrawID].serverTDId .. ' c->' .. g_PlayerTextDraws[player][textdrawID].clientTDId .. ' for destruction')
+	clientCall(player, 'TextDrawDestroy', g_PlayerTextDraws[player][textdrawID].clientTDId)
+	g_PlayerTextDraws[player][textdrawID] = nil
+	return true
 end
 
-function PlayerTextDrawLetterSize(amx, player, textdrawID, x, y)
+function PlayerTextDrawLetterSize(amx, player, textdrawID, width, height)
 	if not IsPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
@@ -476,11 +479,11 @@ function PlayerTextDrawAlignment(amx, player, textdrawID, align)
 end
 
 function PlayerTextDrawColor(amx, player, textdrawID, r, g, b, a)
-  if not IsPlayerTextDrawValid(player, textdrawID) then
-      return false
-  end
-  g_PlayerTextDraws[player][textdrawID].color = { r, g, b }
-  return true
+	if not IsPlayerTextDrawValid(player, textdrawID) then
+		return false
+	end
+	g_PlayerTextDraws[player][textdrawID].color = { r, g, b }
+	return true
 end
 
 function PlayerTextDrawUseBox(amx, player, textdrawID, usebox)
@@ -501,11 +504,11 @@ function PlayerTextDrawBoxColor(amx, player, textdrawID, r, g, b, a)
 end
 
 function PlayerTextDrawSetShadow(amx, player, textdrawID, size)
- if not IsPlayerTextDrawValid(player, textdrawID) then
-     return false
- end
- g_PlayerTextDraws[player][textdrawID].shade = size
- return true
+	if not IsPlayerTextDrawValid(player, textdrawID) then
+		return false
+	end
+	g_PlayerTextDraws[player][textdrawID].shade = size
+	return true
 end
 
 function PlayerTextDrawSetOutline(amx, player, textdrawID, size)
@@ -515,6 +518,7 @@ function PlayerTextDrawSetOutline(amx, player, textdrawID, size)
 	g_PlayerTextDraws[player][textdrawID].outlinesize = size
 	return true
 end
+
 function PlayerTextDrawSetProportional(amx, player, textdrawID, proportional)
 	notImplemented('PlayerTextDrawSetProportional')
 	--TextDrawSetProportional(amx, textdraw, proportional)
@@ -527,6 +531,7 @@ function PlayerTextDrawBackgroundColor(amx, player, textdrawID, r, g, b, a)
 	g_PlayerTextDraws[player][textdrawID].outlinecolor = { r, g, b, a }
 	return true
 end
+
 function PlayerTextDrawFont(amx, player, textdrawID, font)
 	if not IsPlayerTextDrawValid(player, textdrawID) then
 		return false
@@ -553,6 +558,7 @@ function PlayerTextDrawShow(amx, player, textdrawID)
 	--outputDebugString('PlayerTextDrawShow: proccessed for ' .. textdrawID .. ' with ' .. g_PlayerTextDraws[player][textdrawID].text)
 	return true
 end
+
 function PlayerTextDrawHide(amx, player, textdrawID)
 	if not IsPlayerTextDrawValid(player, textdrawID) then
 		return false
@@ -567,11 +573,11 @@ function PlayerTextDrawHide(amx, player, textdrawID)
 end
 
 function PlayerTextDrawSetString(amx, player, textdrawID, str)
- if not IsPlayerTextDrawValid(player, textdrawID) then
-     return false
- end
- g_PlayerTextDraws[player][textdrawID].text = str
- return true
+	if not IsPlayerTextDrawValid(player, textdrawID) then
+		return false
+	end
+	g_PlayerTextDraws[player][textdrawID].text = str
+	return true
 end
 
 function PlayerTextDrawSetPreviewModel(amx)
@@ -793,7 +799,6 @@ function DisablePlayerRaceCheckpoint(amx, player)
 end
 
 -- SetPlayerWorldBounds client
-
 -- SetPlayerMarkerForPlayer client
 
 function ShowPlayerNameTagForPlayer(amx, player, playerToShow, show)
@@ -806,6 +811,10 @@ end
 
 function AllowPlayerTeleport(amx, player, allow)
 	deprecated('AllowPlayerTeleport', '0.3d')
+end
+
+function SetPlayerDisabledWeapons(amx, player, ...)
+	deprecated('SetPlayerDisabledWeapons', '0.3')
 end
 
 function SetPlayerCameraPos(amx, player, x, y, z)
@@ -828,7 +837,7 @@ function SetPlayerCameraLookAt(amx, player, lx, ly, lz)
 end
 
 function SetCameraBehindPlayer(amx, player)
-	--In samp calling SetCameraBehindPlayer also unsets camera interpolation
+	--In SA-MP calling SetCameraBehindPlayer also unsets camera interpolation
 	clientCall(player, 'removeCamHandlers')
 	return setCameraTarget(player, player)
 end
@@ -910,6 +919,7 @@ function InterpolateCameraPos(amx, player, FromX, FromY, FromZ, ToX, ToY, ToZ, t
 	clientCall(player, 'InterpolateCameraPos', FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	return true
 end
+
 function InterpolateCameraLookAt(amx, player, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	clientCall(player, 'InterpolateCameraLookAt', FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	return true
@@ -976,7 +986,7 @@ function TogglePlayerSpectating(amx, player, enable)
 			return true
 		end
 		spawnPlayerBySelectedClass(player)
-		--In samp calling TogglePlayerSpectating also unsets camera interpolation
+		--In SA-MP calling TogglePlayerSpectating also unsets camera interpolation
 		clientCall(player, 'removeCamHandlers')
 		setCameraTarget(player, player)
 		clientCall(player, 'setCameraTarget', player) --Clear the one on the client as well, otherwise we can't go back to normal camera after spectating vehicles
