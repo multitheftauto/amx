@@ -624,17 +624,23 @@ addEventHandler('onPedWasted', root,
 
 -------------------------------
 -- Misc
+addEvent('OnPlayerWeaponShot_Ev', true)
+addEventHandler('OnPlayerWeaponShot_Ev', root,
+	function(weapon, hitType, hitId, offsetX, offsetY, offsetZ)
+		procCallOnAll('OnPlayerWeaponShot', getElemID(client), weapon, hitType, hitId, offsetX, offsetY, offsetZ)
+	end
+)
+
 addEvent('OnPlayerPickUpPickup_Ev', true)
 addEventHandler('OnPlayerPickUpPickup_Ev', root,
 	function(pickup)
-		local player = root
 		local model = getElementModel(pickup)
 
-		procCallOnAll('OnPlayerPickUpPickup', getElemID(player), getElemID(pickup))
+		procCallOnAll('OnPlayerPickUpPickup', getElemID(client), getElemID(pickup))
 
 		if model == 370 then
 			-- Jetpack pickup
-			setPedWearingJetpack(player, true)
+			setPedWearingJetpack(client, true)
 		end
 	end
 )

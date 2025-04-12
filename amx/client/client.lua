@@ -231,13 +231,42 @@ function requestSpawn()
 	triggerServerEvent('onRequestSpawn', localPlayer, g_ClassSelectionInfo.selectedclass)
 end
 
-addEventHandler('onClientPlayerWeaponFire', resourceRoot,
-	function(weapon, ammo, ammoInClip, hitX, hitY, hitZ)
-		--if localPlayer ~= source then return end
-		serverAMXEvent('OnPlayerShoot', getElemID(source), weapon, ammo, ammoInClip, hitX, hitY, hitZ)
-	end,
-	false
-)
+local function clientPlayerWeaponFire(weapon, ammo, ammoInClip, hitX, hitY, hitZ, hitElement, startX, startY, startZ)
+	if weapon < 22 or (weapon > 34 and weapon ~= 38) then return end
+
+	local hitId, hitType = 65535, 0
+	local offsetX, offsetY, offsetZ = hitX, hitY, hitZ
+
+	if hitElement and isElement(hitElement) then
+		local elemType = getElementType(hitElement)
+
+		hitType = ({
+			player = 1,
+			vehicle = 2,
+			object = 3
+		})[elemType] or 0
+
+		if hitType > 0 then
+			hitId = getElemID(hitElement)
+
+			for k,elem in pairs(g_PlayerObjects) do
+				if elem == hitElement then
+					hitId = k
+					hitType = 4
+					break
+				end
+			end
+
+			offsetX, offsetY, offsetZ = getElementPosition(hitElement)
+			offsetX = hitX - offsetX
+			offsetY = hitY - offsetY
+			offsetZ = hitZ - offsetZ
+		end
+	end
+
+	triggerServerEvent('OnPlayerWeaponShot_Ev', resourceRoot, weapon, hitType, hitId, offsetX, offsetY, offsetZ)
+end
+addEventHandler('onClientPlayerWeaponFire', root, clientPlayerWeaponFire)
 
 -----------------------------
 -- Camera
