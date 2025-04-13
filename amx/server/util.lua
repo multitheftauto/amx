@@ -356,8 +356,8 @@ function addElem(amx, listname, elem)
 	if not id then
 		id = 0
 
-		-- vehicles in sa-mp start at ID 1
-		if list == g_Vehicles then
+		-- vehicles and objects in SA-MP start at ID 1
+		if list == g_Vehicles or list == g_Objects then
 			id = 1
 		end
 

@@ -527,7 +527,7 @@ function GetNetworkStats(amx)
 	return false
 end
 
-function GetPlayerVersion(amx)
+function GetPlayerVersion(amx, player)
 	notImplemented('GetPlayerVersion')
 	return false
 end
@@ -791,7 +791,7 @@ function TextDrawSetProportional(amx, textdraw, proportional)
 	notImplemented('TextDrawSetProportional')
 end
 
-function TextDrawSetSelectable(amx)
+function TextDrawSetSelectable(amx, textdraw)
 	notImplemented('TextDrawSetSelectable')
 end
 
@@ -832,11 +832,11 @@ function TextDrawSetString(amx, textdraw, str)
 	return true
 end
 
-function TextDrawSetPreviewModel(amx)
+function TextDrawSetPreviewModel(amx, textdraw)
 	notImplemented('TextDrawSetPreviewModel')
 end
 
-function TextDrawSetPreviewRot(amx)
+function TextDrawSetPreviewRot(amx, textdraw)
 	notImplemented('TextDrawSetPreviewRot')
 end
 
@@ -1019,6 +1019,10 @@ function format(amx, outBuf, outBufSize, fmt, ...)
 	if #result + 1 <= outBufSize then
 		writeMemString(amx, outBuf, result)
 	end
+end
+
+function SendClientCheck(amx, player)
+	notImplemented('SendClientCheck')
 end
 
 function gpci(amx, player, nameBuf, bufSize)

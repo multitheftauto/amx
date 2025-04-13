@@ -43,13 +43,13 @@ function GetActorFacingAngle(amx, actor, refAng)
 end
 
 -- stub
-function SetActorInvulnerable(amx)
+function SetActorInvulnerable(amx, actor)
 	notImplemented('SetActorInvulnerable')
 	return 1
 end
 
 -- stub
-function IsActorInvulnerable(amx)
+function IsActorInvulnerable(amx, actor)
 	notImplemented('IsActorInvulnerable')
 	return 1
 end
@@ -77,7 +77,7 @@ SetActorVirtualWorld = SetPlayerVirtualWorld
 SetActorPos = SetObjectPos
 
 -- stub
-function GetPlayerCameraTargetActor(amx)
+function GetPlayerCameraTargetActor(amx, player)
 	notImplemented('GetPlayerCameraTargetActor')
 	return INVALID_ACTOR_ID
 end

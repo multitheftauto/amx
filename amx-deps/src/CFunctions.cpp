@@ -176,7 +176,7 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 		return 1;
 	}
 
-	// Register sa-mp and plugin natives
+	// Register SA-MP and plugin natives
 	amx_CoreInit(amx);
 	amx_ConsoleInit(amx);
 	amx_FloatInit(amx);

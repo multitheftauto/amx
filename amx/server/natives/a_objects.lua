@@ -9,11 +9,11 @@ function CreateObject(amx, model, x, y, z, rX, rY, rZ)
 	return addElem(g_Objects, obj)
 end
 
-function AttachObjectToVehicle(amx)
+function AttachObjectToVehicle(amx, object)
 	notImplemented('AttachObjectToVehicle')
 end
 
-function AttachObjectToObject(amx)
+function AttachObjectToObject(amx, object)
 	notImplemented('AttachObjectToObject')
 end
 
@@ -61,7 +61,7 @@ function GetObjectModel(amx, objID)
 	return -1
 end
 
-function SetObjectNoCameraCol(amx)
+function SetObjectNoCameraCol(amx, object)
 	notImplemented('SetObjectNoCameraCol')
 end
 
@@ -92,7 +92,7 @@ function StopObject(amx, object)
 	return stopObject(object)
 end
 
-function IsObjectMoving(amx)
+function IsObjectMoving(amx, object)
 	notImplemented('IsObjectMoving')
 end
 
@@ -226,7 +226,7 @@ function StopPlayerObject(amx, player, objID)
 	return true
 end
 
-function SetObjectMaterialText(amx)
+function SetObjectMaterialText(amx, object)
 	notImplemented('SetObjectMaterialText')
 end
 
@@ -240,18 +240,10 @@ function EditPlayerObject(amx, player, object)
 	notImplemented('EditPlayerObject')
 end
 
-function SetObjectMaterial(amx)
+function SetObjectMaterial(amx, object)
 	notImplemented('SetObjectMaterial')
 end
 
-function SendClientCheck(amx)
-	notImplemented('SendClientCheck')
-end
-
-function SetPlayerObjectMaterial(amx)
+function SetPlayerObjectMaterial(amx, player)
 	notImplemented('SetPlayerObjectMaterial')
-end
-
-function EditPlayerObject(amx)
-	notImplemented('EditPlayerObject')
 end

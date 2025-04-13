@@ -231,7 +231,7 @@ dircopy($oldsrvpath . "/scriptfiles/", $newsrvpath . "/mods/deathmatch/resources
 
 print "> Configuring\n";
 
-# Read sa-mp config
+# Read SA-MP config
 my %sampcfg;
 open SAMPCFG, $oldsrvpath . "/server.cfg";
 while(<SAMPCFG>) {

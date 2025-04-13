@@ -189,7 +189,7 @@ function SetVehicleNumberPlate(amx, vehicle, plate)
 	return setVehiclePlateText(vehicle, plate)
 end
 
-function GetVehicleModelInfo(amx)
+function GetVehicleModelInfo(amx, vehicle)
 	notImplemented('GetVehicleModelInfo')
 end
 

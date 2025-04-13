@@ -147,12 +147,12 @@ function GetPlayerScore(amx, player)
 	return getElementData(player, 'Score')
 end
 
-function GetPlayerDrunkLevel(player)
+function GetPlayerDrunkLevel(amx, player)
 	notImplemented('GetPlayerDrunkLevel', 'SCM is not supported.')
 	return 0
 end
 
-function SetPlayerDrunkLevel(player)
+function SetPlayerDrunkLevel(amx, player)
 	notImplemented('SetPlayerDrunkLevel', 'SCM is not supported.')
 	return 0
 end
@@ -324,7 +324,7 @@ function StopAudioStreamForPlayer(amx, player)
 	return true
 end
 
-function SetPlayerShopName(amx)
+function SetPlayerShopName(amx, player)
 	notImplemented('SetPlayerShopName')
 	return false
 end
@@ -338,9 +338,14 @@ function GetPlayerSurfingVehicleID(amx, player)
 	return INVALID_VEHICLE_ID
 end
 
-function GetPlayerSurfingObjectID(amx)
+function GetPlayerSurfingObjectID(amx, player)
 	notImplemented('GetPlayerSurfingObjectID')
 	return INVALID_OBJECT_ID
+end
+
+function CreateExplosionForPlayer(amx, player, x, y, z, type, radius)
+	clientCall(player, 'createExplosion', x, y, z, type, true, -1.0, false)
+	return true
 end
 
 function RemoveBuildingForPlayer(amx, player, model, x, y, z, radius)
@@ -348,9 +353,19 @@ function RemoveBuildingForPlayer(amx, player, model, x, y, z, radius)
 	return true
 end
 
-function GetPlayerLastShotVectors(amx)
-	notImplemented('GetPlayerLastShotVectors')
-	return false
+function GetPlayerLastShotVectors(amx, player, refOrigX, refOrigY, refOrigZ, refHitX, refHitY, refHitZ)
+	local playerID = getElemID(player)
+	local playerData = g_Players[playerID]
+	if not playerData then return end
+
+	writeMemFloat(amx, refOrigX, playerData.shotVect.oX)
+	writeMemFloat(amx, refOrigY, playerData.shotVect.oY)
+	writeMemFloat(amx, refOrigZ, playerData.shotVect.oZ)
+
+	writeMemFloat(amx, refHitX, playerData.shotVect.hX)
+	writeMemFloat(amx, refHitY, playerData.shotVect.hY)
+	writeMemFloat(amx, refHitZ, playerData.shotVect.hZ)
+	return true
 end
 
 function SetPlayerAttachedObject(amx, player, index, modelid, bone, fOffsetX, fOffsetY, fOffsetZ, fRotX, fRotY, fRotZ, fScaleX, fScaleY, fScaleZ, materialcolor1, materialcolor2)
@@ -384,12 +399,12 @@ function RemovePlayerAttachedObject(amx, player, index)
 	return false
 end
 
-function IsPlayerAttachedObjectSlotUsed(amx)
+function IsPlayerAttachedObjectSlotUsed(amx, player)
 	notImplemented('IsPlayerAttachedObjectSlotUsed')
 	return false
 end
 
-function EditAttachedObject(amx)
+function EditAttachedObject(amx, player)
 	notImplemented('EditAttachedObject')
 	return false
 end
@@ -539,7 +554,7 @@ function PlayerTextDrawFont(amx, player, textdrawID, font)
 	return true
 end
 
-function PlayerTextDrawSetSelectable(amx)
+function PlayerTextDrawSetSelectable(amx, player)
 	notImplemented('PlayerTextDrawSetSelectable')
 	return false
 end
@@ -579,17 +594,17 @@ function PlayerTextDrawSetString(amx, player, textdrawID, str)
 	return true
 end
 
-function PlayerTextDrawSetPreviewModel(amx)
+function PlayerTextDrawSetPreviewModel(amx, player)
 	notImplemented('PlayerTextDrawSetPreviewModel')
 	return false
 end
 
-function PlayerTextDrawSetPreviewRot(amx)
+function PlayerTextDrawSetPreviewRot(amx, player)
 	notImplemented('PlayerTextDrawSetPreviewRot')
 	return false
 end
 
-function PlayerTextDrawSetPreviewVehCol(amx)
+function PlayerTextDrawSetPreviewVehCol(amx, player)
 	notImplemented('PlayerTextDrawSetPreviewVehCol')
 	return false
 end
@@ -644,12 +659,12 @@ function DeletePVar(amx, player, varname)
 	return 1
 end
 
-function GetPVarsUpperIndex(amx)
+function GetPVarsUpperIndex(amx, player)
 	notImplemented('GetPVarsUpperIndex')
 	return false
 end
 
-function GetPVarNameAtIndex(amx)
+function GetPVarNameAtIndex(amx, player)
 	notImplemented('GetPVarNameAtIndex')
 	return false
 end
@@ -863,42 +878,42 @@ function GetPlayerCameraFrontVector(amx, player, refX, refY, refZ)
 	return true
 end
 
-function GetPlayerCameraMode(amx)
+function GetPlayerCameraMode(amx, player)
 	notImplemented('GetPlayerCameraMode')
 	return -1
 end
 
-function EnablePlayerCameraTarget(amx)
+function EnablePlayerCameraTarget(amx, player)
 	notImplemented('EnablePlayerCameraTarget')
 	return false
 end
 
-function GetPlayerCameraTargetObject(amx)
+function GetPlayerCameraTargetObject(amx, player)
 	notImplemented('GetPlayerCameraTargetObject')
 	return INVALID_OBJECT_ID
 end
 
-function GetPlayerCameraTargetVehicle(amx)
+function GetPlayerCameraTargetVehicle(amx, player)
 	notImplemented('GetPlayerCameraTargetVehicle')
 	return INVALID_VEHICLE_ID
 end
 
-function GetPlayerCameraTargetPlayer(amx)
+function GetPlayerCameraTargetPlayer(amx, player)
 	notImplemented('GetPlayerCameraTargetPlayer')
 	return INVALID_PLAYER_ID
 end
 
-function GetPlayerCameraTargetActor(amx)
+function GetPlayerCameraTargetActor(amx, player)
 	notImplemented('GetPlayerCameraTargetActor')
 	return INVALID_ACTOR_ID
 end
 
-function GetPlayerCameraAspectRatio(amx)
+function GetPlayerCameraAspectRatio(amx, player)
 	notImplemented('GetPlayerCameraAspectRatio')
 	return float2cell(0)
 end
 
-function GetPlayerCameraZoom(amx)
+function GetPlayerCameraZoom(amx, player)
 	notImplemented('GetPlayerCameraZoom')
 	return float2cell(0)
 end
@@ -908,7 +923,7 @@ function AttachCameraToObject(amx, player, object)
 	return true
 end
 
-function AttachCameraToPlayerObject(amx)
+function AttachCameraToPlayerObject(amx, player)
 	notImplemented('AttachCameraToPlayerObject')
 	return false
 end
@@ -1007,28 +1022,22 @@ function PlayerSpectateVehicle(amx, player, vehicleToSpectate, mode)
 	end
 end
 
-function StartRecordingPlayerData(amx)
+function StartRecordingPlayerData(amx, player)
 	notImplemented('StartRecordingPlayerData')
 	return false
 end
 
-function StopRecordingPlayerData(amx)
+function StopRecordingPlayerData(amx, player)
 	notImplemented('StopRecordingPlayerData')
 	return false
 end
 
-function SelectTextDraw(amx)
+function SelectTextDraw(amx, player)
 	notImplemented('SelectTextDraw')
 	return false
 end
 
-function CancelSelectTextDraw(amx)
+function CancelSelectTextDraw(amx, player)
 	notImplemented('CancelSelectTextDraw')
 	return false
-end
-
--- Explosion
-function CreateExplosionForPlayer(amx, player, x, y, z, type, radius)
-	clientCall(player, 'createExplosion', x, y, z, type, true, -1.0, false)
-	return true
 end

@@ -252,7 +252,7 @@ Information about this is lined out below.
 
 ## Running gamemodes and filterscripts
 
-Before you can run sa-mp modes or filterscripts, you need to start the
+Before you can run SA-MP modes or filterscripts, you need to start the
 *amx* resource. Type this command in the server console or as admin in
 the ingame console:
 

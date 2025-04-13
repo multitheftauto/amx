@@ -1580,7 +1580,7 @@ local function clientPlayerWeaponFire(weapon, ammo, ammoInClip, hitX, hitY, hitZ
 		end
 	end
 
-	triggerServerEvent('OnPlayerWeaponShot_Ev', localPlayer, weapon, hitType, hitId, offsetX, offsetY, offsetZ)
+	triggerServerEvent('OnPlayerWeaponShot_Ev', localPlayer, weapon, hitType, hitId, startX, startY, startZ, hitX, hitY, hitZ, offsetX, offsetY, offsetZ)
 end
 addEventHandler('onClientPlayerWeaponFire', root, clientPlayerWeaponFire)
 

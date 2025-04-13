@@ -29,6 +29,10 @@ function gameModeInit(player)
 	g_Players[playerID].streamedVehicles = {}
 	g_Players[playerID].streamedPlayers = {}
 	g_Players[playerID].attachedObjects = {}
+	g_Players[playerID].shotVect = {
+		oX = 0.0, oY = 0.0, oZ = 0.0,
+		hX = 0.0, hY = 0.0, hZ = 0.0
+	}
 	g_Players[playerID].viewingintro = true
 	fadeCamera(player, true)
 	setTimer(
@@ -629,8 +633,19 @@ addEventHandler('onPedWasted', root,
 
 addEvent('OnPlayerWeaponShot_Ev', true)
 addEventHandler('OnPlayerWeaponShot_Ev', root,
-	function(weapon, hitType, hitId, offsetX, offsetY, offsetZ)
-		procCallOnAll('OnPlayerWeaponShot', getElemID(source), weapon, hitType, hitId, offsetX, offsetY, offsetZ)
+	function(weapon, hitType, hitId, startX, startY, startZ, hitX, hitY, hitZ, offsetX, offsetY, offsetZ)
+		local playerID = getElemID(source)
+		local playerData = g_Players[playerID]
+		if not playerData then return end
+
+		playerData.shotVect.oX = startX
+		playerData.shotVect.oY = startY
+		playerData.shotVect.oZ = startZ
+		playerData.shotVect.hX = hitX
+		playerData.shotVect.hY = hitY
+		playerData.shotVect.hZ = hitZ
+
+		procCallOnAll('OnPlayerWeaponShot', playerID, weapon, hitType, hitId, offsetX, offsetY, offsetZ)
 	end
 )
 
