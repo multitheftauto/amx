@@ -129,7 +129,9 @@ Extract the "mods" folder into your MTA "server" directory.
     resources
   - `function.startResource`  \
     `function.stopResource`  \
-    `function.restartResource`:
+    `function.restartResource`  \
+    `function.getServerPassword`  \
+    `function.setServerPassword`:
       - to automatically (re)start filterscripts when `amx` starts
       - for rcon
 

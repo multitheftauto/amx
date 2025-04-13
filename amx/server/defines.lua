@@ -68,7 +68,7 @@ g_CommandMapping = setmetatable({
 
 local controlMappingMT = {
 	__index = function(t, k)
-		for samp,mta in pairs(t) do
+		for samp, mta in pairs(t) do
 			if type(mta) == 'table' then
 				if table.find(mta, k) then
 					return samp
@@ -82,10 +82,10 @@ local controlMappingMT = {
 
 g_KeyMapping = setmetatable({
 	[1] = 'action',
-	[2 ^ 1] = {'crouch', 'horn'},
+	[2 ^ 1] = { 'crouch', 'horn' },
 	[2 ^ 2] = { 'fire', 'vehicle_fire' },
 	[2 ^ 3] = 'sprint',
-	[2 ^ 4] = { 'enter_exit','vehicle_secondary_fire' },
+	[2 ^ 4] = { 'enter_exit', 'vehicle_secondary_fire' },
 	[2 ^ 5] = 'jump',
 	[2 ^ 6] = 'vehicle_look_right',
 	[2 ^ 7] = { 'handbrake', 'aim_weapon' },

@@ -1,4 +1,3 @@
-
 ----------------------------------------------
 -- Start of SA-MP API implementation
 
@@ -37,7 +36,7 @@ function SendClientMessage(amx, player, r, g, b, a, message)
 		message = ('*'):rep(44)
 	--[[
 	else
-		for mta,samp in pairs(g_CommandMapping) do
+		for mta, samp in pairs(g_CommandMapping) do
 			message = message:gsub('/' .. samp, '/' .. mta)
 		end
 	]] --Why is command mapping stuff here? This replaces any part of a string, causing commands such as '/quitfaction' to display as '/outfaction'
@@ -55,7 +54,7 @@ function SendClientMessageToAll(amx, r, g, b, a, message)
 	--replace colors
 	message = colorizeString(message)
 
-	for i,data in pairs(g_Players) do
+	for i, data in pairs(g_Players) do
 		SendClientMessage(amx, data.elem, r, g, b, a, message)
 	end
 	return true
@@ -75,10 +74,10 @@ end
 
 function GameTextForAll(amx, str, time, style)
 	str = str:lower()
-	for mta,samp in pairs(g_CommandMapping) do
+	for mta, samp in pairs(g_CommandMapping) do
 		str = str:gsub('/' .. samp, '/' .. mta)
 	end
-	for i,player in pairs(g_Players) do
+	for i, player in pairs(g_Players) do
 		GameTextForPlayer(amx, player.elem, str, time, style)
 	end
 	return true
@@ -86,7 +85,7 @@ end
 
 function GameTextForPlayer(amx, player, str, time, style)
 	str = str:lower()
-	for mta,samp in pairs(g_CommandMapping) do
+	for mta, samp in pairs(g_CommandMapping) do
 		str = str:gsub('/' .. samp, '/' .. mta)
 	end
 	clientCall(player, 'GameTextForPlayer', str, time, style)
@@ -95,7 +94,7 @@ end
 
 function SetTimerEx(amx, fnName, interval, repeating, fmt, ...)
 	local vals = { ... }
-	for i,val in ipairs(vals) do
+	for i, val in ipairs(vals) do
 		if fmt:sub(i, i) == 's' then
 			vals[i] = readMemString(amx, val)
 		else
@@ -141,7 +140,7 @@ end
 
 function CallLocalFunction(amx, fnName, fmt, ...)
 	local args = { ... }
-	for i=1,math.min(#fmt, #args) do
+	for i = 1, math.min(#fmt, #args) do
 		if fmt:sub(i, i) == 's' then
 			args[i] = readMemString(amx, args[i])
 		else
@@ -153,7 +152,7 @@ end
 
 function CallRemoteFunction(amx, fnName, fmt, ...)
 	local args = { ... }
-	for i=1,math.min(#fmt, #args) do
+	for i = 1, math.min(#fmt, #args) do
 		if fmt:sub(i, i) == 's' then
 			args[i] = readMemString(amx, args[i])
 		else
@@ -164,7 +163,7 @@ function CallRemoteFunction(amx, fnName, fmt, ...)
 end
 
 function VectorSize(amx, x, y, z)
-	return float2cell(math.sqrt( (x^2) + (y^2) + (z^2)))
+	return float2cell(math.sqrt( (x ^ 2) + (y ^ 2) + (z ^ 2)))
 end
 
 function acos(amx, f)
@@ -185,7 +184,7 @@ end
 
 function GetPlayerPoolSize(amx)
 	local highestId = 0
-	for id,v in pairs(g_Players) do
+	for id, v in pairs(g_Players) do
 		if id > highestId then
 			highestId = id
 		end
@@ -195,7 +194,7 @@ end
 
 function GetVehiclePoolSize(amx)
 	local highestId = 0
-	for id,v in pairs(g_Vehicles) do
+	for id, v in pairs(g_Vehicles) do
 		if id > highestId then
 			highestId = id
 		end
@@ -277,10 +276,10 @@ function AddPlayerClassEx(amx, team, skin, x, y, z, angle, weap1, weap1_ammo, we
 		g_PlayerClasses,
 		{
 			x, y, z, angle, skinReplace[skin] or skin, 0, 0, team,
-			weapons={
-				{weap1, weap1_ammo},
-				{weap2, weap2_ammo},
-				{weap3, weap3_ammo}
+			weapons = {
+				{ weap1, weap1_ammo },
+				{ weap2, weap2_ammo },
+				{ weap3, weap3_ammo }
 			}
 		}
 	)
@@ -293,7 +292,7 @@ end
 
 function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnDelay)
 	local vehicle = createVehicle(model, x, y, z, 0, 0, angle)
-	if(vehicle == false) then
+	if (vehicle == false) then
 		return INVALID_VEHICLE_ID
 	end
 
@@ -305,12 +304,12 @@ function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnD
 		respawnDelay = 120
 	end
 	g_Vehicles[vehID].vehicleIsAlive = true
-	g_Vehicles[vehID].respawndelay = respawnDelay*1000
+	g_Vehicles[vehID].respawndelay = respawnDelay * 1000
 	g_Vehicles[vehID].spawninfo = { x = x, y = y, z = z, angle = angle }
 	if ManualVehEngineAndLights then
 		if (getVehicleType(vehicle) ~= "Plane" and getVehicleType(vehicle) ~= "Helicopter") then
 			setVehicleEngineState(vehicle, false)
-			for i=0, 4 do
+			for i = 0, 4 do
 				setVehicleLightState(vehicle, i, 0)
 			end
 			g_Vehicles[vehID].engineState = false
@@ -371,7 +370,7 @@ end
 
 function ShowPlayerMarkers(amx, show)
 	g_ShowPlayerMarkers = show
-	for i,data in pairs(g_Players) do
+	for i, data in pairs(g_Players) do
 		ShowPlayerMarker(amx, data.elem, show)
 	end
 	return true
@@ -453,7 +452,7 @@ end
 
 function EnableZoneNames(amx, enable)
 	g_ShowZoneNames = enable
-	for i,data in pairs(g_Players) do
+	for i, data in pairs(g_Players) do
 		setPlayerHudComponentVisible(data.elem, 'area_name', enable)
 	end
 end
@@ -608,7 +607,7 @@ function CreateMenu(amx, title, columns, x, y, leftColumnWidth, rightColumnWidth
 end
 
 function DestroyMenu(amx, menu)
-	for i,playerdata in pairs(g_Players) do
+	for i, playerdata in pairs(g_Players) do
 		if playerdata.menu == menu then
 			playerdata.menu = nil
 		end
@@ -652,7 +651,7 @@ function DisableMenu(amx, menuID)
 		return false
 	end
 	menu.disabled = true
-	for id,player in pairs(g_Players) do
+	for id, player in pairs(g_Players) do
 		if GetPlayerMenu(amx, player.elem) == menuID then
 			clientCall(player.elem, 'HideMenuForPlayer', menuID)
 		end
@@ -676,7 +675,7 @@ end
 
 function TextDrawCreate(amx, x, y, text)
 	outputDebugString('TextDrawCreate called with args ' .. x .. ' ' .. y .. ' ' .. text)
-	local textdraw = { x = x, y = y, shadow = {align=1, text=text, font=1, lwidth=0.5, lheight = 0.5} }
+	local textdraw = { x = x, y = y, shadow = {align = 1, text = text, font = 1, lwidth = 0.5, lheight = 0.5} }
 	textdraw.clientTDId = #g_TextDraws + 1
 	local id = table.insert(g_TextDraws, textdraw)
 
@@ -815,14 +814,14 @@ function TextDrawHideForPlayer(amx, player, textdrawID)
 end
 
 function TextDrawShowForAll(amx, textdrawID)
-	for id,player in pairs(g_Players) do
+	for id, player in pairs(g_Players) do
 		TextDrawShowForPlayer(amx, player.elem, textdrawID)
 	end
 	return true
 end
 
 function TextDrawHideForAll(amx, textdrawID)
-	for id,player in pairs(g_Players) do
+	for id, player in pairs(g_Players) do
 		TextDrawHideForPlayer(amx, player.elem, textdrawID)
 	end
 	return true
@@ -842,7 +841,7 @@ function TextDrawSetPreviewRot(amx)
 end
 
 function GangZoneCreate(amx, minX, minY, maxX, maxY)
-	local zone = createRadarArea(minX + (maxX - minX)/2, minY + (maxY - minY)/2, maxX - minX, maxY - minY)
+	local zone = createRadarArea(minX + (maxX - minX) / 2, minY + (maxY - minY) / 2, maxX - minX, maxY - minY)
 	local id = addElem(g_GangZones, zone)
 	setElementVisibleTo(zone, root, false)
 	return id
@@ -978,13 +977,13 @@ end
 
 function Update3DTextLabelText(amx, textlabel, r, g, b, a, text)
 	textlabel.text = text
-	textlabel.color = {r = r, g = g, b = b, a = a}
+	textlabel.color = { r = r, g = g, b = b, a = a }
 	return true
 end
 
 function UpdatePlayer3DTextLabelText(amx, textlabel, r, g, b, a, text)
 	textlabel.text = text
-	textlabel.color = {r = r, g = g, b = b, a = a}
+	textlabel.color = { r = r, g = g, b = b, a = a }
 	return true
 end
 
@@ -1017,7 +1016,7 @@ function format(amx, outBuf, outBufSize, fmt, ...)
 	fmt = fmt:gsub('(%%[%-%d%.]*)%*(%a)', '%1%2')
 	local result = fmt:format(unpack(args))
 
-	if #result+1 <= outBufSize then
+	if #result + 1 <= outBufSize then
 		writeMemString(amx, outBuf, result)
 	end
 end
@@ -1033,7 +1032,7 @@ end
 function SetSpawnInfo(amx, player, team, skin, x, y, z, angle, weap1, weap1_ammo, weap2, weap2_ammo, weap3, weap3_ammo)
 	g_Players[getElemID(player)].spawninfo = {
 		x, y, z, angle, skinReplace[skin] or skin, 0, 0, team,
-		weapons={ {weap1, weap1_ammo}, {weap2, weap2_ammo}, {weap3, weap3_ammo} }
+		weapons = { { weap1, weap1_ammo }, { weap2, weap2_ammo }, { weap3, weap3_ammo } }
 	}
 	return true
 end
@@ -1059,7 +1058,7 @@ end
 function NetStats_GetIpPort(amx, player, ip_port, ip_port_len)
 	local ip = getPlayerIP(player)
 	local port = 0 -- We haven't a solution for getting a client port
-	local ipandport = tostring(ip).. ":".. tostring(port)
+	local ipandport = tostring(ip) .. ":" .. tostring(port)
 	writeMemString(amx, ip_port, ipandport)
 	return string.len(ipandport)
 end

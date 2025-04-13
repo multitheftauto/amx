@@ -1,6 +1,15 @@
 g_ServerVars = {
-	announce = true,
-	bind = '',
+	announce = {
+		get = function()
+			return getServerConfigSetting('donotbroadcastlan') == 0 or true
+		end
+	},
+	bind = {
+		get = function(bindIp)
+			bindIp = getServerConfigSetting("serverip") or ''
+			return bindIp ~= 'auto' and bindIp or ''
+		end
+	},
 	filterscripts = get('amx.filterscripts') or '',
 	gamemode0 = '',
 	gamemode1 = '',
@@ -18,7 +27,15 @@ g_ServerVars = {
 	gamemode13 = '',
 	gamemode14 = '',
 	gamemode15 = '',
-	gamemodetext = '',
+	gamemodetext = {
+		get = function()
+			return getGameType() or 'Unknown'
+		end,
+		set = function(gmN)
+			gmN = gmN:len() >= 1 and gmN or 'Unknown'
+			return setGameType(gmN)
+		end
+	},
 	gravity = {
 		get = function()
 			return tostring(getGravity())
@@ -33,15 +50,47 @@ g_ServerVars = {
 	hostname = { get = getServerName },
 	lagcomp = 'On',
 	lagcompmode = 1,
-	language = 'English',
+	language = {
+		get = function()
+			return getRuleValue('language') or ''
+		end,
+		set = function(lang)
+			lang = lang:len() >= 1 and lang or ''
+			return setRuleValue('language', lang)
+		end
+	},
 	lanmode = false,
-	mapname = { get = function() return getMapName() or '' end, set = setMapName },
+	mapname = {
+		get = function(mapN)
+			mapN = getMapName()
+			return (mapN and mapN ~= 'None') and mapN or 'San Andreas'
+		end,
+		set = function(mapN)
+			mapN = mapN:len() >= 1 and mapN or 'San Andreas'
+			return setMapName(mapN)
+		end
+	},
 	maxplayers = { get = getMaxPlayers },
-	password = { get = function() return getServerPassword() or '' end },
+	password = {
+		get = function()
+			return getServerPassword() or ''
+		end,
+		set = function(pass)
+			pass = pass:len() >= 1 and pass or ''
+			return setServerPassword(pass)
+		end
+	},
 	plugins = get('amx.plugins') or '',
 	port = { get = getServerPort },
 	query = true,
-	rcon_password = '',
+	rcon_password = {
+		get = function()
+			return get('amx.rcon_password') or ''
+		end,
+		set = function(pass)
+			return set('amx.rcon_password', pass)
+		end
+	},
 	timestamp = true,
 	version = amxVersionString(),
 	weather = {
@@ -239,7 +288,7 @@ end
 
 local function cmdPlayers()
 	local result = ''
-	for id,data in pairs(g_Players) do
+	for id, data in pairs(g_Players) do
 		result = result .. ('%5d  %s\n'):format(id, getPlayerName(data.elem))
 	end
 	return result
@@ -286,7 +335,7 @@ end
 local function cmdVarList()
 	local result = ''
 	local keys = table.sort(table.keys(g_ServerVars.shadow))
-	for i,k in ipairs(keys) do
+	for i, k in ipairs(keys) do
 		result = result .. presentServerVar(k) .. '\n'
 	end
 	return result
@@ -377,7 +426,7 @@ addCommandHandler('rcon',
 		local result = doRCON(str)
 		if result then
 			local lines = result:split('\n')
-			for i,line in ipairs(lines) do
+			for i, line in ipairs(lines) do
 				outputConsole(line)
 			end
 		end

@@ -198,9 +198,9 @@ public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY
 	return 1;
 }
 
-public OnVehicleDamage(vehicleid, Float:loss)
+public OnVehicleDamageStatusUpdate(vehicleid, playerid)
 {
-	printf("OnVehicleDamage(%d, %f)", vehicleid, loss);
+	printf("OnVehicleDamageStatusUpdate(%d, %d)", vehicleid, playerid);
 	return 1;
 }
 

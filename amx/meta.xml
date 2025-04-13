@@ -54,6 +54,8 @@
         <right name="function.startResource" access="true"></right>
         <right name="function.stopResource" access="true"></right>
         <right name="function.restartResource" access="true"></right>
+        <right name="function.getServerPassword" access="true"></right>
+        <right name="function.setServerPassword" access="true"></right>
     </aclrequest>
 
     <settings>

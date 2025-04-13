@@ -9,7 +9,7 @@ function HTTP(amx, index, type, url, data, callback)
 	local proto = protomatch[1] or 'default'
 	-- if somebody will try to put here ftp:// ssh:// etc...
 	if proto ~= 'http' and proto ~= 'https' and proto ~= 'default' then
-		print('Current protocol is not supporting')
+		print('Current protocol is not supported')
 		return 0
 	end
 	local typesToText = {

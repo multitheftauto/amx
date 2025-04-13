@@ -403,10 +403,10 @@ function CreatePlayerTextDraw(amx, player, x, y, text)
 		g_PlayerTextDraws[player] = {}
 	end
 
-	local serverTDId = #g_PlayerTextDraws[player]+1
+	local serverTDId = #g_PlayerTextDraws[player] + 1
 	local clientTDId = #g_TextDraws + serverTDId
 
-	local textdraw = { x = x, y = y, lwidth=0.5, lheight = 0.5, shadow = { visible=0, align=1, text=text, font=1, lwidth=0.5, lheight = 0.5 } }
+	local textdraw = { x = x, y = y, lwidth = 0.5, lheight = 0.5, shadow = { visible = 0, align = 1, text = text, font = 1, lwidth = 0.5, lheight = 0.5 } }
 	textdraw.clientTDId = clientTDId
 	textdraw.serverTDId = serverTDId
 	textdraw.visible = 0
@@ -734,12 +734,12 @@ function ClearAnimations(amx, player)
 	return true
 end
 
-function GetPlayerAnimationIndex(player)
+function GetPlayerAnimationIndex(amx, player)
 	notImplemented('GetPlayerAnimationIndex')
 	return 0
 end
 
-function GetAnimationName(amx)
+function GetAnimationName(amx, player)
 	notImplemented('GetAnimationName')
 	return false
 end
@@ -943,7 +943,7 @@ function IsPlayerInCheckpoint(amx, player)
 		return false
 	end
 	local x, y = getElementPosition(player)
-	return math.sqrt((playerdata.checkpoint.x - x)^2 + (playerdata.checkpoint.y - y)^2) <= playerdata.checkpoint.radius
+	return math.sqrt((playerdata.checkpoint.x - x) ^ 2 + (playerdata.checkpoint.y - y) ^ 2) <= playerdata.checkpoint.radius
 end
 
 function IsPlayerInRaceCheckpoint(amx, player)
@@ -952,7 +952,7 @@ function IsPlayerInRaceCheckpoint(amx, player)
 		return false
 	end
 	local x, y = getElementPosition(player)
-	return math.sqrt((playerdata.racecheckpoint.x - x)^2 + (playerdata.racecheckpoint.y - y)^2) <= playerdata.racecheckpoint.radius
+	return math.sqrt((playerdata.racecheckpoint.x - x) ^ 2 + (playerdata.racecheckpoint.y - y) ^ 2) <= playerdata.racecheckpoint.radius
 end
 
 function IsPlayerInVehicle(amx, player, vehicle)

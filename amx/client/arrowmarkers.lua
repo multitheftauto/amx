@@ -32,7 +32,7 @@ addEventHandler('onClientElementStreamIn', root,
 		else
 			streamedMarkers[source] = { getElementPosition(source) }
 		end
-		streamedMarkers[source].anim = Animation.createAndPlay(source, { from = 0, to = 2*math.pi, time = 2000, repeats = 0, fn = setMarkerZ })
+		streamedMarkers[source].anim = Animation.createAndPlay(source, { from = 0, to = 2 * math.pi, time = 2000, repeats = 0, fn = setMarkerZ })
 	end
 )
 

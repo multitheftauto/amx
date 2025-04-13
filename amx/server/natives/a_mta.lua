@@ -556,21 +556,6 @@ function RemoveRuleValue(amx, rule)
 	return removeRuleValue(rule)
 end
 
-function md5hash(amx, str, refStr, refSize)
-	local hash = md5(str)
-	if #hash <= refSize then
-		writeMemString(amx, refStr, hash)
-	end
-end
-
-function GetDistanceBetweenPoints2D(amx, x1, y1, x2, y2)
-	return getDistanceBetweenPoints2D(x1, y1, x2, y2)
-end
-
-function GetDistanceBetweenPoints3D(amx, x1, y1, z1, x2, y2, z2)
-	return getDistanceBetweenPoints3D(x1, y1, z1, x2, y2, z2)
-end
-
 function AddScoreboardColumn(amx, column)
 	outputDebugString("AddScoreboardColumn is being ignored!")
 	-- TODO(q): this needs to be added back later

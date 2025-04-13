@@ -3,7 +3,7 @@ data_sent = {}
 
 function sendAttachmentData()
 	if data_sent[client] then return end
-	triggerClientEvent(client,"boneAttach_sendAttachmentData",root,
+	triggerClientEvent(client, "boneAttach_sendAttachmentData", root,
 		attached_ped,
 		attached_bone,
 		attached_x,
@@ -15,10 +15,10 @@ function sendAttachmentData()
 	)
 	data_sent[client] = true
 end
-addEvent("boneAttach_requestAttachmentData",true)
-addEventHandler("boneAttach_requestAttachmentData",root,sendAttachmentData)
+addEvent("boneAttach_requestAttachmentData", true)
+addEventHandler("boneAttach_requestAttachmentData", root, sendAttachmentData)
 
 function removeDataSentFlag()
 	data_sent[source] = nil
 end
-addEventHandler("onPlayerQuit",root,removeDataSentFlag)
+addEventHandler("onPlayerQuit", root, removeDataSentFlag)

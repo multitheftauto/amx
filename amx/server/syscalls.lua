@@ -12,7 +12,7 @@ function argsToMTA(amx, prototype, ...)
 	local val
 	local argMissing = false
 	local colorArgs
-	for i,val in ipairs(args) do
+	for i, val in ipairs(args) do
 		vartype = prototype[i]
 		if vartype == 'b' then			-- boolean
 			val = val ~= 0
@@ -55,9 +55,9 @@ function argsToMTA(amx, prototype, ...)
 	end
 	if colorArgs then
 		local indexOffset = 0
-		for i,colorArg in pairs(colorArgs) do
-			for j,color in ipairs(colorArg) do
-				table.insert(args, i+j-1 + indexOffset, color)
+		for i, colorArg in pairs(colorArgs) do
+			for j, color in ipairs(colorArg) do
+				table.insert(args, i + j - 1 + indexOffset, color)
 			end
 			indexOffset = indexOffset + 3
 		end
@@ -78,7 +78,7 @@ function argsToSAMP(amx, prototype, ...)
 	end
 
 	local args = { ... }
-	for i,v in ipairs(args) do
+	for i, v in ipairs(args) do
 		if type(v) == 'nil' then
 			args[i] = 0
 		elseif type(v) == 'boolean' then
@@ -125,7 +125,7 @@ function syscall(amx, svc, prototype, ...)		-- svc = service number (= index in 
 	end
 	--[[
 	local logstr = fnName .. '('
-	for i,argval in ipairs(args) do
+	for i, argval in ipairs(args) do
 		if i > 1 then
 			logstr = logstr .. ', '
 		end
@@ -594,9 +594,6 @@ g_SAMPSyscallPrototypes = {
 	GetWaveHeight = {},
 	SetWaveHeight = {'f'},
 	SetWaterLevel = {'f'},
-	GetDistanceBetweenPoints2D = {'f', 'f', 'f', 'f'},
-	GetDistanceBetweenPoints3D = {'f', 'f', 'f', 'f', 'f', 'f'},
-	md5hash = {'s', 'r', 'i'},
 
 	-- rules
 	SetRuleValue = {'s', 's'},

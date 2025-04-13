@@ -18,7 +18,7 @@ g_PlayerObjects = {}
 
 function initGameModeGlobals()
 	g_PlayerClasses = {}
-	g_Teams = setmetatable({}, { __index = function(t, k) t[k] = createTeam('Team ' .. (k+1)) return t[k] end })
+	g_Teams = setmetatable({}, { __index = function(t, k) t[k] = createTeam('Team ' .. (k + 1)) return t[k] end })
 	g_ShowPlayerMarkers = true
 	g_ShowZoneNames = true
 	g_GlobalChatRadius = false
@@ -41,7 +41,7 @@ addEventHandler('onResourceStart', resourceRoot,
 		local filterscripts = get('amx.filterscripts')
 		if filterscripts then
 			filterscripts = filterscripts:split()
-			for i,filterscript in ipairs(filterscripts) do
+			for i, filterscript in ipairs(filterscripts) do
 				local filterres = getResourceFromName('amx-fs-' .. filterscript)
 				if filterres then
 					if getResourceState(filterres) == 'running' then
@@ -110,7 +110,7 @@ function loadAMX(fileName, res)
 	local alreadyGameModeRunning = getRunningGameMode() and true
 	local alreadySyncingWeapons = isWeaponSyncingNeeded()
 	if alreadyGameModeRunning and amx.type == 'gamemode' then
-		outputDebugString('Not loading ' .. fileName .. ' - a gamemode is already running', 1)
+		outputDebugString('Not loading ' .. fileName .. ', a gamemode is already running', 1)
 		return false
 	end
 
@@ -141,7 +141,7 @@ function loadAMX(fileName, res)
 	end
 	procCallInternal(amx, amx.main)
 
-	for id,player in pairs(g_Players) do
+	for id, player in pairs(g_Players) do
 		procCallInternal(amx, 'OnPlayerConnect', id)
 	end
 
@@ -154,20 +154,20 @@ end
 addEvent('onAMXStart')
 
 function destroyGlobalElements()
-	for i,vehinfo in pairs(g_Vehicles) do
+	for i, vehinfo in pairs(g_Vehicles) do
 		if vehinfo.respawntimer then
 			killTimer(vehinfo.respawntimer)
 			vehinfo.respawntimer = nil
 		end
 	end
 
-	for i, elemtype in ipairs({g_TextDraws, g_TextLabels}) do
+	for i, elemtype in ipairs({ g_TextDraws, g_TextLabels }) do
 		for id, data in pairs(elemtype) do
 			elemtype[id] = nil
 		end
 	end
 
-	for i, elemtype in ipairs({g_Vehicles, g_Pickups, g_Objects, g_GangZones, g_Markers, g_Bots, g_Actors}) do
+	for i, elemtype in ipairs({ g_Vehicles, g_Pickups, g_Objects, g_GangZones, g_Markers, g_Bots, g_Actors }) do
 		for id, data in pairs(elemtype) do
 			removeElem(elemtype, data.elem)
 			destroyElement(data.elem)
@@ -197,7 +197,7 @@ function unloadAMX(amx, notifyClient)
 	table.each(amx.timers, killTimer)
 
 	if amx.boundkeys then
-		for i,key in ipairs(amx.boundkeys) do
+		for i, key in ipairs(amx.boundkeys) do
 			table.each(g_Players, 'elem', unbindKey, g_ControlMapping[key], 'down', procCallInternal)
 		end
 	end
@@ -219,7 +219,7 @@ addEventHandler('onResourceStop', root,
 		if not amxs then
 			return
 		end
-		for i,amxfile in ipairs(amxs) do
+		for i, amxfile in ipairs(amxs) do
 			local amx = g_LoadedAMXs[amxfile:match('(.*)%.')]
 			if amx then
 				unloadAMX(amx, true)
@@ -234,7 +234,7 @@ addEventHandler('onResourceStop', resourceRoot,
 		-- exports.amxscoreboard:removeScoreboardColumn('Score')
 		table.each(g_LoadedAMXs, unloadAMX, false)
 		amxUnloadAllPlugins()
-		for i=0,49 do
+		for i = 0, 49 do
 			setGarageOpen(i, false)
 		end
 		setWeather(0)
@@ -242,7 +242,7 @@ addEventHandler('onResourceStop', resourceRoot,
 )
 
 function getRunningGameMode()
-	for name,amx in pairs(g_LoadedAMXs) do
+	for name, amx in pairs(g_LoadedAMXs) do
 		if amx.type == 'gamemode' then
 			return amx
 		end
@@ -252,9 +252,9 @@ end
 
 function getRunningFilterScripts()
 	local result = {}
-	for name,amx in pairs(g_LoadedAMXs) do
+	for name, amx in pairs(g_LoadedAMXs) do
 		if amx.type == 'filterscript' then
-			result[#result+1] = amx
+			result[#result + 1] = amx
 		end
 	end
 	return result
@@ -263,14 +263,14 @@ end
 function isWeaponSyncingNeeded(amx)
 	local fns = { 'GetPlayerWeaponData', 'RemovePlayerFromVehicle', 'SetVehicleToRespawn' }
 	if amx then
-		for i,fn in ipairs(fns) do
+		for i, fn in ipairs(fns) do
 			if table.find(amx.natives, fn) then
 				return true
 			end
 			return false
 		end
 	else
-		for name,amx in pairs(g_LoadedAMXs) do
+		for name, amx in pairs(g_LoadedAMXs) do
 			if isWeaponSyncingNeeded(amx) then
 				return true
 			end
@@ -283,7 +283,7 @@ function readPrefixTable(hFile, offset, length, nameAsKey)
 	-- build a name lookup table {name = offset} or {index = name}
 	local entryOffset, entryNameOffset
 	local result = {}
-	for i=0,length/8-1 do
+	for i = 0, length / 8 - 1 do
 		entryOffset = readDWORDAt(hFile, offset)
 		entryName = readString(hFile, readDWORD(hFile))
 		if nameAsKey then
@@ -313,8 +313,8 @@ function procCallInternal(amx, nameOrOffset, ...)
 			 ret = amxCall(amx.cptr, -1, ...)
 		end
 	else
-		if(g_EventNames[nameOrOffset]) then
-			for k,v in pairs(g_Events) do
+		if (g_EventNames[nameOrOffset]) then
+			for k, v in pairs(g_Events) do
 				if v == nameOrOffset then
 					amxCall(amx.cptr, k, ...)
 				end
@@ -327,7 +327,7 @@ function procCallInternal(amx, nameOrOffset, ...)
 end
 
 function procCallOnAll(fnName, ...)
-	for name,amx in pairs(g_LoadedAMXs) do
+	for name, amx in pairs(g_LoadedAMXs) do
 		if amx.type == 'filterscript' and procCallInternal(amx, fnName, ...) ~= 0 and fnName == 'OnPlayerCommandText' then
 			return true
 		end

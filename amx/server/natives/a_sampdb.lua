@@ -7,7 +7,7 @@ function db_free_result(amx, dbResultID)
 end
 
 function db_field_name(amx, dbresult, fieldIndex, outbuf, maxlength)
-	local colname = dbresult.columns[fieldIndex+1]
+	local colname = dbresult.columns[fieldIndex + 1]
 	if #colname < maxlength then
 		writeMemString(amx, outbuf, colname)
 		return true
@@ -17,7 +17,7 @@ end
 
 function db_get_field(amx, dbresult, fieldIndex, outbuf, maxlength)
 	if dbresult[dbresult.row] then
-		local data = dbresult[dbresult.row][fieldIndex+1]
+		local data = dbresult[dbresult.row][fieldIndex + 1]
 		if #data < maxlength then
 			writeMemString(amx, outbuf, data)
 			return true
@@ -28,7 +28,7 @@ end
 
 function db_get_field_assoc(amx, dbresult, fieldName, outbuf, maxlength)
 	local fieldIndex = table.find(dbresult.columns, fieldName)
-	return fieldIndex and db_get_field(amx, dbresult, fieldIndex-1, outbuf, maxlength)
+	return fieldIndex and db_get_field(amx, dbresult, fieldIndex - 1, outbuf, maxlength)
 end
 
 function db_next_row(amx, dbresult)

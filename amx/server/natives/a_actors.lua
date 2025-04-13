@@ -7,7 +7,7 @@ function CreateActor(amx, model, x, y, z, rotation)
 end
 
 function DestroyActor(amx, actor)
-	for i,playerdata in pairs(g_Players) do
+	for i, playerdata in pairs(g_Players) do
 		playerdata.streamedActors[getElemID(actor)] = nil
 	end
 
@@ -66,7 +66,7 @@ GetActorPos = GetObjectPos
 
 function GetActorPoolSize(amx)
 	local highestId = 0
-	for id,v in pairs(g_Actors) do
+	for id, v in pairs(g_Actors) do
 		if id > highestId then
 			highestId = id
 		end

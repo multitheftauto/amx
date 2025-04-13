@@ -11,9 +11,8 @@
 // MTA
 native lua(const fn[], {Float,_}:...);
 native amxRegisterPawnPrototypes(const prototype[][]);
-native amxVersion(&Float:ver);
 native amxVersionString(buffer[], maxsize = sizeof(buffer));
-native md5hash(str[], const buf[], bufsize = sizeof(buf));
+native amxVersion(&Float:ver);
 
 // Events
 forward OnBotConnect(botid, name[]);
@@ -21,7 +20,6 @@ forward OnBotEnterVehicle(botid, vehicleid, seatid);
 forward OnBotExitVehicle(botid, vehicleid);
 forward OnBotDeath(botid, killerid, weaponid, bodypart);
 forward OnBotStateChange(botid, newstate, oldstate);
-forward OnVehicleDamage(vehicleid, Float:loss);
 forward OnPlayerWeaponSwitch(playerid, previousWeaponID, currentWeaponID);
 forward OnMarkerCreate(markerid);
 forward OnMarkerHit(markerid, elemtype[], elemid, matchingDimension);
@@ -39,8 +37,6 @@ native SetGlitchEnabled(name[], stateid);
 native SetFPSLimit(fps);
 native GetPlayerCount();
 native GetRandomPlayer();
-native GetDistanceBetweenPoints2D(Float:X1, Float:Y1, Float:X2, Float:Y2);
-native GetDistanceBetweenPoints3D(Float:X1, Float:Y1, Float:Z1, Float:X2, Float:Y2, Float:Z2);
 
 // Water
 native GetWaveHeight();

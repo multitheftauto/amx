@@ -5,7 +5,7 @@ function gameModeInit(player)
 	clientCall(player, 'gamemodeLoad')
 	local playerID = getElemID(player)
 	local playerData = g_Players[playerID]
-	for k,v in pairs(playerData) do
+	for k, v in pairs(playerData) do
 		if k ~= 'elem' and k ~= 'keys' and k ~= 'blip' then
 			playerData[k] = nil
 		end
@@ -14,7 +14,7 @@ function gameModeInit(player)
 	takeAllWeapons(player)
 	setElementInterior(player, 0)
 	setElementDimension(player, 0)
-	for i=69,79 do setPedStat(player, i, 999) end
+	for i = 69, 79 do setPedStat(player, i, 999) end
 	local r, g, b = math.random(50, 255), math.random(50, 255), math.random(50, 255)
 	ShowPlayerMarker(false, player, g_ShowPlayerMarkers)
 	setPlayerHudComponentVisible(player, 'area_name', g_ShowZoneNames)
@@ -65,7 +65,7 @@ function joinHandler(player)
 	bindKey(player, 'enter_exit', 'down', removePedJetPack)
 	g_Players[playerID].keys = {}
 	local function bindControls(player, t)
-		for samp,mta in pairs(t) do
+		for samp, mta in pairs(t) do
 			bindKey(player, mta, 'down', keyStateChange)
 			bindKey(player, mta, 'up', keyStateChange)
 		end
@@ -73,7 +73,7 @@ function joinHandler(player)
 	bindControls(player, g_KeyMapping)
 	bindControls(player, g_LeftRightMapping)
 	bindControls(player, g_UpDownMapping)
-	for k,v in ipairs(g_Keys) do
+	for k, v in ipairs(g_Keys) do
 		bindKey(player, v, 'both', mtaKeyStateChange)
 	end
 
@@ -86,17 +86,17 @@ function joinHandler(player)
 		end
 
 		-- send menus
-		for i,menu in pairs(g_Menus) do
+		for i, menu in pairs(g_Menus) do
 			clientCall(player, 'CreateMenu', i, menu)
 		end
 
 		-- send textdraws
-		for id,textdraw in pairs(g_TextDraws) do
+		for id, textdraw in pairs(g_TextDraws) do
 			clientCall(player, 'TextDrawCreate', id, table.deshadowize(textdraw, true))
 		end
 
 		-- send 3d text labels
-		for i,label in pairs(g_TextLabels) do
+		for i, label in pairs(g_TextLabels) do
 			clientCall(player, 'Create3DTextLabel', i, label)
 		end
 
@@ -125,18 +125,22 @@ function keyStateChange(player, key, state)
 end
 
 function mtaKeyStateChange(player, key, state)
-	local iState = nil
-	if state == 'up' then iState = 0 end
-	if state == 'down' then iState = 1 end
-	procCallOnAll('OnKeyPress', getElemID(player), key, iState)
+	if state == 'up' then
+		procCallOnAll('OnPlayerKeyUp', getElemID(player), key)
+		return
+	end
+	if state == 'down' then
+		procCallOnAll('OnPlayerKeyDown', getElemID(player), key)
+		return
+	end
 end
 
 function buildKeyState(player, t)
 	local keys = g_Players[getElemID(player)].keys
 	local result = 0
-	for samp,mta in pairs(t) do
+	for samp, mta in pairs(t) do
 		if type(mta) == 'table' then
-			for i,key in ipairs(mta) do
+			for i, key in ipairs(mta) do
 				if keys[key] then
 					result = result + samp
 					break
@@ -228,7 +232,7 @@ function spawnPlayerBySelectedClass(player, x, y, z, r)
 		if not g_PlayerClasses[0] then
 			spawninfo = {
 				0, 0, 3, 0, 0, 0, 0, false,
-				weapons={ {-1, 0}, {-1, 0}, {-1, 0} }
+				weapons = { { -1, 0 }, { -1, 0 }, { -1, 0 } }
 			}
 		else
 			spawninfo = g_PlayerClasses[0]
@@ -240,7 +244,7 @@ function spawnPlayerBySelectedClass(player, x, y, z, r)
 	end
 	setPlayerState(player, PLAYER_STATE_SPAWNED)
 	spawnPlayer(player, unpack(spawninfo))
-	for i,weapon in ipairs(spawninfo.weapons) do
+	for i, weapon in ipairs(spawninfo.weapons) do
 		if weapon[1] ~= -1 then
 			giveWeapon(player, weapon[1], weapon[2], true)
 		end
@@ -287,7 +291,7 @@ addEventHandler('onPlayerChat', root,
 
 		if g_GlobalChatRadius then
 			local x, y, z = getElementPosition(source)
-			for i,data in pairs(g_Players) do
+			for i, data in pairs(g_Players) do
 				if getDistanceBetweenPoints3D(x, y, z, getElementPosition(data.elem)) <= g_GlobalChatRadius then
 					outputChatBox(getPlayerName(source) .. ':#FFFFFF ' .. msg:gsub('#%x%x%x%x%x%x', ''), data.elem, r, g, b, true)
 				end
@@ -374,7 +378,7 @@ addEventHandler('onPlayerQuit', root,
 		g_PlayerObjects[source] = nil
 		local playerID = getElemID(source)
 
-		for i,playerdata in pairs(g_Players) do
+		for i, playerdata in pairs(g_Players) do
 			playerdata.streamedPlayers[playerID] = nil
 		end
 
@@ -423,7 +427,7 @@ function respawnStaticVehicle(vehicle)
 		killTimer(g_Vehicles[vehID].respawntimer)
 	end
 	local numPassengers = tonumber(getVehicleMaxPassengers(vehicle)) or 0
-	for seat=0,numPassengers do
+	for seat = 0, numPassengers do
 		local player = getVehicleOccupant(vehicle, seat)
 		if player then
 			removePedFromVehicle(player)
@@ -497,7 +501,7 @@ addEventHandler('onVehicleExit', root,
 		setPlayerState(player, PLAYER_STATE_ONFOOT)
 
 		local numPassengers = tonumber(getVehicleMaxPassengers(source)) or 0
-		for i=0,numPassengers do
+		for i = 0, numPassengers do
 			if getVehicleOccupant(source, i) then
 				return
 			end
@@ -539,7 +543,7 @@ addEventHandler('onVehicleExplode', root,
 
 		--So the OnVehicleDeath event only gets called once
 		if g_Vehicles[vehID] and g_Vehicles[vehID].vehicleIsAlive then
-			procCallOnAll('OnVehicleDeath', vehID, 0)		-- NOES, MY VEHICLE DIED
+			procCallOnAll('OnVehicleDeath', vehID, getElemID(client))
 
 			if g_Vehicles[vehID].respawntimer then
 				killTimer(g_Vehicles[vehID].respawntimer)
@@ -553,13 +557,13 @@ addEventHandler('onVehicleExplode', root,
 )
 
 addEventHandler('onVehicleDamage', root,
-	function(loss)
+	function()
 		local vehID = getElemID(source)
 		if not vehID then
 			return
 		end
 
-		procCallOnAll('OnVehicleDamage', vehID, loss)
+		procCallOnAll('OnVehicleDamageStatusUpdate', vehID, getElemID(client))
 	end
 )
 
@@ -574,7 +578,6 @@ function removePedFromVehicle(player)
 	if not playerdata.vehicle then
 		return false
 	end
-	--procCallOnAll('OnPlayerExitVehicle', getElemID(player), getElemID(playerdata.vehicle))
 	playerdata.vehicle = nil
 	setTimer(_removePedFromVehicle, 500, 1, player)
 	return true
@@ -618,7 +621,7 @@ addEventHandler('onMarkerLeave', root,
 addEventHandler('onPedWasted', root,
 	function(totalAmmo, killer, killerWeapon, bodypart)
 		if isPed(source) ~= true then return end
-			procCallOnAll('OnBotDeath', getElemID(source), getElemID(killer), killerWeapon, bodypart)
+		procCallOnAll('OnBotDeath', getElemID(source), getElemID(killer), killerWeapon, bodypart)
 	end
 )
 
@@ -627,7 +630,7 @@ addEventHandler('onPedWasted', root,
 addEvent('OnPlayerWeaponShot_Ev', true)
 addEventHandler('OnPlayerWeaponShot_Ev', root,
 	function(weapon, hitType, hitId, offsetX, offsetY, offsetZ)
-		procCallOnAll('OnPlayerWeaponShot', getElemID(client), weapon, hitType, hitId, offsetX, offsetY, offsetZ)
+		procCallOnAll('OnPlayerWeaponShot', getElemID(source), weapon, hitType, hitId, offsetX, offsetY, offsetZ)
 	end
 )
 
@@ -636,11 +639,11 @@ addEventHandler('OnPlayerPickUpPickup_Ev', root,
 	function(pickup)
 		local model = getElementModel(pickup)
 
-		procCallOnAll('OnPlayerPickUpPickup', getElemID(client), getElemID(pickup))
+		procCallOnAll('OnPlayerPickUpPickup', getElemID(source), getElemID(pickup))
 
 		if model == 370 then
 			-- Jetpack pickup
-			setPedWearingJetpack(client, true)
+			setPedWearingJetpack(source, true)
 		end
 	end
 )

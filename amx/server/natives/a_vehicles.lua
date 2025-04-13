@@ -4,7 +4,7 @@ function DestroyVehicle(amx, vehicle)
 	if vehicle then
 		local vehicleID = getElemID(vehicle)
 		clientCall(root, 'DestroyVehicle', vehicleID)
-		for i,playerdata in pairs(g_Players) do
+		for i, playerdata in pairs(g_Players) do
 			playerdata.streamedVehicles[vehicleID] = nil
 		end
 		removeElem(g_Vehicles, vehicle)
