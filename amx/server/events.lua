@@ -393,7 +393,6 @@ addEventHandler('onPlayerQuit', root,
 		g_Players[playerID] = nil
 	end
 )
-
 -------------------------------
 -- Vehicles
 
@@ -404,7 +403,7 @@ addEventHandler('onResourceStart', resourceRoot,
 	false
 )
 
-function checkIfLeftVehicleByOtherMeans() --If the player is slapped, or the vehicle is destroyed by a command, we need to handle such
+function checkIfLeftVehicleByOtherMeans() -- If the player is slapped, or the vehicle is destroyed by a command, we need to handle such
 	for i, data in pairs(g_Players) do
 		local state = getPlayerState(data.elem)
 		if state == PLAYER_STATE_DRIVER or state == PLAYER_STATE_PASSENGER then
@@ -541,7 +540,7 @@ addEventHandler('onVehicleExplode', root,
 	function()
 		local vehID = getElemID(source)
 
-		--So the OnVehicleDeath event only gets called once
+		-- So the OnVehicleDeath event only gets called once
 		if g_Vehicles[vehID] and g_Vehicles[vehID].vehicleIsAlive then
 			procCallOnAll('OnVehicleDeath', vehID, getElemID(client))
 
@@ -556,10 +555,12 @@ addEventHandler('onVehicleExplode', root,
 	end
 )
 
-addEventHandler('onVehicleDamage', root,
-	function()
-		local vehID = getElemID(source)
-		if not vehID then
+addEvent('OnVehicleDamageStatusUpdate_Ev', true)
+addEventHandler('OnVehicleDamageStatusUpdate_Ev', root,
+	function(vehicle)
+		local vehID = getElemID(vehicle)
+
+		if not vehID or client ~= getVehicleOccupant(vehicle) then
 			return
 		end
 
@@ -592,9 +593,9 @@ function removePedFromVehicleEx(player)
 	setControlState(player, "enter_exit", true)
 	return true
 end
-
 -------------------------------
 -- Markers
+
 addEventHandler('onMarkerHit', root,
 	function(elem, dimension)
 		if getElementType(elem) == "player" or getElementType(elem) == "vehicle" or getElementType(elem) == "ped" then
@@ -614,7 +615,6 @@ addEventHandler('onMarkerLeave', root,
 		end
 	end
 )
-
 -------------------------------
 -- Peds
 
@@ -624,9 +624,9 @@ addEventHandler('onPedWasted', root,
 		procCallOnAll('OnBotDeath', getElemID(source), getElemID(killer), killerWeapon, bodypart)
 	end
 )
-
 -------------------------------
 -- Misc
+
 addEvent('OnPlayerWeaponShot_Ev', true)
 addEventHandler('OnPlayerWeaponShot_Ev', root,
 	function(weapon, hitType, hitId, offsetX, offsetY, offsetZ)

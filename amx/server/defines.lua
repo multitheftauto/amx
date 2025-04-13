@@ -100,7 +100,7 @@ g_KeyMapping = setmetatable({
 	[2 ^ 16] = 'conversation_yes',
 	[2 ^ 17] = 'conversation_no',
 	[2 ^ 18] = 'group_control_back',
-	[2 ^ 19] = 'enter_passenger', --This one's undefined
+	[2 ^ 19] = 'enter_passenger', -- This one's undefined
 }, controlMappingMT)
 
 g_LeftRightMapping = setmetatable({
@@ -135,7 +135,7 @@ g_PoliceVehicles = {
 	[601] = true
 }
 
---Left is SAMP, right is MTA
+-- Left is SAMP, right is MTA
 g_BoneMapping = setmetatable({
 	[2] = 1,	-- Head
 	[17] = 2,	-- Neck
@@ -154,8 +154,8 @@ g_BoneMapping = setmetatable({
 	[10] = 20	-- Right Foot
 }, {
 	__index = function(t, k)
-		if k == 18 then --Since 18 is jaw in SAMP
-			k = 2 --Default to head
+		if k == 18 then -- Since 18 is jaw in SAMP
+			k = 2 -- Default to head
 		end
 		if k >= 1 and k <= 17 then
 			return k

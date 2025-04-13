@@ -15,9 +15,9 @@ end
 function RemovePlayerClothes(amx, player, type)
 	return removePedClothes(player, type)
 end
-
 -----------------------------------------------------
 -- Alpha funcs
+
 function GetAlpha(amx, elem)
 	return getElementAlpha(alpha)
 end
@@ -34,9 +34,9 @@ SetPlayerAlpha = SetAlpha
 SetVehicleAlpha = SetAlpha
 SetObjectAlpha = SetAlpha
 SetBotAlpha = SetAlpha
-
 -----------------------------------------------------
 -- Misc player funcs
+
 function IsPlayerInWater(amx, player)
 	return isElementInWater(player)
 end
@@ -132,9 +132,9 @@ SetBotHeadless = SetPlayerHeadless
 GetBotVehicleSeat = GetPlayerVehicleSeat
 GetBotVelocity = GetPlayerVelocity
 SetBotVelocity = SetPlayerVelocity
-
 -----------------------------------------------------
 -- Bots
+
 function CreateBot(amx, model, x, y, z, name)
 	local bot = createPed(model, x, y, z)
 	setElementData(bot, 'amx.shownametag', true, true)
@@ -212,9 +212,9 @@ GetBotArmour = GetPlayerArmour
 SetBotArmour = SetPlayerArmour
 GetBotPos = GetObjectPos
 SetBotPos = SetObjectPos
-
 -----------------------------------------------------
 -- Native Markers
+
 function CreateMarker(amx, x, y, z, typeid, size, r, g, b, a)
 	local marker = createMarker(x, y, z, typeid, size, r, g, b, a, root)
 	local markerID = addElem(g_Markers, marker)
@@ -307,9 +307,9 @@ end
 
 IsVehicleInMarker = IsPlayerInMarker
 IsBotInMarker = IsPlayerInMarker
-
 -----------------------------------------------------
 -- Player Data
+
 function SetPlayerDataInt(amx, player, key, value)
 	return setElementData(player, key, value)
 end
@@ -342,9 +342,9 @@ end
 function ResetAllPlayerData(amx, player)
 	return true
 end
-
 -----------------------------------------------------
 -- Vehicles
+
 function GetVehicleMaxPassengers(amx, vehicle)
 	return getVehicleMaxPassengers(vehicle)
 end
@@ -450,9 +450,9 @@ end
 function SetTrainSpeed(amx, train, speed)
 	return setTrainSpeed(train, speed)
 end
-
 -----------------------------------------------------
 -- Water
+
 function GetWaveHeight(amx)
 	return getWaveHeight()
 end
@@ -464,9 +464,9 @@ end
 function SetWaterLevel(amx, level)
 	return setWaterLevel(level)
 end
-
 -----------------------------------------------------
 -- Pickups
+
 function GetPickupType(amx, pickup)
 	return getPickupType(pickup)
 end
@@ -486,9 +486,9 @@ end
 function GetPickupAmmo(amx, pickup)
 	return getPickupAmmo(pickup)
 end
-
 -----------------------------------------------------
 -- Misc
+
 function SetSkyGradient(amx, topRed, topGreen, topBlue, bottomRed, bottomGreen, bottomBlue)
 	return setSkyGradient(topRed, topGreen, topBlue, bottomRed, bottomGreen, bottomBlue)
 end
@@ -571,6 +571,7 @@ end
 function SetScoreboardData(amx, player, column, data)
 	return setElementData(player, '_' .. column, data)
 end
+
 -----------------------------------------------------
 
 function ShowCursor(amx, player, show, controls)

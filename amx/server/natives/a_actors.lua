@@ -1,5 +1,3 @@
------------------------------------------------------
--- Actor funcs
 function CreateActor(amx, model, x, y, z, rotation)
 	local actor = createPed(model, x, y, z, rotation, false)
 	setElementData(actor, 'amx.actorped', true)

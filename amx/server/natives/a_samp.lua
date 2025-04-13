@@ -17,12 +17,12 @@ skinReplace = {
 	[208] = 0,
 	[273] = 0,
 }
---replace colors
+-- replace colors
 function colorizeString(string)
 	return string:gsub("(=?{[0-9A-Fa-f]*})",
 	function(colorMatches)
-		colorMatches = colorMatches:gsub("[{}]+", "") --replace the curly brackets with nothing
-		colorMatches = '#' .. colorMatches --Append to the beginning
+		colorMatches = colorMatches:gsub("[{}]+", "") -- replace the curly brackets with nothing
+		colorMatches = '#' .. colorMatches -- Append to the beginning
 		return colorMatches
 	end)
 end
@@ -39,10 +39,10 @@ function SendClientMessage(amx, player, r, g, b, a, message)
 		for mta, samp in pairs(g_CommandMapping) do
 			message = message:gsub('/' .. samp, '/' .. mta)
 		end
-	]] --Why is command mapping stuff here? This replaces any part of a string, causing commands such as '/quitfaction' to display as '/outfaction'
+	]] -- Why is command mapping stuff here? This replaces any part of a string, causing commands such as '/quitfaction' to display as '/outfaction'
 	end
 
-	--replace colors
+	-- replace colors
 	return outputChatBox(colorizeString(message), player, r, g, b, true)
 end
 
@@ -51,7 +51,7 @@ function SendClientMessageToAll(amx, r, g, b, a, message)
 		return false
 	end
 
-	--replace colors
+	-- replace colors
 	message = colorizeString(message)
 
 	for i, data in pairs(g_Players) do
@@ -395,7 +395,7 @@ function GetWeaponName(amx, weaponID, buf, len)
 		writeMemString(amx, buf, name)
 		return 1
 	else
-		writeMemString(amx, buf, '') --I was going to return 'None' in here, but I believe SA-MP just returns a blank string
+		writeMemString(amx, buf, '') -- I was going to return 'None' in here, but I believe SA-MP just returns a blank string
 		return 0
 	end
 end
@@ -508,8 +508,8 @@ end
 function SpawnPlayer(amx, player)
 	local playerdata = g_Players[getElemID(player)]
 	if playerdata.doingclasssel then
-		--Call requestSpawn instead so we clear up any binds
-		--since there's a workaround in SA-MP to skip the spawn selection screen
+		-- Call requestSpawn instead so we clear up any binds
+		-- since there's a workaround in SA-MP to skip the spawn selection screen
 		requestSpawn(player, false, false)
 	else
 		spawnPlayerBySelectedClass(player)
@@ -706,7 +706,7 @@ function TextDrawCreate(amx, x, y, text)
 	return id
 end
 
---Mainly just wrappers to the other non-player functions
+-- Mainly just wrappers to the other non-player functions
 
 function IsPlayerTextDrawValid(player, textdrawID)
 	local tableType = type(g_PlayerTextDraws[player])
@@ -731,7 +731,7 @@ function TextDrawUseBox(amx, textdraw, usebox)
 	return true
 end
 
---End of player textdraws
+-- End of player textdraws
 function TextDrawDestroy(amx, textdrawID)
 	if not g_TextDraws[textdrawID] then
 		return false
@@ -748,7 +748,7 @@ function TextDrawLetterSize(amx, textdraw, width, height)
 end
 
 function TextDrawTextSize(amx, textdraw, x, y)
-	textdraw.boxsize = { x, y } --Game does 448 not 480
+	textdraw.boxsize = { x, y } -- Game does 448 not 480
 	return true
 end
 

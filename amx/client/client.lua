@@ -230,44 +230,6 @@ addEventHandler('onClientResourceStop', resourceRoot,
 function requestSpawn()
 	triggerServerEvent('onRequestSpawn', localPlayer, g_ClassSelectionInfo.selectedclass)
 end
-
-local function clientPlayerWeaponFire(weapon, ammo, ammoInClip, hitX, hitY, hitZ, hitElement, startX, startY, startZ)
-	if weapon < 22 or (weapon > 34 and weapon ~= 38) then return end
-
-	local hitId, hitType = 65535, 0
-	local offsetX, offsetY, offsetZ = hitX, hitY, hitZ
-
-	if hitElement and isElement(hitElement) then
-		local elemType = getElementType(hitElement)
-
-		hitType = ({
-			player = 1,
-			vehicle = 2,
-			object = 3
-		})[elemType] or 0
-
-		if hitType > 0 then
-			hitId = getElemID(hitElement)
-
-			for k, elem in pairs(g_PlayerObjects) do
-				if elem == hitElement then
-					hitId = k
-					hitType = 4
-					break
-				end
-			end
-
-			offsetX, offsetY, offsetZ = getElementPosition(hitElement)
-			offsetX = hitX - offsetX
-			offsetY = hitY - offsetY
-			offsetZ = hitZ - offsetZ
-		end
-	end
-
-	triggerServerEvent('OnPlayerWeaponShot_Ev', localPlayer, weapon, hitType, hitId, offsetX, offsetY, offsetZ)
-end
-addEventHandler('onClientPlayerWeaponFire', root, clientPlayerWeaponFire)
-
 -----------------------------
 -- Camera
 
@@ -310,7 +272,7 @@ end
 function pickupOnInteriorChangeLoop()
 	local vw = getElementDimension(localPlayer)
 	local interior = getElementInterior(localPlayer)
-	for i, v in ipairs(getElementsByType("pickup", root)) do --Only for those that are streamed in
+	for i, v in ipairs(getElementsByType("pickup", root)) do -- Only for those that are streamed in
 		if isElement(v) then
 			setElementInterior(v, interior)
 			setElementDimension(v, vw)
@@ -328,10 +290,9 @@ addEventHandler("onClientPlayerPickupHit", root, clientPlayerPickupHit)
 local interiorTimerPtr = false
 function AMX_OnPlayerInteriorChange(interior, oldInt)
 	if not interiorTimerPtr then
-		interiorTimerPtr = setTimer ( pickupOnInteriorChangeLoop, 1000, 0 ) --Every second check for pickups
+		interiorTimerPtr = setTimer(pickupOnInteriorChangeLoop, 1000, 0) -- Every second check for pickups
 	end
 end
-
 -----------------------------
 -- Camera related
 
@@ -341,7 +302,7 @@ function removeCamHandlers()
 end
 
 -- Camera attachments
---Based on https://forum.mtasa.com/topic/36692-move-camera-by-mouse-like-normal/?do=findComment&comment=368670
+-- Based on https://forum.mtasa.com/topic/36692-move-camera-by-mouse-like-normal/?do=findComment&comment=368670
 local ca = {}
 ca.active = 0
 ca.objCamPos = nil
@@ -377,7 +338,7 @@ function camAttachRender()
 		local camZ = z1 + math.sin(ca.z) * camDist
 		setCameraMatrix(camX, camY, camZ, x1, y1, z1)
 
-		--If aiming, set the target (does nothing, todo fix)
+		-- If aiming, set the target (does nothing, todo fix)
 		if getPedTask(localPlayer, "secondary", 0) == "TASK_SIMPLE_USE_GUN" or isPedDoingGangDriveby(localPlayer) then
 			setPedAimTarget ( localPlayer, camX, camY, camZ )
 			setPlayerHudComponentVisible ( localPlayer, "crosshair", true )
@@ -420,7 +381,7 @@ function AttachCameraToObject(camObj)
 end
 
 -- Camera Interpolation
---Originally from https://wiki.multitheftauto.com/wiki/SmoothMoveCamera
+-- Originally from https://wiki.multitheftauto.com/wiki/SmoothMoveCamera
 local sm = {}
 sm.moov = 0
 sm.objCamPos,sm.objLookAt = nil,nil
@@ -484,10 +445,10 @@ end
 
 function RemoveBuildingForPlayer(model, x, y, z, radius)
 	if model == -1 then
-		for i = 550, 20000 do --Remove all world models around radius if they sent -1
+		for i = 550, 20000 do -- Remove all world models around radius if they sent -1
 			removeWorldModel(i, radius, x, y, z)
 		end
-		return true --Don't run the rest of the code
+		return true -- Don't run the rest of the code
 	end
 	removeWorldModel(model, radius, x, y, z)
 	return true
@@ -550,12 +511,13 @@ function StopPlayerObject(objID)
 	stopObject(obj)
 	return true
 end
+-----------------------------
+-- Audio
 
---- Audio
 local pAudioStreamSound = nil -- SA-MP can only do one stream at a time anyway
 function PlayAudioStreamForPlayer(url, posX, posY, posZ, distance, usepos)
 	--outputConsole(string.format("PlayAudioStreamForPlayer called with args %s %f %f %f %f %d", url, posX, posY, posZ, distance, usepos))
-	if pAudioStreamSound ~= nil then --If there's one already playing, stop it
+	if pAudioStreamSound ~= nil then -- If there's one already playing, stop it
 		--outputConsole("PlayAudioStreamForPlayer is stopping an audio stream")
 		StopAudioStreamForPlayer()
 	end
@@ -666,8 +628,6 @@ function SetPlayerRaceCheckpoint(type, x, y, z, nextX, nextY, nextZ, size)
 	addEventHandler('onClientColShapeHit', g_PlayerRaceCheckpoint.colshape, OnPlayerEnterRaceCheckpoint)
 	addEventHandler('onClientColShapeLeave', g_PlayerRaceCheckpoint.colshape, OnPlayerLeaveRaceCheckpoint)
 end
-
-
 -----------------------------
 -- Vehicles
 
@@ -795,6 +755,11 @@ addEventHandler('onClientElementStreamOut', root,
 	end
 )
 
+local function clientVehicleDamage()
+	triggerServerEvent('OnVehicleDamageStatusUpdate_Ev', localPlayer, source)
+end
+addEventHandler("onClientVehicleDamage", root, clientVehicleDamage)
+
 -- emulate SA-MP behaviour: block enter attempts as driver to locked vehicles
 addEventHandler('onClientVehicleStartEnter', root,
 	function(player, seat, door)
@@ -807,7 +772,6 @@ addEventHandler('onClientVehicleStartEnter', root,
 function DestroyVehicle(vehID)
 	g_Vehicles[vehID] = nil
 end
-
 -----------------------------
 -- Text
 
@@ -921,10 +885,10 @@ function initTextDraw(textdraw)
 
 	local scale = (textdraw.lwidth or 0.5)
 	local tWidth, tHeight = dxGetTextSize(textdraw.text, scale)
-	local lineHeight = (tHeight or 0.25) / 2 --space between lines (vertical) also used to calculate size of the box if any
-	local lineWidth = (textdraw.lwidth or 0.25) --space between words (horizontal)
+	local lineHeight = (tHeight or 0.25) / 2 -- space between lines (vertical) also used to calculate size of the box if any
+	local lineWidth = (textdraw.lwidth or 0.25) -- space between words (horizontal)
 
-	--Set the height based on the text size
+	-- Set the height based on the text size
 	textdraw.theight = tHeight
 	textdraw.twidth = tWidth
 
@@ -934,7 +898,7 @@ function initTextDraw(textdraw)
 	stop = 0
 	while true do
 		pos, stop, c = text:find('~(%a)~', stop + 1)
-		if c == 'n' then --If we found a new line
+		if c == 'n' then -- If we found a new line
 			lines[#lines + 1] = text:sub(1, pos - 1)
 			text = text:sub(stop + 1)
 			stop = 0
@@ -955,7 +919,7 @@ function initTextDraw(textdraw)
 	local TDXPos = textdraw.x or 640 - #lines * lineWidth
 	local TDYPos = textdraw.y or 448 - #lines * lineHeight
 
-	--Process the lines we previously found
+	-- Process the lines we previously found
 	for i, line in ipairs(lines) do
 		local colorpos = 1
 		local color
@@ -1049,27 +1013,27 @@ function renderTextDraws()
 			local sourceX = screenWidth - ((DEFAULT_SCREEN_WIDTH - textdraw.x) * (screenWidth * horHudScale))
 
 			font = font.font
-			--Process box alignments
+			-- Process box alignments
 			if textdraw.usebox ~= nil and textdraw.usebox ~= 0 then
 				--outputConsole('textdraw uses box: ' .. textdraw.text)
 				local boxcolor = textdraw.boxcolor or tocolor(0, 0, 0, 120 * (textdraw.alpha or 1))
 				local x, y, w, h
 				w = textdraw.width
-				if textdraw.align == 1 then --left
+				if textdraw.align == 1 then -- left
 					x = sourceX
 					if textdraw.boxsize then
 						w = textdraw.boxsize[1]-- - x
 					else
 						w = textdraw.width
 					end
-				elseif textdraw.align == 2 then --centered
+				elseif textdraw.align == 2 then -- centered
 					x = sourceX-- / 2
 					if textdraw.boxsize then
 						w = textdraw.boxsize[1]
 					else
 						w = textdraw.width
 					end
-				elseif textdraw.align == 3 then --right
+				elseif textdraw.align == 3 then -- right
 					x = sourceX - w
 					if textdraw.boxsize then
 						w = sourceX - textdraw.boxsize[1]
@@ -1079,7 +1043,7 @@ function renderTextDraws()
 				end
 				y = sourceY
 
-				--Calculates box height
+				-- Calculates box height
 				if textdraw.boxsize and textdraw.text:match('^%s*$') then
 					h = textdraw.boxsize[2]
 				else
@@ -1097,10 +1061,10 @@ function renderTextDraws()
 
 				--outputConsole(string.format("text: %s partx: %f, party: %f sourceX: %f, sourceY: %f", part.text, part.x, part.y, sourceX, sourceY))
 
-				if textdraw.shade and textdraw.shade > 0 then --Draw the shadow
+				if textdraw.shade and textdraw.shade > 0 then -- Draw the shadow
 					dxDrawText(part.text, sourceX + 5, sourceY + 5, sourceX + 5, sourceY + 5, tocolor(0, 0, 0, 100 * (textdraw.alpha or 1)), scalex, scaley, font)
 				end
-				--Draw the actual text
+				-- Draw the actual text
 				drawBorderText(
 					part.text, sourceX, sourceY,
 					textdraw.alpha and setcoloralpha(part.color, math.floor(textdraw.alpha * 255)) or part.color,
@@ -1137,7 +1101,7 @@ function GameTextForPlayer(text, time, style)
 		destroyGameText(gIndex)
 	end
 
-	destroyAllGameTextsWithStyle(style) --So same styles don't overlap
+	destroyAllGameTextsWithStyle(style) -- So same styles don't overlap
 
 	--[[
 		alignments
@@ -1154,13 +1118,13 @@ function GameTextForPlayer(text, time, style)
 		gameText[gIndex].align = 3
 		gameText[gIndex].upscaley = 3.0
 		gameText[gIndex].upscalex = 1.0
-		time = 8000 --Fades out after 8 seconds regardless of time set according to the wiki
+		time = 8000 -- Fades out after 8 seconds regardless of time set according to the wiki
 	elseif style == 2 then
 		gameText[gIndex].x = 0.9 * 640
 		gameText[gIndex].y = 0.7 * 448
 		gameText[gIndex].align = 3
 	elseif style >= 3 then
-		--★
+		-- ★
 		-- GTA replaces these with stars
 		gameText[gIndex].text = text:gsub("]", "★")
 		gameText[gIndex].x = 0.5 * 640
@@ -1174,7 +1138,7 @@ function GameTextForPlayer(text, time, style)
 	initTextDraw(gameText[gIndex])
 	showTextDraw(gameText[gIndex])
 	gameText[gIndex].timer = setTimer(destroyGameText, time, 1, gIndex)
-	gIndex = gIndex > 100 and 1 or gIndex + 1 --Limit to 100
+	gIndex = gIndex > 100 and 1 or gIndex + 1 -- Limit to 100
 end
 
 function destroyGameText(gIndex)
@@ -1208,7 +1172,7 @@ function renderTextLabels()
 			local vw = getElementDimension(localPlayer)
 			local LOS = isLineOfSightClear(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z, true, false, false)
 
-			if screenX and dist <= textlabel.dist and (vw == textlabel.vw or textlabel.vw == -1) then --Because player textlabels don't have VW's, since we're processing both here
+			if screenX and dist <= textlabel.dist and (vw == textlabel.vw or textlabel.vw == -1) then -- Because player textlabels don't have VW's, since we're processing both here
 				if not textlabel.los then
 					dxDrawText(textlabel.text, screenX, screenY, screenX, screenY, tocolor(textlabel.color.r, textlabel.color.g, textlabel.color.b, textlabel.color.a), 1.0, "default-bold", "center", "top", false, false, false, true)
 				elseif LOS then
@@ -1357,7 +1321,6 @@ function displayFadingMessage(text, r, g, b, fadeInTime, stayTime, fadeOutTime)
 	)
 	anim:play()
 end
-
 -----------------------------
 -- Menus
 
@@ -1581,9 +1544,45 @@ function OnKeyPress(key, keyState)
 		exitMenu()
 	end
 end
-
 -----------------------------
 -- Others
+
+local function clientPlayerWeaponFire(weapon, ammo, ammoInClip, hitX, hitY, hitZ, hitElement, startX, startY, startZ)
+	if weapon < 22 or (weapon > 34 and weapon ~= 38) then return end
+
+	local hitId, hitType = 65535, 0
+	local offsetX, offsetY, offsetZ = hitX, hitY, hitZ
+
+	if hitElement and isElement(hitElement) then
+		local elemType = getElementType(hitElement)
+
+		hitType = ({
+			player = 1,
+			vehicle = 2,
+			object = 3
+		})[elemType] or 0
+
+		if hitType > 0 then
+			hitId = getElemID(hitElement)
+
+			for k, elem in pairs(g_PlayerObjects) do
+				if elem == hitElement then
+					hitId = k
+					hitType = 4
+					break
+				end
+			end
+
+			offsetX, offsetY, offsetZ = getElementPosition(hitElement)
+			offsetX = hitX - offsetX
+			offsetY = hitY - offsetY
+			offsetZ = hitZ - offsetZ
+		end
+	end
+
+	triggerServerEvent('OnPlayerWeaponShot_Ev', localPlayer, weapon, hitType, hitId, offsetX, offsetY, offsetZ)
+end
+addEventHandler('onClientPlayerWeaponFire', root, clientPlayerWeaponFire)
 
 function enableWeaponSyncing(enable)
 	if enable and not g_WeaponSyncTimer then
@@ -1715,9 +1714,9 @@ end
 
 function createListDialog(titleText, message, button1txt, button2txt)
 	if listWindow ~= nil then
-		removeEventHandler("onClientGUIClick", getRootElement(), OnListDialogButton1Click) --Remove handlers so they are not registered more than once
+		removeEventHandler("onClientGUIClick", getRootElement(), OnListDialogButton1Click) -- Remove handlers so they are not registered more than once
 		removeEventHandler("onClientGUIClick", getRootElement(), OnListDialogButton2Click)
-		destroyElement(listWindow) --Assuming inputWindow is the parent of everything, it should remove the whole hierarchy
+		destroyElement(listWindow) -- Assuming inputWindow is the parent of everything, it should remove the whole hierarchy
 	end
 
 	listDialog = nil
@@ -1732,7 +1731,7 @@ function createListDialog(titleText, message, button1txt, button2txt)
 
 	local xpos = 0.0
 	if #button1txt == 0 or #button2txt == 0 then
-		xpos = 0.40 --Center
+		xpos = 0.40 -- Center
 	end
 
 	listButton1 = guiCreateButton(xpos ~= 0.0 and xpos or 0.3, 0.9, 0.15, 0.1, button1txt, true, listWindow)
@@ -1753,9 +1752,9 @@ end
 
 function createInputDialog(titleText, message, button1txt, button2txt)
 		if inputWindow ~= nil then
-			removeEventHandler("onClientGUIClick", getRootElement(), OnInputDialogButton1Click) --Remove handlers so they are not registered more than once
+			removeEventHandler("onClientGUIClick", getRootElement(), OnInputDialogButton1Click) -- Remove handlers so they are not registered more than once
 			removeEventHandler("onClientGUIClick", getRootElement(), OnInputDialogButton2Click)
-			destroyElement(inputWindow) --Assuming inputWindow is the parent of everything, it should remove the whole hierarchy
+			destroyElement(inputWindow) -- Assuming inputWindow is the parent of everything, it should remove the whole hierarchy
 		end
 		inputDialog = nil
 		inputWindow = guiCreateWindow(screenWidth / 2 - 541 / 2, screenHeight / 2 - 352 / 2, 541, 352, titleText, false)
@@ -1766,10 +1765,10 @@ function createInputDialog(titleText, message, button1txt, button2txt)
 
 		local xpos = 0.0
 		if #button1txt == 0 or #button2txt == 0 then
-			xpos = 0.40 --Center
+			xpos = 0.40 -- Center
 		end
 
-		inputButton1 = guiCreateButton(xpos ~= 0.0 and xpos or 0.3, 0.9, 0.15, 0.1, button1txt, true, inputWindow) --x, y, width, height
+		inputButton1 = guiCreateButton(xpos ~= 0.0 and xpos or 0.3, 0.9, 0.15, 0.1, button1txt, true, inputWindow) -- x, y, width, height
 		inputButton2 = guiCreateButton(xpos ~= 0.0 and xpos or 0.5, 0.9, 0.15, 0.1, button2txt, true, inputWindow)
 
 		if #button1txt == 0 then
@@ -1786,9 +1785,9 @@ end
 
 function createMessageDialog(titleText, message, button1txt, button2txt )
 		if msgWindow ~= nil then
-			removeEventHandler("onClientGUIClick", getRootElement(), OnMessageDialogButton1Click) --Remove handlers so they are not registered more than once
+			removeEventHandler("onClientGUIClick", getRootElement(), OnMessageDialogButton1Click) -- Remove handlers so they are not registered more than once
 			removeEventHandler("onClientGUIClick", getRootElement(), OnMessageDialogButton2Click)
-			destroyElement(msgWindow) --Assuming msgWindow is the parent of everything, it should remove the whole hierarchy
+			destroyElement(msgWindow) -- Assuming msgWindow is the parent of everything, it should remove the whole hierarchy
 		end
 
 		msgDialog = nil
@@ -1799,10 +1798,10 @@ function createMessageDialog(titleText, message, button1txt, button2txt )
 
 		local xpos = 0.0
 		if #button1txt == 0 or #button2txt == 0 then
-			xpos = 0.40 --Center
+			xpos = 0.40 -- Center
 		end
 
-		msgButton1 = guiCreateButton(xpos ~= 0.0 and xpos or 0.3, 0.9, 0.15, 0.1, button1txt, true, msgWindow) --x, y, width, height
+		msgButton1 = guiCreateButton(xpos ~= 0.0 and xpos or 0.3, 0.9, 0.15, 0.1, button1txt, true, msgWindow) -- x, y, width, height
 		msgButton2 = guiCreateButton(xpos ~= 0.0 and xpos or 0.5, 0.9, 0.15, 0.1, button2txt, true, msgWindow)
 
 		if #button1txt == 0 then
@@ -1818,10 +1817,10 @@ function createMessageDialog(titleText, message, button1txt, button2txt )
 end
 
 function clearListItem()
-	guiGridListRemoveColumn(listGrid, listColumn) --First remove the default column
+	guiGridListRemoveColumn(listGrid, listColumn) -- First remove the default column
 	local colAmount = guiGridListGetColumnCount(listGrid)
-	for i = 1, colAmount do --Column indexes appear to start from 1
-		if not guiGridListRemoveColumn(listGrid, i) then --Always clean up all columns
+	for i = 1, colAmount do -- Column indexes appear to start from 1
+		if not guiGridListRemoveColumn(listGrid, i) then -- Always clean up all columns
 			outputConsole('[AMX:ShowPlayerDialog] Error: Couldn\'t remove column: ' .. 'idx: ' .. i)
 		end
 		outputConsole('vals: ' .. 'idx: ' .. i)
@@ -1890,7 +1889,7 @@ function OnMessageDialogButton2Click( button, state )
 end
 
 -- Originally by UAEpro from here: https://forum.mtasa.com/topic/33149-colorcodes-in-labels/?tab=comments#comment-335358
-function guiCreateColoredLabel(ax, ay, bx, by,str, parent, relative) --x, y, width, height
+function guiCreateColoredLabel(ax, ay, bx, by,str, parent, relative) -- x, y, width, height
 	if not relative then
 		relative = true
 	end
@@ -1920,15 +1919,15 @@ function guiCreateColoredLabel(ax, ay, bx, by,str, parent, relative) --x, y, wid
 
 			local match = cap:find("\n")
 			if match ~= nil then
-				local xtxtsize, ytxtsize = guiGetSize(lbl, true) --not relative
-				incy = incy + (ytxtsize / 8) --We found a /n so send it further down on the next line
-				incx = 0 --Don't add spaces on new lines
+				local xtxtsize, ytxtsize = guiGetSize(lbl, true) -- not relative
+				incy = incy + (ytxtsize / 8) -- We found a /n so send it further down on the next line
+				incx = 0 -- Don't add spaces on new lines
 				--outputConsole('found a new line')
 			else
-				if r ~= 255 or g ~= 255 or b ~= 255 then --It's colored so separate it
+				if r ~= 255 or g ~= 255 or b ~= 255 then -- It's colored so separate it
 					incy = 0
-					local xsize, ysize = guiGetSize(scrollpane, false) --not relative
-					incx = incx + (guiLabelGetTextExtent(lbl) / xsize) --Make space for the next word, relative to the parent width
+					local xsize, ysize = guiGetSize(scrollpane, false) -- not relative
+					incx = incx + (guiLabelGetTextExtent(lbl) / xsize) -- Make space for the next word, relative to the parent width
 					--outputConsole('Separating string')
 				else
 					incy = 0
@@ -1951,12 +1950,12 @@ function guiCreateColoredLabel(ax, ay, bx, by,str, parent, relative) --x, y, wid
 	return labels
 end
 
---replace colors
+-- replace colors
 function colorizeString(string)
 	return string:gsub("(=?{[0-9A-Fa-f]*})",
 	function(colorMatches)
-		colorMatches = colorMatches:gsub("[{}]+", "") --replace the curly brackets with nothing
-		colorMatches = '#' .. colorMatches --Append to the beginning
+		colorMatches = colorMatches:gsub("[{}]+", "") -- replace the curly brackets with nothing
+		colorMatches = '#' .. colorMatches -- Append to the beginning
 		return colorMatches
 	end)
 end
@@ -1972,15 +1971,15 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 		guiEditSetMasked(inputEdit, dialogtype == 3)
 		guiSetVisible(inputWindow, true)
 		inputDialog = dialogid
-	elseif dialogtype == 2 or dialogtype == 4 or dialogtype == 5 then --DIALOG_STYLE_LIST, DIALOG_STYLE_TABLIST, DIALOG_STYLE_TABLIST_HEADER
-		--Setup the UI
+	elseif dialogtype == 2 or dialogtype == 4 or dialogtype == 5 then -- DIALOG_STYLE_LIST, DIALOG_STYLE_TABLIST, DIALOG_STYLE_TABLIST_HEADER
+		-- Setup the UI
 		createListDialog(caption, colorizeString(info), button1, button2)
 		guiSetVisible(listWindow, true)
 		listDialog = dialogid
 		-- Done
 
-		--Process each
-		--DIALOG_STYLE_LIST
+		-- Process each
+		-- DIALOG_STYLE_LIST
 		if dialogtype == 2 then
 			local items = info:gsub("\t", "        ")
 			items = items:split("\n")
@@ -1992,31 +1991,31 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 			return true
 		end
 
-		--DIALOG_STYLE_TABLIST, DIALOG_STYLE_TABLIST_HEADER
-		--Add the columns
+		-- DIALOG_STYLE_TABLIST, DIALOG_STYLE_TABLIST_HEADER
+		-- Add the columns
 		local items = info:split("\n") -- Get the first one which is the header
 		if #items < 1 then
 			outputConsole('Error, your dialog either has no items, its format is wrong or you\'re missing a newline character in the string')
 			outputConsole('The raw string was: ' .. info)
-			return false --Abort if there's no items
+			return false -- Abort if there's no items
 		end
 
-		--Create the header
+		-- Create the header
 		local headerCols = items[1]:split("\t")
 		for k, v in ipairs(headerCols) do
-			local colIdx = guiGridListAddColumn(listGrid, (dialogtype == 5 and v or ''), 0.5) --If it's the DIALOG_STYLE_TABLIST_HEADER add the name, otherwise leave it blank
+			local colIdx = guiGridListAddColumn(listGrid, (dialogtype == 5 and v or ''), 0.5) -- If it's the DIALOG_STYLE_TABLIST_HEADER add the name, otherwise leave it blank
 			--outputConsole('headerCols - colidx: ' .. colIdx .. 'k: ' .. k .. 'v: ' .. v)
 		end
 
-		if dialogtype == 5 then --Only remove if it's a DIALOG_STYLE_TABLIST_HEADER
-			table.remove(items, 1) --remove the first item which is the header
+		if dialogtype == 5 then -- Only remove if it's a DIALOG_STYLE_TABLIST_HEADER
+			table.remove(items, 1) -- remove the first item which is the header
 		end
 
-		--Add the rows ordered under each column
-		for k, v in ipairs(items) do --rows
-			local row = guiGridListAddRow(listGrid) --add the row
-			--Now process every individual column (columns are tabulated)
-			for hk, hv in ipairs(v:split("\t")) do --header key, header value
+		-- Add the rows ordered under each column
+		for k, v in ipairs(items) do -- rows
+			local row = guiGridListAddRow(listGrid) -- add the row
+			-- Now process every individual column (columns are tabulated)
+			for hk, hv in ipairs(v:split("\t")) do -- header key, header value
 				--outputConsole('hk: ' .. hk .. 'hv: ' .. hv)
 				guiGridListSetItemText(listGrid, row, hk, hv, false, true)
 			end

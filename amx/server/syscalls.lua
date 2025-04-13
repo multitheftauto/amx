@@ -163,7 +163,6 @@ function toggleUninmplementedErrors ( playerSource, commandName )
 	outputDebugString('[INFO]: ShowUnimplementedErrors is now ' .. (ShowUnimplementedErrors and "Enabled" or "Disabled"))
 end
 addCommandHandler ( "showunimplementederrors", toggleUninmplementedErrors )
-
 -----------------------------------------------------
 -- List of the functions and their argument types
 
@@ -418,7 +417,7 @@ g_SAMPSyscallPrototypes = {
 	TextDrawShowForPlayer = {'p', 'i'},
 	TextDrawTextSize = {'x', 'f', 'f'},
 	TextDrawUseBox = {'x', 'i'},
-	--Player textdraws
+	-- Player textdraws
 	PlayerTextDrawDestroy = {'p', 'i'},
 	PlayerTextDrawShow = {'p', 'i'},
 	PlayerTextDrawHide = {'p', 'i'},
@@ -728,7 +727,7 @@ g_SAMPSyscallPrototypes = {
 	GetPVarNameAtIndex = {'p', 'i', 'r', 'i'},
 	SetVehicleParamsCarWindows = {'v', 'i', 'i', 'i', 'i'},
 	GetPlayerVersion = {'p', 's', 'i'},
-	--End of unimplemented funcs
+	-- End of unimplemented funcs
 
 	-- new imp
 	IsVehicleStreamedIn = {'v', 'p'},
@@ -762,7 +761,7 @@ g_SAMPSyscallPrototypes = {
 	SetActorFacingAngle = {'y', 'f'},
 	SetActorHealth = {'y', 'f'},
 	SetActorInvulnerable = {},
-	GetActorPos = {'y', 'r', 'r', 'r'}, --r since the vals should be passed by ref
+	GetActorPos = {'y', 'r', 'r', 'r'}, -- r since the vals should be passed by ref
 	SetActorPos = {'y', 'f', 'f', 'f'},
 	SetActorVirtualWorld = {'y', 'i'},
 

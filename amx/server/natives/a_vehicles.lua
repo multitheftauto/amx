@@ -58,7 +58,7 @@ end
 function GetVehicleParamsEx(amx, vehicle, refEngine, refLights, refAlarm, refDoors, refBonnet, refBoot, refObjective)
 	local vehicleID = getElemID(vehicle)
 
-	amx.memDAT[refEngine] = getVehicleEngineState(vehicle) and 1 or 0 --Lua expects this to be an int, so cast it
+	amx.memDAT[refEngine] = getVehicleEngineState(vehicle) and 1 or 0 -- Lua expects this to be an int, so cast it
 	amx.memDAT[refLights] = getVehicleOverrideLights(vehicle) == 2 and 1 or 0
 	amx.memDAT[refAlarm] = g_Vehicles[vehicleID].alarm and 1 or 0
 	amx.memDAT[refDoors] = isVehicleLocked(vehicle) and 1 or 0

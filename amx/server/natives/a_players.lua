@@ -309,7 +309,6 @@ function GetPlayerVelocity(amx, player, refVX, refVY, refVZ)
 	return true
 end
 
--- dummy
 function PlayCrimeReportForPlayer(amx, player, suspectid, crimeid)
 	notImplemented('PlayCrimeReportForPlayer')
 	return false
@@ -365,7 +364,7 @@ function SetPlayerAttachedObject(amx, player, index, modelid, bone, fOffsetX, fO
 		setElementCollisionsEnabled (obj, false)
 		setObjectScale (obj, fScaleX, fScaleY, fScaleZ)
 		attachElementToBone(obj, player, mtaBone, fOffsetX, fOffsetY, fOffsetZ, fRotX, fRotY, fRotZ)
-		--Todo: Implement material colors
+		-- Todo: Implement material colors
 	else
 		outputDebugString('SetPlayerAttachedObject: Cannot attach object since the model is invalid. Model id was ' .. modelid)
 		return false
@@ -375,7 +374,7 @@ end
 
 function RemovePlayerAttachedObject(amx, player, index)
 	local playerID = getElemID(player)
-	local obj = g_Players[playerID].attachedObjects[index] --Get the object stored at this slot
+	local obj = g_Players[playerID].attachedObjects[index] -- Get the object stored at this slot
 	if obj ~= false then
 		detachElementFromBone( obj )
 		destroyElement( obj )
@@ -398,7 +397,7 @@ end
 function CreatePlayerTextDraw(amx, player, x, y, text)
 	outputDebugString('CreatePlayerTextDraw called with args ' .. x .. ' ' .. y .. ' ' .. text)
 
-	if ( not g_PlayerTextDraws[player] ) then --Create dimension if it doesn't exist
+	if ( not g_PlayerTextDraws[player] ) then -- Create dimension if it doesn't exist
 		outputDebugString('Created dimension for g_PlayerTextDraws[player]')
 		g_PlayerTextDraws[player] = {}
 	end
@@ -429,7 +428,7 @@ function CreatePlayerTextDraw(amx, player, x, y, text)
 					end
 				end
 				if different then
-					--table.dump(v, 1, nil) --Dump the data
+					--table.dump(v, 1, nil) -- Dump the data
 					--outputDebugString(string.format('A property changed for %d string: %s', textdraw.clientTDId, textdraw.text))
 					clientCall(player, 'TextDrawPropertyChanged', textdraw.clientTDId, k, v)
 					t.shadow[k] = v
@@ -674,7 +673,7 @@ function PutPlayerInVehicle(amx, player, vehicle, seat)
 		setElementAlpha(player, 0)
 	end
 	--setPlayerState(player, seat == 0 and PLAYER_STATE_DRIVER or PLAYER_STATE_PASSENGER)
-	--No need to do this since the vehicle event gets called when we enter a vehicle
+	-- No need to do this since the vehicle event gets called when we enter a vehicle
 	return true
 end
 
@@ -705,7 +704,7 @@ function RemovePlayerFromVehicle(amx, player)
 		end
 	end
 	--setPlayerState(player, PLAYER_STATE_ONFOOT)
-	--No need to do this since the vehicle event gets called when we exit a vehicle
+	-- No need to do this since the vehicle event gets called when we exit a vehicle
 	return true
 end
 
@@ -837,7 +836,7 @@ function SetPlayerCameraLookAt(amx, player, lx, ly, lz)
 end
 
 function SetCameraBehindPlayer(amx, player)
-	--In SA-MP calling SetCameraBehindPlayer also unsets camera interpolation
+	-- In SA-MP calling SetCameraBehindPlayer also unsets camera interpolation
 	clientCall(player, 'removeCamHandlers')
 	return setCameraTarget(player, player)
 end
@@ -986,10 +985,10 @@ function TogglePlayerSpectating(amx, player, enable)
 			return true
 		end
 		spawnPlayerBySelectedClass(player)
-		--In SA-MP calling TogglePlayerSpectating also unsets camera interpolation
+		-- In SA-MP calling TogglePlayerSpectating also unsets camera interpolation
 		clientCall(player, 'removeCamHandlers')
 		setCameraTarget(player, player)
-		clientCall(player, 'setCameraTarget', player) --Clear the one on the client as well, otherwise we can't go back to normal camera after spectating vehicles
+		clientCall(player, 'setCameraTarget', player) -- Clear the one on the client as well, otherwise we can't go back to normal camera after spectating vehicles
 		setPlayerHudComponentVisible(player, 'radar', true)
 	end
 	return true

@@ -44,7 +44,7 @@ fndebug(
 function clientCall(player, fnName, ...)
 	local called = triggerClientEvent(player, 'onClientCall', resourceRoot, fnName, ...)
 	if called == nil or called == false then
-		called = false --if it's null set it to false to prevent stuff like 'concatenating nil values'
+		called = false -- if it's null set it to false to prevent stuff like 'concatenating nil values'
 	end
 	return called
 end

@@ -27,27 +27,27 @@ function initAttach()
 end
 addEventHandler("onClientResourceStart", resourceRoot, initAttach)
 
-bone_0,bone_t,bone_f = {}, {}, {}
-bone_0[1],bone_t[1],bone_f[1] = 5, nil, 6 --head
-bone_0[2],bone_t[2],bone_f[2] = 4, 5, 8 --neck
-bone_0[3],bone_t[3],bone_f[3] = 3, nil, 31 --spine
-bone_0[4],bone_t[4],bone_f[4] = 1, 2, 3 --pelvis
-bone_0[5],bone_t[5],bone_f[5] = 4, 32, 5 --left clavicle
-bone_0[6],bone_t[6],bone_f[6] = 4, 22, 5 --right clavicle
-bone_0[7],bone_t[7],bone_f[7] = 32, 33, 34 --left shoulder
-bone_0[8],bone_t[8],bone_f[8] = 22, 23, 24 --right shoulder
-bone_0[9],bone_t[9],bone_f[9] = 33, 34, 32 --left elbow
-bone_0[10],bone_t[10],bone_f[10] = 23, 24, 22 --right elbow
-bone_0[11],bone_t[11],bone_f[11] = 34, 35, 36 --left hand
-bone_0[12],bone_t[12],bone_f[12] = 24, 25, 26 --right hand
-bone_0[13],bone_t[13],bone_f[13] = 41, 42, 43 --left hip
-bone_0[14],bone_t[14],bone_f[14] = 51, 52, 53 --right hip
-bone_0[15],bone_t[15],bone_f[15] = 42, 43, 44 --left knee
-bone_0[16],bone_t[16],bone_f[16] = 52, 53, 54 --right knee
-bone_0[17],bone_t[17],bone_f[17] = 43, 42, 44 --left ankle
-bone_0[18],bone_t[18],bone_f[18] = 53, 52, 54 --right angle
-bone_0[19],bone_t[19],bone_f[19] = 44, 43, 42 --left foot
-bone_0[20],bone_t[20],bone_f[20] = 54, 53, 52 --right foot
+bone_0, bone_t, bone_f = {}, {}, {}
+bone_0[1], bone_t[1], bone_f[1] = 5, nil, 6 -- head
+bone_0[2], bone_t[2], bone_f[2] = 4, 5, 8 -- neck
+bone_0[3], bone_t[3], bone_f[3] = 3, nil, 31 -- spine
+bone_0[4], bone_t[4], bone_f[4] = 1, 2, 3 -- pelvis
+bone_0[5], bone_t[5], bone_f[5] = 4, 32, 5 -- left clavicle
+bone_0[6], bone_t[6], bone_f[6] = 4, 22, 5 -- right clavicle
+bone_0[7], bone_t[7], bone_f[7] = 32, 33, 34 -- left shoulder
+bone_0[8], bone_t[8], bone_f[8] = 22, 23, 24 -- right shoulder
+bone_0[9], bone_t[9], bone_f[9] = 33, 34, 32 -- left elbow
+bone_0[10], bone_t[10], bone_f[10] = 23, 24, 22 -- right elbow
+bone_0[11], bone_t[11], bone_f[11] = 34, 35, 36 -- left hand
+bone_0[12], bone_t[12], bone_f[12] = 24, 25, 26 -- right hand
+bone_0[13], bone_t[13], bone_f[13] = 41, 42, 43 -- left hip
+bone_0[14], bone_t[14], bone_f[14] = 51, 52, 53 -- right hip
+bone_0[15], bone_t[15], bone_f[15] = 42, 43, 44 -- left knee
+bone_0[16], bone_t[16], bone_f[16] = 52, 53, 54 -- right knee
+bone_0[17], bone_t[17], bone_f[17] = 43, 42, 44 -- left ankle
+bone_0[18], bone_t[18], bone_f[18] = 53, 52, 54 -- right angle
+bone_0[19], bone_t[19], bone_f[19] = 44, 43, 42 -- left foot
+bone_0[20], bone_t[20], bone_f[20] = 54, 53, 52 -- right foot
 
 function putAttachedElementsOnBones()
 	for element, ped in pairs(attached_ped) do
@@ -55,7 +55,7 @@ function putAttachedElementsOnBones()
 			clearAttachmentData(element)
 		elseif isElementStreamedIn(ped) then
 			local bone = attached_bone[element]
-			local x, y, z = getPedBonePosition(ped,bone_0[bone])
+			local x, y, z = getPedBonePosition(ped, bone_0[bone])
 			local xx, xy, xz, yx, yy, yz, zx, zy, zz = getBoneMatrix(ped,bone)
 			local offx, offy, offz = attached_x[element], attached_y[element], attached_z[element]
 			local offrx, offry, offrz = attached_rx[element], attached_ry[element], attached_rz[element]

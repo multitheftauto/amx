@@ -1,7 +1,7 @@
 function CreateObject(amx, model, x, y, z, rX, rY, rZ)
 	local obj = createObject(model, x, y, z, rX, rY, rZ)
 	if obj == false then
-		obj = createObject(1337, x, y, z, rX, rY, rZ) --Create a dummy object anyway since createobject can also be used to make camera attachments
+		obj = createObject(1337, x, y, z, rX, rY, rZ) -- Create a dummy object anyway since createobject can also be used to make camera attachments
 		setElementAlpha(obj, 0)
 		setElementCollisionsEnabled(obj, false)
 		outputDebugString(string.format("[MTA AMX - WARNING]: The provided model id (%d) is invalid (the model was replaced with id 1337, is now invisible and non-collidable), some object ids are not supported, consider updating your scripts.", model))
@@ -9,7 +9,6 @@ function CreateObject(amx, model, x, y, z, rX, rY, rZ)
 	return addElem(g_Objects, obj)
 end
 
--- TODO: AttachObjectToVehicle dummy
 function AttachObjectToVehicle(amx)
 	notImplemented('AttachObjectToVehicle')
 end
