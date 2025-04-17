@@ -17,7 +17,16 @@ function IsVehicleStreamedIn(amx, vehicle, player)
 	return g_Players[getElemID(player)].streamedVehicles[getElemID(vehicle)] == true
 end
 
-GetVehiclePos = GetObjectPos
+function GetVehiclePos(amx, vehicle, refX, refY, refZ)
+	if not vehicle then
+		return false
+	end
+	local x, y, z = getElementPosition(vehicle)
+	writeMemFloat(amx, refX, x)
+	writeMemFloat(amx, refY, y)
+	writeMemFloat(amx, refZ, z)
+	return true
+end
 
 function SetVehiclePos(amx, vehicle, x, y, z)
 	setElementFrozen(vehicle, true)
@@ -37,6 +46,11 @@ function GetVehicleZAngle(amx, vehicle, refZ)
 	local rX, rY, rZ = getVehicleRotation(vehicle)
 	writeMemFloat(amx, refZ, rZ)
 	return true
+end
+
+function GetVehicleRotationQuat(amx, vehicle, refW, refX, refY, refZ)
+	notImplemented('GetVehicleRotationQuat')
+	return false
 end
 
 GetVehicleDistanceFromPoint = GetPlayerDistanceFromPoint

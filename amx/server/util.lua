@@ -186,6 +186,7 @@ g_EventNames = {
 	OnPlayerText = true,
 	OnPlayerGiveDamage = true,
 	OnPlayerTakeDamage = true,
+	OnPlayerGiveDamageActor = true,
 	OnPlayerWeaponSwitch = true,
 	OnPlayerDeath = true,
 	OnVehicleSpawn = true,
@@ -808,6 +809,7 @@ function writeMemString(amx, offset, str)
 end
 
 function writeMemFloat(amx, offset, float)
+	if not float then return end
 	amx.memDAT[offset] = float2cell(float)
 end
 
@@ -897,7 +899,7 @@ end
 
 --[[
 function cell2float(cell)
-	if not cell or cell == 0 then
+	if cell == 0 then
 		return 0
 	end
 
@@ -908,7 +910,7 @@ function cell2float(cell)
 end
 
 function float2cell(float)
-	if not float or float == 0 then
+	if float == 0 then
 		return 0
 	end
 	local ldexp = math.ldexp

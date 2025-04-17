@@ -423,6 +423,10 @@ function SetGravity(amx, gravity)
 	return true
 end
 
+function GetGravity(amx)
+	return float2cell(getGravity())
+end
+
 function AllowAdminTeleport(amx, allow)
 	deprecated('AllowAdminTeleport', '0.3d')
 end
@@ -529,6 +533,16 @@ end
 
 function GetPlayerVersion(amx, player)
 	notImplemented('GetPlayerVersion')
+	return false
+end
+
+function BlockIpAddress(amx, ip, time)
+	notImplemented('BlockIpAddress')
+	return false
+end
+
+function UnBlockIpAddress(amx, ip)
+	notImplemented('UnBlockIpAddress')
 	return false
 end
 

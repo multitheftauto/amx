@@ -4,17 +4,17 @@ function CreateObject(amx, model, x, y, z, rX, rY, rZ)
 		obj = createObject(1337, x, y, z, rX, rY, rZ) -- Create a dummy object anyway since createobject can also be used to make camera attachments
 		setElementAlpha(obj, 0)
 		setElementCollisionsEnabled(obj, false)
-		outputDebugString(string.format("[MTA AMX - WARNING]: The provided model id (%d) is invalid (the model was replaced with id 1337, is now invisible and non-collidable), some object ids are not supported, consider updating your scripts.", model))
+		outputDebugString(string.format("[MTA AMX - WARNING]: Invalid model id %d (replaced with invisible and non-collidable), some object ids are not supported, consider updating your scripts", model))
 	end
 	return addElem(g_Objects, obj)
 end
 
-function AttachObjectToVehicle(amx, object)
-	notImplemented('AttachObjectToVehicle')
+function AttachObjectToVehicle(amx, object, vehicle, offsetX, offsetY, offsetZ, rX, rY, rZ)
+	return attachElements(object, vehicle, offsetX, offsetY, offsetZ, rX, rY, rZ)
 end
 
-function AttachObjectToObject(amx, object)
-	notImplemented('AttachObjectToObject')
+function AttachObjectToObject(amx, object, attachtoid, offsetX, offsetY, offsetZ, rX, rY, rZ, syncRotation)
+	return attachElements(object, attachtoid, offsetX, offsetY, offsetZ, rX, rY, rZ)
 end
 
 function AttachObjectToPlayer(amx, object, player, offsetX, offsetY, offsetZ, rX, rY, rZ)
@@ -54,9 +54,9 @@ function SetObjectRot(amx, object, rX, rY, rZ)
 	return true
 end
 
-function GetObjectModel(amx, objID)
-	if g_Objects[objID] ~= nil then
-		return getElementModel(g_Objects[objID])
+function GetObjectModel(amx, object)
+	if object then
+		return getElementModel(object)
 	end
 	return -1
 end
@@ -100,7 +100,11 @@ function CreatePlayerObject(amx, player, model, x, y, z, rX, rY, rZ)
 	if not g_PlayerObjects[player] then
 		g_PlayerObjects[player] = {}
 	end
-	local objID = table.insert(g_PlayerObjects[player], { x = x, y = y, z = z, rx = rX, ry = rY, rz = rZ })
+	local objID = table.insert(g_PlayerObjects[player], {
+		model = model,
+		x = x, y = y, z = z,
+		rx = rX, ry = rY, rz = rZ
+	})
 	clientCall(player, 'CreatePlayerObject', objID, model, x, y, z, rX, rY, rZ)
 	return objID
 end
@@ -177,10 +181,14 @@ function GetPlayerObjectRot(amx, player, objID, refX, refY, refZ)
 	return true
 end
 
-function GetPlayerObjectModel(amx, player, object)
-	notImplemented('GetPlayerObjectModel')
-end
+function GetPlayerObjectModel(amx, player, objID)
+	if not player then return 0 end
 
+	local obj = g_PlayerObjects[player] and g_PlayerObjects[player][objID]
+	if not obj then return -1 end
+
+	return g_PlayerObjects[player][objID].model
+end
 
 function IsValidPlayerObject(amx, player, objID)
 	return g_PlayerObjects[player] and g_PlayerObjects[player][objID] and true
@@ -228,6 +236,10 @@ end
 
 function SetObjectMaterialText(amx, object)
 	notImplemented('SetObjectMaterialText')
+end
+
+function SetPlayerObjectMaterialText(amx, player)
+	notImplemented('SetPlayerObjectMaterialText')
 end
 
 -- AttachPlayerObjectToPlayer client

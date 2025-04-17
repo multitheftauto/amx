@@ -135,7 +135,7 @@ function startClassSelection(classInfo)
 		setWeather(g_StartWeather)
 		g_StartWeather = nil
 	end
-	setGravity(0)
+
 	setElementCollisionsEnabled(localPlayer, false)
 
 	-- interaction
@@ -209,7 +209,6 @@ function destroyClassSelGUI()
 	end
 	setPlayerHudComponentVisible('radar', true)
 	setCameraTarget(localPlayer)
-	setGravity(0.008)
 	setElementCollisionsEnabled(localPlayer, true)
 	showCursor(false)
 	if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
@@ -283,7 +282,7 @@ end
 local function clientPlayerPickupHit(thePickup, matchingDimension)
 	triggerServerEvent('OnPlayerPickUpPickup_Ev', localPlayer, thePickup)
 end
-addEventHandler("onClientPlayerPickupHit", root, clientPlayerPickupHit)
+addEventHandler('onClientPlayerPickupHit', root, clientPlayerPickupHit)
 -----------------------------
 -- Interior related
 
@@ -302,7 +301,7 @@ function removeCamHandlers()
 end
 
 -- Camera attachments
--- Based on https://forum.mtasa.com/topic/36692-move-camera-by-mouse-like-normal/?do=findComment&comment=368670
+-- Based on https://forum.multitheftauto.com/topic/36692-move-camera-by-mouse-like-normal/#comment-368670
 local ca = {}
 ca.active = 0
 ca.objCamPos = nil
@@ -324,6 +323,8 @@ end
 
 function camAttachRender()
 	if (ca.active == 1) then
+		if isCursorShowing() then return end
+
 		local x1, y1, z1 = 0.0, 0.0, 0.0
 		if ca.objCamPos ~= nil then
 			x1, y1, z1 = getElementPosition(ca.objCamPos)
@@ -353,6 +354,8 @@ end
 
 function cursorMouseMoveHandler(curX, curY, absX, absY)
 	if (ca.active == 1) then
+		if isCursorShowing() then return end
+
 		local diffX = curX - 0.5
 		local diffY = curY - 0.5
 		local camX = ca.x - diffX * ca.speed
@@ -374,8 +377,28 @@ end
 
 function AttachCameraToObject(camObj)
 	outputConsole('AttachCameraToObject was called')
+
+	if not isElement(camObj) then
+		return false
+	end
+
 	ca.active = 1
 	ca.objCamPos = camObj
+
+	addEventHandler("onClientPreRender", root, camAttachRender)
+	addEventHandler("onClientCursorMove", root, cursorMouseMoveHandler)
+end
+
+function AttachCameraToPlayerObject(camobjID)
+	outputConsole('AttachCameraToPlayerObject was called')
+
+	if not isElement(g_PlayerObjects[camobjID]) then
+		return false
+	end
+
+	ca.active = 1
+	ca.objCamPos = g_PlayerObjects[camobjID]
+
 	addEventHandler("onClientPreRender", root, camAttachRender)
 	addEventHandler("onClientCursorMove", root, cursorMouseMoveHandler)
 end
@@ -384,7 +407,7 @@ end
 -- Originally from https://wiki.multitheftauto.com/wiki/SmoothMoveCamera
 local sm = {}
 sm.moov = 0
-sm.objCamPos,sm.objLookAt = nil,nil
+sm.objCamPos, sm.objLookAt = nil, nil
 
 function removeInterpCamHandler()
 	outputConsole('removeInterpCamHandler was called')
@@ -465,6 +488,11 @@ end
 
 function CreatePlayerObject(objID, model, x, y, z, rX, rY, rZ)
 	g_PlayerObjects[objID] = createObject(model, x, y, z, rX, rY, rZ)
+	if g_PlayerObjects[objID] == false then
+		g_PlayerObjects[objID] = createObject(1337, x, y, z, rX, rY, rZ) -- Create a dummy object anyway since createobject can also be used to make camera attachments
+		setElementAlpha(g_PlayerObjects[objID], 0)
+		setElementCollisionsEnabled(g_PlayerObjects[objID], false)
+	end
 end
 
 function DestroyPlayerObject(objID)
@@ -536,6 +564,7 @@ function PlayAudioStreamForPlayer(url, posX, posY, posZ, distance, usepos)
 end
 
 function StopAudioStreamForPlayer()
+	if pAudioStreamSound == nil then return end
 	return stopSound(pAudioStreamSound)
 end
 -----------------------------
@@ -755,10 +784,17 @@ addEventHandler('onClientElementStreamOut', root,
 	end
 )
 
-local function clientVehicleDamage()
-	triggerServerEvent('OnVehicleDamageStatusUpdate_Ev', localPlayer, source)
+local function clientVehicleDamage(attacker, weapon, loss, x, y, z, tire)
+	if not isElement(source) or isVehicleEmpty(source) then
+		-- Block any damage for unoccupied vehicles like SA-MP does
+		return cancelEvent()
+	end
+
+	if localPlayer == getVehicleOccupant(source) then
+		triggerServerEvent('OnVehicleDamageStatusUpdate_Ev', localPlayer, source)
+	end
 end
-addEventHandler("onClientVehicleDamage", root, clientVehicleDamage)
+addEventHandler('onClientVehicleDamage', root, clientVehicleDamage)
 
 -- emulate SA-MP behaviour: block enter attempts as driver to locked vehicles
 addEventHandler('onClientVehicleStartEnter', root,
@@ -1584,6 +1620,18 @@ local function clientPlayerWeaponFire(weapon, ammo, ammoInClip, hitX, hitY, hitZ
 end
 addEventHandler('onClientPlayerWeaponFire', root, clientPlayerWeaponFire)
 
+local function clientPedDamage(attacker, weapon, bodypart, loss)
+	if getElementType(source) == 'ped' and getElementData(source, 'amx.actorped') then
+		if not getElementData(source, 'amx.invulnerable') then
+			triggerServerEvent('OnPlayerGiveDamageActor_Ev', localPlayer, source, loss, weapon, bodypart)
+		end
+
+		-- Actor damage controlled by the server in any case
+		return cancelEvent()
+	end
+end
+addEventHandler('onClientPedDamage', root, clientPedDamage)
+
 function enableWeaponSyncing(enable)
 	if enable and not g_WeaponSyncTimer then
 		g_WeaponSyncTimer = setTimer(sendWeapons, 5000, 0)
@@ -1821,7 +1869,7 @@ function clearListItem()
 	local colAmount = guiGridListGetColumnCount(listGrid)
 	for i = 1, colAmount do -- Column indexes appear to start from 1
 		if not guiGridListRemoveColumn(listGrid, i) then -- Always clean up all columns
-			outputConsole('[AMX:ShowPlayerDialog] Error: Couldn\'t remove column: ' .. 'idx: ' .. i)
+			outputConsole('[ShowPlayerDialog] Error: Couldn\'t remove column: ' .. 'idx: ' .. i)
 		end
 		outputConsole('vals: ' .. 'idx: ' .. i)
 	end
@@ -1888,7 +1936,7 @@ function OnMessageDialogButton2Click( button, state )
 	end
 end
 
--- Originally by UAEpro from here: https://forum.mtasa.com/topic/33149-colorcodes-in-labels/?tab=comments#comment-335358
+-- Originally by UAEpro from here: https://forum.multitheftauto.com/topic/33149-colorcodes-in-labels/#comment-335358
 function guiCreateColoredLabel(ax, ay, bx, by,str, parent, relative) -- x, y, width, height
 	if not relative then
 		relative = true
@@ -2024,8 +2072,8 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 	return true
 end
 
-addEvent("onPlayerClickPlayer")
+addEvent('onPlayerClickPlayer')
 function OnPlayerClickPlayer(element)
 	serverAMXEvent('OnPlayerClickPlayer', getElemID(localPlayer), getElemID(element), 0)
 end
-addEventHandler("onPlayerClickPlayer", root, OnPlayerClickPlayer)
+addEventHandler('onPlayerClickPlayer', root, OnPlayerClickPlayer)

@@ -20,7 +20,16 @@ function SetPlayerPosFindZ(amx, player, x, y, z)
 	return true
 end
 
-GetPlayerPos = GetObjectPos
+function GetPlayerPos(amx, player, refX, refY, refZ)
+	if not player then
+		return false
+	end
+	local x, y, z = getElementPosition(player)
+	writeMemFloat(amx, refX, x)
+	writeMemFloat(amx, refY, y)
+	writeMemFloat(amx, refZ, z)
+	return true
+end
 
 function SetPlayerFacingAngle(amx, player, angle)
 	return setPedRotation(player, angle)
@@ -120,13 +129,22 @@ function GetPlayerWeaponState(amx, player)
 	end
 end
 
--- TODO: GetPlayerTargetPlayer
+function GetPlayerTargetPlayer(amx, player)
+	local elem = getPedTarget(player)
+
+	if elem and getElementType(elem) == 'player' then
+		return getElemID(elem)
+	end
+	return INVALID_PLAYER_ID
+end
 
 function GetPlayerTargetActor(amx, player)
 	local elem = getPedTarget(player)
 
-	if getElementType(elem) == 'ped' and getElementData(elem, 'amx.actorped') then
-		return getElemID(elem)
+	if elem and getElementType(elem) == 'ped' then
+		if getElementData(elem, 'amx.actorped') then
+			return getElemID(elem)
+		end
 	end
 	return INVALID_ACTOR_ID
 end
@@ -334,12 +352,20 @@ function SetPlayerSkillLevel(amx, player, skill, level)
 end
 
 function GetPlayerSurfingVehicleID(amx, player)
-	notImplemented('GetPlayerSurfingVehicleID')
+	if not player then return end
+	local surfElement = getPedContactElement(player)
+	if surfElement and getElementType(surfElement) == "vehicle" then
+		return getElemID(surfElement)
+	end
 	return INVALID_VEHICLE_ID
 end
 
 function GetPlayerSurfingObjectID(amx, player)
-	notImplemented('GetPlayerSurfingObjectID')
+	if not player then return end
+	local surfElement = getPedContactElement(player)
+	if surfElement and getElementType(surfElement) == "object" then
+		return getElemID(surfElement)
+	end
 	return INVALID_OBJECT_ID
 end
 
@@ -872,9 +898,9 @@ function GetPlayerCameraFrontVector(amx, player, refX, refY, refZ)
 		return false
 	end
 	local x, y, z, lx, ly, lz = getCameraMatrix(player)
-	writeMemFloat(amx, refX, lx)
-	writeMemFloat(amx, refY, ly)
-	writeMemFloat(amx, refZ, lz)
+	writeMemFloat(amx, refX, lx - x)
+	writeMemFloat(amx, refY, ly - y)
+	writeMemFloat(amx, refZ, lz - z)
 	return true
 end
 
@@ -883,7 +909,7 @@ function GetPlayerCameraMode(amx, player)
 	return -1
 end
 
-function EnablePlayerCameraTarget(amx, player)
+function EnablePlayerCameraTarget(amx, player, enable)
 	notImplemented('EnablePlayerCameraTarget')
 	return false
 end
@@ -918,15 +944,8 @@ function GetPlayerCameraZoom(amx, player)
 	return float2cell(0)
 end
 
-function AttachCameraToObject(amx, player, object)
-	clientCall(player, 'AttachCameraToObject', object)
-	return true
-end
-
-function AttachCameraToPlayerObject(amx, player)
-	notImplemented('AttachCameraToPlayerObject')
-	return false
-end
+-- AttachCameraToObject client
+-- AttachCameraToPlayerObject client
 
 --playerid, Float:FromX, Float:FromY, Float:FromZ, Float:ToX, Float:ToY, Float:ToZ, time, cut = CAMERA_CUT
 function InterpolateCameraPos(amx, player, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
@@ -989,22 +1008,27 @@ function TogglePlayerSpectating(amx, player, enable)
 	if enable then
 		fadeCamera(player, true)
 		setCameraMatrix(player, 75.461357116699, 64.600051879883, 51.685581207275, 149.75857543945, 131.53228759766, 40.597320556641)
+		toggleAllControls(player, false, true, false)
+		setPedWeaponSlot(player, 0)
+		setElementAlpha(player, 0)
+		setElementCollisionsEnabled(player, false)
 		setPlayerHudComponentVisible(player, 'radar', false)
 		setPlayerState(player, PLAYER_STATE_SPECTATING)
 	else
 		local playerdata = g_Players[getElemID(player)]
 		local spawninfo = playerdata.spawninfo or (g_PlayerClasses and g_PlayerClasses[playerdata.selectedclass])
-		if not spawninfo or playerdata.returntoclasssel then
+		if playerdata.returntoclasssel then
 			playerdata.returntoclasssel = nil
 			putPlayerInClassSelection(player)
-			return true
+		else
+			spawnPlayerBySelectedClass(player)
+			setPlayerHudComponentVisible(player, 'radar', true)
 		end
-		spawnPlayerBySelectedClass(player)
-		-- In SA-MP calling TogglePlayerSpectating also unsets camera interpolation
-		clientCall(player, 'removeCamHandlers')
+		setElementAlpha(player, 255)
 		setCameraTarget(player, player)
 		clientCall(player, 'setCameraTarget', player) -- Clear the one on the client as well, otherwise we can't go back to normal camera after spectating vehicles
-		setPlayerHudComponentVisible(player, 'radar', true)
+		-- In SA-MP calling TogglePlayerSpectating also unsets camera interpolation
+		clientCall(player, 'removeCamHandlers')
 	end
 	return true
 end

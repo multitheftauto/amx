@@ -40,12 +40,13 @@ function gameModeInit(player)
 			if not isElement(player) or getElementType(player) ~= 'player' then
 				return
 			end
-			g_Players[playerID].doingclasssel = true
-			killPed(player)
+			g_Players[playerID].doingclasssel = false
 			if procCallOnAll('OnPlayerRequestClass', playerID, 0) then
 				putPlayerInClassSelection(player)
 			else
 				outputDebugString('Not allowed to select a class', 1)
+				g_Players[playerID].doingclasssel = true
+				killPed(player)
 			end
 		end,
 		5000,
@@ -111,8 +112,8 @@ end
 addEventHandler('onPlayerJoin', root, joinHandler)
 
 function classSelKey(player)
-	clientCall(player, 'displayFadingMessage', 'Returning to class selection after next death', 0, 200, 200)
-	outputChatBox('* Returning to class selection after next death', player, 0, 220, 220)
+	clientCall(player, 'displayFadingMessage', 'Returning to class selection after next death', 136, 140, 68)
+	outputChatBox('* Returning to class selection after next death', player, 136, 170, 98)
 	g_Players[getElemID(player)].returntoclasssel = true
 end
 addCommandHandler ( "changeclass", classSelKey )
@@ -165,8 +166,11 @@ function putPlayerInClassSelection(player)
 	if not isElement(player) then
 		return
 	end
-	toggleAllControls(player, false, true, false)
 	local playerID = getElemID(player)
+	if g_Players[playerID].doingclasssel then
+		return
+	end
+	toggleAllControls(player, false, true, false)
 	g_Players[playerID].viewingintro = nil
 	g_Players[playerID].doingclasssel = true
 	g_Players[playerID].selectedclass = g_Players[playerID].selectedclass or 0
@@ -267,6 +271,7 @@ addEventHandler('onPlayerSpawn', root,
 			return
 		end
 		toggleAllControls(source, true)
+		setElementCollisionsEnabled(source, true)
 		procCallOnAll('OnPlayerSpawn', playerID)
 		setPlayerState(source, PLAYER_STATE_ONFOOT)
 
@@ -311,12 +316,16 @@ addEventHandler('onPlayerDamage', root,
 		local attackerId = INVALID_PLAYER_ID
 		if source == attacker then attacker = nil end
 
+		local playerId = getElemID(source)
 		if attacker and isElement(attacker) and getElementType(attacker) == 'player' then
 			attackerId = getElemID(attacker)
-			procCallOnAll('OnPlayerGiveDamage', attackerId, getElemID(source), float2cell(loss), weapon, body)
+
+			setTimer(procCallOnAll, 10, 1, 'OnPlayerGiveDamage', attackerId, playerId, float2cell(loss), weapon, body)
+			-- This needs to be just a bit delayed to arrive after OnPlayerWeaponShot
 		end
 
-		procCallOnAll('OnPlayerTakeDamage', getElemID(source), attackerId, float2cell(loss), weapon, body)
+		setTimer(procCallOnAll, 10, 1, 'OnPlayerTakeDamage', playerId, attackerId, float2cell(loss), weapon, body)
+		-- This needs to be just a bit delayed to arrive after OnPlayerWeaponShot
 	end
 )
 
@@ -563,10 +572,7 @@ addEvent('OnVehicleDamageStatusUpdate_Ev', true)
 addEventHandler('OnVehicleDamageStatusUpdate_Ev', root,
 	function(vehicle)
 		local vehID = getElemID(vehicle)
-
-		if not vehID or client ~= getVehicleOccupant(vehicle) then
-			return
-		end
+		if not vehID then return end
 
 		procCallOnAll('OnVehicleDamageStatusUpdate', vehID, getElemID(client))
 	end
@@ -646,6 +652,17 @@ addEventHandler('OnPlayerWeaponShot_Ev', root,
 		playerData.shotVect.hZ = hitZ
 
 		procCallOnAll('OnPlayerWeaponShot', playerID, weapon, hitType, hitId, offsetX, offsetY, offsetZ)
+	end
+)
+
+addEvent('OnPlayerGiveDamageActor_Ev', true)
+addEventHandler('OnPlayerGiveDamageActor_Ev', root,
+	function(actor, loss, weapon, bodypart)
+		if not actor or getElementData(actor, 'amx.invulnerable') then return end
+
+		local playerID, actorID = getElemID(source), getElemID(actor)
+		setTimer(procCallOnAll, 10, 1, 'OnPlayerGiveDamageActor', playerID, actorID, float2cell(loss), weapon, bodypart)
+		-- This needs to be just a bit delayed to arrive after OnPlayerWeaponShot
 	end
 )
 

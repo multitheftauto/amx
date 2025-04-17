@@ -210,8 +210,9 @@ GetBotHealth = GetPlayerHealth
 SetBotHealth = SetPlayerHealth
 GetBotArmour = GetPlayerArmour
 SetBotArmour = SetPlayerArmour
-GetBotPos = GetObjectPos
-SetBotPos = SetObjectPos
+
+GetBotPos = GetActorPos
+SetBotPos = SetActorPos
 -----------------------------------------------------
 -- Native Markers
 

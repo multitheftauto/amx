@@ -1,6 +1,7 @@
 function CreateActor(amx, model, x, y, z, rotation)
 	local actor = createPed(model, x, y, z, rotation, false)
 	setElementData(actor, 'amx.actorped', true)
+	setElementData(actor, 'amx.invulnerable', true)
 	return addElem(g_Actors, actor)
 end
 
@@ -42,16 +43,16 @@ function GetActorFacingAngle(amx, actor, refAng)
 	return true
 end
 
--- stub
-function SetActorInvulnerable(amx, actor)
-	notImplemented('SetActorInvulnerable')
-	return 1
+function SetActorInvulnerable(amx, actor, invulnerable)
+	if not actor then
+		return false
+	end
+	setElementData(actor, 'amx.invulnerable', invulnerable)
+	return true
 end
 
--- stub
 function IsActorInvulnerable(amx, actor)
-	notImplemented('IsActorInvulnerable')
-	return 1
+	return getElementData(actor, 'amx.invulnerable')
 end
 
 function IsValidActor(amx, actorId)
@@ -60,7 +61,17 @@ end
 
 GetActorHealth = GetPlayerHealth
 GetActorVirtualWorld = GetPlayerVirtualWorld
-GetActorPos = GetObjectPos
+
+function GetActorPos(amx, actor, refX, refY, refZ)
+	if not actor then
+		return false
+	end
+	local x, y, z = getElementPosition(actor)
+	writeMemFloat(amx, refX, x)
+	writeMemFloat(amx, refY, y)
+	writeMemFloat(amx, refZ, z)
+	return true
+end
 
 function GetActorPoolSize(amx)
 	local highestId = 0
@@ -74,9 +85,11 @@ end
 
 SetActorHealth = SetPlayerHealth
 SetActorVirtualWorld = SetPlayerVirtualWorld
-SetActorPos = SetObjectPos
 
--- stub
+function SetActorPos(amx, actor, x, y, z)
+	return setElementPosition(actor, x, y, z)
+end
+
 function GetPlayerCameraTargetActor(amx, player)
 	notImplemented('GetPlayerCameraTargetActor')
 	return INVALID_ACTOR_ID
