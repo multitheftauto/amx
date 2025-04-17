@@ -805,7 +805,7 @@ function TextDrawSetProportional(amx, textdraw, proportional)
 	notImplemented('TextDrawSetProportional')
 end
 
-function TextDrawSetSelectable(amx, textdraw)
+function TextDrawSetSelectable(amx, textdraw, selectable)
 	notImplemented('TextDrawSetSelectable')
 end
 
@@ -846,12 +846,16 @@ function TextDrawSetString(amx, textdraw, str)
 	return true
 end
 
-function TextDrawSetPreviewModel(amx, textdraw)
+function TextDrawSetPreviewModel(amx, textdraw, model)
 	notImplemented('TextDrawSetPreviewModel')
 end
 
-function TextDrawSetPreviewRot(amx, textdraw)
+function TextDrawSetPreviewRot(amx, textdraw, rX, rY, rZ, zoom)
 	notImplemented('TextDrawSetPreviewRot')
+end
+
+function TextDrawSetPreviewVehCol(amx, textdraw, color1, color2)
+	notImplemented('TextDrawSetPreviewVehCol')
 end
 
 function GangZoneCreate(amx, minX, minY, maxX, maxY)

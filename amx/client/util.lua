@@ -279,7 +279,7 @@ function fromcolor(color)
 	return math.floor(color / 65536) % 255, math.floor(color / 255) % 255, color % 255, math.floor(color / 16777216)
 end
 
--- From: https://github.com/GTAmodding/re3/blob/408f47fc9d85e930f2dc1a4cc9f50b3c0d4c60b8/src/core/common.h
+-- From: https://github.com/halpz/re3/blob/408f47fc9d85e930f2dc1a4cc9f50b3c0d4c60b8/src/core/common.h
 DEFAULT_SCREEN_WIDTH = 640.0
 DEFAULT_SCREEN_HEIGHT = 448.0
 DEFAULT_ASPECT_RATIO = 4.0 / 3.0

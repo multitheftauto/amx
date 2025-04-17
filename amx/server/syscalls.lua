@@ -630,6 +630,7 @@ g_SAMPSyscallPrototypes = {
 	SetPlayerObjectMaterialText = {'p', 'i', 's', 'i', 'i', 's', 'i', 'b', 'i', 'i', 'i'},
 	EditPlayerObject = {'p', 'i'},
 	TextDrawSetPreviewModel = {'x', 'i'},
+	TextDrawSetPreviewVehCol = {'x', 'i', 'i'},
 	TextDrawSetPreviewRot = {'x', 'f', 'f', 'f', 'f'},
 	HTTP = {'i', 'i', 's', 's', 's'},
 

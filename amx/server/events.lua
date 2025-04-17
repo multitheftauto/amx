@@ -608,7 +608,7 @@ end
 
 addEventHandler('onMarkerHit', root,
 	function(elem, dimension)
-		if getElementType(elem) == "player" or getElementType(elem) == "vehicle" or getElementType(elem) == "ped" then
+		if getElementType(elem) == 'player' or getElementType(elem) == 'vehicle' or getElementType(elem) == 'ped' then
 			local elemtype = getElementType(elem)
 			local elemid = getElemID(elem)
 			procCallOnAll('OnMarkerHit', getElemID(source), elemtype, elemid, dimension)
@@ -618,7 +618,7 @@ addEventHandler('onMarkerHit', root,
 
 addEventHandler('onMarkerLeave', root,
 	function(elem, dimension)
-		if getElementType(elem) == "player" or getElementType(elem) == "vehicle" or getElementType(elem) == "ped" then
+		if getElementType(elem) == 'player' or getElementType(elem) == 'vehicle' or getElementType(elem) == 'ped' then
 			local elemtype = getElementType(elem)
 			local elemid = getElemID(elem)
 			procCallOnAll('OnMarkerLeave', getElemID(source), elemtype, elemid, dimension)
@@ -669,10 +669,9 @@ addEventHandler('OnPlayerGiveDamageActor_Ev', root,
 addEvent('OnPlayerPickUpPickup_Ev', true)
 addEventHandler('OnPlayerPickUpPickup_Ev', root,
 	function(pickup)
-		local model = getElementModel(pickup)
-
 		procCallOnAll('OnPlayerPickUpPickup', getElemID(source), getElemID(pickup))
 
+		local model = getElementModel(pickup)
 		if model == 370 then
 			-- Jetpack pickup
 			setPedWearingJetpack(source, true)
@@ -683,15 +682,14 @@ addEventHandler('OnPlayerPickUpPickup_Ev', root,
 addEventHandler('onConsole', root,
 	function(cmd)
 		cmd = '/' .. cmd:gsub('^([^%s]*)', g_CommandMapping)
+		if getElementType(source) ~= 'player' then return end
 		procCallOnAll('OnPlayerCommandText', getElemID(source), cmd)
 	end
 )
 
 addEventHandler('onPlayerClick', root,
 	function(mouseButton, buttonState, elem, worldPosX, worldPosY, worldPosZ, screenPosX, screenPosY)
-		local iButton = nil
-		local iState = nil
-		local elemID = nil
+		local iButton, iState, elemID = nil, nil, nil
 		local playerID = getElemID(source)
 		if elem ~= nil then elemID = getElemID(elem) end
 		if mouseButton == 'left' then iButton = 0 end

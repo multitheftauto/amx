@@ -9,7 +9,7 @@ attached_rz = {}
 
 function attachElementToBone(element, ped, bone, x, y, z, rx, ry, rz)
 	if not (isElement(element) and isElement(ped)) then return false end
-	if getElementType(ped) ~= "ped" and getElementType(ped) ~= "player" then return false end
+	if getElementType(ped) ~= 'ped' and getElementType(ped) ~= 'player' then return false end
 	bone = tonumber(bone)
 	if not bone or bone < 1 or bone > 20 then return false end
 	x, y, z, rx, ry, rz = tonumber(x) or 0, tonumber(y) or 0, tonumber(z) or 0, tonumber(rx) or 0, tonumber(ry) or 0, tonumber(rz) or 0
@@ -72,7 +72,7 @@ if not script_serverside then
 		bone = tonumber(bone)
 		if not bone or bone < 1 or bone > 20 then return false end
 		if not isElement(ped) then return false end
-		if getElementType(ped) ~= "player" and getElementType(ped) ~= "ped" then return false end
+		if getElementType(ped) ~= 'player' and getElementType(ped) ~= 'ped' then return false end
 		if not isElementStreamedIn(ped) then return false end
 		local x, y, z = getPedBonePosition(ped, bone_0[bone])
 		local rx, ry, rz = getEulerAnglesFromMatrix(getBoneMatrix(ped, bone))

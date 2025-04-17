@@ -43,6 +43,17 @@ function GetActorFacingAngle(amx, actor, refAng)
 	return true
 end
 
+function GetActorPos(amx, actor, refX, refY, refZ)
+	if not actor then
+		return false
+	end
+	local x, y, z = getElementPosition(actor)
+	writeMemFloat(amx, refX, x)
+	writeMemFloat(amx, refY, y)
+	writeMemFloat(amx, refZ, z)
+	return true
+end
+
 function SetActorInvulnerable(amx, actor, invulnerable)
 	if not actor then
 		return false
@@ -61,17 +72,6 @@ end
 
 GetActorHealth = GetPlayerHealth
 GetActorVirtualWorld = GetPlayerVirtualWorld
-
-function GetActorPos(amx, actor, refX, refY, refZ)
-	if not actor then
-		return false
-	end
-	local x, y, z = getElementPosition(actor)
-	writeMemFloat(amx, refX, x)
-	writeMemFloat(amx, refY, y)
-	writeMemFloat(amx, refZ, z)
-	return true
-end
 
 function GetActorPoolSize(amx)
 	local highestId = 0

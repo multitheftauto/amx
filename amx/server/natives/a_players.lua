@@ -354,7 +354,7 @@ end
 function GetPlayerSurfingVehicleID(amx, player)
 	if not player then return end
 	local surfElement = getPedContactElement(player)
-	if surfElement and getElementType(surfElement) == "vehicle" then
+	if surfElement and getElementType(surfElement) == 'vehicle' then
 		return getElemID(surfElement)
 	end
 	return INVALID_VEHICLE_ID
@@ -363,7 +363,7 @@ end
 function GetPlayerSurfingObjectID(amx, player)
 	if not player then return end
 	local surfElement = getPedContactElement(player)
-	if surfElement and getElementType(surfElement) == "object" then
+	if surfElement and getElementType(surfElement) == 'object' then
 		return getElemID(surfElement)
 	end
 	return INVALID_OBJECT_ID
@@ -580,7 +580,7 @@ function PlayerTextDrawFont(amx, player, textdrawID, font)
 	return true
 end
 
-function PlayerTextDrawSetSelectable(amx, player)
+function PlayerTextDrawSetSelectable(amx, player, textdrawID, selectable)
 	notImplemented('PlayerTextDrawSetSelectable')
 	return false
 end
@@ -620,17 +620,17 @@ function PlayerTextDrawSetString(amx, player, textdrawID, str)
 	return true
 end
 
-function PlayerTextDrawSetPreviewModel(amx, player)
+function PlayerTextDrawSetPreviewModel(amx, player, textdrawID, model)
 	notImplemented('PlayerTextDrawSetPreviewModel')
 	return false
 end
 
-function PlayerTextDrawSetPreviewRot(amx, player)
+function PlayerTextDrawSetPreviewRot(amx, player, textdrawID, rX, rY, rZ, zoom)
 	notImplemented('PlayerTextDrawSetPreviewRot')
 	return false
 end
 
-function PlayerTextDrawSetPreviewVehCol(amx, player)
+function PlayerTextDrawSetPreviewVehCol(amx, player, textdrawID, color1, color2)
 	notImplemented('PlayerTextDrawSetPreviewVehCol')
 	return false
 end

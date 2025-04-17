@@ -1030,7 +1030,7 @@ function color2cell(r, g, b, a)
 end
 
 function isPed(elem)
-	if getElementType(elem) == "ped" then
+	if getElementType(elem) == 'ped' then
 		return true
 	end
 	return false
