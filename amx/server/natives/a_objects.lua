@@ -247,6 +247,7 @@ function SetPlayerObjectMaterialText(amx, player)
 end
 
 -- AttachPlayerObjectToPlayer client
+-- AttachPlayerObjectToVehicle client
 
 function SetObjectsDefaultCameraCol(amx, disable)
 	notImplemented('SetObjectsDefaultCameraCol')

@@ -486,6 +486,15 @@ function AttachPlayerObjectToPlayer(objID, attachPlayer, offsetX, offsetY, offse
 	return true
 end
 
+function AttachPlayerObjectToVehicle(objID, attachVehicle, offsetX, offsetY, offsetZ, rX, rY, rZ)
+	local obj = g_PlayerObjects[objID]
+	if not obj then
+		return false
+	end
+	attachElements(obj, attachVehicle, offsetX, offsetY, offsetZ, rX, rY, rZ)
+	return true
+end
+
 function CreatePlayerObject(objID, model, x, y, z, rX, rY, rZ)
 	g_PlayerObjects[objID] = createObject(model, x, y, z, rX, rY, rZ)
 	if g_PlayerObjects[objID] == false then

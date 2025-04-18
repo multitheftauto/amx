@@ -72,6 +72,10 @@ function SendDeathMessage(amx, killer, victim, reason)
 	-- no implementation needed, killmessages resource shows kills already
 end
 
+function SendDeathMessageToPlayer(amx, player, killer, victim, reason)
+	-- no implementation needed, killmessages resource shows kills already
+end
+
 function GameTextForAll(amx, str, time, style)
 	str = str:lower()
 	for mta, samp in pairs(g_CommandMapping) do
