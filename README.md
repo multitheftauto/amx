@@ -125,14 +125,15 @@ Extract the "mods" folder into your MTA "server" directory.
 
   The following rights are used for the following purposes:
 
-  - `general.ModifyOtherObjects`: to access files of `amx-*`
-    resources
+  - `general.ModifyOtherObjects`:
+      - to access files of `amx-*` resources
   - `function.startResource`  \
     `function.stopResource`  \
-    `function.restartResource`  \
-    `function.getServerPassword`  \
-    `function.setServerPassword`:
+    `function.restartResource`:
       - to automatically (re)start filterscripts when `amx` starts
+      - for rcon
+  - `function.getServerPassword`  \
+    `function.setServerPassword`:
       - for rcon
 
 ### Migrating gamemodes, filterscripts, plugins from an SA-MP server
