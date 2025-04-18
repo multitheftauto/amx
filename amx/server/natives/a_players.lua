@@ -172,7 +172,7 @@ end
 
 function SetPlayerDrunkLevel(amx, player)
 	notImplemented('SetPlayerDrunkLevel', 'SCM is not supported.')
-	return 0
+	return false
 end
 
 function SetPlayerColor(amx, player, r, g, b)
@@ -355,7 +355,9 @@ function GetPlayerSurfingVehicleID(amx, player)
 	if not player then return end
 	local surfElement = getPedContactElement(player)
 	if surfElement and getElementType(surfElement) == 'vehicle' then
-		return getElemID(surfElement)
+		if getVehicleOccupant(surfElement) then
+			return getElemID(surfElement)
+		end
 	end
 	return INVALID_VEHICLE_ID
 end
@@ -364,7 +366,9 @@ function GetPlayerSurfingObjectID(amx, player)
 	if not player then return end
 	local surfElement = getPedContactElement(player)
 	if surfElement and getElementType(surfElement) == 'object' then
-		return getElemID(surfElement)
+		if isObjectMoving(surfElement) then
+			return getElemID(surfElement)
+		end
 	end
 	return INVALID_OBJECT_ID
 end
@@ -561,7 +565,7 @@ end
 
 function PlayerTextDrawSetProportional(amx, player, textdrawID, proportional)
 	notImplemented('PlayerTextDrawSetProportional')
-	--TextDrawSetProportional(amx, textdraw, proportional)
+	return false
 end
 
 function PlayerTextDrawBackgroundColor(amx, player, textdrawID, r, g, b, a)
@@ -755,6 +759,7 @@ end
 
 function PlayerPlaySound(amx, player, soundID, x, y, z)
 	notImplemented('PlayerPlaySound')
+	return false
 end
 
 function ApplyAnimation(amx, player, animlib, animname, fDelta, loop, lockx, locky, freeze, time, forcesync)
@@ -851,10 +856,7 @@ end
 
 function AllowPlayerTeleport(amx, player, allow)
 	deprecated('AllowPlayerTeleport', '0.3d')
-end
-
-function SetPlayerDisabledWeapons(amx, player, ...)
-	deprecated('SetPlayerDisabledWeapons', '0.3')
+	return true
 end
 
 function SetPlayerCameraPos(amx, player, x, y, z)
@@ -998,10 +1000,12 @@ end
 
 function EnableStuntBonusForAll(amx, enable)
 	notImplemented('EnableStuntBonusForAll')
+	return true
 end
 
 function EnableStuntBonusForPlayer(amx, player, enable)
 	notImplemented('EnableStuntBonusForPlayer')
+	return false
 end
 
 function TogglePlayerSpectating(amx, player, enable)

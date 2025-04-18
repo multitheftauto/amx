@@ -675,8 +675,7 @@ addressed in later versions of *amx* and Multi Theft Auto.
   on), PlayerPlaySound, SendDeathMessage (use the "killmessages"
   resource on your server instead for graphical death messages),
   SetDeathDropAmount, SetDisabledWeapons, SetNameTagDrawDistance,
-  SetPlayerDisabledWeapons, SetTeamCount, TextDrawSetProportional,
-  UsePlayerPedAnims.
+  SetTeamCount, TextDrawSetProportional, UsePlayerPedAnims.
 
 ## Credits
 

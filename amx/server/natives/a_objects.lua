@@ -63,6 +63,7 @@ end
 
 function SetObjectNoCameraCol(amx, object)
 	notImplemented('SetObjectNoCameraCol')
+	return false
 end
 
 function IsValidObject(amx, objID)
@@ -94,6 +95,7 @@ end
 
 function IsObjectMoving(amx, object)
 	notImplemented('IsObjectMoving')
+	return false
 end
 
 function CreatePlayerObject(amx, player, model, x, y, z, rX, rY, rZ)
@@ -236,26 +238,32 @@ end
 
 function SetObjectMaterialText(amx, object)
 	notImplemented('SetObjectMaterialText')
+	return false
 end
 
 function SetPlayerObjectMaterialText(amx, player)
 	notImplemented('SetPlayerObjectMaterialText')
+	return false
 end
 
 -- AttachPlayerObjectToPlayer client
 
 function SetObjectsDefaultCameraCol(amx, disable)
 	notImplemented('SetObjectsDefaultCameraCol')
+	return false
 end
 
 function EditPlayerObject(amx, player, object)
 	notImplemented('EditPlayerObject')
+	return false
 end
 
 function SetObjectMaterial(amx, object)
 	notImplemented('SetObjectMaterial')
+	return false
 end
 
 function SetPlayerObjectMaterial(amx, player)
 	notImplemented('SetPlayerObjectMaterial')
+	return false
 end

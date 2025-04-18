@@ -265,6 +265,7 @@ end
 
 function SetTeamCount(amx, count)
 	notImplemented('SetTeamCount')
+	return false
 end
 
 function AddPlayerClass(amx, skin, x, y, z, angle, weap1, weap1_ammo, weap2, weap2_ammo, weap3, weap3_ammo)
@@ -411,6 +412,7 @@ end
 
 function AllowInteriorWeapons(amx, allow)
 	deprecated('AllowInteriorWeapons', '0.3')
+	return true
 end
 
 function SetWeather(amx, weatherID)
@@ -429,14 +431,17 @@ end
 
 function AllowAdminTeleport(amx, allow)
 	deprecated('AllowAdminTeleport', '0.3d')
+	return true
 end
 
 function SetDisabledWeapons(amx, ...)
 	deprecated('SetDisabledWeapons', '0.3')
+	return true
 end
 
 function SetDeathDropAmount(amx, amount)
 	notImplemented('SetDeathDropAmount')
+	return true
 end
 
 function CreateExplosion(amx, x, y, z, type, radius)
@@ -463,20 +468,24 @@ end
 
 function UsePlayerPedAnims(amx)
 	notImplemented('UsePlayerPedAnims')
+	return true
 end
 
 function DisableInteriorEnterExits(amx)
 	notImplemented('DisableInteriorEnterExits')
+	return true
 end
 
 function SetNameTagDrawDistance(amx, distance)
 	notImplemented('SetNameTagDrawDistance')
+	return true
 end
 
 function LimitGlobalChatRadius(amx, radius)
 	if radius > 0 then
 		g_GlobalChatRadius = radius
 	end
+	return true
 end
 
 function ConnectNPC(amx, name, script)
@@ -523,17 +532,20 @@ end
 
 function GetPlayerNetworkStats(amx)
 	notImplemented('GetPlayerNetworkStats')
-	return false
+	return true
 end
 
 function GetNetworkStats(amx)
 	notImplemented('GetNetworkStats')
-	return false
+	return true
 end
 
-function GetPlayerVersion(amx, player)
-	notImplemented('GetPlayerVersion')
-	return false
+function GetPlayerVersion(amx, player, verBuf, bufSize)
+	local version = getPlayerVersion(player)
+	if #version <= bufSize then
+		writeMemString(amx, verBuf, version)
+		return string.len(version)
+	end
 end
 
 function BlockIpAddress(amx, ip, time)
@@ -803,10 +815,12 @@ end
 
 function TextDrawSetProportional(amx, textdraw, proportional)
 	notImplemented('TextDrawSetProportional')
+	return false
 end
 
 function TextDrawSetSelectable(amx, textdraw, selectable)
 	notImplemented('TextDrawSetSelectable')
+	return false
 end
 
 function TextDrawShowForPlayer(amx, player, textdrawID)
@@ -848,14 +862,17 @@ end
 
 function TextDrawSetPreviewModel(amx, textdraw, model)
 	notImplemented('TextDrawSetPreviewModel')
+	return false
 end
 
 function TextDrawSetPreviewRot(amx, textdraw, rX, rY, rZ, zoom)
 	notImplemented('TextDrawSetPreviewRot')
+	return false
 end
 
 function TextDrawSetPreviewVehCol(amx, textdraw, color1, color2)
 	notImplemented('TextDrawSetPreviewVehCol')
+	return false
 end
 
 function GangZoneCreate(amx, minX, minY, maxX, maxY)
@@ -1041,6 +1058,7 @@ end
 
 function SendClientCheck(amx, player)
 	notImplemented('SendClientCheck')
+	return false
 end
 
 function gpci(amx, player, nameBuf, bufSize)
@@ -1071,10 +1089,13 @@ end
 
 function NetStats_ConnectionStatus(amx, player)
 	notImplemented('NetStats_ConnectionStatus')
+	return 0 -- Status no action
 end
 
 function NetStats_GetConnectedTime(amx, player)
-	notImplemented('NetStats_GetConnectedTime')
+	local playerID = getElemID(player)
+	if not g_Players[playerID].conntick then return 0 end
+	return getTickCount() - g_Players[playerID].conntick
 end
 
 function NetStats_GetIpPort(amx, player, ip_port, ip_port_len)
@@ -1087,14 +1108,17 @@ end
 
 function NetStats_MessagesReceived(amx, player)
 	notImplemented('NetStats_MessagesReceived')
+	return 0
 end
 
 function NetStats_MessagesRecvPerSecond(amx, player)
 	notImplemented('NetStats_MessagesRecvPerSecond')
+	return 0
 end
 
 function NetStats_MessagesSent(amx, player)
 	notImplemented('NetStats_MessagesSent')
+	return 0
 end
 
 function NetStats_PacketLossPercent(amx, player)

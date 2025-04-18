@@ -122,7 +122,7 @@ function GetVehicleParamsCarDoors(amx, vehicle, refDriver, refPassenger, refBack
 	amx.memDAT[refPassenger] = getVehicleDoorOpenRatio(vehicle, 3) > 0
 	amx.memDAT[refBackLeft] = getVehicleDoorOpenRatio(vehicle, 4) > 0
 	amx.memDAT[refBackRight] = getVehicleDoorOpenRatio(vehicle, 5) > 0
-	return 1
+	return true
 end
 
 function SetVehicleParamsCarDoors(amx, vehicle, driver, passenger, backLeft, backRight)
@@ -135,6 +135,12 @@ end
 
 function GetVehicleParamsCarWindows(amx, vehicle, frontLeft, frontRight, rearLeft, rearRight)
 	notImplemented('GetVehicleParamsCarWindows')
+	return false
+end
+
+function SetVehicleParamsCarWindows(amx, vehicle, frontLeft, frontRight, rearLeft, rearRight)
+	notImplemented('SetVehicleParamsCarWindows')
+	return false
 end
 
 function SetVehicleToRespawn(amx, vehicle)
@@ -205,6 +211,7 @@ end
 
 function GetVehicleModelInfo(amx, vehicle, type, refX, refY, refZ)
 	notImplemented('GetVehicleModelInfo')
+	return false
 end
 
 function GetVehicleComponentInSlot(amx, vehicle, slot)

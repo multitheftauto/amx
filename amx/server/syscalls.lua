@@ -359,7 +359,6 @@ g_SAMPSyscallPrototypes = {
 	SetPlayerCameraPos = {'p', 'f', 'f', 'f'},
 	SetPlayerCheckpoint = {'p', 'f', 'f', 'f', 'f'},
 	SetPlayerColor = {'p', 'c'},
-	SetPlayerDisabledWeapons = {'p'},
 	SetPlayerFacingAngle = {'p', 'f'},
 	SetPlayerGravity = {'p', 'f'},
 	SetPlayerHealth = {'p', 'f'},

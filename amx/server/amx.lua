@@ -50,7 +50,7 @@ addEventHandler('onResourceStart', resourceRoot,
 						startResource(filterres)
 					end
 				else
-					outputDebugString('No filterscript named "' .. filterscript .. '" exists', 2)
+					outputDebugString('Unable to load filterscript \'' .. filterscript .. '\'.', 2)
 				end
 			end
 		end
@@ -72,10 +72,10 @@ addEventHandler('onResourceStart', root, loadResourceAMXs)
 function loadAMX(fileName, res)
 	local resName = getResourceName(res)
 	if not resName:match('^amx%-') then
-		outputDebugString('Not loading ' .. fileName .. ', resource name must start with "amx-"', 1)
+		outputDebugString('Unable to load \'' .. fileName .. '\', resource name must start with \'amx-\'.', 1)
 		return false
 	end
-	outputDebugString('Loading ' .. fileName)
+	outputDebugString('Loading \'' .. fileName .. '\'.')
 	local amx = { name = fileName:match('(.*)%.'), res = res }
 	if resName:match('^amx%-fs%-') then
 		amx.type = 'filterscript'
@@ -85,7 +85,7 @@ function loadAMX(fileName, res)
 
 	local hAMX = fileOpen(':' .. getResourceName(res) .. '/' .. fileName, true)
 	if not hAMX then
-		outputDebugString('Error opening ' .. fileName, 1)
+		outputDebugString('Error opening \'' .. fileName .. '\'.', 1)
 		return false
 	end
 
@@ -110,13 +110,13 @@ function loadAMX(fileName, res)
 	local alreadyGameModeRunning = getRunningGameMode() and true
 	local alreadySyncingWeapons = isWeaponSyncingNeeded()
 	if alreadyGameModeRunning and amx.type == 'gamemode' then
-		outputDebugString('Not loading ' .. fileName .. ', a gamemode is already running', 1)
+		outputDebugString('Unable to load \'' .. fileName .. '\', a gamemode is already running.', 1)
 		return false
 	end
 
 	amx.cptr = amxLoad(getResourceName(res), amx.name .. '.amx')
 	if not amx.cptr then
-		outputDebugString('Error loading ' .. fileName, 1)
+		outputDebugString('Error loading \'' .. fileName .. '\'.', 1)
 		return false
 	end
 
@@ -176,7 +176,7 @@ function destroyGlobalElements()
 end
 
 function unloadAMX(amx, notifyClient)
-	outputDebugString('Unloading ' .. amx.name .. '.amx')
+	outputDebugString('Unloading \'' .. amx.name .. '.amx\'.')
 
 	if amx.type == 'gamemode' then
 		procCallInternal(amx, 'OnGameModeExit')
@@ -301,7 +301,7 @@ function procCallInternal(amx, nameOrOffset, ...)
 		amx = g_LoadedAMXs[amx]
 	end
 	if not amx then
-		outputDebugString('procCallInternal called with amx=nil, proc name=' .. nameOrOffset, 2)
+		outputDebugString('procCallInternal called with amx = nil, proc name = ' .. nameOrOffset, 2)
 		return
 	end
 
