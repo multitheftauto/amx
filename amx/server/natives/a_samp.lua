@@ -369,10 +369,10 @@ function ShowNameTags(amx, show)
 	return true
 end
 
-function ShowPlayerMarkers(amx, show)
-	g_ShowPlayerMarkers = show
+function ShowPlayerMarkers(amx, mode)
+	g_PlayerMarkersMode = mode
 	for i, data in pairs(g_Players) do
-		ShowPlayerMarker(amx, data.elem, show)
+		ShowPlayerMarker(amx, data.elem, mode)
 	end
 	return true
 end
@@ -448,15 +448,25 @@ function CreateExplosion(amx, x, y, z, type, radius)
 	return createExplosion(x, y, z, type)
 end
 
-function ShowPlayerMarker(amx, player, show)
-	local data = g_Players[getElemID(player)]
-	if not show and data.blip then
-		destroyElement(data.blip)
-		data.blip = nil
-	elseif show and not data.blip then
+function ShowPlayerMarker(amx, player, mode)
+	local playerdata = g_Players[getElemID(player)]
+	if not playerdata then return false end
+	if not mode then mode = 0 end
+
+	if mode == 0 and playerdata.blip then
+		destroyElement(playerdata.blip)
+		playerdata.blip = nil
+	elseif mode ~= 0 and not playerdata.blip then
 		local r, g, b = getPlayerNametagColor(player)
-		data.blip = createBlipAttachedTo(player, 0, 2, r, g, b)
+		playerdata.blip = createBlipAttachedTo(player, 0, 2, r, g, b)
+
+		if mode == 1 and g_PlayerMarkerRadius then -- Mode global
+			setBlipVisibleDistance(playerdata.blip, g_PlayerMarkerRadius)
+		elseif mode == 2 then -- Mode streamed
+			setBlipVisibleDistance(playerdata.blip, 250.0)
+		end
 	end
+	return true
 end
 
 function EnableZoneNames(amx, enable)
@@ -464,6 +474,7 @@ function EnableZoneNames(amx, enable)
 	for i, data in pairs(g_Players) do
 		setPlayerHudComponentVisible(data.elem, 'area_name', enable)
 	end
+	return true
 end
 
 function UsePlayerPedAnims(amx)
@@ -484,6 +495,13 @@ end
 function LimitGlobalChatRadius(amx, radius)
 	if radius > 0 then
 		g_GlobalChatRadius = radius
+	end
+	return true
+end
+
+function LimitPlayerMarkerRadius(amx, radius)
+	if radius > 0 then
+		g_PlayerMarkerRadius = radius
 	end
 	return true
 end

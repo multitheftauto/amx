@@ -16,7 +16,7 @@ function gameModeInit(player)
 	setElementDimension(player, 0)
 	for i = 69, 79 do setPedStat(player, i, 999) end
 	local r, g, b = math.random(50, 255), math.random(50, 255), math.random(50, 255)
-	ShowPlayerMarker(false, player, g_ShowPlayerMarkers)
+	ShowPlayerMarker(false, player, g_PlayerMarkersMode)
 	setPlayerHudComponentVisible(player, 'area_name', g_ShowZoneNames)
 	setPlayerHudComponentVisible(player, 'vehicle_name', false) -- SA-MP doesn't show vehicle names when entering vehicles
 	SetPlayerColor(false, player, r, g, b)

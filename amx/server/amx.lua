@@ -19,7 +19,8 @@ g_PlayerObjects = {}
 function initGameModeGlobals()
 	g_PlayerClasses = {}
 	g_Teams = setmetatable({}, { __index = function(t, k) t[k] = createTeam('Team ' .. (k + 1)) return t[k] end })
-	g_ShowPlayerMarkers = true
+	g_PlayerMarkersMode = 1
+	g_PlayerMarkerRadius = false
 	g_ShowZoneNames = true
 	g_GlobalChatRadius = false
 end
@@ -133,7 +134,7 @@ function loadAMX(fileName, res)
 		clientCall(root, 'gamemodeLoad')
 		setWeather(10)
 		initGameModeGlobals()
-		ShowPlayerMarkers(amx, true)
+		ShowPlayerMarkers(amx, g_PlayerMarkersMode)
 		procCallOnAll('OnGameModeInit')
 		table.each(g_Players, 'elem', gameModeInit)
 	else

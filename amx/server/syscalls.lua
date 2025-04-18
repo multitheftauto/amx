@@ -320,6 +320,7 @@ g_SAMPSyscallPrototypes = {
 	KillTimer = {'i'},
 
 	LimitGlobalChatRadius = {'f'},
+	LimitPlayerMarkerRadius = {'f'},
 	LinkVehicleToInterior = {'v', 'i'},
 
 	MoveObject = {'o', 'f', 'f', 'f', 'f'},
@@ -363,7 +364,7 @@ g_SAMPSyscallPrototypes = {
 	SetPlayerGravity = {'p', 'f'},
 	SetPlayerHealth = {'p', 'f'},
 	SetPlayerInterior = {'p', 'i'},
-	SetPlayerMapIcon = {'p', 'i', 'f', 'f', 'f', 'i', 'c', client = true},
+	SetPlayerMapIcon = {'p', 'i', 'f', 'f', 'f', 'i', 'c', 'i', client = true},
 	SetPlayerMarkerForPlayer = {'p', 'p', 'c', client = true},
 	SetPlayerName = {'p', 's'},
 	SetPlayerObjectPos = {'p', 'i', 'f', 'f', 'f'},
@@ -402,8 +403,8 @@ g_SAMPSyscallPrototypes = {
 	SetWorldTime = {'i'},
 	ShowMenuForPlayer = {'m', 'p'},
 	ShowNameTags = {'b'},
-	ShowPlayerMarker = {'p', 'b'},
-	ShowPlayerMarkers = {'b'},
+	ShowPlayerMarker = {'p', 'i'},
+	ShowPlayerMarkers = {'i'},
 	ShowPlayerNameTagForPlayer = {'p', 'p', 'b'},
 	SpawnPlayer = {'p'},
 	StopObject = {'o'},

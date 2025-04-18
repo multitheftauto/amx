@@ -1666,12 +1666,15 @@ function RemovePlayerMapIcon(blipID)
 	return false
 end
 
-function SetPlayerMapIcon(blipID, x, y, z, type, r, g, b, a)
+function SetPlayerMapIcon(blipID, x, y, z, type, r, g, b, a, style)
 	if g_Blips[blipID] then
 		destroyElement(g_Blips[blipID])
 		g_Blips[blipID] = nil
 	end
 	g_Blips[blipID] = createBlip(x, y, z, type, 2, r, g, b, a)
+	if style == 0 or style == 2 then -- Local / local checkpoint
+		setBlipVisibleDistance(g_Blips[blipID], 250.0)
+	end
 	return true
 end
 

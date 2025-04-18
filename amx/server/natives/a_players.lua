@@ -177,8 +177,10 @@ end
 
 function SetPlayerColor(amx, player, r, g, b)
 	setPlayerNametagColor(player, r, g, b)
-	if g_ShowPlayerMarkers then
-		setBlipColor(g_Players[getElemID(player)].blip, r, g, b, 255)
+
+	local playerdata = g_Players[getElemID(player)]
+	if g_PlayerMarkersMode ~= 0 and playerdata.blip then
+		setBlipColor(playerdata.blip, r, g, b, 255)
 	end
 	return true
 end
