@@ -78,13 +78,26 @@ function DestroyObject(amx, object)
 	return true
 end
 
-function MoveObject(amx, object, x, y, z, speed)
+function MoveObject(amx, object, x, y, z, speed, rX, rY, rZ)
 	if not object then
 		return 0
 	end
+
 	local distance = getDistanceBetweenPoints3D(x, y, z, getElementPosition(object))
 	local time = distance / speed * 1000
-	moveObject(object, time, x, y, z, 0, 0, 0)
+
+	-- We need relative rotation
+	local cRotX, cRotY, cRotZ = getElementRotation(object)
+	cRotX = cRotX - rX
+	cRotY = cRotY - rY
+	cRotZ = cRotZ - rZ
+
+	-- -1000 or less means no rotation change, so set it to 0.0
+	if rX <= -1000.0 then cRotX = 0.0 end
+	if rY <= -1000.0 then cRotY = 0.0 end
+	if rZ <= -1000.0 then cRotZ = 0.0 end
+
+	moveObject(object, time, x, y, z, cRotX, cRotY, cRotZ)
 	setTimer(procCallOnAll, time, 1, 'OnObjectMoved', getElemID(object))
 	return math.floor(time)
 end
@@ -94,8 +107,7 @@ function StopObject(amx, object)
 end
 
 function IsObjectMoving(amx, object)
-	notImplemented('IsObjectMoving')
-	return false
+	return isObjectMoving(object)
 end
 
 function CreatePlayerObject(amx, player, model, x, y, z, rX, rY, rZ)
@@ -115,12 +127,6 @@ function SetPlayerObjectPos(amx, player, objID, x, y, z)
 	local obj = g_PlayerObjects[player] and g_PlayerObjects[player][objID]
 	if not obj then
 		return false
-	end
-	if obj.moving then
-		if isTimer(obj.moving.timer) then
-			killTimer(obj.moving.timer)
-		end
-		obj.moving = nil
 	end
 	obj.x, obj.y, obj.z = x, y, z
 	clientCall(player, 'SetPlayerObjectPos', objID, x, y, z)
@@ -192,6 +198,11 @@ function GetPlayerObjectModel(amx, player, objID)
 	return g_PlayerObjects[player][objID].model
 end
 
+function SetPlayerObjectNoCameraCol(amx, player, objID)
+	notImplemented('SetPlayerObjectNoCameraCol')
+	return false
+end
+
 function IsValidPlayerObject(amx, player, objID)
 	return g_PlayerObjects[player] and g_PlayerObjects[player][objID] and true
 end
@@ -204,7 +215,7 @@ function DestroyPlayerObject(amx, player, objID)
 	return true
 end
 
-function MovePlayerObject(amx, player, objID, x, y, z, speed)
+function MovePlayerObject(amx, player, objID, x, y, z, speed, rX, rY, rZ)
 	local obj = g_PlayerObjects[player] and g_PlayerObjects[player][objID]
 	if not obj then
 		return 0
@@ -216,7 +227,7 @@ function MovePlayerObject(amx, player, objID, x, y, z, speed)
 	end
 	local timer = setTimer(procCallOnAll, duration, 1, 'OnPlayerObjectMoved', getElemID(player), objID)
 	obj.moving = { x = x, y = y, z = z, starttick = getTickCount(), duration = duration, timer = timer }
-	clientCall(player, 'MovePlayerObject', objID, x, y, z, speed)
+	clientCall(player, 'MovePlayerObject', objID, x, y, z, speed, rX, rY, rZ)
 	return math.floor(duration)
 end
 
@@ -233,6 +244,14 @@ function StopPlayerObject(amx, player, objID)
 		obj.moving = nil
 	end
 	clientCall(player, 'StopPlayerObject', objID)
+	return true
+end
+
+function IsPlayerObjectMoving(amx, player, objID)
+	local obj = g_PlayerObjects[player] and g_PlayerObjects[player][objID]
+	if not obj or not obj.moving then
+		return false
+	end
 	return true
 end
 

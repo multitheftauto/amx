@@ -104,13 +104,13 @@ end
 -- Siren
 
 function GetVehicleParamsSirenState(amx, vehicle)
-	local sirenstat = getVehicleSirensOn ( vehicle )
+	local sirenParams = getVehicleSirenParams(vehicle)
 
 	-- in SA-MP this native returns 3 states
 	-- 1 - siren on
 	-- 0 - siren off
 	-- -1 - siren not exist, but we never get it.
-	if (sirenstat == true) then
+	if (sirenParams.SirenCount > 0) then
 		return 1
 	else
 		return 0
@@ -305,7 +305,6 @@ function GetVehicleDamageStatus(amx, vehicle, refPanels, refDoors, refLights, re
 	lightsState = binor(lightsState, binshl(getVehicleLightState(vehicle, 3), 6) )
 
 	local frontLeft, rearLeft, frontRight, rearRight = getVehicleWheelStates ( vehicle )
-
 	local tiresState = binor(rearRight, binor(binshl(frontRight, 1), binor(binshl(rearLeft, 2), binshl(frontLeft, 3))) )
 
 	amx.memDAT[refPanels] = panelsState

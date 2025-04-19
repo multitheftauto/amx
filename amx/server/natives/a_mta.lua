@@ -332,16 +332,8 @@ function GetPlayerDataStr(amx, player, key, buf, len)
 	end
 end
 
-function IsPlayerDataSet(amx, player, key)
-	return true
-end
-
 function ResetPlayerData(amx, player, key)
 	return setElementData(player, key, nil)
-end
-
-function ResetAllPlayerData(amx, player)
-	return true
 end
 -----------------------------------------------------
 -- Vehicles
@@ -410,11 +402,11 @@ function GetVehiclePaintjob(amx, vehicle)
 	return getVehiclePaintjob(vehicle)
 end
 
-function GetVehicleSirensOn(amx, vehicle)
+function GetVehicleSirenState(amx, vehicle)
 	return getVehicleSirensOn(vehicle)
 end
 
-function SetVehicleSirensOn(amx, vehicle, state)
+function SetVehicleSirenState(amx, vehicle, state)
 	return setVehicleSirensOn(vehicle, state)
 end
 
@@ -511,7 +503,7 @@ function IsGarageOpen(amx, garage)
 end
 
 function SetGarageOpen(amx, garage, state)
-	return setGarageOpen( garage, state )
+	return setGarageOpen(garage, state)
 end
 
 function IsGlitchEnabled(amx, glitch)
@@ -542,18 +534,18 @@ function FadePlayerCamera(amx, player, fadeIn, timeToFade, red, green, blue)
 	return fadeCamera(player, fadeIn, timeToFade, red, green, blue)
 end
 
-function GetRuleValue(amx, rule, nameBuf, bufSize)
+function GetServerRule(amx, rule, nameBuf, bufSize)
 	local ruleval = getRuleValue(rule)
 	if #ruleval <= bufSize then
 		writeMemString(amx, nameBuf, ruleval)
 	end
 end
 
-function SetRuleValue(amx, rule, value)
+function SetServerRule(amx, rule, value)
 	return setRuleValue(rule, value)
 end
 
-function RemoveRuleValue(amx, rule)
+function RemoveServerRule(amx, rule)
 	return removeRuleValue(rule)
 end
 

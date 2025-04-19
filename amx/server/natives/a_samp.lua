@@ -295,7 +295,7 @@ function AddStaticVehicle(amx, model, x, y, z, angle, color1, color2)
 	return AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, 120)
 end
 
-function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnDelay)
+function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnDelay, addSiren)
 	local vehicle = createVehicle(model, x, y, z, 0, 0, angle)
 	if (vehicle == false) then
 		return INVALID_VEHICLE_ID
@@ -319,6 +319,12 @@ function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnD
 			end
 			g_Vehicles[vehID].engineState = false
 		end
+	end
+	if getVehicleType(vehicle) == "Train" then
+		setTrainDerailable(vehicle, false)
+	end
+	if addSiren then
+		addVehicleSirens(vehicle, 1, 1)
 	end
 	return vehID
 end

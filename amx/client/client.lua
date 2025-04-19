@@ -379,7 +379,7 @@ function AttachCameraToObject(camObj)
 	outputConsole('AttachCameraToObject was called')
 
 	if not isElement(camObj) then
-		return false
+		return
 	end
 
 	ca.active = 1
@@ -393,7 +393,7 @@ function AttachCameraToPlayerObject(camobjID)
 	outputConsole('AttachCameraToPlayerObject was called')
 
 	if not isElement(g_PlayerObjects[camobjID]) then
-		return false
+		return
 	end
 
 	ca.active = 1
@@ -455,13 +455,12 @@ function InterpolateCameraPos(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	outputConsole(string.format("InterpolateCameraPos called with args %f %f %f %f %f %f %d %d", FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut))
 	sm.objCamPos = setupCameraObject(sm.objCamPos, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	addEventHandler("onClientPreRender", root, camRender)
-	return true
 end
+
 function InterpolateCameraLookAt(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	outputConsole(string.format("InterpolateCameraLookAt called with args %f %f %f %f %f %f %d %d", FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut))
 	sm.objLookAt = setupCameraObject(sm.objLookAt, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	addEventHandler("onClientPreRender", root, camRender)
-	return true
 end
 -----------------------------
 -- Player objects
@@ -471,28 +470,26 @@ function RemoveBuildingForPlayer(model, x, y, z, radius)
 		for i = 550, 20000 do -- Remove all world models around radius if they sent -1
 			removeWorldModel(i, radius, x, y, z)
 		end
-		return true -- Don't run the rest of the code
+		return -- Don't run the rest of the code
 	end
 	removeWorldModel(model, radius, x, y, z)
-	return true
+	return
 end
 
 function AttachPlayerObjectToPlayer(objID, attachPlayer, offsetX, offsetY, offsetZ, rX, rY, rZ)
 	local obj = g_PlayerObjects[objID]
 	if not obj then
-		return false
+		return
 	end
 	attachElements(obj, attachPlayer, offsetX, offsetY, offsetZ, rX, rY, rZ)
-	return true
 end
 
 function AttachPlayerObjectToVehicle(objID, attachVehicle, offsetX, offsetY, offsetZ, rX, rY, rZ)
 	local obj = g_PlayerObjects[objID]
 	if not obj then
-		return false
+		return
 	end
 	attachElements(obj, attachVehicle, offsetX, offsetY, offsetZ, rX, rY, rZ)
-	return true
 end
 
 function CreatePlayerObject(objID, model, x, y, z, rX, rY, rZ)
@@ -513,40 +510,48 @@ function DestroyPlayerObject(objID)
 	g_PlayerObjects[objID] = nil
 end
 
-function MovePlayerObject(objID, x, y, z, speed)
+function MovePlayerObject(objID, x, y, z, speed, rX, rY, rZ)
 	local obj = g_PlayerObjects[objID]
-	local rX, rY, rZ = getElementRotation(obj)
 	local distance = getDistanceBetweenPoints3D(x, y, z, getElementPosition(obj))
 	local time = distance / speed * 1000
-	moveObject(obj, time, x, y, z)
-	setElementRotation(obj, rX, rY, rZ)
+
+	-- We need relative rotation
+	local cRotX, cRotY, cRotZ = getElementRotation(obj)
+	cRotX = cRotX - rX
+	cRotY = cRotY - rY
+	cRotZ = cRotZ - rZ
+
+	-- -1000 or less means no rotation change, so set it to 0.0
+	if rX <= -1000.0 then cRotX = 0.0 end
+	if rY <= -1000.0 then cRotY = 0.0 end
+	if rZ <= -1000.0 then cRotZ = 0.0 end
+
+	moveObject(obj, time, x, y, z, cRotX, cRotY, cRotZ)
+	return math.floor(time)
 end
 
 function SetPlayerObjectPos(objID, x, y, z)
 	local obj = g_PlayerObjects[objID]
 	if not obj then
-		return false
+		return
 	end
 	setElementPosition(obj, x, y, z)
-	return true
 end
 
 function SetPlayerObjectRot(objID, rX, rY, rZ)
 	local obj = g_PlayerObjects[objID]
 	if not obj then
-		return false
+		return
 	end
 	setElementRotation(obj, rX, rY, rZ)
-	return true
 end
 
 function StopPlayerObject(objID)
 	local obj = g_PlayerObjects[objID]
 	if not obj then
-		return false
+		return
 	end
 	stopObject(obj)
-	return true
 end
 -----------------------------
 -- Audio
@@ -558,7 +563,7 @@ function PlayAudioStreamForPlayer(url, posX, posY, posZ, distance, usepos)
 		--outputConsole("PlayAudioStreamForPlayer is stopping an audio stream")
 		StopAudioStreamForPlayer()
 	end
-	if usepos == nil or usepos == 0 then
+	if not usepos then
 		--outputConsole(string.format("PlayAudioStreamForPlayer now playing non-3d sound %s", url))
 		pAudioStreamSound = playSound(url)
 	else
@@ -569,12 +574,11 @@ function PlayAudioStreamForPlayer(url, posX, posY, posZ, distance, usepos)
 	if pAudioStreamSound ~= nil then
 		setSoundVolume(pAudioStreamSound, 1.0)
 	end
-	return true
 end
 
 function StopAudioStreamForPlayer()
 	if pAudioStreamSound == nil then return end
-	return stopSound(pAudioStreamSound)
+	stopSound(pAudioStreamSound)
 end
 -----------------------------
 -- Checkpoints
@@ -668,11 +672,6 @@ function SetPlayerRaceCheckpoint(type, x, y, z, nextX, nextY, nextZ, size)
 end
 -----------------------------
 -- Vehicles
-
-function SetPlayerPosFindZ(x, y, z)
-	setElementPosition(localPlayer, x, y, getGroundPosition(x, y, z) + 1)
-	return true
-end
 
 function SetVehicleParamsForPlayer(vehicle, isObjective, doorsLocked)
 	local vehID = getElemID(vehicle)
@@ -1244,7 +1243,6 @@ function checkTextLabels()
 	end
 end
 
-
 function Create3DTextLabel(id, textlabel)
 	textlabel.id = id
 	textlabel.enabled = false
@@ -1591,6 +1589,10 @@ function OnKeyPress(key, keyState)
 end
 -----------------------------
 -- Others
+
+function SetPlayerPosFindZ(x, y, z)
+	setElementPosition(localPlayer, x, y, getGroundPosition(x, y, z) + 1)
+end
 
 local function clientPlayerWeaponFire(weapon, ammo, ammoInClip, hitX, hitY, hitZ, hitElement, startX, startY, startZ)
 	if weapon < 22 or (weapon > 34 and weapon ~= 38) then return end

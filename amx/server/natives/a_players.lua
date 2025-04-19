@@ -816,7 +816,7 @@ function SetPlayerSpecialAction(amx, player, actionID)
 	return true
 end
 
-function DisableRemoteVehicleCollisions(amx)
+function DisableRemoteVehicleCollisions(amx, player, disable)
 	notImplemented('DisableRemoteVehicleCollisions')
 	return false
 end
@@ -1052,7 +1052,7 @@ function PlayerSpectateVehicle(amx, player, vehicleToSpectate, mode)
 	end
 end
 
-function StartRecordingPlayerData(amx, player)
+function StartRecordingPlayerData(amx, player, type, name)
 	notImplemented('StartRecordingPlayerData')
 	return false
 end
@@ -1062,7 +1062,7 @@ function StopRecordingPlayerData(amx, player)
 	return false
 end
 
-function SelectTextDraw(amx, player)
+function SelectTextDraw(amx, player, hovercolor)
 	notImplemented('SelectTextDraw')
 	return false
 end
