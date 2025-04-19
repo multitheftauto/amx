@@ -53,8 +53,8 @@ function IsPlayerOnGround(amx, player)
 	return isPedOnGround(amx, player)
 end
 
-function SetPlayerOnFire(amx, player, state)
-	return setElementOnFire(player, state)
+function SetPlayerOnFire(amx, player, fire)
+	return setElementOnFire(player, fire)
 end
 
 function GetPlayerStat(amx, player, stat)
@@ -69,18 +69,18 @@ function GetPlayerDoingDriveBy(amx, player)
 	return getElementData(player, 'DoingDriveBy')
 end
 
-function SetPlayerDoingDriveBy(amx, player, state)
-	clientCall(root, 'setPedDoingGangDriveby', player, state)
-	return setElementData(player, 'DoingDriveBy', state)
+function SetPlayerDoingDriveBy(amx, player, driveBy)
+	clientCall(root, 'setPedDoingGangDriveby', player, driveBy)
+	return setElementData(player, 'DoingDriveBy', driveBy)
 end
 
 function GetPlayerCanBeKnockedOffBike(amx, player)
 	return getElementData(player, 'CanBeKnockedOffBike')
 end
 
-function SetPlayerCanBeKnockedOffBike(amx, player, state)
-	clientCall(root, 'setPedCanBeKnockedOffBike', player, state)
-	return setElementData(player, 'CanBeKnockedOffBike', state)
+function SetPlayerCanBeKnockedOffBike(amx, player, knockedOff)
+	clientCall(root, 'setPedCanBeKnockedOffBike', player, knockedOff)
+	return setElementData(player, 'CanBeKnockedOffBike', knockedOff)
 end
 
 function SetPlayerWeaponSlot(amx, player, slot)
@@ -88,8 +88,8 @@ function SetPlayerWeaponSlot(amx, player, slot)
 	return true
 end
 
-function SetPlayerHeadless(amx, player, state)
-	return setPedHeadless(player, state)
+function SetPlayerHeadless(amx, player, headState)
+	return setPedHeadless(player, headState)
 end
 
 function SetPlayerGravity(amx, player, gravity)
@@ -104,8 +104,8 @@ function SetPlayerBlurLevel(amx, player, level)
 	return setPlayerBlurLevel(player, level)
 end
 
-function SetPlayerControlState(amx, player, control, state)
-	return setControlState(player, control, state)
+function SetPlayerControlState(amx, player, control, controlState)
+	return setControlState(player, control, controlState)
 end
 
 function GetPlayerSkillLevel(amx, player, skill)
@@ -165,8 +165,8 @@ function RemoveBotFromVehicle(amx, bot)
 	end
 end
 
-function SetBotControlState(amx, bot, control, state)
-	clientCall(root, 'setPedControlState', bot, control, state)
+function SetBotControlState(amx, bot, control, controlState)
+	clientCall(root, 'setPedControlState', bot, control, controlState)
 	return true
 end
 
@@ -350,40 +350,40 @@ function GetVehicleEngineState(amx, vehicle)
 	return getVehicleEngineState(vehicle)
 end
 
-function SetVehicleEngineState(amx, vehicle, state)
-	return setVehicleEngineState(vehicle, state)
+function SetVehicleEngineState(amx, vehicle, engineState)
+	return setVehicleEngineState(vehicle, engineState)
 end
 
 function GetVehicleDoorState(amx, vehicle, door)
 	return getVehicleDoorState(vehicle, door)
 end
 
-function SetVehicleDoorState(amx, vehicle, door, state)
-	return setVehicleDoorState(vehicle, door, state)
+function SetVehicleDoorState(amx, vehicle, door, doorState)
+	return setVehicleDoorState(vehicle, door, doorState)
 end
 
 function GetVehicleLightState(amx, vehicle, light)
 	return getVehicleLightState(vehicle, light)
 end
 
-function SetVehicleLightState(amx, vehicle, light, state)
-	return setVehicleLightState(vehicle, light, state)
+function SetVehicleLightState(amx, vehicle, light, lightState)
+	return setVehicleLightState(vehicle, light, lightState)
 end
 
 function GetVehicleOverrideLights(amx, vehicle)
 	return getVehicleOverrideLights(vehicle)
 end
 
-function SetVehicleOverrideLights(amx, vehicle, state)
-	return setVehicleOverrideLights(vehicle, state)
+function SetVehicleOverrideLights(amx, vehicle, override)
+	return setVehicleOverrideLights(vehicle, override)
 end
 
-function GetVehicleWheelState(amx, vehicle, wheelid)
+function GetVehicleWheelState(amx, vehicle, wheel)
 	local w1, w2, w3, w4 = getVehicleWheelStates(vehicle)
-	if wheelid == 0 then return w1 end
-	if wheelid == 1 then return w2 end
-	if wheelid == 2 then return w3 end
-	if wheelid == 3 then return w4 end
+	if wheel == 0 then return w1 end
+	if wheel == 1 then return w2 end
+	if wheel == 2 then return w3 end
+	if wheel == 3 then return w4 end
 end
 
 function SetVehicleWheelState(amx, vehicle, frontLeft, rearLeft, frontRight, rearRight)
@@ -394,8 +394,8 @@ function GetVehiclePanelState(amx, vehicle, panel)
 	return getVehiclePanelState(vehicle, panel)
 end
 
-function SetVehiclePanelState(amx, vehicle, panel, state)
-	return setVehiclePanelState(vehicle, panel, state)
+function SetVehiclePanelState(amx, vehicle, panel, panelState)
+	return setVehiclePanelState(vehicle, panel, panelState)
 end
 
 function GetVehiclePaintjob(amx, vehicle)
@@ -406,8 +406,8 @@ function GetVehicleSirenState(amx, vehicle)
 	return getVehicleSirensOn(vehicle)
 end
 
-function SetVehicleSirenState(amx, vehicle, state)
-	return setVehicleSirensOn(vehicle, state)
+function SetVehicleSirenState(amx, vehicle, sirenState)
+	return setVehicleSirensOn(vehicle, sirenState)
 end
 
 function IsTrainDerailable(amx, train)
@@ -418,12 +418,12 @@ function IsTrainDerailed(amx, train)
 	return isTrainDerailed(train)
 end
 
-function SetTrainDerailable(amx, train, state)
-	return setTrainDerailable(train, state)
+function SetTrainDerailable(amx, train, derailable)
+	return setTrainDerailable(train, derailable)
 end
 
-function SetTrainDerailed(amx, train, state)
-	return setTrainDerailed(train, state)
+function SetTrainDerailed(amx, train, derailed)
+	return setTrainDerailed(train, derailed)
 end
 
 function GetTrainDirection(amx, train)
@@ -494,24 +494,24 @@ function GetCloudsEnabled(amx)
 	return getCloudsEnabled()
 end
 
-function SetCloudsEnabled(amx, state)
-	return setCloudsEnabled(state)
+function SetCloudsEnabled(amx, enable)
+	return setCloudsEnabled(enable)
 end
 
 function IsGarageOpen(amx, garage)
 	return isGarageOpen(garage)
 end
 
-function SetGarageOpen(amx, garage, state)
-	return setGarageOpen(garage, state)
+function SetGarageOpen(amx, garage, open)
+	return setGarageOpen(garage, open)
 end
 
 function IsGlitchEnabled(amx, glitch)
 	return isGlitchEnabled(glitch)
 end
 
-function SetGlitchEnabled(amx, glitch, state)
-	return setGlitchEnabled(amx, glitch, state)
+function SetGlitchEnabled(amx, glitch, enable)
+	return setGlitchEnabled(amx, glitch, enable)
 end
 
 function SetFPSLimit(amx, limit)
@@ -581,8 +581,8 @@ function RemoveEventHandler(amx, func)
 	g_Events[func] = nil
 end
 
-function AttachElementToElement(amx, elem, toelem, xPos, yPos, zPos, xRot, yRot, zRot)
-	return attachElements(elem, toelem, xPos, yPos, zPos, xRot, yRot, zRot)
+function AttachElementToElement(amx, elem, toelem, posX, posY, posZ, rotX, rotY, rotZ)
+	return attachElements(elem, toelem, posX, posY, posZ, rotX, rotY, rotZ)
 end
 
 function IsPluginLoaded(amx, pluginName)
