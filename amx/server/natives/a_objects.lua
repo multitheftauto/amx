@@ -4,7 +4,7 @@ function CreateObject(amx, model, x, y, z, rX, rY, rZ)
 		obj = createObject(1337, x, y, z, rX, rY, rZ) -- Create a dummy object anyway since createobject can also be used to make camera attachments
 		setElementAlpha(obj, 0)
 		setElementCollisionsEnabled(obj, false)
-		outputDebugString(string.format('[MTA AMX - WARNING]: Invalid model id %d (replaced with invisible and non-collidable), some object ids are not supported, consider updating your scripts', model))
+		outputDebugString(string.format("[MTA AMX - WARNING]: Invalid model id %d (replaced with invisible and non-collidable), some object ids are not supported, consider updating your scripts", model))
 	end
 	return addElem(g_Objects, obj)
 end

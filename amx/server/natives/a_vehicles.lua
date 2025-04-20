@@ -209,9 +209,41 @@ function SetVehicleNumberPlate(amx, vehicle, plate)
 	return setVehiclePlateText(vehicle, plate)
 end
 
-function GetVehicleModelInfo(amx, vehicle, type, refX, refY, refZ)
-	notImplemented('GetVehicleModelInfo')
-	return false
+-- GetVehicleModelDummyPosition doesn't fit
+function GetVehicleModelInfo(amx, model, type, refX, refY, refZ)
+	if model < 400 or model > 611 then
+		return false
+	end
+
+	local index = model - 400 + 1
+	if not Vehicle_ModelInfo[index] then
+		return false
+	end
+
+	local offsets = {
+		[1] = {start = 1,  count = 3},  -- VEHICLE_MODEL_INFO_SIZE
+		[2] = {start = 4,  count = 3},  -- VEHICLE_MODEL_INFO_FRONTSEAT
+		[3] = {start = 7,  count = 3},  -- VEHICLE_MODEL_INFO_REARSEAT
+		[4] = {start = 10, count = 3},  -- VEHICLE_MODEL_INFO_PETROLCAP
+		[5] = {start = 13, count = 3},  -- VEHICLE_MODEL_INFO_WHEELSFRONT
+		[6] = {start = 16, count = 3},  -- VEHICLE_MODEL_INFO_WHEELSREAR
+		[7] = {start = 19, count = 3},  -- VEHICLE_MODEL_INFO_WHEELSMID
+		[8] = {start = 22, count = 1},  -- VEHICLE_MODEL_INFO_FRONT_BUMPER_Z
+		[9] = {start = 25, count = 1}   -- VEHICLE_MODEL_INFO_REAR_BUMPER_Z
+	}
+
+	local spec = offsets[type]
+	if not spec then return false end
+
+	local values = {}
+	for i = spec.start, spec.start + spec.count - 1 do
+		values[#values + 1] = Vehicle_ModelInfo[index][i] or 0.0
+	end
+
+	writeMemFloat(amx, refX, values[1])
+	if spec.count >= 2 then writeMemFloat(amx, refY, values[2]) end
+	if spec.count >= 3 then writeMemFloat(amx, refZ, values[3]) end
+	return true
 end
 
 function GetVehicleComponentInSlot(amx, vehicle, slot)
