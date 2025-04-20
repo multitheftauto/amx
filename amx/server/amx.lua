@@ -15,6 +15,7 @@ g_Menus = {}
 g_TextDraws = {}
 g_TextLabels = {}
 g_PlayerObjects = {}
+g_SVars = {}
 
 function initGameModeGlobals()
 	g_PlayerClasses = {}

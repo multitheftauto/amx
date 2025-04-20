@@ -1716,3 +1716,9 @@ SAMP_Animation_ID = {
 	["RUNNINGMAN:DANCE_LOOP"] = 1811,
 	["SAMP:FishingIdle"] = 1812
 }
+
+lookupAnimByID = {}
+
+for k, v in pairs(SAMP_Animation_ID) do
+	lookupAnimByID[v] = k
+end

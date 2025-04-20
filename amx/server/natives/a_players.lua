@@ -242,12 +242,15 @@ end
 function GetPlayerIp(amx, player, refName, len)
 	if not player then
 		return -1
+	elseif len <= 0 then
+		return 0
 	end
+
 	local ip = getPlayerIP(player)
-	if #ip < len then
-		writeMemString(amx, refName, ip)
-		return string.len(ip)
-	end
+
+	local copyLen = math.min(#ip, len)
+	writeMemString(amx, refName, ip:sub(1, copyLen))
+	return copyLen
 end
 
 function GetPlayerPing(amx, player)
@@ -266,11 +269,13 @@ function GetPlayerKeys(amx, player, refKeys, refUpDown, refLeftRight)
 end
 
 function GetPlayerName(amx, player, nameBuf, bufSize)
+	if bufSize <= 0 then return 0 end
+
 	local name = getPlayerName(player)
-	if #name <= bufSize then
-		writeMemString(amx, nameBuf, name)
-		return string.len(name)
-	end
+
+	local copyLen = math.min(#name, bufSize)
+	writeMemString(amx, nameBuf, name:sub(1, copyLen))
+	return copyLen
 end
 
 function SetPlayerTime(amx, player, hours, minutes)
@@ -651,54 +656,74 @@ end
 
 function SetPVarInt(amx, player, varname, value)
 	g_Players[getElemID(player)].pvars[varname] = {PLAYER_VARTYPE_INT, value}
-	return 1
+	return true
 end
 
 function GetPVarString(amx, player, varname, outbuf, length)
+	if length <= 0 then return 0 end
+
 	local value = g_Players[getElemID(player)].pvars[varname]
 	if not value or value[1] ~= PLAYER_VARTYPE_STRING then
 		return 0
 	end
 
-	if #value[2] < length then
-		writeMemString(amx, outbuf, value[2])
-	else
-		writeMemString(amx, outbuf, string.sub(value, 0, length - 1))
-	end
-	return 1
+	local copyLen = math.min(#value[2], length)
+	writeMemString(amx, outbuf, string.sub(value[2], 1, copyLen))
+	return copyLen
 end
 
 function SetPVarString(amx, player, varname, value)
 	g_Players[getElemID(player)].pvars[varname] = {PLAYER_VARTYPE_STRING, value}
-	return 1
+	return true
 end
 
 function GetPVarFloat(amx, player, varname)
 	local value = g_Players[getElemID(player)].pvars[varname]
 	if not value or value[1] ~= PLAYER_VARTYPE_FLOAT then
-		return 0
+		return float2cell(0)
 	end
 	return float2cell(value[2])
 end
 
 function SetPVarFloat(amx, player, varname, value)
 	g_Players[getElemID(player)].pvars[varname] = {PLAYER_VARTYPE_FLOAT, value}
-	return 1
+	return true
 end
 
 function DeletePVar(amx, player, varname)
 	g_Players[getElemID(player)].pvars[varname] = nil
-	return 1
+	return true
 end
 
 function GetPVarsUpperIndex(amx, player)
-	notImplemented('GetPVarsUpperIndex')
-	return false
+	local playerID = getElemID(player)
+	if not g_Players[playerID] then return 0 end
+
+	local varCount = 0
+	for _ in pairs(g_Players[playerID].pvars) do
+		varCount = varCount + 1
+	end
+
+	return varCount
 end
 
-function GetPVarNameAtIndex(amx, player)
-	notImplemented('GetPVarNameAtIndex')
-	return false
+function GetPVarNameAtIndex(amx, player, index, outbuf, length)
+	if length <= 0 or index < 0 then return 0 end
+
+	local playerID = getElemID(player)
+	if not g_Players[playerID] then return 0 end
+
+	local varNames = {}
+	for name in pairs(g_Players[playerID].pvars) do
+		table.insert(varNames, name)
+	end
+
+	if index >= #varNames then return 0 end
+	local varName = string.upper(varNames[index + 1])
+
+	local copyLen = math.min(#varName, length)
+	writeMemString(amx, outbuf, varName:sub(1, copyLen))
+	return copyLen
 end
 
 function GetPVarType(amx, player, varname)
@@ -786,9 +811,21 @@ function GetPlayerAnimationIndex(amx, player)
 	return 0
 end
 
-function GetAnimationName(amx, player)
-	notImplemented('GetAnimationName')
-	return false
+function GetAnimationName(amx, index, animLib, libLen, animName, nameLen)
+	if libLen <= 0 or nameLen <= 0 then return false end
+
+	local foundKey = lookupAnimByID[index]
+	if not foundKey then return false end
+
+	local animLibPart, animNamePart = foundKey:match("^([^:]+):([^:]+)$")
+	if not animLibPart or not animNamePart then return false end
+
+	local copyLen = math.min(#animLibPart, libLen)
+	writeMemString(amx, animLib, animLibPart:sub(1, copyLen))
+	copyLen = math.min(#animNamePart, nameLen)
+	writeMemString(amx, animName, animNamePart:sub(1, copyLen))
+
+	return true
 end
 
 function GetPlayerSpecialAction(amx, player)
@@ -858,6 +895,11 @@ end
 
 function AllowPlayerTeleport(amx, player, allow)
 	deprecated('AllowPlayerTeleport', '0.3d')
+	return true
+end
+
+function SetPlayerDisabledWeapons(amx, player, ...)
+	deprecated('SetPlayerDisabledWeapons', '0.3')
 	return true
 end
 

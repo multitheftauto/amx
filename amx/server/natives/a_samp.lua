@@ -209,58 +209,96 @@ end
 -- Security
 
 function SHA256_PassHash(amx, pass, salt, ret_hash, ret_hash_len)
-	local secret = hash ( 'sha256', pass .. '' .. salt ) -- who is it guy which writes salt after pass?
-	writeMemString(amx, ret_hash, string.upper(secret) )
+	if ret_hash_len <= 0 then return 0 end
+
+	local secret = hash('sha256', pass .. '' .. salt) -- who is it guy which writes salt after pass?
+	secret = string.upper(secret)
+
+	local copy_len = math.min(#secret, ret_hash_len)
+	writeMemString(amx, ret_hash, secret:sub(1, copy_len))
+	return copy_len
 end
 
-function SetSVarInt(amx)
-	notImplemented('SetSVarInt')
-	return false
+function GetSVarInt(amx, varname)
+	local value = g_SVars[varname]
+	if not value or value[1] ~= SERVER_VARTYPE_INT then
+		return 0
+	end
+	return value[2]
 end
 
-function GetSVarInt(amx)
-	notImplemented('GetSVarInt')
-	return false
+function SetSVarInt(amx, varname, value)
+	g_SVars[varname] = {SERVER_VARTYPE_INT, value}
+	return true
 end
 
-function SetSVarString(amx)
-	notImplemented('SetSVarString')
-	return false
+function GetSVarString(amx, varname, outbuf, length)
+	if length <= 0 then return 0 end
+
+	local value = g_SVars[varname]
+	if not value or value[1] ~= SERVER_VARTYPE_STRING then
+		return 0
+	end
+
+	local copyLen = math.min(#value[2], length)
+	writeMemString(amx, outbuf, string.sub(value[2], 1, copyLen))
+	return copyLen
 end
 
-function GetSVarString(amx)
-	notImplemented('GetSVarString')
-	return false
+function SetSVarString(amx, varname, value)
+	g_SVars[varname] = {SERVER_VARTYPE_STRING, value}
+	return true
 end
 
-function SetSVarFloat(amx)
-	notImplemented('SetSVarFloat')
-	return false
+function GetSVarFloat(amx, varname)
+	local value = g_SVars[varname]
+	if not value or value[1] ~= SERVER_VARTYPE_FLOAT then
+		return float2cell(0)
+	end
+	return float2cell(value[2])
 end
 
-function GetSVarFloat(amx)
-	notImplemented('GetSVarFloat')
-	return false
+function SetSVarFloat(amx, varname, value)
+	g_SVars[varname] = {SERVER_VARTYPE_FLOAT, value}
+	return true
 end
 
-function DeleteSVar(amx)
-	notImplemented('DeleteSVar')
-	return false
+function DeleteSVar(amx, varname)
+	g_SVars[varname] = nil
+	return true
 end
 
 function GetSVarsUpperIndex(amx)
-	notImplemented('GetSVarsUpperIndex')
-	return false
+	local varCount = 0
+	for _ in pairs(g_SVars) do
+		varCount = varCount + 1
+	end
+
+	return varCount
 end
 
-function GetSVarNameAtIndex(amx)
-	notImplemented('GetSVarNameAtIndex')
-	return false
+function GetSVarNameAtIndex(amx, index, outbuf, length)
+	if length <= 0 or index < 0 then return 0 end
+
+	local varNames = {}
+	for name in pairs(g_SVars) do
+		table.insert(varNames, name)
+	end
+
+	if index >= #varNames then return 0 end
+	local varName = string.upper(varNames[index + 1])
+
+	local copyLen = math.min(#varName, length)
+	writeMemString(amx, outbuf, varName:sub(1, copyLen))
+	return copyLen
 end
 
-function GetSVarType(amx)
-	notImplemented('GetSVarType')
-	return false
+function GetSVarType(amx, varname)
+	local value = g_SVars[varname]
+	if value then
+		return value[1]
+	end
+	return SERVER_VARTYPE_NONE
 end
 
 function SetGameModeText(amx, gamemodeName)
@@ -401,14 +439,14 @@ function SetWorldTime(amx, hours)
 end
 
 function GetWeaponName(amx, weaponID, buf, len)
+	if len <= 0 then return 0 end
+
 	local name = getWeaponNameFromID(weaponID)
-	if name ~= false and #name < len then
-		writeMemString(amx, buf, name)
-		return 1
-	else
-		writeMemString(amx, buf, '') -- I was going to return 'None' in here, but I believe SA-MP just returns a blank string
-		return 0
-	end
+	if not name then name = '' end
+
+	local copyLen = math.min(#name, len)
+	writeMemString(amx, buf, name:sub(1, copyLen))
+	return copyLen
 end
 
 function EnableTirePopping(amx, enable)
@@ -568,12 +606,14 @@ function GetNetworkStats(amx)
 	return true
 end
 
-function GetPlayerVersion(amx, player, verBuf, bufSize)
+function GetPlayerVersion(amx, player, nameBuf, bufSize)
+	if bufSize <= 0 then return 0 end
+
 	local version = getPlayerVersion(player)
-	if #version <= bufSize then
-		writeMemString(amx, verBuf, version)
-		return string.len(version)
-	end
+
+	local copyLen = math.min(#version, bufSize)
+	writeMemString(amx, nameBuf, version:sub(1, copyLen))
+	return copyLen
 end
 
 function BlockIpAddress(amx, ip, time)
@@ -635,10 +675,8 @@ function GetServerVarAsInt(amx, varname)
 end
 
 function GetServerVarAsString(amx, varname, buf, buflen)
-	if not varname or varname == '' then
-		writeMemString(amx, buf, '')
-		return 0
-	end
+	if buflen <= 0 then return 0 end
+	if not varname or varname == '' then return 0 end
 
 	local rawVal = g_ServerVars[varname] or get('amx.' .. varname)
 	local valStr = (type(rawVal) == 'string') and rawVal or ''
@@ -1079,9 +1117,9 @@ function format(amx, outBuf, outBufSize, fmt, ...)
 	fmt = fmt:gsub('(%%[%-%d%.]*)%*(%a)', '%1%2')
 	local result = fmt:format(unpack(args))
 
-	if #result + 1 <= outBufSize then
-		writeMemString(amx, outBuf, result)
-	end
+	local copyLen = math.min(#result, outBufSize)
+	writeMemString(amx, outBuf, result:sub(1, copyLen))
+	return true
 end
 
 function SendClientCheck(amx, player)
@@ -1090,11 +1128,13 @@ function SendClientCheck(amx, player)
 end
 
 function gpci(amx, player, nameBuf, bufSize)
+	if bufSize <= 0 then return 0 end
+
 	local serial = getPlayerSerial(player)
-	if #serial <= bufSize then
-		writeMemString(amx, nameBuf, serial)
-		return string.len(serial)
-	end
+
+	local copyLen = math.min(#serial, bufSize)
+	writeMemString(amx, nameBuf, serial:sub(1, copyLen))
+	return copyLen
 end
 
 function SetSpawnInfo(amx, player, team, skin, x, y, z, angle, weap1, weap1_ammo, weap2, weap2_ammo, weap3, weap3_ammo)
@@ -1127,11 +1167,16 @@ function NetStats_GetConnectedTime(amx, player)
 end
 
 function NetStats_GetIpPort(amx, player, ip_port, ip_port_len)
+	if ip_port_len <= 0 then return 0 end
+
 	local ip = getPlayerIP(player)
+	if not ip then ip = '0.0.0.0' end
 	local port = 0 -- We haven't a solution for getting a client port
 	local ipandport = tostring(ip) .. ":" .. tostring(port)
-	writeMemString(amx, ip_port, ipandport)
-	return string.len(ipandport)
+
+	local copy_len = math.min(#ipandport, ip_port_len)
+	writeMemString(amx, ip_port, ipandport:sub(1, copy_len))
+	return copy_len
 end
 
 function NetStats_MessagesReceived(amx, player)

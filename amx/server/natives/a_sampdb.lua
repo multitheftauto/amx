@@ -8,22 +8,19 @@ end
 
 function db_field_name(amx, dbresult, fieldIndex, outbuf, maxlength)
 	local colname = dbresult.columns[fieldIndex + 1]
-	if #colname < maxlength then
-		writeMemString(amx, outbuf, colname)
-		return true
-	end
-	return false
+	local len = math.min(#colname, maxlength)
+	writeMemString(amx, outbuf, string.sub(colname, 1, len))
+	return true
 end
 
 function db_get_field(amx, dbresult, fieldIndex, outbuf, maxlength)
-	if dbresult[dbresult.row] then
-		local data = dbresult[dbresult.row][fieldIndex + 1]
-		if #data < maxlength then
-			writeMemString(amx, outbuf, data)
-			return true
-		end
+	if not dbresult[dbresult.row] then
+		return false
 	end
-	return false
+	local data = dbresult[dbresult.row][fieldIndex + 1]
+	local len = math.min(#data, maxlength)
+	writeMemString(amx, outbuf, string.sub(data, 1, len))
+	return true
 end
 
 function db_get_field_assoc(amx, dbresult, fieldName, outbuf, maxlength)

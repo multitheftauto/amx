@@ -199,11 +199,13 @@ function SetBotRot(amx, bot, rX, rY, rZ)
 end
 
 function GetBotName(amx, bot, nameBuf, bufSize)
+	if bufSize <= 0 then return 0 end
+
 	local name = getElementData(bot, 'BotName')
-	if #name <= bufSize then
-		writeMemString(amx, nameBuf, name)
-		return string.len(name)
-	end
+
+	local copyLen = math.min(#name, bufSize)
+	writeMemString(amx, nameBuf, name:sub(1, copyLen))
+	return copyLen
 end
 
 GetBotHealth = GetPlayerHealth
@@ -323,13 +325,16 @@ SetPlayerDataFloat = SetPlayerDataInt
 GetPlayerDataFloat = GetPlayerDataInt
 SetPlayerDataBool = SetPlayerDataInt
 GetPlayerDataBool = GetPlayerDataInt
-SetPlayerDataStr = SetPlayerDataInt
+SetPlayerDataString = SetPlayerDataInt
 
-function GetPlayerDataStr(amx, player, key, buf, len)
+function GetPlayerDataString(amx, player, key, buf, len)
+	if len <= 0 then return 0 end
+
 	local data = getElementData(player, key)
-	if #data <= len then
-		writeMemString(amx, buf, data)
-	end
+
+	local copyLen = math.min(#data, len)
+	writeMemString(amx, buf, data:sub(1, copyLen))
+	return copyLen
 end
 
 function ResetPlayerData(amx, player, key)
@@ -535,10 +540,13 @@ function FadePlayerCamera(amx, player, fadeIn, timeToFade, red, green, blue)
 end
 
 function GetServerRule(amx, rule, nameBuf, bufSize)
+	if bufSize <= 0 then return 0 end
+
 	local ruleval = getRuleValue(rule)
-	if #ruleval <= bufSize then
-		writeMemString(amx, nameBuf, ruleval)
-	end
+
+	local copyLen = math.min(#ruleval, bufSize)
+	writeMemString(amx, nameBuf, ruleval:sub(1, copyLen))
+	return copyLen
 end
 
 function SetServerRule(amx, rule, value)
