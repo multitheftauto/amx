@@ -185,9 +185,9 @@ public OnBotDeath(botid, killerid, weaponid, bodypart)
 	return 1;
 }
 
-public OnPlayerWeaponSwitch(playerid, oldweapon, newweapon)
+public OnPlayerWeaponSwitch(playerid, oldweaponid, newweaponid)
 {
-	printf("OnPlayerWeaponSwitch(%d, %d, %d)", playerid, oldweapon, newweapon);
+	printf("OnPlayerWeaponSwitch(%d, %d, %d)", playerid, oldweaponid, newweaponid);
 	return 1;
 }
 

@@ -27,7 +27,7 @@ forward OnPlayerClickWorld(playerid, button, updown, worldX, worldY, worldZ);
 forward OnPlayerClickWorldPlayer(playerid, button, updown, clickedid, worldX, worldY, worldZ);
 forward OnPlayerClickWorldObject(playerid, button, updown, clickedid, worldX, worldY, worldZ);
 forward OnPlayerClickWorldVehicle(playerid, button, updown, clickedid, worldX, worldY, worldZ);
-forward OnPlayerWeaponSwitch(playerid, oldweapon, newweapon);
+forward OnPlayerWeaponSwitch(playerid, oldweaponid, newweaponid);
 forward OnPlayerKeyDown(playerid, key);
 forward OnPlayerKeyUp(playerid, key);
 
