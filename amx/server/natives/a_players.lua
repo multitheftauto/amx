@@ -170,7 +170,7 @@ function GetPlayerDrunkLevel(amx, player)
 	return 0
 end
 
-function SetPlayerDrunkLevel(amx, player)
+function SetPlayerDrunkLevel(amx, player, level)
 	notImplemented('SetPlayerDrunkLevel', 'SCM is not supported.')
 	return false
 end
@@ -349,7 +349,7 @@ function StopAudioStreamForPlayer(amx, player)
 	return true
 end
 
-function SetPlayerShopName(amx, player)
+function SetPlayerShopName(amx, player, shopname)
 	notImplemented('SetPlayerShopName')
 	return false
 end
@@ -428,20 +428,24 @@ function RemovePlayerAttachedObject(amx, player, index)
 	local playerID = getElemID(player)
 	local obj = g_Players[playerID].attachedObjects[index] -- Get the object stored at this slot
 	if obj ~= false then
-		detachElementFromBone( obj )
-		destroyElement( obj )
+		detachElementFromBone(obj)
+		destroyElement(obj)
 		g_Players[playerID].attachedObjects[index] = nil
 		return true
 	end
 	return false
 end
 
-function IsPlayerAttachedObjectSlotUsed(amx, player)
-	notImplemented('IsPlayerAttachedObjectSlotUsed')
+function IsPlayerAttachedObjectSlotUsed(amx, player, index)
+	local playerID = getElemID(player)
+	local obj = g_Players[playerID].attachedObjects[index] -- Get the object stored at this slot
+	if obj ~= false then
+		return true
+	end
 	return false
 end
 
-function EditAttachedObject(amx, player)
+function EditAttachedObject(amx, player, index)
 	notImplemented('EditAttachedObject')
 	return false
 end

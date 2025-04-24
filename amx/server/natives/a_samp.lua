@@ -306,7 +306,7 @@ function SetGameModeText(amx, gamemodeName)
 end
 
 function SetTeamCount(amx, count)
-	notImplemented('SetTeamCount')
+	deprecated('SetTeamCount', '0.3')
 	return false
 end
 
@@ -488,7 +488,7 @@ function SetDisabledWeapons(amx, ...)
 end
 
 function SetDeathDropAmount(amx, amount)
-	notImplemented('SetDeathDropAmount')
+	deprecated('SetDeathDropAmount', '0.3')
 	return true
 end
 
@@ -596,13 +596,31 @@ function SpawnPlayer(amx, player)
 	return true
 end
 
-function GetPlayerNetworkStats(amx)
-	notImplemented('GetPlayerNetworkStats')
+function GetPlayerNetworkStats(amx, player, nameBuf, bufSize)
+	if bufSize <= 0 then return false end
+
+	local result = {}
+	for index, value in pairs(getNetworkStats(player)) do
+		table.insert(result, tostring(index) .. ': ' .. tostring(value))
+	end
+	result = table.concat(result, '\n')
+
+	local copyLen = math.min(#result, bufSize)
+	writeMemString(amx, nameBuf, string.sub(result, 1, copyLen))
 	return true
 end
 
-function GetNetworkStats(amx)
-	notImplemented('GetNetworkStats')
+function GetNetworkStats(amx, nameBuf, bufSize)
+	if bufSize <= 0 then return false end
+
+	local result = {}
+	for index, value in pairs(getNetworkStats()) do
+		table.insert(result, tostring(index) .. ': ' .. tostring(value))
+	end
+	result = table.concat(result, '\n')
+
+	local copyLen = math.min(#result, bufSize)
+	writeMemString(amx, nameBuf, string.sub(result, 1, copyLen))
 	return true
 end
 
@@ -1122,7 +1140,7 @@ function format(amx, outBuf, outBufSize, fmt, ...)
 	return true
 end
 
-function SendClientCheck(amx, player)
+function SendClientCheck(amx, player, type, addr, offset, bytes)
 	notImplemented('SendClientCheck')
 	return false
 end
@@ -1197,4 +1215,9 @@ end
 function NetStats_PacketLossPercent(amx, player)
 	local networkStat = getNetworkStats(player)
 	return networkStat.packetlossTotal or 0
+end
+
+function GetServerTickRate(amx)
+	notImplemented('GetServerTickRate')
+	return 0
 end

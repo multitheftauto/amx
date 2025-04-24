@@ -264,6 +264,7 @@ end
 -- 11 - CARMODTYPE_REAR_BUMPER
 -- 12 - CARMODTYPE_VENT_RIGHT
 -- 13 - CARMODTYPE_VENT_LEFT
+
 function GetVehicleComponentType(amx, componentid)
 	local components = {
 		['Spoiler'] = 0,

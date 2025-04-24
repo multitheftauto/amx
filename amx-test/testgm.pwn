@@ -34,8 +34,8 @@ public OnGameModeInit()
 	AddPlayerClass(0, 1958.3783, 1343.1572, 15.3746, 269.1425, 0, 0, 0, 0, 0, 0);
 
 	new buf[64];
-	SetRuleValue("nya", "test");
-	GetRuleValue("nya", buf, sizeof(buf));
+	SetServerRule("nya", "test");
+	GetServerRule("nya", buf, sizeof(buf));
 	printf("val: %s", buf);
 
 	bot = CreateBot(0, 0.5, 0.5, 0.5, "Nyashk");
@@ -87,7 +87,6 @@ public OnPlayerConnect(playerid)
 	return 1;
 }
 
-forward OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]);
 public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 {
 	if(dialogid == 0) { // Our example msgbox
@@ -164,13 +163,13 @@ public OnBotConnect(botid, name[])
 	return 1;
 }
 
-public OnMarkerHit(markerid, elemtype[], elemid, matchingDimension)
+public OnMarkerHit(markerid, hittype[], hitid, worldid)
 {
-	printf("OnMarkerHit(%d, %s, %d)", markerid, elemtype, elemid);
+	printf("OnMarkerHit(%d, %s, %d)", markerid, hittype, hitid);
 	return 1;
 }
 
-public OnBotEnterVehicle(botid, vehicleid, seatid)
+public OnBotEnterVehicle(botid, vehicleid, ispassenger)
 {
 	return 1;
 }
@@ -186,9 +185,9 @@ public OnBotDeath(botid, killerid, weaponid, bodypart)
 	return 1;
 }
 
-public OnPlayerWeaponSwitch(playerid, previousWeaponID, currentWeaponID)
+public OnPlayerWeaponSwitch(playerid, oldweapon, newweapon)
 {
-	printf("OnPlayerWeaponSwitch(%d, %d, %d)", playerid, previousWeaponID, currentWeaponID);
+	printf("OnPlayerWeaponSwitch(%d, %d, %d)", playerid, oldweapon, newweapon);
 	return 1;
 }
 

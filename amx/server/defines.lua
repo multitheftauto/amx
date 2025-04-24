@@ -135,7 +135,7 @@ g_PoliceVehicles = {
 	[601] = true
 }
 
--- Left is SAMP, right is MTA
+-- Left is SA-MP, right is MTA
 g_BoneMapping = setmetatable({
 	[2] = 1,	-- Head
 	[17] = 2,	-- Neck
@@ -146,7 +146,7 @@ g_BoneMapping = setmetatable({
 	[4] = 10,	-- Right Upper Arm
 	[5] = 11,	-- Left Hand
 	[6] = 12,	-- Right Hand
-	[7] = 13,	-- Left thigh (Samp doesn't really have hips)
+	[7] = 13,	-- Left thigh (SA-MP doesn't really have hips)
 	[8] = 14,	-- Right thigh
 	[12] = 15,	-- Left calf
 	[11] = 16,	-- Right Calf
@@ -154,7 +154,7 @@ g_BoneMapping = setmetatable({
 	[10] = 20	-- Right Foot
 }, {
 	__index = function(t, k)
-		if k == 18 then -- Since 18 is jaw in SAMP
+		if k == 18 then -- Since 18 is jaw in SA-MP
 			k = 2 -- Default to head
 		end
 		if k >= 1 and k <= 17 then

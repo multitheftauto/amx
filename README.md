@@ -91,7 +91,14 @@ out below.
 
 ### Extracting
 
-Extract the "mods" folder into your MTA "server" directory.
+- All needed binary files are in the archive provided on Releases
+  page. Unpack amx.zip and extract the `mods` folder into your MTA
+  `server` directory.
+
+- `amx` folder located in mods/deathmatch/resources is a place for the
+  mentioned Lua resources. It will be empty at this point, so you need
+  to copy all the latest files of `amx` folder from this repository
+  into your `amx` folder.
 
 ### Configuration
 
@@ -669,14 +676,11 @@ is perfect. Below is a list of limitations that may or may not be
 addressed in later versions of *amx* and Multi Theft Auto.
 
 - The following scripting functions are currently not implemented and
-  will have no effect when called: AllowAdminTeleport,
-  AllowInteriorWeapons, AllowPlayerTeleport,
-  DisableInteriorEnterExits, EnableStuntBonusForAll,
-  EnableStuntBonusForPlayer, EnableTirePopping (tire popping is always
-  on), PlayerPlaySound, SendDeathMessage (use the "killmessages"
-  resource on your server instead for graphical death messages),
-  SetDeathDropAmount, SetDisabledWeapons, SetNameTagDrawDistance,
-  SetPlayerDisabledWeapons, SetTeamCount, TextDrawSetProportional,
+  will have no effect when called: DisableInteriorEnterExits,
+  EnableStuntBonusForAll, EnableStuntBonusForPlayer, EnableTirePopping
+  (tire popping is always on), PlayerPlaySound, SendDeathMessage (use
+  the "killmessages" resource on your server instead for graphical
+  death messages), SetNameTagDrawDistance, TextDrawSetProportional,
   UsePlayerPedAnims.
 
 ## Credits

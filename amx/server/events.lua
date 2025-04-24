@@ -117,7 +117,7 @@ function classSelKey(player)
 	outputChatBox('* Returning to class selection after next death', player, 136, 170, 98)
 	g_Players[getElemID(player)].returntoclasssel = true
 end
-addCommandHandler ( "changeclass", classSelKey )
+addCommandHandler('changeclass', classSelKey)
 
 function keyStateChange(player, key, state)
 	local id = getElemID(player)
@@ -412,7 +412,7 @@ addEventHandler('onPlayerQuit', root,
 
 addEventHandler('onResourceStart', resourceRoot,
 	function()
-		setTimer ( checkIfLeftVehicleByOtherMeans, 1000, 0 )
+		setTimer(checkIfLeftVehicleByOtherMeans, 1000, 0)
 	end,
 	false
 )

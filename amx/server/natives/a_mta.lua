@@ -104,34 +104,21 @@ function SetPlayerBlurLevel(amx, player, level)
 	return setPlayerBlurLevel(player, level)
 end
 
+function FadePlayerCamera(amx, player, fadeIn, timeToFade, red, green, blue)
+	return fadeCamera(player, fadeIn, timeToFade, red, green, blue)
+end
+
 function SetPlayerControlState(amx, player, control, controlState)
 	return setControlState(player, control, controlState)
+end
+
+function ShowPlayerCursor(amx, player, show, controls)
+	return showCursor(player, show, controls)
 end
 
 function GetPlayerSkillLevel(amx, player, skill)
 	return getPedStat(player, skill + 69)
 end
-
-IsBotInWater = IsPlayerInWater
-IsBotOnFire = IsPlayerOnFire
-IsBotDucked = IsPlayerDucked
-IsBotOnGround = IsPlayerOnGround
-GetBotFightingStyle = GetPlayerFightingStyle
-SetBotFightingStyle = SetPlayerFightingStyle
-SetBotOnFire = SetPlayerOnFire
-GetBotSkin = GetPlayerSkin
-SetBotSkin = SetPlayerSkin
-GetBotStat = GetPlayerStat
-SetBotStat = SetPlayerStat
-GetBotDoingDriveBy = GetPlayerDoingDriveBy
-SetBotDoingDriveBy = SetPlayerDoingDriveBy
-GetBotCanBeKnockedOffBike = GetPlayerCanBeKnockedOffBike
-SetBotCanBeKnockedOffBike = SetPlayerCanBeKnockedOffBike
-SetBotWeaponSlot = SetPlayerWeaponSlot
-SetBotHeadless = SetPlayerHeadless
-GetBotVehicleSeat = GetPlayerVehicleSeat
-GetBotVelocity = GetPlayerVelocity
-SetBotVelocity = SetPlayerVelocity
 -----------------------------------------------------
 -- Bots
 
@@ -208,6 +195,26 @@ function GetBotName(amx, bot, nameBuf, bufSize)
 	return copyLen
 end
 
+IsBotInWater = IsPlayerInWater
+IsBotOnFire = IsPlayerOnFire
+IsBotDucked = IsPlayerDucked
+IsBotOnGround = IsPlayerOnGround
+GetBotFightingStyle = GetPlayerFightingStyle
+SetBotFightingStyle = SetPlayerFightingStyle
+SetBotOnFire = SetPlayerOnFire
+GetBotSkin = GetPlayerSkin
+SetBotSkin = SetPlayerSkin
+GetBotStat = GetPlayerStat
+SetBotStat = SetPlayerStat
+GetBotDoingDriveBy = GetPlayerDoingDriveBy
+SetBotDoingDriveBy = SetPlayerDoingDriveBy
+GetBotCanBeKnockedOffBike = GetPlayerCanBeKnockedOffBike
+SetBotCanBeKnockedOffBike = SetPlayerCanBeKnockedOffBike
+SetBotWeaponSlot = SetPlayerWeaponSlot
+SetBotHeadless = SetPlayerHeadless
+GetBotVehicleSeat = GetPlayerVehicleSeat
+GetBotVelocity = GetPlayerVelocity
+SetBotVelocity = SetPlayerVelocity
 GetBotHealth = GetPlayerHealth
 SetBotHealth = SetPlayerHealth
 GetBotArmour = GetPlayerArmour
@@ -313,21 +320,25 @@ IsBotInMarker = IsPlayerInMarker
 -----------------------------------------------------
 -- Player Data
 
-function SetPlayerDataInt(amx, player, key, value)
+function SetPlayerIntData(amx, player, key, value)
 	return setElementData(player, key, value)
 end
 
-function GetPlayerDataInt(amx, player, key)
+function GetPlayerIntData(amx, player, key)
 	return getElementData(player, key)
 end
 
-SetPlayerDataFloat = SetPlayerDataInt
-GetPlayerDataFloat = GetPlayerDataInt
-SetPlayerDataBool = SetPlayerDataInt
-GetPlayerDataBool = GetPlayerDataInt
-SetPlayerDataString = SetPlayerDataInt
+SetPlayerFloatData = SetPlayerIntData
 
-function GetPlayerDataString(amx, player, key, buf, len)
+function GetPlayerFloatData(amx, player, key)
+	return float2cell(getElementData(player, key))
+end
+
+SetPlayerBoolData = SetPlayerIntData
+GetPlayerBoolData = GetPlayerIntData
+SetPlayerStringData = SetPlayerIntData
+
+function GetPlayerStringData(amx, player, key, buf, len)
 	if len <= 0 then return 0 end
 
 	local data = getElementData(player, key)
@@ -343,12 +354,12 @@ end
 -----------------------------------------------------
 -- Vehicles
 
-function GetVehicleMaxPassengers(amx, vehicle)
-	return getVehicleMaxPassengers(vehicle)
-end
-
 function SetVehicleModel(amx, vehicle, model)
 	return setElementModel(vehicle, model)
+end
+
+function GetVehicleMaxPassengers(amx, vehicle)
+	return getVehicleMaxPassengers(vehicle)
 end
 
 function GetVehicleEngineState(amx, vehicle)
@@ -403,16 +414,16 @@ function SetVehiclePanelState(amx, vehicle, panel, panelState)
 	return setVehiclePanelState(vehicle, panel, panelState)
 end
 
-function GetVehiclePaintjob(amx, vehicle)
-	return getVehiclePaintjob(vehicle)
-end
-
 function GetVehicleSirenState(amx, vehicle)
 	return getVehicleSirensOn(vehicle)
 end
 
 function SetVehicleSirenState(amx, vehicle, sirenState)
 	return setVehicleSirensOn(vehicle, sirenState)
+end
+
+function GetVehiclePaintjob(amx, vehicle)
+	return getVehiclePaintjob(vehicle)
 end
 
 function IsTrainDerailable(amx, train)
@@ -485,7 +496,7 @@ function GetPickupAmmo(amx, pickup)
 	return getPickupAmmo(pickup)
 end
 -----------------------------------------------------
--- Misc
+-- World
 
 function SetSkyGradient(amx, topRed, topGreen, topBlue, bottomRed, bottomGreen, bottomBlue)
 	return setSkyGradient(topRed, topGreen, topBlue, bottomRed, bottomGreen, bottomBlue)
@@ -519,25 +530,23 @@ function SetGlitchEnabled(amx, glitch, enable)
 	return setGlitchEnabled(amx, glitch, enable)
 end
 
-function SetFPSLimit(amx, limit)
-	return setFPSLimit(limit)
-end
-
 function GetFPSLimit(amx)
 	return getFPSLimit()
 end
 
-function GetPlayerCount(amx)
-	return getPlayerCount(amx)
+function SetFPSLimit(amx, limit)
+	return setFPSLimit(limit)
 end
 
 function GetRandomPlayer(amx)
 	return getElemID(getRandomPlayer())
 end
 
-function FadePlayerCamera(amx, player, fadeIn, timeToFade, red, green, blue)
-	return fadeCamera(player, fadeIn, timeToFade, red, green, blue)
+function GetPlayerCount(amx)
+	return getPlayerCount(amx)
 end
+-----------------------------------------------------
+-- Rules
 
 function GetServerRule(amx, rule, nameBuf, bufSize)
 	if bufSize <= 0 then return 0 end
@@ -556,28 +565,26 @@ end
 function RemoveServerRule(amx, rule)
 	return removeRuleValue(rule)
 end
+-----------------------------------------------------
+-- Scoreboard
 
-function AddScoreboardColumn(amx, column)
-	outputDebugString("AddScoreboardColumn is being ignored!")
+function AddScoreBoardColumn(amx, column)
+	outputDebugString("AddScoreBoardColumn is being ignored!")
 	-- TODO(q): this needs to be added back later
 	-- return exports.amxscoreboard:addScoreboardColumn('_' .. column)
 end
 
-function RemoveScoreboardColumn(amx, column)
-	outputDebugString("RemoveScoreboardColumn is being ignored!")
+function RemoveScoreBoardColumn(amx, column)
+	outputDebugString("RemoveScoreBoardColumn is being ignored!")
 	-- TODO(q): this needs to be added back later
 	-- return exports.amxscoreboard:removeScoreboardColumn('_' .. column)
 end
 
-function SetScoreboardData(amx, player, column, data)
+function SetScoreBoardData(amx, player, column, data)
 	return setElementData(player, '_' .. column, data)
 end
-
 -----------------------------------------------------
-
-function ShowCursor(amx, player, show, controls)
-	return showCursor(player, show, controls)
-end
+-- Misc
 
 function AddEventHandler(amx, event, func)
 	if g_EventNames[event] then

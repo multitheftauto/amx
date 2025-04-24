@@ -16,14 +16,20 @@ native amxVersion(&Float:ver);
 
 // Events
 forward OnBotConnect(botid, name[]);
-forward OnBotEnterVehicle(botid, vehicleid, seatid);
+forward OnBotEnterVehicle(botid, vehicleid, ispassenger);
 forward OnBotExitVehicle(botid, vehicleid);
 forward OnBotDeath(botid, killerid, weaponid, bodypart);
 forward OnBotStateChange(botid, newstate, oldstate);
-forward OnPlayerWeaponSwitch(playerid, previousWeaponID, currentWeaponID);
 forward OnMarkerCreate(markerid);
-forward OnMarkerHit(markerid, elemtype[], elemid, matchingDimension);
-forward OnMarkerLeave(markerid, elemtype[], elemid, matchingDimension);
+forward OnMarkerHit(markerid, hittype[], hitid, worldid);
+forward OnMarkerLeave(markerid, type[], id, worldid);
+forward OnPlayerClickWorld(playerid, button, updown, worldX, worldY, worldZ);
+forward OnPlayerClickWorldPlayer(playerid, button, updown, clickedid, worldX, worldY, worldZ);
+forward OnPlayerClickWorldObject(playerid, button, updown, clickedid, worldX, worldY, worldZ);
+forward OnPlayerClickWorldVehicle(playerid, button, updown, clickedid, worldX, worldY, worldZ);
+forward OnPlayerWeaponSwitch(playerid, oldweapon, newweapon);
+forward OnPlayerKeyDown(playerid, key);
+forward OnPlayerKeyUp(playerid, key);
 
 // World
 native SetSkyGradient(topRed = 0, topGreen = 0, topBlue = 0, bottomRed = 0, bottomGreen = 0, bottomBlue = 0);
@@ -34,9 +40,10 @@ native IsGarageOpen(garageid);
 native SetGarageOpen(garageid, open);
 native IsGlitchEnabled(name[]);
 native SetGlitchEnabled(name[], enable);
+native GetFPSLimit();
 native SetFPSLimit(fps);
-native GetPlayerCount();
 native GetRandomPlayer();
+native GetPlayerCount();
 
 // Water
 native GetWaveHeight();
@@ -68,9 +75,9 @@ native IsBotInMarker(markerid, botid);
 native IsVehicleInMarker(markerid, vehicleid);
 
 // Rules
-native GetServerRule(rule[], const buf[], bufsize);
-native SetServerRule(rule[], value[]);
-native RemoveServerRule(rule[]);
+native GetServerRule(name[], buf[], bufsize);
+native SetServerRule(name[], value[]);
+native RemoveServerRule(name[]);
 
 // Objects
 native GetObjectAlpha(objectid);
@@ -100,10 +107,12 @@ native GetPlayerAlpha(playerid);
 native SetPlayerAlpha(playerid, alpha);
 native FadePlayerCamera(playerid, fadeIn, Float:timeToFade = 1.0, red = 0, green = 0, blue = 0);
 native SetPlayerControlState(playerid, control[], controlState);
+native ShowPlayerCursor(playerid, show, controls);
+native GetPlayerSkillLevel(playerid, skill);
 
 // Vehicles
-native GetVehicleMaxPassengers(vehicleid);
 native SetVehicleModel(vehicleid, model);
+native GetVehicleMaxPassengers(vehicleid);
 native GetVehicleEngineState(vehicleid);
 native SetVehicleEngineState(vehicleid, engineState);
 native GetVehicleDoorState(vehicleid, door);
@@ -116,11 +125,11 @@ native GetVehicleWheelState(vehicleid, wheel);
 native SetVehicleWheelState(vehicleid, frontLeft = -1, rearLeft = -1, frontRight = -1, rearRight = -1);
 native GetVehiclePanelState(vehicleid, panel);
 native SetVehiclePanelState(vehicleid, panel, panelState);
+native GetVehicleSirenState(vehicleid);
+native SetVehicleSirenState(vehicleid, sirenState);
 native GetVehicleAlpha(vehicleid);
 native SetVehicleAlpha(vehicleid, alpha);
 native GetVehiclePaintjob(vehicleid);
-native GetVehicleSirenState(vehicleid);
-native SetVehicleSirenState(vehicleid, sirenState);
 native IsTrainDerailable(vehicleid);
 native IsTrainDerailed(vehicleid);
 native SetTrainDerailable(vehicleid, derailable);
@@ -132,21 +141,24 @@ native SetTrainSpeed(vehicleid, &Float:speed);
 
 // Bots
 native CreateBot(modelid, Float:x, Float:y, Float:z, name[] = "Bot");
-native SetBotHealth(botid, Float:health);
-native GetBotHealth(botid, &Float:health);
-native SetBotArmour(botid, Float:armour);
-native GetBotArmour(botid, &Float:armour);
-native SetBotPos(botid, Float:X, Float:Y, Float:Z);
-native GetBotPos(botid, &Float:X, &Float:Y, &Float:Z);
-native SetBotRot(botid, Float:rX, Float:rY, Float:rZ);
-native GetBotRot(botid, &Float:rX, &Float:rY, &Float:rZ);
+native DestroyBot(botid);
 native IsBotInWater(botid);
 native IsBotOnFire(botid);
 native IsBotDucked(botid);
 native IsBotOnGround(botid);
+native GetBotHealth(botid, &Float:health);
+native SetBotHealth(botid, Float:health);
+native GetBotArmour(botid, &Float:armour);
+native SetBotArmour(botid, Float:armour);
+native GetBotPos(botid, &Float:X, &Float:Y, &Float:Z);
+native SetBotPos(botid, Float:X, Float:Y, Float:Z);
+native GetBotRot(botid, &Float:rX, &Float:rY, &Float:rZ);
+native SetBotRot(botid, Float:rX, Float:rY, Float:rZ);
 native GetBotFightingStyle(botid);
 native SetBotFightingStyle(botid, styleid);
 native SetBotOnFire(botid, fire);
+native GetBotSkin(botid);
+native SetBotSkin(botid, skinid);
 native GetBotStat(botid, statid);
 native SetBotStat(botid, statid, Float:value);
 native GetBotState(botid);
@@ -160,10 +172,27 @@ native GetBotCanBeKnockedOffBike(botid);
 native SetBotCanBeKnockedOffBike(botid, knockedOff);
 native SetBotWeaponSlot(botid, slotid);
 native SetBotHeadless(botid, headState);
-native BotKill(botid);
+native IsBotDead(botid);
+native KillBot(botid);
 native GetBotAlpha(botid);
 native SetBotAlpha(botid, alpha);
-native GetBotName(botid, const buf[], bufsize);
+native GetBotName(botid, buf[], bufsize);
 native GetBotVehicleSeat(botid);
 native GetBotVelocity(botid, &Float:X, &Float:Y, &Float:Z);
 native SetBotVelocity(botid, Float:X, Float:Y, Float:Z);
+
+// Player Data
+native SetPlayerIntData(playerid, key[], value);
+native GetPlayerIntData(playerid, key[]);
+native SetPlayerFloatData(playerid, key[], Float:value);
+native Float:GetPlayerFloatData(playerid, key[]);
+native SetPlayerBoolData(playerid, key[], value);
+native GetPlayerBoolData(playerid, key[]);
+native SetPlayerStringData(playerid, key[], value[]);
+native GetPlayerStringData(playerid, key[], buf[], bufsize);
+native ResetPlayerData(playerid, key[]);
+
+// Misc
+native AddEventHandler(event[], func[]);
+native RemoveEventHandler(func[]);
+native IsPluginLoaded(plugin[]);

@@ -313,7 +313,7 @@ local function cmdUnbanIP(ip)
 	if not ip then
 		return 'unbanip <ip>'
 	end
-	for banID, ban in ipairs (getBans()) do
+	for banID, ban in ipairs(getBans()) do
 		if getBanIP(ban) == ip then
 			if removeBan(ban) then
 				return 'IP ' .. ip .. ' has been unbanned.'
