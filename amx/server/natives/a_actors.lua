@@ -1,7 +1,7 @@
 function CreateActor(amx, model, x, y, z, rotation)
 	local actor = createPed(model, x, y, z, rotation, false)
-	setElementData(actor, 'amx.actorped', true)
-	setElementData(actor, 'amx.invulnerable', true)
+	setElementData(actor, 'ActorPed', true)
+	setElementData(actor, 'Invulnerable', true)
 	return addElem(g_Actors, actor)
 end
 
@@ -58,12 +58,12 @@ function SetActorInvulnerable(amx, actor, invulnerable)
 	if not actor then
 		return false
 	end
-	setElementData(actor, 'amx.invulnerable', invulnerable)
+	setElementData(actor, 'Invulnerable', invulnerable)
 	return true
 end
 
 function IsActorInvulnerable(amx, actor)
-	return getElementData(actor, 'amx.invulnerable')
+	return getElementData(actor, 'Invulnerable')
 end
 
 function IsValidActor(amx, actorId)

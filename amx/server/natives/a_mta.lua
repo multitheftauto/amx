@@ -124,8 +124,8 @@ end
 
 function CreateBot(amx, model, x, y, z, name)
 	local bot = createPed(model, x, y, z)
-	setElementData(bot, 'amx.shownametag', true, true)
-	setElementData(bot, 'BotName', name, true)
+	setElementData(bot, 'ShowNameTag', true)
+	setElementData(bot, 'BotName', name)
 	local botId = addElem(g_Bots, bot)
 	procCallOnAll('OnBotConnect', botId, name)
 	return botId
@@ -574,14 +574,14 @@ function AddScoreBoardColumn(amx, column)
 	-- return exports.amxscoreboard:addScoreboardColumn('_' .. column)
 end
 
+function SetScoreBoardData(amx, player, column, data)
+	return setElementData(player, '_' .. column, data)
+end
+
 function RemoveScoreBoardColumn(amx, column)
 	outputDebugString("RemoveScoreBoardColumn is being ignored!")
 	-- TODO(q): this needs to be added back later
 	-- return exports.amxscoreboard:removeScoreboardColumn('_' .. column)
-end
-
-function SetScoreBoardData(amx, player, column, data)
-	return setElementData(player, '_' .. column, data)
 end
 -----------------------------------------------------
 -- Misc

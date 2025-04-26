@@ -766,7 +766,7 @@ addEventHandler('onClientElementStreamIn', root,
 			triggerServerEvent('onAmxClientVehicleStream', localPlayer, getElemID(source), true)
 		elseif getElementType(source) == 'player' then
 			triggerServerEvent('onAmxClientPlayerStream', localPlayer, getElemID(source), true)
-		elseif getElementType(source) == 'ped' and getElementData(source, 'amx.actorped') then
+		elseif getElementType(source) == 'ped' and getElementData(source, 'ActorPed') then
 			triggerServerEvent('onAmxClientActorStream', localPlayer, getElemID(source), true)
 		end
 	end
@@ -786,7 +786,7 @@ addEventHandler('onClientElementStreamOut', root,
 			triggerServerEvent('onAmxClientVehicleStream', localPlayer, getElemID(source), false)
 		elseif getElementType(source) == 'player' then
 			triggerServerEvent('onAmxClientPlayerStream', localPlayer, getElemID(source), false)
-		elseif getElementType(source) == 'ped' and getElementData(source, 'amx.actorped') then
+		elseif getElementType(source) == 'ped' and getElementData(source, 'ActorPed') then
 			triggerServerEvent('onAmxClientActorStream', localPlayer, getElemID(source), false)
 		end
 	end
@@ -1632,8 +1632,8 @@ end
 addEventHandler('onClientPlayerWeaponFire', root, clientPlayerWeaponFire)
 
 local function clientPedDamage(attacker, weapon, bodypart, loss)
-	if getElementType(source) == 'ped' and getElementData(source, 'amx.actorped') then
-		if not getElementData(source, 'amx.invulnerable') then
+	if getElementType(source) == 'ped' and getElementData(source, 'ActorPed') then
+		if not getElementData(source, 'Invulnerable') then
 			triggerServerEvent('OnPlayerGiveDamageActor_Ev', localPlayer, source, loss, weapon, bodypart)
 		end
 

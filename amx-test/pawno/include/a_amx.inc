@@ -101,6 +101,7 @@ native GetPlayerDoingDriveBy(playerid);
 native SetPlayerDoingDriveBy(playerid, driveBy);
 native SetPlayerWeaponSlot(playerid, slotid);
 native SetPlayerHeadless(playerid, headState);
+native SetPlayerGravity(playerid, Float:gravity);
 native GetPlayerBlurLevel(playerid);
 native SetPlayerBlurLevel(playerid, level);
 native GetPlayerAlpha(playerid);
@@ -180,6 +181,11 @@ native GetBotName(botid, buf[], bufsize);
 native GetBotVehicleSeat(botid);
 native GetBotVelocity(botid, &Float:X, &Float:Y, &Float:Z);
 native SetBotVelocity(botid, Float:X, Float:Y, Float:Z);
+
+// Scoreboard
+native AddScoreBoardColumn(column[]);
+native SetScoreBoardData(playerid, column[], data[]);
+native RemoveScoreBoardColumn(column[]);
 
 // Player Data
 native SetPlayerIntData(playerid, key[], value);

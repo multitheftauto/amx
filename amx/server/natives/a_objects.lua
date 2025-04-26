@@ -1,4 +1,4 @@
-function CreateObject(amx, model, x, y, z, rX, rY, rZ)
+function CreateObject(amx, model, x, y, z, rX, rY, rZ, drawDistance)
 	local obj = createObject(model, x, y, z, rX, rY, rZ)
 	if obj == false then
 		obj = createObject(1337, x, y, z, rX, rY, rZ) -- Create a dummy object anyway since createobject can also be used to make camera attachments
@@ -110,7 +110,7 @@ function IsObjectMoving(amx, object)
 	return isObjectMoving(object)
 end
 
-function CreatePlayerObject(amx, player, model, x, y, z, rX, rY, rZ)
+function CreatePlayerObject(amx, player, model, x, y, z, rX, rY, rZ, drawDistance)
 	if not g_PlayerObjects[player] then
 		g_PlayerObjects[player] = {}
 	end
@@ -255,12 +255,12 @@ function IsPlayerObjectMoving(amx, player, objID)
 	return true
 end
 
-function SetObjectMaterialText(amx, object)
+function SetObjectMaterialText(amx, object, text, index, size, fontName, fontSize, bold, fontColor, backColor, alignment)
 	notImplemented('SetObjectMaterialText')
 	return false
 end
 
-function SetPlayerObjectMaterialText(amx, player)
+function SetPlayerObjectMaterialText(amx, player, objID, text, index, size, fontName, fontSize, bold, fontColor, backColor, alignment)
 	notImplemented('SetPlayerObjectMaterialText')
 	return false
 end
@@ -273,17 +273,22 @@ function SetObjectsDefaultCameraCol(amx, disable)
 	return false
 end
 
-function EditPlayerObject(amx, player, object)
+function EditObject(amx, player, object)
+	notImplemented('EditObject')
+	return false
+end
+
+function EditPlayerObject(amx, player, objID)
 	notImplemented('EditPlayerObject')
 	return false
 end
 
-function SetObjectMaterial(amx, object)
+function SetObjectMaterial(amx, object, index, model, txdLib, txdName, color)
 	notImplemented('SetObjectMaterial')
 	return false
 end
 
-function SetPlayerObjectMaterial(amx, player)
+function SetPlayerObjectMaterial(amx, player, objID, index, model, txdLib, txdName, color)
 	notImplemented('SetPlayerObjectMaterial')
 	return false
 end

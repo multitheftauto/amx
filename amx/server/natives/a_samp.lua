@@ -372,7 +372,7 @@ local function housePickup()
 	cancelEvent()
 end
 
-function AddStaticPickup(amx, model, type, x, y, z)
+function AddStaticPickup(amx, model, type, x, y, z, world)
 	local mtaPickupType, mtaPickupAmount, respawntime
 	if model == 1240 then		-- health
 		mtaPickupType = 0
@@ -396,6 +396,9 @@ function AddStaticPickup(amx, model, type, x, y, z)
 	if not pickup then
 		outputDebugString('Failed to create pickup of model ' .. model, 2)
 		return 0
+	end
+	if world and world ~= -1 then
+		setElementDimension(pickup, world)
 	end
 	if isCustomPickup(pickup) then
 		-- house pickups don't disappear on pickup
@@ -532,6 +535,11 @@ end
 
 function DisableInteriorEnterExits(amx)
 	notImplemented('DisableInteriorEnterExits')
+	return true
+end
+
+function DisableNameTagLOS(amx)
+	notImplemented('DisableNameTagLOS')
 	return true
 end
 
@@ -1214,7 +1222,7 @@ end
 
 function NetStats_PacketLossPercent(amx, player)
 	local networkStat = getNetworkStats(player)
-	return networkStat.packetlossTotal or 0
+	return float2cell(networkStat.packetlossTotal or 0)
 end
 
 function GetServerTickRate(amx)

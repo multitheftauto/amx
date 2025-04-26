@@ -142,7 +142,7 @@ function GetPlayerTargetActor(amx, player)
 	local elem = getPedTarget(player)
 
 	if elem and getElementType(elem) == 'ped' then
-		if getElementData(elem, 'amx.actorped') then
+		if getElementData(elem, 'ActorPed') then
 			return getElemID(elem)
 		end
 	end
@@ -803,7 +803,7 @@ function ApplyAnimation(amx, player, animlib, animname, fDelta, loop, lockx, loc
 	return true
 end
 
-function ClearAnimations(amx, player)
+function ClearAnimations(amx, player, forcesync)
 	removePedFromVehicle(player)
 	setPedAnimation(player, false)
 	g_Players[getElemID(player)].specialaction = SPECIAL_ACTION_NONE
@@ -916,7 +916,7 @@ function SetPlayerCameraPos(amx, player, x, y, z)
 	return true
 end
 
-function SetPlayerCameraLookAt(amx, player, lx, ly, lz)
+function SetPlayerCameraLookAt(amx, player, lx, ly, lz, cut)
 	if not player then
 		return false
 	end

@@ -1021,12 +1021,17 @@ end
 
 function cell2color(val)
 	local binshr = binshr
-	return binshr(val, 24), binshr(val, 16) % 0x100, binshr(val, 8) % 0x100, val % 0x1000
+	return binshr(val, 24), binshr(val, 16) % 0x100, binshr(val, 8) % 0x100, val % 0x100
 end
 
 function color2cell(r, g, b, a)
+	r = math.min(math.max(r, 0), 255)
+	g = math.min(math.max(g, 0), 255)
+	b = math.min(math.max(b, 0), 255)
+	a = a and math.min(math.max(a, 0), 255) or 255
+
 	local binshl = binshl
-	return binshl(r, 24) + binshl(g, 16) + binshl(b, 8) + (a or 255)
+	return binshl(r, 24) + binshl(g, 16) + binshl(b, 8) + a
 end
 
 function isPed(elem)

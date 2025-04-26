@@ -5,16 +5,17 @@ g_Players = {}
 g_Bots = {}
 g_Vehicles = {}
 g_Objects = {}
+g_PlayerObjects = {}
 g_Pickups = {}
 g_Markers = {}
 g_Actors = {}
-g_PlayerTextDraws = {}
 g_GangZones = {}
+g_OpenDBs = {}
 g_DBResults = {}
 g_Menus = {}
 g_TextDraws = {}
+g_PlayerTextDraws = {}
 g_TextLabels = {}
-g_PlayerObjects = {}
 g_SVars = {}
 
 function initGameModeGlobals()
