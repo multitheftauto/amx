@@ -2086,8 +2086,9 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 	return true
 end
 
-addEvent('onPlayerClickPlayer')
-function OnPlayerClickPlayer(element)
-	serverAMXEvent('OnPlayerClickPlayer', getElemID(localPlayer), getElemID(element), 0)
+-- depends on scoreboard resource
+local function clientPlayerScoreboardClick(selected, cX, cY, clickedColumn)
+	if getElementType(source) ~= 'player' then return end
+	serverAMXEvent('OnPlayerClickPlayer', getElemID(localPlayer), getElemID(source), 0)
 end
-addEventHandler('onPlayerClickPlayer', root, OnPlayerClickPlayer)
+addEventHandler('onClientPlayerScoreboardClick', root, clientPlayerScoreboardClick)

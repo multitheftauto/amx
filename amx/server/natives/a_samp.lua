@@ -367,7 +367,7 @@ function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnD
 	return vehID
 end
 
-local function housePickup()
+local function onHousePickupUse()
 	procCallOnAll('OnPlayerPickUpPickup', getElemID(player), getElemID(source))
 	cancelEvent()
 end
@@ -402,7 +402,7 @@ function AddStaticPickup(amx, model, type, x, y, z, world)
 	end
 	if isCustomPickup(pickup) then
 		-- house pickups don't disappear on pickup
-		addEventHandler('onPickupUse', pickup, housePickup, false)
+		addEventHandler('onPickupUse', pickup, onHousePickupUse, false)
 	end
 	return addElem(g_Pickups, pickup)
 end

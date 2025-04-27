@@ -569,19 +569,18 @@ end
 -- Scoreboard
 
 function AddScoreBoardColumn(amx, column)
-	outputDebugString("AddScoreBoardColumn is being ignored!")
-	-- TODO(q): this needs to be added back later
-	-- return exports.amxscoreboard:addScoreboardColumn('_' .. column)
+	if not getResourceFromName('scoreboard') then return false end
+	return exports.scoreboard:scoreboardAddColumn(column)
 end
 
-function SetScoreBoardData(amx, player, column, data)
-	return setElementData(player, '_' .. column, data)
+function SetPlayerScoreBoardData(amx, player, column, data)
+	if not getResourceFromName('scoreboard') then return false end
+	return setElementData(player, column, data)
 end
 
 function RemoveScoreBoardColumn(amx, column)
-	outputDebugString("RemoveScoreBoardColumn is being ignored!")
-	-- TODO(q): this needs to be added back later
-	-- return exports.amxscoreboard:removeScoreboardColumn('_' .. column)
+	if not getResourceFromName('scoreboard') then return false end
+	return exports.scoreboard:scoreboardRemoveColumn(column)
 end
 -----------------------------------------------------
 -- Misc

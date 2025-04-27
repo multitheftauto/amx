@@ -647,7 +647,7 @@ g_SAMPSyscallPrototypes = {
 
 	-- scoreboard
 	AddScoreBoardColumn = {'s'},
-	SetScoreBoardData = {'p', 's', 's'},
+	SetPlayerScoreBoardData = {'p', 's', 's'},
 	RemoveScoreBoardColumn = {'s'},
 
 	-- player data

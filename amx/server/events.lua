@@ -14,7 +14,12 @@ function gameModeInit(player)
 	takeAllWeapons(player)
 	setElementInterior(player, 0)
 	setElementDimension(player, 0)
-	for i = 69, 79 do setPedStat(player, i, 999) end
+	setPedStat(player, 22, 1000) -- stamina
+	setPedStat(player, 225, 1000) -- underwater stamina
+	for i = 69, 79 do setPedStat(player, i, 999) end -- weapon skills
+	setPedStat(player, 160, 1000) -- driving skill
+	setPedStat(player, 229, 1000) -- bike skill
+	setPedStat(player, 230, 1000) -- cycle skill
 	local r, g, b = math.random(50, 255), math.random(50, 255), math.random(50, 255)
 	ShowPlayerMarker(false, player, g_PlayerMarkersMode)
 	setPlayerHudComponentVisible(player, 'area_name', g_ShowZoneNames)

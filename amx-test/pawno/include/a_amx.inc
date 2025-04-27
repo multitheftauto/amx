@@ -184,7 +184,7 @@ native SetBotVelocity(botid, Float:X, Float:Y, Float:Z);
 
 // Scoreboard
 native AddScoreBoardColumn(column[]);
-native SetScoreBoardData(playerid, column[], data[]);
+native SetPlayerScoreBoardData(playerid, column[], data[]);
 native RemoveScoreBoardColumn(column[]);
 
 // Player Data
