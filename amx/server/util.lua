@@ -836,90 +836,6 @@ function writeMemFloat(amx, offset, float)
 	amx.memDAT[offset] = float2cell(float)
 end
 
--- Binary operations
-
-function binand(val1, val2)
-	local i, result = 0, 0
-	while val1 ~= 0 and val2 ~= 0 do
-		result = result + (((val1 % 2) == 1 and (val2 % 2) == 1) and (2 ^ i) or 0)
-		val1 = math.floor(val1 / 2)
-		val2 = math.floor(val2 / 2)
-		i = i + 1
-	end
-	return result
-end
-
-function binor(val1, val2)
-	local i, result = 0, 0
-	while val1 ~= 0 or val2 ~= 0 do
-		result = result + (((val1 % 2) == 1 or (val2 % 2) == 1) and (2 ^ i) or 0)
-		val1 = math.floor(val1 / 2)
-		val2 = math.floor(val2 / 2)
-		i = i + 1
-	end
-	return result
-end
-
-function binxor(val1, val2)
-	local i, result = 0, 0
-	local b1, b2
-	while val1 ~= 0 or val2 ~= 0 do
-		b1 = val1 % 2
-		b2 = val2 % 2
-		result = result + (((b1 == 1 and b2 == 0) or (b1 == 0 and b2 == 1)) and (2 ^ i) or 0)
-		val1 = math.floor(val1 / 2)
-		val2 = math.floor(val2 / 2)
-		i = i + 1
-	end
-	return result
-end
-
-function binnot(num)
-	local result = 0
-	local bit = 1
-	local nextbit
-	for i = 0, 31 do
-		nextbit = bit * 2
-		if num % nextbit < bit then
-			result = result + bit
-		end
-		bit = nextbit
-	end
-	return result
-end
-
-function binshl(val, dist)
-	return val * (2 ^ dist)
-end
-
-function binshr(val, dist)
-	return math.floor(val / (2 ^ dist))
-end
-
-function binsar(val, dist)
-	local signext = 0
-	if val >= 0x80000000 then
-		for i = 31, 31 - dist, -1 do
-			signext = signext + 2 ^ i
-		end
-	end
-	return signext + math.floor(val / (2 ^ dist))
-end
-
-function sgn(val)
-	if val >= 0x80000000 then
-		val = -(binnot(val) + 1)
-	end
-	return val
-end
-
-function unsgn(val)
-	if val < 0 then
-		val = binnot(-val) + 1
-	end
-	return val
-end
-
 --[[
 function cell2float(cell)
 	if cell == 0 then
@@ -1043,8 +959,11 @@ function string:split(sep)
 end
 
 function cell2color(val)
-	local binshr = binshr
-	return binshr(val, 24), binshr(val, 16) % 0x100, binshr(val, 8) % 0x100, val % 0x100
+	local r = bitExtract(val, 24, 8)
+	local g = bitExtract(val, 16, 8)
+	local b = bitExtract(val, 8, 8)
+	local a = bitExtract(val, 0, 8)
+	return r, g, b, a
 end
 
 function color2cell(r, g, b, a)
@@ -1052,9 +971,7 @@ function color2cell(r, g, b, a)
 	g = math.min(math.max(g, 0), 255)
 	b = math.min(math.max(b, 0), 255)
 	a = a and math.min(math.max(a, 0), 255) or 255
-
-	local binshl = binshl
-	return binshl(r, 24) + binshl(g, 16) + binshl(b, 8) + a
+	return bitLShift(r, 24) + bitLShift(g, 16) + bitLShift(b, 8) + a
 end
 
 function isPed(elem)

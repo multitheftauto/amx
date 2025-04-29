@@ -320,25 +320,25 @@ end
 
 function GetVehicleDamageStatus(amx, vehicle, refPanels, refDoors, refLights, refTires)
 	local panelsState = getVehiclePanelState(vehicle, 0)
-	panelsState = binor(panelsState, binshl(getVehiclePanelState(vehicle, 1), 4))
-	panelsState = binor(panelsState, binshl(getVehiclePanelState(vehicle, 2), 8))
-	panelsState = binor(panelsState, binshl(getVehiclePanelState(vehicle, 3), 12))
-	panelsState = binor(panelsState, binshl(getVehiclePanelState(vehicle, 4), 16))
-	panelsState = binor(panelsState, binshl(getVehiclePanelState(vehicle, 5), 20))
-	panelsState = binor(panelsState, binshl(getVehiclePanelState(vehicle, 6), 24))
+	panelsState = bitOr(panelsState, bitLShift(getVehiclePanelState(vehicle, 1), 4))
+	panelsState = bitOr(panelsState, bitLShift(getVehiclePanelState(vehicle, 2), 8))
+	panelsState = bitOr(panelsState, bitLShift(getVehiclePanelState(vehicle, 3), 12))
+	panelsState = bitOr(panelsState, bitLShift(getVehiclePanelState(vehicle, 4), 16))
+	panelsState = bitOr(panelsState, bitLShift(getVehiclePanelState(vehicle, 5), 20))
+	panelsState = bitOr(panelsState, bitLShift(getVehiclePanelState(vehicle, 6), 24))
 
 	local doorsState = getVehicleDoorState(vehicle, 0)
-	doorsState = binor(doorsState, binshl(getVehicleDoorState(vehicle, 1), 8))
-	doorsState = binor(doorsState, binshl(getVehicleDoorState(vehicle, 2), 16))
-	doorsState = binor(doorsState, binshl(getVehicleDoorState(vehicle, 3), 24))
+	doorsState = bitOr(doorsState, bitLShift(getVehicleDoorState(vehicle, 1), 8))
+	doorsState = bitOr(doorsState, bitLShift(getVehicleDoorState(vehicle, 2), 16))
+	doorsState = bitOr(doorsState, bitLShift(getVehicleDoorState(vehicle, 3), 24))
 
 	local lightsState = getVehicleLightState(vehicle, 0)
-	lightsState = binor(lightsState, binshl(getVehicleLightState(vehicle, 1), 2))
-	lightsState = binor(lightsState, binshl(getVehicleLightState(vehicle, 2), 4))
-	lightsState = binor(lightsState, binshl(getVehicleLightState(vehicle, 3), 6))
+	lightsState = bitOr(lightsState, bitLShift(getVehicleLightState(vehicle, 1), 2))
+	lightsState = bitOr(lightsState, bitLShift(getVehicleLightState(vehicle, 2), 4))
+	lightsState = bitOr(lightsState, bitLShift(getVehicleLightState(vehicle, 3), 6))
 
 	local frontLeft, rearLeft, frontRight, rearRight = getVehicleWheelStates(vehicle)
-	local tiresState = binor(rearRight, binor(binshl(frontRight, 1), binor(binshl(rearLeft, 2), binshl(frontLeft, 3))))
+	local tiresState = bitOr(rearRight, bitOr(bitLShift(frontRight, 1), bitOr(bitLShift(rearLeft, 2), bitLShift(frontLeft, 3))))
 
 	amx.memDAT[refPanels] = panelsState
 	amx.memDAT[refDoors] = doorsState
@@ -349,25 +349,25 @@ function GetVehicleDamageStatus(amx, vehicle, refPanels, refDoors, refLights, re
 end
 
 function UpdateVehicleDamageStatus(amx, vehicle, panels, doors, lights, tires)
-	setVehiclePanelState(vehicle, 0, binand(panels, 15))
-	setVehiclePanelState(vehicle, 1, binand(binshr(panels, 4), 15))
-	setVehiclePanelState(vehicle, 2, binand(binshr(panels, 8), 15))
-	setVehiclePanelState(vehicle, 3, binand(binshr(panels, 12), 15))
-	setVehiclePanelState(vehicle, 4, binand(binshr(panels, 16), 15))
-	setVehiclePanelState(vehicle, 5, binand(binshr(panels, 20), 15))
-	setVehiclePanelState(vehicle, 6, binand(binshr(panels, 24), 15))
+	setVehiclePanelState(vehicle, 0, bitAnd(panels, 15))
+	setVehiclePanelState(vehicle, 1, bitAnd(bitRShift(panels, 4), 15))
+	setVehiclePanelState(vehicle, 2, bitAnd(bitRShift(panels, 8), 15))
+	setVehiclePanelState(vehicle, 3, bitAnd(bitRShift(panels, 12), 15))
+	setVehiclePanelState(vehicle, 4, bitAnd(bitRShift(panels, 16), 15))
+	setVehiclePanelState(vehicle, 5, bitAnd(bitRShift(panels, 20), 15))
+	setVehiclePanelState(vehicle, 6, bitAnd(bitRShift(panels, 24), 15))
 
-	setVehicleDoorState(vehicle, 0, binand(panels, 7))
-	setVehicleDoorState(vehicle, 1, binand(binshr(panels, 8), 7))
-	setVehicleDoorState(vehicle, 2, binand(binshr(panels, 16), 7))
-	setVehicleDoorState(vehicle, 3, binand(binshr(panels, 24), 7))
+	setVehicleDoorState(vehicle, 0, bitAnd(panels, 7))
+	setVehicleDoorState(vehicle, 1, bitAnd(bitRShift(panels, 8), 7))
+	setVehicleDoorState(vehicle, 2, bitAnd(bitRShift(panels, 16), 7))
+	setVehicleDoorState(vehicle, 3, bitAnd(bitRShift(panels, 24), 7))
 
-	setVehicleLightState(vehicle, 0, binand(lights, 1))
-	setVehicleLightState(vehicle, 2, binand(binshr(lights, 2), 1))
-	setVehicleLightState(vehicle, 3, binand(binshr(lights, 4), 1))
-	setVehicleLightState(vehicle, 4, binand(binshr(lights, 6), 1))
+	setVehicleLightState(vehicle, 0, bitAnd(lights, 1))
+	setVehicleLightState(vehicle, 2, bitAnd(bitRShift(lights, 2), 1))
+	setVehicleLightState(vehicle, 3, bitAnd(bitRShift(lights, 4), 1))
+	setVehicleLightState(vehicle, 4, bitAnd(bitRShift(lights, 6), 1))
 
-	setVehicleWheelStates(vehicle, binand(binshr(tires, 3), 1), binand(binshr(tires, 2), 1), binand(binshr(tires, 1), 1), binand(tires, 1))
+	setVehicleWheelStates(vehicle, bitAnd(bitRShift(tires, 3), 1), bitAnd(bitRShift(tires, 2), 1), bitAnd(bitRShift(tires, 1), 1), bitAnd(tires, 1))
 
 	return true
 end

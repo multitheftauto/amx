@@ -20,8 +20,8 @@ function argsToMTA(amx, prototype, ...)
 			if not colorArgs then
 				colorArgs = {}
 			end
-			colorArgs[i] = { binshr(val, 24) % 0x100, binshr(val, 16) % 0x100, binshr(val, 8) % 0x100 }		-- r, g, b
-			val = val % 0x100			-- a
+			colorArgs[i] = { bitExtract(val, 24, 8), bitExtract(val, 16, 8), bitExtract(val, 8, 8) }		-- r, g, b
+			val = bitExtract(val, 0, 8)			-- a
 		elseif vartype == 'p' then		-- player
 			val = g_Players[val] and g_Players[val].elem
 		elseif vartype == 'z' then		-- bot/ped
