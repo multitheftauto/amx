@@ -1,7 +1,7 @@
 function sendReadyMessage()
-	triggerServerEvent("boneAttach_requestAttachmentData", root)
+	triggerServerEvent('boneAttach_requestAttachmentData', root)
 end
-addEventHandler("onClientResourceStart", resourceRoot, sendReadyMessage)
+addEventHandler('onClientResourceStart', resourceRoot, sendReadyMessage)
 
 function getAttachmentData(ped, bone, x, y, z, rx, ry, rz)
 	for element, att_ped in pairs(ped) do
@@ -16,16 +16,16 @@ function getAttachmentData(ped, bone, x, y, z, rx, ry, rz)
 		attached_rz[element] = rz[element]
 	end
 end
-addEvent("boneAttach_sendAttachmentData", true)
-addEventHandler("boneAttach_sendAttachmentData", root, getAttachmentData)
+addEvent('boneAttach_sendAttachmentData', true)
+addEventHandler('boneAttach_sendAttachmentData', root, getAttachmentData)
 
 function initAttach()
-	addEvent("boneAttach_attach", true)
-	addEvent("boneAttach_detach", true)
-	addEventHandler("boneAttach_attach", root, attachElementToBone)
-	addEventHandler("boneAttach_detach", root, detachElementFromBone)
+	addEvent('boneAttach_attach', true)
+	addEvent('boneAttach_detach', true)
+	addEventHandler('boneAttach_attach', root, attachElementToBone)
+	addEventHandler('boneAttach_detach', root, detachElementFromBone)
 end
-addEventHandler("onClientResourceStart", resourceRoot, initAttach)
+addEventHandler('onClientResourceStart', resourceRoot, initAttach)
 
 bone_0, bone_t, bone_f = {}, {}, {}
 bone_0[1], bone_t[1], bone_f[1] = 5, nil, 6 -- head
@@ -74,17 +74,17 @@ function putAttachedElementsOnBones()
 			local tzy = rzx * xy + rzy * yy + rzz * zy
 			local tzz = rzx * xz + rzy * yz + rzz * zz
 			offrx, offry, offrz = getEulerAnglesFromMatrix(txx, txy, txz, tyx, tyy, tyz, tzx, tzy, tzz)
-			if (string.find(objx..objy..objz, "a")) then
+			if (string.find(objx .. objy .. objz, 'a')) then
 				setElementPosition(element, x, y, z)
 			else
 				setElementPosition(element, objx, objy, objz)
 			end
-			if (not string.find(offrx..offry..offrz, "a")) then
-				setElementRotation(element, offrx, offry, offrz, "ZXY")
+			if (not string.find(offrx .. offry .. offrz, 'a')) then
+				setElementRotation(element, offrx, offry, offrz, 'ZXY')
 			else
 				setElementPosition(element, getElementPosition(ped))
 			end
 		end
 	end
 end
-addEventHandler("onClientPreRender", root, putAttachedElementsOnBones)
+addEventHandler('onClientPreRender', root, putAttachedElementsOnBones)

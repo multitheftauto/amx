@@ -58,9 +58,13 @@ addEventHandler('onResourceStart', resourceRoot,
 			end
 		end
 
-		if getResourceFromName('scoreboard') then
+		local scoreboard = getResourceFromName('scoreboard')
+		if getResourceState(scoreboard) == 'running' then
 			exports.scoreboard:scoreboardAddColumn('Score')
 		end
+
+		toggleSpecialProperties()
+		toggleGlitches()
 	end,
 	false
 )
@@ -234,7 +238,8 @@ addEventHandler('onResourceStop', root,
 
 addEventHandler('onResourceStop', resourceRoot,
 	function()
-		if getResourceFromName('scoreboard') then
+		local scoreboard = getResourceFromName('scoreboard')
+		if getResourceState(scoreboard) == 'running' then
 			exports.scoreboard:scoreboardRemoveColumn('Score')
 		end
 		table.each(g_LoadedAMXs, unloadAMX, false)

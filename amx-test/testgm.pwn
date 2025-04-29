@@ -83,7 +83,7 @@ public OnPlayerConnect(playerid)
 
 	new listitems[] = "1\tDeagle\n2\tSawnoff\n3\tPistol\n4\tGrenade\n5\tParachute\n6\tLorikeet";
  	ShowPlayerDialog(playerid, 2, DIALOG_STYLE_LIST, "List of weapons:", listitems, "Select", "Cancel");
-	//ShowPlayerDialog(playerid, 1, DIALOG_STYLE_LIST, "testcapt", "info", "Okay", "Canceled");
+	//ShowPlayerDialog(playerid, 1, DIALOG_STYLE_LIST, "testcapt", "info", "Okay", "Cancel");
 	return 1;
 }
 

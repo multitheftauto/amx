@@ -254,6 +254,27 @@ function isPlayerInACLGroup(player, groupName)
 	return false
 end
 
+local glitches = {
+	'quickreload',
+	'fastmove',
+	'fastfire',
+	'crouchbug',
+	'fastsprint',
+	'quickstand'
+}
+
+function toggleGlitches()
+	for _, glitch in ipairs(glitches) do
+		setGlitchEnabled(glitch, true)
+	end
+end
+
+function toggleSpecialProperties()
+	setWorldSpecialPropertyEnabled('randomfoliage', false)
+	setWorldSpecialPropertyEnabled('roadsignstext', false)
+	setWorldSpecialPropertyEnabled('snipermoon', true)
+end
+
 local _warpPedIntoVehicle = warpPedIntoVehicle
 function warpPedIntoVehicle(player, vehicle, seat)
 	removePedFromVehicle(player)
@@ -692,7 +713,7 @@ local string, fileSetPos, fileRead = string, fileSetPos, fileRead
 function getResourceAMXFiles(res)
 	local result = false
 
-	local meta = xmlLoadFile(':' .. getResourceName(res) .. '/' .. 'meta.xml' )
+	local meta = xmlLoadFile(':' .. getResourceName(res) .. '/' .. 'meta.xml')
 	if not meta then
 		return false
 	end
@@ -776,7 +797,7 @@ function readDWORDs(hFile, offset, length)
 end
 
 function readString(hFile, offset)
-	local result = ""
+	local result = ''
 	fileSetPos(hFile, offset)
 	local curByte = readBYTE(hFile)
 	while curByte ~= 0 do
@@ -820,7 +841,7 @@ end
 function binand(val1, val2)
 	local i, result = 0, 0
 	while val1 ~= 0 and val2 ~= 0 do
-		result = result + ( ((val1 % 2) == 1 and (val2 % 2) == 1) and (2 ^ i) or 0 )
+		result = result + (((val1 % 2) == 1 and (val2 % 2) == 1) and (2 ^ i) or 0)
 		val1 = math.floor(val1 / 2)
 		val2 = math.floor(val2 / 2)
 		i = i + 1
@@ -831,7 +852,7 @@ end
 function binor(val1, val2)
 	local i, result = 0, 0
 	while val1 ~= 0 or val2 ~= 0 do
-		result = result + ( ((val1 % 2) == 1 or (val2 % 2) == 1) and (2 ^ i) or 0 )
+		result = result + (((val1 % 2) == 1 or (val2 % 2) == 1) and (2 ^ i) or 0)
 		val1 = math.floor(val1 / 2)
 		val2 = math.floor(val2 / 2)
 		i = i + 1
@@ -845,7 +866,7 @@ function binxor(val1, val2)
 	while val1 ~= 0 or val2 ~= 0 do
 		b1 = val1 % 2
 		b2 = val2 % 2
-		result = result + ( ((b1 == 1 and b2 == 0) or (b1 == 0 and b2 == 1)) and (2 ^ i) or 0 )
+		result = result + (((b1 == 1 and b2 == 0) or (b1 == 0 and b2 == 1)) and (2 ^ i) or 0)
 		val1 = math.floor(val1 / 2)
 		val2 = math.floor(val2 / 2)
 		i = i + 1
@@ -1054,14 +1075,14 @@ end
 function deprecated(native, version, additional)
 	if native ~= nil then
 		if version ~= '' or version ~= nil then
-			outputDebugString(native..' has been deprecated since '..version..' and will no longer be available.')
+			outputDebugString(native .. ' has been deprecated since ' .. version .. ' and will no longer be available.')
 			return
 		end
 		if additional ~= '' or additional ~= nil then
-			outputDebugString(native..' has been deprecated since '..version..' and will no longer be available. More info: '.. additional .. '.')
+			outputDebugString(native .. ' has been deprecated since ' .. version .. ' and will no longer be available. More info: ' .. additional .. '.')
 			return
 		end
-		outputDebugString(native..' is deprecated and will no longer be available.')
+		outputDebugString(native .. ' is deprecated and will no longer be available.')
 	end
 end
 
@@ -1069,10 +1090,10 @@ function notImplemented(native, additional)
 	if ShowUnimplementedErrors then
 		if native ~= nil then
 			if additional == '' or additional == nil then
-				outputDebugString('Sorry, but '..native..' is not implemented.')
+				outputDebugString('Sorry, but ' .. native .. ' is not implemented.')
 				return
 			else
-				outputDebugString('Sorry, but '..native..' is not implemented. More info: '.. additional..'.')
+				outputDebugString('Sorry, but ' .. native .. ' is not implemented. More info: ' .. additional .. '.')
 				return
 			end
 		end

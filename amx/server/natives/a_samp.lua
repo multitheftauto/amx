@@ -167,7 +167,7 @@ function CallRemoteFunction(amx, fnName, fmt, ...)
 end
 
 function VectorSize(amx, x, y, z)
-	return float2cell(math.sqrt( (x ^ 2) + (y ^ 2) + (z ^ 2)))
+	return float2cell(math.sqrt((x ^ 2) + (y ^ 2) + (z ^ 2)))
 end
 
 function acos(amx, f)
@@ -350,7 +350,7 @@ function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnD
 	g_Vehicles[vehID].respawndelay = respawnDelay * 1000
 	g_Vehicles[vehID].spawninfo = { x = x, y = y, z = z, angle = angle }
 	if ManualVehEngineAndLights then
-		if (getVehicleType(vehicle) ~= "Plane" and getVehicleType(vehicle) ~= "Helicopter") then
+		if (getVehicleType(vehicle) ~= 'Plane' and getVehicleType(vehicle) ~= 'Helicopter') then
 			setVehicleEngineState(vehicle, false)
 			for i = 0, 4 do
 				setVehicleLightState(vehicle, i, 0)
@@ -358,7 +358,7 @@ function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnD
 			g_Vehicles[vehID].engineState = false
 		end
 	end
-	if getVehicleType(vehicle) == "Train" then
+	if getVehicleType(vehicle) == 'Train' then
 		setTrainDerailable(vehicle, false)
 	end
 	if addSiren then
@@ -395,7 +395,7 @@ function AddStaticPickup(amx, model, type, x, y, z, world)
 	local pickup = createPickup(x, y, z, mtaPickupType, mtaPickupAmount)
 	if not pickup then
 		outputDebugString('Failed to create pickup of model ' .. model, 2)
-		return 0
+		return -1
 	end
 	if world and world ~= -1 then
 		setElementDimension(pickup, world)
@@ -828,7 +828,7 @@ end
 
 function IsPlayerTextDrawValid(player, textdrawID)
 	local tableType = type(g_PlayerTextDraws[player])
-	if tableType ~= "table" then
+	if tableType ~= 'table' then
 		outputDebugString("[ERROR_NOT_A_TABLE] IsPlayerTextDrawValid: g_PlayerTextDraws[player] is not a table yet for textdrawID: " .. textdrawID .. " it's actually a " .. tableType)
 		return false
 	end
@@ -1148,7 +1148,7 @@ function format(amx, outBuf, outBufSize, fmt, ...)
 	return true
 end
 
-function SendClientCheck(amx, player, type, addr, offset, bytes)
+function SendClientCheck(amx, player, opcode, addr, offset, bytes)
 	notImplemented('SendClientCheck')
 	return false
 end
@@ -1198,7 +1198,7 @@ function NetStats_GetIpPort(amx, player, ip_port, ip_port_len)
 	local ip = getPlayerIP(player)
 	if not ip then ip = '0.0.0.0' end
 	local port = 0 -- We haven't a solution for getting a client port
-	local ipandport = tostring(ip) .. ":" .. tostring(port)
+	local ipandport = tostring(ip) .. ':' .. tostring(port)
 
 	local copy_len = math.min(#ipandport, ip_port_len)
 	writeMemString(amx, ip_port, ipandport:sub(1, copy_len))

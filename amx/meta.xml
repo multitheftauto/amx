@@ -46,8 +46,6 @@
     <file src="client/closebtn.png" />
     <file src="client/closebtn_hover.png" />
 
-    <!-- <include resource="amxscoreboard" /> -->
-
     <aclrequest>
 
         <right name="general.ModifyOtherObjects" access="true"></right>

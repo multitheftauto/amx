@@ -14,12 +14,12 @@ function gameModeInit(player)
 	takeAllWeapons(player)
 	setElementInterior(player, 0)
 	setElementDimension(player, 0)
-	setPedStat(player, 22, 1000) -- stamina
-	setPedStat(player, 225, 1000) -- underwater stamina
+	setPedStat(player, 22, 999) -- stamina
+	setPedStat(player, 225, 999) -- underwater stamina
 	for i = 69, 79 do setPedStat(player, i, 999) end -- weapon skills
-	setPedStat(player, 160, 1000) -- driving skill
-	setPedStat(player, 229, 1000) -- bike skill
-	setPedStat(player, 230, 1000) -- cycle skill
+	setPedStat(player, 160, 999) -- driving skill
+	setPedStat(player, 229, 999) -- bike skill
+	setPedStat(player, 230, 999) -- cycle skill
 	local r, g, b = math.random(50, 255), math.random(50, 255), math.random(50, 255)
 	ShowPlayerMarker(false, player, g_PlayerMarkersMode)
 	setPlayerHudComponentVisible(player, 'area_name', g_ShowZoneNames)
@@ -72,7 +72,7 @@ function joinHandler(player)
 	clientCall(player, 'setPlayerID', playerID)
 
 	-- Keybinds
-	bindKey(player, 'F4', 'down', "changeclass")
+	bindKey(player, 'F4', 'down', 'changeclass')
 	bindKey(player, 'enter_exit', 'down', removePedJetPack)
 	g_Players[playerID].keys = {}
 	local function bindControls(player, t)
@@ -185,7 +185,7 @@ function putPlayerInClassSelection(player)
 		setElementVisibleTo(g_Players[playerID].blip, root, false)
 	end
 	if g_Players[playerID].updatetimer then
-		killTimer( g_Players[playerID].updatetimer )
+		killTimer(g_Players[playerID].updatetimer)
 		g_Players[playerID].updatetimer = nil
 	end
 	clientCall(player, 'startClassSelection', g_PlayerClasses)
@@ -282,7 +282,7 @@ addEventHandler('onPlayerSpawn', root,
 		setPlayerState(source, PLAYER_STATE_ONFOOT)
 
 		if g_Players[playerID].updatetimer then
-			killTimer( g_Players[playerID].updatetimer )
+			killTimer(g_Players[playerID].updatetimer)
 		end
 		g_Players[playerID].updatetimer = setTimer(procCallOnAll, 100, 0, 'OnPlayerUpdate', playerID)
 
@@ -374,7 +374,7 @@ addEventHandler('onPlayerWasted', root,
 		end
 
 		if g_Players[playerID].updatetimer then
-			killTimer( g_Players[playerID].updatetimer )
+			killTimer(g_Players[playerID].updatetimer)
 			g_Players[playerID].updatetimer = nil
 		end
 
@@ -406,7 +406,7 @@ addEventHandler('onPlayerQuit', root,
 			destroyElement(g_Players[playerID].blip)
 		end
 		if g_Players[playerID].updatetimer then
-			killTimer( g_Players[playerID].updatetimer )
+			killTimer(g_Players[playerID].updatetimer)
 			g_Players[playerID].updatetimer = nil
 		end
 		g_Players[playerID] = nil
@@ -428,6 +428,18 @@ function checkIfLeftVehicleByOtherMeans() -- If the player is slapped, or the ve
 		if state == PLAYER_STATE_DRIVER or state == PLAYER_STATE_PASSENGER then
 			if not isPedInVehicle(data.elem) then
 				setPlayerState(data.elem, PLAYER_STATE_ONFOOT)
+				setElementCollisionsEnabled(data.elem, true)
+				setElementAlpha(data.elem, 255)
+			end
+		end
+	end
+	for i, data in pairs(g_Bots) do
+		local state = getBotState(data.elem)
+		if state == PLAYER_STATE_DRIVER or state == PLAYER_STATE_PASSENGER then
+			if not isPedInVehicle(data.elem) then
+				setBotState(data.elem, PLAYER_STATE_ONFOOT)
+				setElementCollisionsEnabled(data.elem, true)
+				setElementAlpha(data.elem, 255)
 			end
 		end
 	end
@@ -467,11 +479,12 @@ addEventHandler('onVehicleEnter', root,
 	function(player, seat, jacked)
 		local vehID = getElemID(source)
 		if isPed(player) then
-			local pedID = getElemID(player)
-			g_Bots[pedID].vehicle = source
+			local botID = getElemID(player)
+			g_Bots[botID].vehicle = source
 			setBotState(player, seat == 0 and PLAYER_STATE_DRIVER or PLAYER_STATE_PASSENGER)
 			return
 		end
+
 		local playerID = getElemID(player)
 		g_Players[playerID].vehicle = source
 		setPlayerState(player, seat == 0 and PLAYER_STATE_DRIVER or PLAYER_STATE_PASSENGER)
@@ -482,7 +495,7 @@ addEventHandler('onVehicleEnter', root,
 		end
 
 		if ManualVehEngineAndLights then
-			if (g_Vehicles[vehID] and getVehicleType(source) ~= "Plane" and getVehicleType(source) ~= "Helicopter") then
+			if (g_Vehicles[vehID] and getVehicleType(source) ~= 'Plane' and getVehicleType(source) ~= 'Helicopter') then
 				setVehicleEngineState(source, g_Vehicles[vehID].engineState)
 			end
 		end
@@ -495,11 +508,18 @@ addEventHandler('onVehicleStartEnter', root,
 		if not vehID then
 			return
 		end
-		if isPed(player) then
-			local pedID = getElemID(player)
-			procCallOnAll('OnBotEnterVehicle', pedID, vehID, seat ~= 0 and 1 or 0)
+
+		if g_RCVehicles[getElementModel(source)] then
+			cancelEvent()
 			return
 		end
+
+		if isPed(player) then
+			local botID = getElemID(player)
+			procCallOnAll('OnBotEnterVehicle', botID, vehID, seat ~= 0 and 1 or 0)
+			return
+		end
+
 		local playerID = getElemID(player)
 		procCallOnAll('OnPlayerEnterVehicle', playerID, vehID, seat ~= 0 and 1 or 0)
 	end
@@ -509,14 +529,25 @@ addEventHandler('onVehicleExit', root,
 	function(player, seat, jacker)
 		local vehID = getElemID(source)
 		if isPed(player) then
-			local pedID = getElemID(player)
-			g_Bots[pedID].vehicle = nil
+			local botID = getElemID(player)
+			g_Bots[botID].vehicle = nil
 			setBotState(player, PLAYER_STATE_ONFOOT)
+
+			if g_RCVehicles[getElementModel(source)] then
+				setElementCollisionsEnabled(player, true)
+				setElementAlpha(player, 255)
+			end
 			return
 		end
+
 		local playerID = getElemID(player)
 		g_Players[playerID].vehicle = nil
 		setPlayerState(player, PLAYER_STATE_ONFOOT)
+
+		if g_RCVehicles[getElementModel(source)] then
+			setElementCollisionsEnabled(player, true)
+			setElementAlpha(player, 255)
+		end
 
 		local numPassengers = tonumber(getVehicleMaxPassengers(source)) or 0
 		for i = 0, numPassengers do
@@ -524,6 +555,7 @@ addEventHandler('onVehicleExit', root,
 				return
 			end
 		end
+
 		if g_Vehicles[vehID] and g_Vehicles[vehID].respawntimer then
 			killTimer(g_Vehicles[vehID].respawntimer)
 			g_Vehicles[vehID].respawntimer = nil
@@ -545,8 +577,8 @@ addEventHandler('onVehicleStartExit', root,
 		end
 
 		if isPed(player) then
-			local pedID = getElemID(player)
-			procCallOnAll('OnBotExitVehicle', pedID, vehID)
+			local botID = getElemID(player)
+			procCallOnAll('OnBotExitVehicle', botID, vehID)
 			return
 		end
 
@@ -584,7 +616,11 @@ addEventHandler('OnVehicleDamageStatusUpdate_Ev', root,
 	end
 )
 
+local _getPedOccupiedVehicle = getPedOccupiedVehicle
 function getPedOccupiedVehicle(player)
+	if getElementType(player) ~= 'player' then
+		return _getPedOccupiedVehicle(player)
+	end
 	local data = g_Players[getElemID(player)]
 	return data and data.vehicle
 end
@@ -593,7 +629,7 @@ local _removePedFromVehicle = removePedFromVehicle
 function removePedFromVehicle(player)
 	local playerdata = g_Players[getElemID(player)]
 	if not playerdata.vehicle then
-		return false
+		return _removePedFromVehicle(player)
 	end
 	playerdata.vehicle = nil
 	setTimer(_removePedFromVehicle, 500, 1, player)
@@ -606,7 +642,7 @@ function removePedFromVehicleEx(player)
 		return false
 	end
 	playerdata.vehicle = nil
-	setControlState(player, "enter_exit", true)
+	setControlState(player, 'enter_exit', true)
 	return true
 end
 -------------------------------
@@ -637,7 +673,12 @@ addEventHandler('onMarkerLeave', root,
 addEventHandler('onPedWasted', root,
 	function(totalAmmo, killer, killerWeapon, bodypart)
 		if isPed(source) ~= true then return end
-		procCallOnAll('OnBotDeath', getElemID(source), getElemID(killer), killerWeapon, bodypart)
+		local killerID = INVALID_PLAYER_ID
+		if isElement(killer) and getElementType(killer) == 'player' then
+			killerID = getElemID(killer)
+		end
+		setBotState(source, PLAYER_STATE_WASTED)
+		procCallOnAll('OnBotDeath', getElemID(source), killerID, killerWeapon, bodypart)
 	end
 )
 -------------------------------

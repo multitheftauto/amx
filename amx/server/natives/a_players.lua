@@ -32,14 +32,16 @@ function GetPlayerPos(amx, player, refX, refY, refZ)
 end
 
 function SetPlayerFacingAngle(amx, player, angle)
-	return setPedRotation(player, angle)
+	local rotX, rotY, rotZ = getElementRotation(player)
+	return setElementRotation(player, rotX, rotY, angle)
 end
 
-function GetPlayerFacingAngle(amx, player, refRot)
+function GetPlayerFacingAngle(amx, player, refAng)
 	if not player then
 		return false
 	end
-	writeMemFloat(amx, refRot, getPedRotation(player))
+	local rX, rY, rZ = getElementRotation(player)
+	writeMemFloat(amx, refAng, rZ)
 	return true
 end
 
@@ -116,7 +118,10 @@ function GetPlayerWeaponState(amx, player)
 	local vehicle = getPedOccupiedVehicle(player)
 	if vehicle ~= nil then return -1 end
 
-	-- TODO: Function don't return 3 because a isPedReloadingWeapon function only client-side
+	if isPedReloadingWeapon(player) then 
+		return 3
+	end
+
 	local ammo = getPedAmmoInClip(player)
 	if ammo == 0 then
 		return 0
@@ -207,7 +212,7 @@ function ResetPlayerWeapons(amx, player)
 end
 
 function SetPlayerArmedWeapon(amx, player, weapon)
-	return setPedWeaponSlot(player, weapon)
+	return setPedWeaponSlot(player, getSlotFromWeapon(weapon))
 end
 
 function GetPlayerWeaponData(amx, player, slot, refWeapon, refAmmo)
@@ -406,17 +411,17 @@ function GetPlayerLastShotVectors(amx, player, refOrigX, refOrigY, refOrigZ, ref
 end
 
 function SetPlayerAttachedObject(amx, player, index, modelid, bone, fOffsetX, fOffsetY, fOffsetZ, fRotX, fRotY, fRotZ, fScaleX, fScaleY, fScaleZ, materialcolor1, materialcolor2)
-	local x, y, z = getElementPosition (player)
+	local x, y, z = getElementPosition(player)
 	local mtaBone = g_BoneMapping[bone]
 	local obj = createObject(modelid, x, y, z)
 
 	if obj ~= false then
 		local playerID = getElemID(player)
 		g_Players[playerID].attachedObjects[index] = obj
-		setElementCollisionsEnabled (obj, false)
-		setObjectScale (obj, fScaleX, fScaleY, fScaleZ)
+		setElementCollisionsEnabled(obj, false)
+		setObjectScale(obj, fScaleX, fScaleY, fScaleZ)
 		attachElementToBone(obj, player, mtaBone, fOffsetX, fOffsetY, fOffsetZ, fRotX, fRotY, fRotZ)
-		-- Todo: Implement material colors
+		-- TODO: Implement material colors
 	else
 		outputDebugString('SetPlayerAttachedObject: Cannot attach object since the model is invalid. Model id was ' .. modelid)
 		return false
@@ -453,7 +458,7 @@ end
 function CreatePlayerTextDraw(amx, player, x, y, text)
 	outputDebugString('CreatePlayerTextDraw called with args ' .. x .. ' ' .. y .. ' ' .. text)
 
-	if ( not g_PlayerTextDraws[player] ) then -- Create dimension if it doesn't exist
+	if (not g_PlayerTextDraws[player]) then -- Create dimension if it doesn't exist
 		outputDebugString('Created dimension for g_PlayerTextDraws[player]')
 		g_PlayerTextDraws[player] = {}
 	end
@@ -744,8 +749,12 @@ function SetPlayerChatBubble(amx, player, text, color, dist, exptime)
 end
 
 function PutPlayerInVehicle(amx, player, vehicle, seat)
-	warpPedIntoVehicle(player, vehicle, seat)
+	if not warpPedIntoVehicle(player, vehicle, seat) then
+		return false
+	end
 	if g_RCVehicles[getElementModel(vehicle)] then
+		setPedWeaponSlot(player, 0)
+		setElementCollisionsEnabled(player, false)
 		setElementAlpha(player, 0)
 	end
 	--setPlayerState(player, seat == 0 and PLAYER_STATE_DRIVER or PLAYER_STATE_PASSENGER)
@@ -774,14 +783,16 @@ function RemovePlayerFromVehicle(amx, player)
 	if vehicle then
 		if g_RCVehicles[getElementModel(vehicle)] then
 			removePedFromVehicle(player)
+			clientCall(root, 'setElementCollisionsEnabled', player, true)
 			clientCall(root, 'setElementAlpha', player, 255)
 		else
 			removePedFromVehicleEx(player)
 		end
+		return true
 	end
 	--setPlayerState(player, PLAYER_STATE_ONFOOT)
 	-- No need to do this since the vehicle event gets called when we exit a vehicle
-	return true
+	return false
 end
 
 function TogglePlayerControllable(amx, player, enable)
@@ -794,7 +805,7 @@ function PlayerPlaySound(amx, player, soundID, x, y, z)
 end
 
 function ApplyAnimation(amx, player, animlib, animname, fDelta, loop, lockx, locky, freeze, time, forcesync)
-	--time = Timer in ms. For a never-ending loop it should be 0.
+	-- time = Timer in ms. For a never-ending loop it should be 0.
 	if time == 0 then
 		loop = true
 	end

@@ -51,45 +51,45 @@ function drawNameTag(position, nameText, health, armor, distance)
 	--doOutline(nameText, 1, 1, rect.left, rect.top)
 	dxDrawText(
 		nameText, rect.left + 1, rect.top, rect.right, rect.bottom,
-		tocolor( 0, 0, 0, 255 ), 1, 1,
+		tocolor(0, 0, 0, 255), 1, 1,
 
-		font, "left", "top", false, false,
+		font, 'left', 'top', false, false,
 		false, false, false,
 		0, 0, 0
 	)
 
 	dxDrawText(
 		nameText, rect.left - 1, rect.top, rect.right, rect.bottom,
-		tocolor( 0, 0, 0, 255 ), 1, 1,
+		tocolor(0, 0, 0, 255), 1, 1,
 
-		font, "left", "top", false, false,
+		font, 'left', 'top', false, false,
 		false, false, false,
 		0, 0, 0
 	)
 
 	dxDrawText(
 		nameText, rect.left, rect.top - 1, rect.right, rect.bottom,
-		tocolor( 0, 0, 0, 255 ), 1, 1,
+		tocolor(0, 0, 0, 255), 1, 1,
 
-		font, "left", "top", false, false,
+		font, 'left', 'top', false, false,
 		false, false, false,
 		0, 0, 0
 	)
 
 	dxDrawText(
 		nameText, rect.left, rect.top + 1, rect.right, rect.bottom,
-		tocolor( 0, 0, 0, 255 ), 1, 1,
+		tocolor(0, 0, 0, 255), 1, 1,
 
-		font, "left", "top", false, false,
+		font, 'left', 'top', false, false,
 		false, false, false,
 		0, 0, 0
 	)
 
 	dxDrawText(
 		nameText, rect.left, rect.top, rect.right, rect.bottom,
-		tocolor( 255, 255, 255, 255 ), 1, 1,
+		tocolor(255, 255, 255, 255), 1, 1,
 
-		font, "left", "top", false, false,
+		font, 'left', 'top', false, false,
 		false, false, false,
 		0, 0, 0
 	)
@@ -147,9 +147,9 @@ function drawNameTag(position, nameText, health, armor, distance)
 		table.insert(healthBarInnerDxVertices, {HealthBarInnerVertices[i].x, HealthBarInnerVertices[i].y, HealthBarInnerVertices[i].c})
 	end
 
-	dxDrawPrimitive("trianglefan", false, unpack(healthBarBordersDxVertices))
-	dxDrawPrimitive("trianglefan", false, unpack(healthBarBackgroundDxVertices))
-	dxDrawPrimitive("trianglefan", false, unpack(healthBarInnerDxVertices))
+	dxDrawPrimitive('trianglefan', false, unpack(healthBarBordersDxVertices))
+	dxDrawPrimitive('trianglefan', false, unpack(healthBarBackgroundDxVertices))
+	dxDrawPrimitive('trianglefan', false, unpack(healthBarInnerDxVertices))
 
 	-- Armor Bar
 	if armor > 0 then
@@ -182,9 +182,9 @@ function drawNameTag(position, nameText, health, armor, distance)
 			table.insert(armorBarInnerDxVertices, {HealthBarInnerVertices[i].x, HealthBarInnerVertices[i].y, HealthBarInnerVertices[i].c})
 		end
 
-		dxDrawPrimitive("trianglefan", false, unpack(armorBarBordersDxVertices))
-		dxDrawPrimitive("trianglefan", false, unpack(armorBarBackgroundDxVertices))
-		dxDrawPrimitive("trianglefan", false, unpack(armorBarInnerDxVertices))
+		dxDrawPrimitive('trianglefan', false, unpack(armorBarBordersDxVertices))
+		dxDrawPrimitive('trianglefan', false, unpack(armorBarBackgroundDxVertices))
+		dxDrawPrimitive('trianglefan', false, unpack(armorBarInnerDxVertices))
 
 		for i = 1, 4 do
 			HealthBarInnerVertices[i].c = tocolor(185, 34, 40, 255)
@@ -193,18 +193,18 @@ function drawNameTag(position, nameText, health, armor, distance)
 	end
 end
 
-addEventHandler( "onClientRender", root,
+addEventHandler('onClientRender', root,
 	function()
 		local playerPosX, playerPosY, playerPosZ = getElementPosition(localPlayer)
-		for k, player in pairs( getElementsByType("player") ) do
-			if player ~= localPlayer and isElementOnScreen( player ) then
+		for k, player in pairs(getElementsByType('player')) do
+			if player ~= localPlayer and isElementOnScreen(player) then
 				--local fPosX, fPosY, fPosZ = getElementPosition(player)
 				local fPosX, fPosY, fPosZ = getPedBonePosition(player, 8)
 				local distance = getDistanceBetweenPoints3D(playerPosX, playerPosY, playerPosZ, fPosX, fPosY, fPosZ)
 				if distance < 45 then
 					local cx, cy, cz = getCameraMatrix(localPlayer)
 					if isLineOfSightClear(cx, cy, cz, fPosX, fPosY, fPosZ, true, true, false, true, true, false, false) then
-						drawNameTag({x = fPosX, y = fPosY, z = fPosZ}, getPlayerName(player) .. " (" .. getElemID(player) .. ")", getElementHealth(player), getPedArmor(player), distance)
+						drawNameTag({x = fPosX, y = fPosY, z = fPosZ}, getPlayerName(player) .. ' (' .. getElemID(player) .. ')', getElementHealth(player), getPedArmor(player), distance)
 					end
 				end
 			end

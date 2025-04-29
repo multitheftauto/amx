@@ -45,6 +45,7 @@ addEventHandler('onClientResourceStart', resourceRoot,
 	function()
 		triggerServerEvent('onLoadedAtClient', resourceRoot, localPlayer)
 		setTimer(checkTextLabels, 500, 0)
+		setAmbientSoundEnabled('gunfire', false)
 		setDebugViewActive(true)
 	end,
 	false
@@ -61,7 +62,7 @@ function enableDebug()
 	local state = not isDebugViewActive()
 	setDebugViewActive(state)
 end
-addCommandHandler("debug", enableDebug)
+addCommandHandler('debug', enableDebug)
 
 function setAMXVersion(ver)
 	g_AMXVersion = ver
@@ -117,8 +118,8 @@ end
 -----------------------------
 -- MTA Key Handling
 
-function HandleMTAKey( key, keyState )
-	outputServerLog("handlemtakey: " .. key)
+function HandleMTAKey(key, keyState)
+	outputServerLog('handlemtakey: ' .. key)
 end
 -----------------------------
 -- Class selection screen
@@ -145,13 +146,13 @@ function startClassSelection(classInfo)
 	end
 	g_ClassSelectionInfo.gui = {
 		img = guiCreateStaticImage(35, screenHeight - 410, 205, 236, 'client/logo_small.png', false),
-		btnLeft = guiCreateButton(screenWidth / 2 - 145 - 70, screenHeight - 100, 140, 20, "<<<", false),
-		btnRight = guiCreateButton(screenWidth / 2 - 70, screenHeight - 100, 140, 20, ">>>", false),
-		btnSpawn = guiCreateButton(screenWidth / 2 + 145 - 70, screenHeight - 100, 140, 20, "Spawn", false)
+		btnLeft = guiCreateButton(screenWidth / 2 - 145 - 70, screenHeight - 100, 140, 20, '<<<', false),
+		btnRight = guiCreateButton(screenWidth / 2 - 70, screenHeight - 100, 140, 20, '>>>', false),
+		btnSpawn = guiCreateButton(screenWidth / 2 + 145 - 70, screenHeight - 100, 140, 20, 'Spawn', false)
 	}
-	addEventHandler ( "onClientGUIClick", g_ClassSelectionInfo.gui.btnLeft, ClassSelLeft )
-	addEventHandler ( "onClientGUIClick", g_ClassSelectionInfo.gui.btnRight, ClassSelRight )
-	addEventHandler ( "onClientGUIClick", g_ClassSelectionInfo.gui.btnSpawn, ClassSelSpawn )
+	addEventHandler('onClientGUIClick', g_ClassSelectionInfo.gui.btnLeft, ClassSelLeft)
+	addEventHandler('onClientGUIClick', g_ClassSelectionInfo.gui.btnRight, ClassSelRight)
+	addEventHandler('onClientGUIClick', g_ClassSelectionInfo.gui.btnSpawn, ClassSelSpawn)
 	showCursor(true)
 	addEventHandler('onClientRender', root, renderClassSelText)
 end
@@ -212,9 +213,9 @@ function destroyClassSelGUI()
 	setElementCollisionsEnabled(localPlayer, true)
 	showCursor(false)
 	if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
-		removeEventHandler ( "onClientGUIClick", g_ClassSelectionInfo.gui.btnLeft, ClassSelLeft )
-		removeEventHandler ( "onClientGUIClick", g_ClassSelectionInfo.gui.btnRight, ClassSelRight )
-		removeEventHandler ( "onClientGUIClick", g_ClassSelectionInfo.gui.btnSpawn, ClassSelSpawn )
+		removeEventHandler('onClientGUIClick', g_ClassSelectionInfo.gui.btnLeft, ClassSelLeft)
+		removeEventHandler('onClientGUIClick', g_ClassSelectionInfo.gui.btnRight, ClassSelRight)
+		removeEventHandler('onClientGUIClick', g_ClassSelectionInfo.gui.btnSpawn, ClassSelSpawn)
 	end
 end
 
@@ -271,7 +272,7 @@ end
 function pickupOnInteriorChangeLoop()
 	local vw = getElementDimension(localPlayer)
 	local interior = getElementInterior(localPlayer)
-	for i, v in ipairs(getElementsByType("pickup", root)) do -- Only for those that are streamed in
+	for i, v in ipairs(getElementsByType('pickup', root)) do -- Only for those that are streamed in
 		if isElement(v) then
 			setElementInterior(v, interior)
 			setElementDimension(v, vw)
@@ -340,15 +341,15 @@ function camAttachRender()
 		setCameraMatrix(camX, camY, camZ, x1, y1, z1)
 
 		-- If aiming, set the target (does nothing, todo fix)
-		if getPedTask(localPlayer, "secondary", 0) == "TASK_SIMPLE_USE_GUN" or isPedDoingGangDriveby(localPlayer) then
-			setPedAimTarget ( localPlayer, camX, camY, camZ )
-			setPlayerHudComponentVisible ( localPlayer, "crosshair", true )
+		if getPedTask(localPlayer, 'secondary', 0) == 'TASK_SIMPLE_USE_GUN' or isPedDoingGangDriveby(localPlayer) then
+			setPedAimTarget(localPlayer, camX, camY, camZ)
+			setPlayerHudComponentVisible(localPlayer, 'crosshair', true)
 			outputConsole('ped is aiming')
 		end
 
 		--outputConsole(string.format("camAttachRender - Camera Matrix is: CamPos: %f %f %f CamLookAt: %f %f %f", camX, camY, camZ, x1, y1, z1))
 	else
-		removeEventHandler("onClientPreRender", root, camAttachRender)
+		removeEventHandler('onClientPreRender', root, camAttachRender)
 	end
 end
 
@@ -371,7 +372,7 @@ function cursorMouseMoveHandler(curX, curY, absX, absY)
 		ca.y = camY
 		ca.z = camZ
 	else
-		removeEventHandler("onClientCursorMove", root, cursorMouseMoveHandler)
+		removeEventHandler('onClientCursorMove', root, cursorMouseMoveHandler)
 	end
 end
 
@@ -385,8 +386,8 @@ function AttachCameraToObject(camObj)
 	ca.active = 1
 	ca.objCamPos = camObj
 
-	addEventHandler("onClientPreRender", root, camAttachRender)
-	addEventHandler("onClientCursorMove", root, cursorMouseMoveHandler)
+	addEventHandler('onClientPreRender', root, camAttachRender)
+	addEventHandler('onClientCursorMove', root, cursorMouseMoveHandler)
 end
 
 function AttachCameraToPlayerObject(camobjID)
@@ -399,8 +400,8 @@ function AttachCameraToPlayerObject(camobjID)
 	ca.active = 1
 	ca.objCamPos = g_PlayerObjects[camobjID]
 
-	addEventHandler("onClientPreRender", root, camAttachRender)
-	addEventHandler("onClientCursorMove", root, cursorMouseMoveHandler)
+	addEventHandler('onClientPreRender', root, camAttachRender)
+	addEventHandler('onClientCursorMove', root, cursorMouseMoveHandler)
 end
 
 -- Camera Interpolation
@@ -435,7 +436,7 @@ function camRender()
 		--outputConsole(string.format("Current Camera Matrix is: CamPos: %f %f %f CamLookAt: %f %f %f", x1, y1, z1, x2, y2, z2))
 		setCameraMatrix(x1, y1, z1, x2, y2, z2)
 	else
-		removeEventHandler("onClientPreRender", root, camRender)
+		removeEventHandler('onClientPreRender', root, camRender)
 	end
 end
 
@@ -445,7 +446,7 @@ function setupCameraObject(camObj, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut
 	setElementCollisionsEnabled(camObj, false)
 	setElementAlpha(camObj, 0)
 	setObjectScale(camObj, 0.01)
-	moveObject(camObj, time, ToX, ToY, ToZ, ToX, ToY, ToZ, "InOutQuad")
+	moveObject(camObj, time, ToX, ToY, ToZ, ToX, ToY, ToZ, 'InOutQuad')
 	setTimer(removeInterpCamHandler, time, 1)
 	setTimer(destroyElement, time, 1, camObj)
 	return camObj
@@ -454,13 +455,13 @@ end
 function InterpolateCameraPos(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	outputConsole(string.format("InterpolateCameraPos called with args %f %f %f %f %f %f %d %d", FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut))
 	sm.objCamPos = setupCameraObject(sm.objCamPos, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
-	addEventHandler("onClientPreRender", root, camRender)
+	addEventHandler('onClientPreRender', root, camRender)
 end
 
 function InterpolateCameraLookAt(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	outputConsole(string.format("InterpolateCameraLookAt called with args %f %f %f %f %f %f %d %d", FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut))
 	sm.objLookAt = setupCameraObject(sm.objLookAt, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
-	addEventHandler("onClientPreRender", root, camRender)
+	addEventHandler('onClientPreRender', root, camRender)
 end
 -----------------------------
 -- Player objects
@@ -1218,15 +1219,15 @@ function renderTextLabels()
 
 			if screenX and dist <= textlabel.dist and (vw == textlabel.vw or textlabel.vw == -1) then -- Because player textlabels don't have VW's, since we're processing both here
 				if not textlabel.los then
-					dxDrawText(textlabel.text, screenX, screenY, screenX, screenY, tocolor(textlabel.color.r, textlabel.color.g, textlabel.color.b, textlabel.color.a), 1.0, "default-bold", "center", "top", false, false, false, true)
+					dxDrawText(textlabel.text, screenX, screenY, screenX, screenY, tocolor(textlabel.color.r, textlabel.color.g, textlabel.color.b, textlabel.color.a), 1.0, 'default-bold', 'center', 'top', false, false, false, true)
 				elseif LOS then
-					dxDrawText(textlabel.text, screenX, screenY, screenX, screenY, tocolor(textlabel.color.r, textlabel.color.g, textlabel.color.b, textlabel.color.a), 1.0, "default-bold", "center", "top", false, false, false, true)
+					dxDrawText(textlabel.text, screenX, screenY, screenX, screenY, tocolor(textlabel.color.r, textlabel.color.g, textlabel.color.b, textlabel.color.a), 1.0, 'default-bold', 'center', 'top', false, false, false, true)
 				end
 			end
 		end
 	end
 end
-addEventHandler("onClientRender", root, renderTextLabels)
+addEventHandler('onClientRender', root, renderTextLabels)
 
 function checkTextLabels()
 	for id, textlabel in pairs(g_TextLabels) do
@@ -1583,7 +1584,7 @@ function menuClickHandler(button, state, clickX, clickY)
 end
 
 function OnKeyPress(key, keyState)
-	if ( keyState == "down" ) then
+	if (keyState == 'down') then
 		exitMenu()
 	end
 end
@@ -1683,6 +1684,7 @@ function SetPlayerMapIcon(blipID, x, y, z, type, r, g, b, a, style)
 		g_Blips[blipID] = nil
 	end
 	g_Blips[blipID] = createBlip(x, y, z, type, 2, r, g, b, a)
+	-- TODO: Implement checkpoint styles
 	if style == 0 or style == 2 then -- Local / local checkpoint
 		setBlipVisibleDistance(g_Blips[blipID], 250.0)
 	end
@@ -1776,8 +1778,8 @@ end
 
 function createListDialog(titleText, message, button1txt, button2txt)
 	if listWindow ~= nil then
-		removeEventHandler("onClientGUIClick", getRootElement(), OnListDialogButton1Click) -- Remove handlers so they are not registered more than once
-		removeEventHandler("onClientGUIClick", getRootElement(), OnListDialogButton2Click)
+		removeEventHandler('onClientGUIClick', getRootElement(), OnListDialogButton1Click) -- Remove handlers so they are not registered more than once
+		removeEventHandler('onClientGUIClick', getRootElement(), OnListDialogButton2Click)
 		destroyElement(listWindow) -- Assuming inputWindow is the parent of everything, it should remove the whole hierarchy
 	end
 
@@ -1789,7 +1791,7 @@ function createListDialog(titleText, message, button1txt, button2txt)
 	guiGridListSetSelectionMode(listGrid, 2)
 	guiGridListSetScrollBars(listGrid, true, true)
 	guiGridListSetSortingEnabled(listGrid, false)
-	--listColumn = guiGridListAddColumn(listGrid, "List", 0.85)
+	--listColumn = guiGridListAddColumn(listGrid, 'List', 0.85)
 
 	local xpos = 0.0
 	if #button1txt == 0 or #button2txt == 0 then
@@ -1807,15 +1809,15 @@ function createListDialog(titleText, message, button1txt, button2txt)
 	end
 
 	guiSetVisible(listWindow, false)
-	addEventHandler("onClientGUIClick", listButton1, OnListDialogButton1Click, false)
-	addEventHandler("onClientGUIClick", listButton2, OnListDialogButton2Click, false)
+	addEventHandler('onClientGUIClick', listButton1, OnListDialogButton1Click, false)
+	addEventHandler('onClientGUIClick', listButton2, OnListDialogButton2Click, false)
 	return listGrid
 end
 
 function createInputDialog(titleText, message, button1txt, button2txt)
 		if inputWindow ~= nil then
-			removeEventHandler("onClientGUIClick", getRootElement(), OnInputDialogButton1Click) -- Remove handlers so they are not registered more than once
-			removeEventHandler("onClientGUIClick", getRootElement(), OnInputDialogButton2Click)
+			removeEventHandler('onClientGUIClick', getRootElement(), OnInputDialogButton1Click) -- Remove handlers so they are not registered more than once
+			removeEventHandler('onClientGUIClick', getRootElement(), OnInputDialogButton2Click)
 			destroyElement(inputWindow) -- Assuming inputWindow is the parent of everything, it should remove the whole hierarchy
 		end
 		inputDialog = nil
@@ -1823,7 +1825,7 @@ function createInputDialog(titleText, message, button1txt, button2txt)
 		guiWindowSetMovable(inputWindow, false)
 		guiWindowSetSizable(inputWindow, false)
 		inputLabel = guiCreateColoredLabel(0.1, 0.1, 1.0, 0.8, message, inputWindow, true)
-		inputEdit = guiCreateEdit(0.0, 0.7, 1.0, 0.1, "", true, inputWindow)
+		inputEdit = guiCreateEdit(0.0, 0.7, 1.0, 0.1, '', true, inputWindow)
 
 		local xpos = 0.0
 		if #button1txt == 0 or #button2txt == 0 then
@@ -1841,14 +1843,14 @@ function createInputDialog(titleText, message, button1txt, button2txt)
 		end
 
 		guiSetVisible(inputWindow, false)
-		addEventHandler("onClientGUIClick", inputButton1, OnInputDialogButton1Click, false)
-		addEventHandler("onClientGUIClick", inputButton2, OnInputDialogButton2Click, false)
+		addEventHandler('onClientGUIClick', inputButton1, OnInputDialogButton1Click, false)
+		addEventHandler('onClientGUIClick', inputButton2, OnInputDialogButton2Click, false)
 end
 
-function createMessageDialog(titleText, message, button1txt, button2txt )
+function createMessageDialog(titleText, message, button1txt, button2txt)
 		if msgWindow ~= nil then
-			removeEventHandler("onClientGUIClick", getRootElement(), OnMessageDialogButton1Click) -- Remove handlers so they are not registered more than once
-			removeEventHandler("onClientGUIClick", getRootElement(), OnMessageDialogButton2Click)
+			removeEventHandler('onClientGUIClick', getRootElement(), OnMessageDialogButton1Click) -- Remove handlers so they are not registered more than once
+			removeEventHandler('onClientGUIClick', getRootElement(), OnMessageDialogButton2Click)
 			destroyElement(msgWindow) -- Assuming msgWindow is the parent of everything, it should remove the whole hierarchy
 		end
 
@@ -1874,8 +1876,8 @@ function createMessageDialog(titleText, message, button1txt, button2txt )
 		end
 
 		guiSetVisible(msgWindow, false)
-		addEventHandler("onClientGUIClick", msgButton1, OnMessageDialogButton1Click, false)
-		addEventHandler("onClientGUIClick", msgButton2, OnMessageDialogButton2Click, false)
+		addEventHandler('onClientGUIClick', msgButton1, OnMessageDialogButton1Click, false)
+		addEventHandler('onClientGUIClick', msgButton2, OnMessageDialogButton2Click, false)
 end
 
 function clearListItem()
@@ -1890,11 +1892,11 @@ function clearListItem()
 	guiGridListClear(listGrid)
 end
 
-function OnListDialogButton1Click( button, state )
-	if button == "left" then
+function OnListDialogButton1Click(button, state)
+	if button == 'left' then
 		local row, column = guiGridListGetSelectedItem(listGrid)
 		local text = guiGridListGetItemText(listGrid, row, column)
-		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), listDialog, 1, row, text)
+		serverAMXEvent('OnDialogResponse', getElemID(localPlayer), listDialog, 1, row, text)
 		guiSetVisible(listWindow, false)
 		showCursor(false)
 		listDialog = nil
@@ -1902,11 +1904,11 @@ function OnListDialogButton1Click( button, state )
 	end
 end
 
-function OnListDialogButton2Click( button, state )
-	if button == "left" then
+function OnListDialogButton2Click(button, state)
+	if button == 'left' then
 		local row, column = guiGridListGetSelectedItem(listGrid)
 		local text = guiGridListGetItemText(listGrid, row, column)
-		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), listDialog, 0, row, text)
+		serverAMXEvent('OnDialogResponse', getElemID(localPlayer), listDialog, 0, row, text)
 		guiSetVisible(listWindow, false)
 		showCursor(false)
 		listDialog = nil
@@ -1914,39 +1916,39 @@ function OnListDialogButton2Click( button, state )
 	end
 end
 
-function OnInputDialogButton1Click( button, state )
-	if button == "left" then
-		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), inputDialog, 1, 0, guiGetText(inputEdit))
+function OnInputDialogButton1Click(button, state)
+	if button == 'left' then
+		serverAMXEvent('OnDialogResponse', getElemID(localPlayer), inputDialog, 1, 0, guiGetText(inputEdit))
 		guiSetVisible(inputWindow, false)
 		showCursor(false)
 		inputDialog = nil
 	end
 end
 
-function OnInputDialogButton2Click( button, state )
-	if button == "left" then
-		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), inputDialog, 0, 0, guiGetText(inputEdit))
+function OnInputDialogButton2Click(button, state)
+	if button == 'left' then
+		serverAMXEvent('OnDialogResponse', getElemID(localPlayer), inputDialog, 0, 0, guiGetText(inputEdit))
 		guiSetVisible(inputWindow, false)
 		showCursor(false)
 		inputDialog = nil
 	end
 end
 
-function OnMessageDialogButton1Click( button, state )
-	if button == "left" then
-		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), msgDialog, 1, 0, "")
+function OnMessageDialogButton1Click(button, state)
+	if button == 'left' then
+		serverAMXEvent('OnDialogResponse', getElemID(localPlayer), msgDialog, 1, 0, '')
 		guiSetVisible(msgWindow, false)
 		showCursor(false)
 		msgDialog = nil
 	end
 end
 
-function OnMessageDialogButton2Click( button, state )
-	if button == "left" then
-		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), msgDialog, 0, 0, "")
+function OnMessageDialogButton2Click(button, state)
+	if button == 'left' then
+		serverAMXEvent('OnDialogResponse', getElemID(localPlayer), msgDialog, 0, 0, '')
 		guiSetVisible(msgWindow, false)
-		msgDialog = nil
 		showCursor(false)
+		msgDialog = nil
 	end
 end
 
@@ -1966,20 +1968,22 @@ function guiCreateColoredLabel(ax, ay, bx, by,str, parent, relative) -- x, y, wi
 	local incy = 0
 	local incx = 0
 	while s do
-		if cap == "" and col then r,g,b = tonumber("0x"..col:sub(1, 2)), tonumber("0x"..col:sub(3, 4)), tonumber("0x"..col:sub(5, 6)) end
-		if (s ~= 1) or cap ~= "" then
+		if cap == '' and col then
+			r, g, b = tonumber('0x' .. col:sub(1, 2)), tonumber('0x' .. col:sub(3, 4)), tonumber('0x' .. col:sub(5, 6))
+		end
+		if (s ~= 1) or cap ~= '' then
 			--outputConsole('guiCreateColoredLabel: ' .. cap)
 
 			lbl = guiCreateLabel(ax + incx, ay + incy, 1.0, by, cap, relative, scrollpane)
-			guiLabelSetHorizontalAlign(lbl, "left")
+			guiLabelSetHorizontalAlign(lbl, 'left')
 			table.insert(labels, lbl)
 			if (r == nil) then r = 255 end
 			if (g == nil) then g = 255 end
 			if (b == nil) then b = 255 end
 			guiLabelSetColor(lbl, r, g, b)
-			r,g,b = tonumber("0x"..col:sub(1, 2)), tonumber("0x"..col:sub(3, 4)), tonumber("0x"..col:sub(5, 6))
+			r, g, b = tonumber('0x' .. col:sub(1, 2)), tonumber('0x' .. col:sub(3, 4)), tonumber('0x' .. col:sub(5, 6))
 
-			local match = cap:find("\n")
+			local match = cap:find('\n')
 			if match ~= nil then
 				local xtxtsize, ytxtsize = guiGetSize(lbl, true) -- not relative
 				incy = incy + (ytxtsize / 8) -- We found a /n so send it further down on the next line
@@ -2023,9 +2027,28 @@ function colorizeString(string)
 end
 
 function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
+	if dialogid < -1 then
+		return true
+	elseif dialogid == -1 then
+		if msgDialog then
+			guiSetVisible(msgWindow, false)
+			msgDialog = nil
+		end
+		if inputDialog then
+			guiSetVisible(inputWindow, false)
+			inputDialog = nil
+		end
+		if listDialog then
+			guiSetVisible(listWindow, false)
+			listDialog = nil
+			clearListItem()
+		end
+		showCursor(false)
+		return true
+	end
 	showCursor(true)
 	if dialogtype == 0 then
-		createMessageDialog(caption, colorizeString(info), button1, button2 )
+		createMessageDialog(caption, colorizeString(info), button1, button2)
 		guiSetVisible(msgWindow, true)
 		msgDialog = dialogid
 	elseif dialogtype == 1 or dialogtype == 3 then
@@ -2044,8 +2067,8 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 		-- DIALOG_STYLE_LIST
 		if dialogtype == 2 then
 			local items = info:gsub("\t", "        ")
-			items = items:split("\n")
-			listColumn = guiGridListAddColumn(listGrid, "List", 0.85)
+			items = items:split('\n')
+			listColumn = guiGridListAddColumn(listGrid, 'List', 0.85)
 			for k, v in ipairs(items) do
 				local row = guiGridListAddRow(listGrid)
 				guiGridListSetItemText(listGrid, row, listColumn, v, false, true)
@@ -2055,7 +2078,7 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 
 		-- DIALOG_STYLE_TABLIST, DIALOG_STYLE_TABLIST_HEADER
 		-- Add the columns
-		local items = info:split("\n") -- Get the first one which is the header
+		local items = info:split('\n') -- Get the first one which is the header
 		if #items < 1 then
 			outputConsole('Error, your dialog either has no items, its format is wrong or you\'re missing a newline character in the string')
 			outputConsole('The raw string was: ' .. info)
@@ -2063,7 +2086,7 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 		end
 
 		-- Create the header
-		local headerCols = items[1]:split("\t")
+		local headerCols = items[1]:split('\t')
 		for k, v in ipairs(headerCols) do
 			local colIdx = guiGridListAddColumn(listGrid, (dialogtype == 5 and v or ''), 0.5) -- If it's the DIALOG_STYLE_TABLIST_HEADER add the name, otherwise leave it blank
 			--outputConsole('headerCols - colidx: ' .. colIdx .. 'k: ' .. k .. 'v: ' .. v)
@@ -2077,7 +2100,7 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 		for k, v in ipairs(items) do -- rows
 			local row = guiGridListAddRow(listGrid) -- add the row
 			-- Now process every individual column (columns are tabulated)
-			for hk, hv in ipairs(v:split("\t")) do -- header key, header value
+			for hk, hv in ipairs(v:split('\t')) do -- header key, header value
 				--outputConsole('hk: ' .. hk .. 'hv: ' .. hv)
 				guiGridListSetItemText(listGrid, row, hk, hv, false, true)
 			end
