@@ -1646,7 +1646,7 @@ addEventHandler('onClientPedDamage', root, clientPedDamage)
 
 function enableWeaponSyncing(enable)
 	if enable and not g_WeaponSyncTimer then
-		g_WeaponSyncTimer = setTimer(sendWeapons, 5000, 0)
+		g_WeaponSyncTimer = setTimer(sendWeapons, 1000, 0)
 	elseif not enable and g_WeaponSyncTimer then
 		killTimer(g_WeaponSyncTimer)
 		g_WeaponSyncTimer = nil
