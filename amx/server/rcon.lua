@@ -1,7 +1,8 @@
 g_ServerVars = {
 	announce = {
 		get = function()
-			return getServerConfigSetting('donotbroadcastlan') == 0 or true
+			local browse = getServerConfigSetting('ase')
+			return tonumber(browse) == 1 or false
 		end
 	},
 	bind = {
@@ -59,7 +60,12 @@ g_ServerVars = {
 			return setRuleValue('language', lang)
 		end
 	},
-	lanmode = false,
+	lanmode = {
+		get = function()
+			local noLan = getServerConfigSetting('donotbroadcastlan')
+			return tonumber(noLan) == 0 or false
+		end
+	},
 	mapname = {
 		get = function(mapN)
 			mapN = getMapName()
