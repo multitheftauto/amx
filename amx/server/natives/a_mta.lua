@@ -727,6 +727,30 @@ function SetGlitchEnabled(amx, glitch, enable)
 	return setGlitchEnabled(amx, glitch, enable)
 end
 
+function GetAircraftMaxVelocity(amx)
+	return float2cell(getAircraftMaxVelocity())
+end
+
+function SetAircraftMaxVelocity(amx, velocity)
+	return setAircraftMaxVelocity(velocity)
+end
+
+function GetAircraftMaxHeight(amx)
+	return float2cell(getAircraftMaxHeight())
+end
+
+function SetAircraftMaxHeight(amx, height)
+	return setAircraftMaxHeight(height)
+end
+
+function GetJetpackMaxHeight(amx)
+	return float2cell(getJetpackMaxHeight())
+end
+
+function SetJetpackMaxHeight(amx, height)
+	return setJetpackMaxHeight(height)
+end
+
 function GetFPSLimit(amx)
 	return getFPSLimit()
 end
