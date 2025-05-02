@@ -6,8 +6,8 @@ g_ServerVars = {
 		end
 	},
 	bind = {
-		get = function(bindIp)
-			bindIp = getServerConfigSetting('serverip') or ''
+		get = function()
+			local bindIp = getServerConfigSetting('serverip') or ''
 			return bindIp ~= 'auto' and bindIp or ''
 		end
 	},
@@ -67,8 +67,8 @@ g_ServerVars = {
 		end
 	},
 	mapname = {
-		get = function(mapN)
-			mapN = getMapName()
+		get = function()
+			local mapN = getMapName()
 			return (mapN and mapN ~= 'None') and mapN or 'San Andreas'
 		end,
 		set = function(mapN)

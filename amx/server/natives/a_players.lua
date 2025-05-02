@@ -118,7 +118,7 @@ function GetPlayerWeaponState(amx, player)
 	local vehicle = getPedOccupiedVehicle(player)
 	if vehicle ~= nil then return -1 end
 
-	if isPedReloadingWeapon(player) then 
+	if isPedReloadingWeapon(player) then
 		return 3
 	end
 

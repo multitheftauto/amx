@@ -112,8 +112,8 @@ function SetTimerEx(amx, fnName, interval, repeating, fmt, ...)
 	else
 		local id = table.insert(amx.timers, false)
 		local timer = setTimer(
-			function(id, ...)
-				amx.timers[id] = nil
+			function(timerID, ...)
+				amx.timers[timerID] = nil
 				procCallInternal(amx, fnName, ...)
 			end,
 			interval, 1, id, unpack(vals)

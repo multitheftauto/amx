@@ -9,7 +9,6 @@ function argsToMTA(amx, prototype, ...)
 	end
 
 	local args = { ... }
-	local val
 	local argMissing = false
 	local colorArgs
 	for i, val in ipairs(args) do

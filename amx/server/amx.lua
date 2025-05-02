@@ -271,14 +271,11 @@ function getRunningFilterScripts()
 end
 
 function isWeaponSyncingNeeded(amx)
-	local fns = { 'GetPlayerWeaponData', 'RemovePlayerFromVehicle', 'SetVehicleToRespawn' }
 	if amx then
-		for i, fn in ipairs(fns) do
-			if table.find(amx.natives, fn) then
-				return true
-			end
-			return false
+		if table.find(amx.natives, 'GetPlayerWeaponData') then
+			return true
 		end
+		return false
 	else
 		for name, amx in pairs(g_LoadedAMXs) do
 			if isWeaponSyncingNeeded(amx) then

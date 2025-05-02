@@ -56,13 +56,13 @@ function getElementBoneAttachmentDetails(element)
 end
 
 function setElementBonePositionOffset(element, x, y, z)
-	local ped, bone, ox, oy, oz, rx, ry, rz = getElementBoneAttachmentDetails(element)
+	local ped, bone, _, _, _, rx, ry, rz = getElementBoneAttachmentDetails(element)
 	if not ped then return false end
 	return attachElementToBone(element, ped, bone, x, y, z, rx, ry, rz)
 end
 
 function setElementBoneRotationOffset(element, rx, ry, rz)
-	local ped, bone, x, y, z, ox, oy, oz = getElementBoneAttachmentDetails(element)
+	local ped, bone, x, y, z, _, _, _ = getElementBoneAttachmentDetails(element)
 	if not ped then return false end
 	return attachElementToBone(element, ped, bone, x, y, z, rx, ry, rz)
 end
