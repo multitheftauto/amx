@@ -163,9 +163,9 @@ public OnBotConnect(botid, name[])
 	return 1;
 }
 
-public OnMarkerHit(markerid, hittype[], hitid, worldid)
+public OnMarkerHit(markerid, type[], id, worldid)
 {
-	printf("OnMarkerHit(%d, %s, %d)", markerid, hittype, hitid);
+	printf("OnMarkerHit(%d, %s, %d)", markerid, type, id);
 	return 1;
 }
 
