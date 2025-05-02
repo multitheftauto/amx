@@ -101,9 +101,9 @@ function GetPlayerCanBeKnockedOffBike(amx, player)
 	return getElementData(player, 'CanBeKnockedOffBike')
 end
 
-function SetPlayerCanBeKnockedOffBike(amx, player, knockedOff)
-	clientCall(root, 'setPedCanBeKnockedOffBike', player, knockedOff)
-	return setElementData(player, 'CanBeKnockedOffBike', knockedOff)
+function SetPlayerCanBeKnockedOffBike(amx, player, knockOff)
+	clientCall(root, 'setPedCanBeKnockedOffBike', player, knockOff)
+	return setElementData(player, 'CanBeKnockedOffBike', knockOff)
 end
 
 function GetPlayerWeaponSlot(amx, player)
@@ -122,8 +122,8 @@ function IsPlayerHeadless(amx, player)
 	return isPedHeadless(player)
 end
 
-function SetPlayerHeadless(amx, player, headState)
-	return setPedHeadless(player, headState)
+function SetPlayerHeadless(amx, player, headless)
+	return setPedHeadless(player, headless)
 end
 
 function GetPlayerBlurLevel(amx, player)
@@ -459,16 +459,16 @@ function GetVehicleEngineState(amx, vehicle)
 	return getVehicleEngineState(vehicle)
 end
 
-function SetVehicleEngineState(amx, vehicle, engineState)
-	return setVehicleEngineState(vehicle, engineState)
+function SetVehicleEngineState(amx, vehicle, engine)
+	return setVehicleEngineState(vehicle, engine)
 end
 
 function GetVehicleSirenState(amx, vehicle)
 	return getVehicleSirensOn(vehicle)
 end
 
-function SetVehicleSirenState(amx, vehicle, sirenState)
-	return setVehicleSirensOn(vehicle, sirenState)
+function SetVehicleSirenState(amx, vehicle, siren)
+	return setVehicleSirensOn(vehicle, siren)
 end
 
 function GetVehicleDoorState(amx, vehicle, door)
