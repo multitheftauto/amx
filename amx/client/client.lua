@@ -116,12 +116,6 @@ function setPlayerID(id)
 	g_PlayerID = id
 end
 -----------------------------
--- MTA Key Handling
-
-function HandleMTAKey(key, keyState)
-	outputServerLog('handlemtakey: ' .. key)
-end
------------------------------
 -- Class selection screen
 
 function startClassSelection(classInfo)
@@ -440,9 +434,9 @@ function camRender()
 	end
 end
 
-function setupCameraObject(camObj, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
+function setupCameraObject(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	sm.moov = 1
-	camObj = createObject(1337, FromX, FromY, FromZ)
+	local camObj = createObject(1337, FromX, FromY, FromZ)
 	setElementCollisionsEnabled(camObj, false)
 	setElementAlpha(camObj, 0)
 	setObjectScale(camObj, 0.01)
@@ -454,13 +448,13 @@ end
 
 function InterpolateCameraPos(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	outputConsole(string.format("InterpolateCameraPos called with args %f %f %f %f %f %f %d %d", FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut))
-	sm.objCamPos = setupCameraObject(sm.objCamPos, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
+	sm.objCamPos = setupCameraObject(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	addEventHandler('onClientPreRender', root, camRender)
 end
 
 function InterpolateCameraLookAt(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	outputConsole(string.format("InterpolateCameraLookAt called with args %f %f %f %f %f %f %d %d", FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut))
-	sm.objLookAt = setupCameraObject(sm.objLookAt, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
+	sm.objLookAt = setupCameraObject(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	addEventHandler('onClientPreRender', root, camRender)
 end
 -----------------------------
@@ -719,7 +713,7 @@ function dropVehicle(vehicle)
 		return
 	end
 
-	local left, back, bottom, right, front, top = getElementBoundingBox(vehicle)
+	local _, _, bottom, _, _, top = getElementBoundingBox(vehicle)
 	if not bottom then
 		top = getElementDistanceFromCentreOfMassToBaseOfModel(vehicle)
 		if not top then
@@ -729,12 +723,12 @@ function dropVehicle(vehicle)
 	end
 	local x, y, z = getElementPosition(vehicle)
 
-	local hit, hitX, hitY, hitZ = processLineOfSight(x, y, z + top, x, y, z - 10, true, false)
+	local _, _, _, hitZ = processLineOfSight(x, y, z + top, x, y, z - 10, true, false)
 	hitZ = hitZ or getGroundPosition(x, y, z + top)
 	if hitZ then
 		setElementCollisionsEnabled(vehicle, true)
 		if z < hitZ - bottom - 0.5 or top > 2 then
-			local rx, ry, rz = getElementRotation(vehicle)
+			local _, _, rz = getElementRotation(vehicle)
 			setElementPosition(vehicle, x, y, hitZ + 2 * math.abs(bottom))
 			setElementRotation(vehicle, 0, 0, rz)
 			setElementVelocity(vehicle, 0, 0, -0.05)
@@ -965,7 +959,7 @@ function initTextDraw(textdraw)
 	local TDYPos = textdraw.y or 448 - #lines * lineHeight
 
 	-- Process the lines we previously found
-	for i, line in ipairs(lines) do
+	for _, line in ipairs(lines) do
 		local colorpos = 1
 		local color
 
@@ -1186,16 +1180,16 @@ function GameTextForPlayer(text, time, style)
 	gIndex = gIndex > 100 and 1 or gIndex + 1 -- Limit to 100
 end
 
-function destroyGameText(gIndex)
-	if gameText[gIndex] == nil then
+function destroyGameText(index)
+	if gameText[index] == nil then
 		return
 	end
-	destroyTextDraw(gameText[gIndex])
-	if gameText[gIndex].timer then
-		killTimer(gameText[gIndex].timer)
-		gameText[gIndex].timer = nil
+	destroyTextDraw(gameText[index])
+	if gameText[index].timer then
+		killTimer(gameText[index].timer)
+		gameText[index].timer = nil
 	end
-	gameText[gIndex] = nil
+	gameText[index] = nil
 end
 
 function renderTextLabels()
@@ -1212,7 +1206,7 @@ function renderTextLabels()
 			end
 
 			local screenX, screenY = getScreenFromWorldPosition(textlabel.X, textlabel.Y, textlabel.Z, textlabel.dist, false)
-			local pX, pY, pZ, _, _, _ = getCameraMatrix()--getElementPosition(localPlayer)
+			local pX, pY, pZ, _, _, _ = getCameraMatrix() --getElementPosition(localPlayer)
 			local dist = getDistanceBetweenPoints3D(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z)
 			local vw = getElementDimension(localPlayer)
 			local LOS = isLineOfSightClear(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z, true, false, false)
