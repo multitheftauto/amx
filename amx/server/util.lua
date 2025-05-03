@@ -441,14 +441,18 @@ function setPlayerState(player, state)
 	local playerID = getElemID(player)
 	local oldState = g_Players[playerID].state or PLAYER_STATE_NONE
 	g_Players[playerID].state = state
-	procCallOnAll('OnPlayerStateChange', playerID, state, oldState)
+	if state ~= oldState then
+		procCallOnAll('OnPlayerStateChange', playerID, state, oldState)
+	end
 end
 
 function setBotState(bot, state)
 	local botID = getElemID(bot)
 	local oldState = g_Bots[botID].state or PLAYER_STATE_NONE
 	g_Bots[botID].state = state
-	procCallOnAll('OnBotStateChange', botID, state, oldState)
+	if state ~= oldState then
+		procCallOnAll('OnBotStateChange', botID, state, oldState)
+	end
 end
 
 -- Clamping values

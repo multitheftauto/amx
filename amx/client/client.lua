@@ -275,6 +275,7 @@ function pickupOnInteriorChangeLoop()
 end
 
 local function clientPlayerPickupHit(thePickup, matchingDimension)
+	if source ~= localPlayer then return end
 	triggerServerEvent('OnPlayerPickUpPickup_Ev', localPlayer, thePickup)
 end
 addEventHandler('onClientPlayerPickupHit', root, clientPlayerPickupHit)
@@ -788,14 +789,16 @@ addEventHandler('onClientElementStreamOut', root,
 )
 
 local function clientVehicleDamage(attacker, weapon, loss, x, y, z, tire)
-	if not isElement(source) or isVehicleEmpty(source) then
+	if not isElement(source) then return end
+
+	local driver = getVehicleOccupant(source)
+	if not driver then
 		-- Block any damage for unoccupied vehicles like SA-MP does
 		return cancelEvent()
 	end
 
-	if localPlayer == getVehicleOccupant(source) then
-		triggerServerEvent('OnVehicleDamageStatusUpdate_Ev', localPlayer, source)
-	end
+	if driver ~= localPlayer then return end
+	triggerServerEvent('OnVehicleDamageStatusUpdate_Ev', localPlayer, source)
 end
 addEventHandler('onClientVehicleDamage', root, clientVehicleDamage)
 
@@ -1591,6 +1594,7 @@ end
 
 local function clientPlayerWeaponFire(weapon, ammo, ammoInClip, hitX, hitY, hitZ, hitElement, startX, startY, startZ)
 	if weapon < 22 or (weapon > 34 and weapon ~= 38) then return end
+	if source ~= localPlayer then return end
 
 	local hitId, hitType = 65535, 0
 	local offsetX, offsetY, offsetZ = hitX, hitY, hitZ
@@ -1628,7 +1632,12 @@ addEventHandler('onClientPlayerWeaponFire', root, clientPlayerWeaponFire)
 
 local function clientPedDamage(attacker, weapon, bodypart, loss)
 	if getElementType(source) == 'ped' and getElementData(source, 'ActorPed') then
-		if not getElementData(source, 'Invulnerable') then
+		local issuer = attacker
+		if issuer and getElementType(issuer) == 'vehicle' then
+			issuer = getVehicleOccupant(issuer)
+		end
+
+		if issuer == localPlayer and not getElementData(source, 'Invulnerable') then
 			triggerServerEvent('OnPlayerGiveDamageActor_Ev', localPlayer, source, loss, weapon, bodypart)
 		end
 
