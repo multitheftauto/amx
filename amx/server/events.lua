@@ -40,6 +40,7 @@ function gameModeInit(player)
 	}
 	g_Players[playerID].conntick = getTickCount()
 	g_Players[playerID].viewingintro = true
+	g_Players[playerID].state = PLAYER_STATE_NONE
 	fadeCamera(player, true)
 	setTimer(
 		function()
