@@ -1071,7 +1071,7 @@ function TogglePlayerSpectating(amx, player, enable)
 	if enable then
 		fadeCamera(player, true)
 		setCameraMatrix(player, 75.461357116699, 64.600051879883, 51.685581207275, 149.75857543945, 131.53228759766, 40.597320556641)
-		toggleAllControls(player, false, true, false)
+		toggleAllControls(player, false, true, false) -- will be re-enabled in spawn event
 		setPedWeaponSlot(player, 0)
 		setElementAlpha(player, 0)
 		setElementCollisionsEnabled(player, false)
