@@ -705,7 +705,7 @@ addEventHandler('OnPlayerWeaponShot_Ev', root,
 addEvent('OnPlayerGiveDamageActor_Ev', true)
 addEventHandler('OnPlayerGiveDamageActor_Ev', root,
 	function(actor, loss, weapon, bodypart)
-		if not actor or getElementData(actor, 'amx.invulnerable') then return end
+		if not actor or getElementData(actor, 'Invulnerable') then return end
 
 		local playerID, actorID = getElemID(source), getElemID(actor)
 		setTimer(procCallOnAll, 10, 1, 'OnPlayerGiveDamageActor', playerID, actorID, float2cell(loss), weapon, bodypart)
