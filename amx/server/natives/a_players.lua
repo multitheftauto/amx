@@ -63,8 +63,8 @@ function SetPlayerInterior(amx, player, interior)
 		return false
 	end
 	local oldInt = getElementInterior(player)
+	setElementInterior(player, interior)
 	if interior ~= oldInt then
-		setElementInterior(player, interior)
 		procCallOnAll('OnPlayerInteriorChange', playerId, interior, oldInt)
 		clientCall(player, 'AMX_OnPlayerInteriorChange', interior, oldInt)
 	end
