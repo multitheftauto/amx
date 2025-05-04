@@ -40,6 +40,8 @@ function gameModeInit(player)
 	}
 	g_Players[playerID].conntick = getTickCount()
 	g_Players[playerID].viewingintro = true
+	g_Players[playerID].state = PLAYER_STATE_NONE
+
 	fadeCamera(player, true)
 	setTimer(
 		function()
@@ -176,6 +178,13 @@ function putPlayerInClassSelection(player)
 	if g_Players[playerID].doingclasssel then
 		return
 	end
+
+	-- Don't draw the class selection UI if we're spectating
+	local state = g_Players[playerID].state
+	if state == PLAYER_STATE_SPECTATING then
+		return
+	end
+
 	toggleAllControls(player, false, true, false)
 	g_Players[playerID].viewingintro = nil
 	g_Players[playerID].doingclasssel = true
@@ -243,21 +252,14 @@ function spawnPlayerBySelectedClass(player, x, y, z, r)
 	playerdata.doingclasssel = nil
 	local spawninfo = playerdata.spawninfo or (g_PlayerClasses and g_PlayerClasses[playerdata.selectedclass])
 	if not spawninfo then
-		if not g_PlayerClasses[0] then
-			spawninfo = {
-				0, 0, 3, 0, 0, 0, 0, false,
-				weapons = { { -1, 0 }, { -1, 0 }, { -1, 0 } }
-			}
-		else
-			spawninfo = g_PlayerClasses[0]
-		end
+		return
 	end
 	if x then
 		spawninfo = table.shallowcopy(spawninfo)
 		spawninfo[1], spawninfo[2], spawninfo[3], spawninfo[4] = x, y, z, r or spawninfo[4]
 	end
-	setPlayerState(player, PLAYER_STATE_SPAWNED)
 	spawnPlayer(player, unpack(spawninfo))
+	setPlayerState(player, PLAYER_STATE_SPAWNED)
 	for i, weapon in ipairs(spawninfo.weapons) do
 		if weapon[1] ~= -1 then
 			giveWeapon(player, weapon[1], weapon[2], true)
@@ -273,7 +275,8 @@ addEventHandler('onPlayerSpawn', root,
 	function()
 		local playerID = getElemID(source)
 		local playerdata = g_Players[playerID]
-		if playerdata.doingclasssel then
+		local spawninfo = playerdata.spawninfo or (g_PlayerClasses and g_PlayerClasses[playerdata.selectedclass])
+		if not spawninfo or playerdata.doingclasssel then
 			return
 		end
 		toggleAllControls(source, true)

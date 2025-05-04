@@ -1087,6 +1087,8 @@ function TogglePlayerSpectating(amx, player, enable)
 			spawnPlayerBySelectedClass(player)
 			setPlayerHudComponentVisible(player, 'radar', true)
 		end
+		--toggleAllControls(player, true, true, false)
+		setPlayerState(player, PLAYER_STATE_NONE)
 		setElementAlpha(player, 255)
 		setCameraTarget(player, player)
 		clientCall(player, 'setCameraTarget', player) -- Clear the one on the client as well, otherwise we can't go back to normal camera after spectating vehicles
