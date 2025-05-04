@@ -1,11 +1,11 @@
 local dxDrawText = dxDrawText
 local tocolor = tocolor
-local SPEED_EPSILON = 0.005
+
 local VEHICLE_DROP_TRY_INTERVAL = 100
 local VEHICLE_DROP_MAX_TRIES = 50
 
 local MENU_ITEM_HEIGHT = 25
-local MENU_TOP_PADDING = MENU_ITEM_HEIGHT*2
+local MENU_TOP_PADDING = MENU_ITEM_HEIGHT * 2
 local MENU_BOTTOM_PADDING = 10
 local MENU_SIDE_PADDING = 20
 
@@ -45,6 +45,7 @@ addEventHandler('onClientResourceStart', resourceRoot,
 	function()
 		triggerServerEvent('onLoadedAtClient', resourceRoot, localPlayer)
 		setTimer(checkTextLabels, 500, 0)
+		setAmbientSoundEnabled('gunfire', false)
 		setDebugViewActive(true)
 	end,
 	false
@@ -61,7 +62,7 @@ function enableDebug()
 	local state = not isDebugViewActive()
 	setDebugViewActive(state)
 end
-addCommandHandler("debug", enableDebug)
+addCommandHandler('debug', enableDebug)
 
 function setAMXVersion(ver)
 	g_AMXVersion = ver
@@ -115,11 +116,6 @@ function setPlayerID(id)
 	g_PlayerID = id
 end
 -----------------------------
--- MTA Key Handling
-function HandleMTAKey( key, keyState )
-	outputServerLog("handlemtakey: " .. key)
-end
------------------------------
 -- Class selection screen
 
 function startClassSelection(classInfo)
@@ -134,7 +130,7 @@ function startClassSelection(classInfo)
 		setWeather(g_StartWeather)
 		g_StartWeather = nil
 	end
-	setGravity(0)
+
 	setElementCollisionsEnabled(localPlayer, false)
 
 	-- interaction
@@ -144,26 +140,26 @@ function startClassSelection(classInfo)
 	end
 	g_ClassSelectionInfo.gui = {
 		img = guiCreateStaticImage(35, screenHeight - 410, 205, 236, 'client/logo_small.png', false),
-		btnLeft = guiCreateButton(screenWidth/2-145-70,screenHeight-100,140,20,"<<<",false),
-		btnRight = guiCreateButton(screenWidth/2-70,screenHeight-100,140,20,">>>",false),
-		btnSpawn = guiCreateButton(screenWidth/2+145-70,screenHeight-100,140,20,"Spawn",false)
+		btnLeft = guiCreateButton(screenWidth / 2 - 145 - 70, screenHeight - 100, 140, 20, '<<<', false),
+		btnRight = guiCreateButton(screenWidth / 2 - 70, screenHeight - 100, 140, 20, '>>>', false),
+		btnSpawn = guiCreateButton(screenWidth / 2 + 145 - 70, screenHeight - 100, 140, 20, 'Spawn', false)
 	}
-	addEventHandler ( "onClientGUIClick", g_ClassSelectionInfo.gui.btnLeft, ClassSelLeft )
-	addEventHandler ( "onClientGUIClick", g_ClassSelectionInfo.gui.btnRight, ClassSelRight )
-	addEventHandler ( "onClientGUIClick", g_ClassSelectionInfo.gui.btnSpawn, ClassSelSpawn )
+	addEventHandler('onClientGUIClick', g_ClassSelectionInfo.gui.btnLeft, ClassSelLeft)
+	addEventHandler('onClientGUIClick', g_ClassSelectionInfo.gui.btnRight, ClassSelRight)
+	addEventHandler('onClientGUIClick', g_ClassSelectionInfo.gui.btnSpawn, ClassSelSpawn)
 	showCursor(true)
 	addEventHandler('onClientRender', root, renderClassSelText)
 end
 
-function ClassSelLeft ()
+function ClassSelLeft()
 	server.requestClass(localPlayer, false, false, -1)
 end
 
-function ClassSelRight ()
+function ClassSelRight()
 	server.requestClass(localPlayer, false, false, 1)
 end
 
-function ClassSelSpawn ()
+function ClassSelSpawn()
 	server.requestSpawn(localPlayer, false, false)
 end
 
@@ -178,7 +174,7 @@ function renderClassSelText()
 	drawShadowText('Class ' .. g_ClassSelectionInfo.selectedclass .. ' weapons:', 20, screenHeight - 110, tocolor(240, 240, 240))
 	local weapon, ammo, linenum, line
 	linenum = 0
-	for i,weapondata in ipairs(g_ClassSelectionInfo[g_ClassSelectionInfo.selectedclass].weapons) do
+	for i, weapondata in ipairs(g_ClassSelectionInfo[g_ClassSelectionInfo.selectedclass].weapons) do
 		weapon, ammo = weapondata[1], weapondata[2]
 		if weapon ~= 0 and weapon ~= -1 and ammo ~= -1 then
 			linenum = linenum + 1
@@ -188,7 +184,7 @@ function renderClassSelText()
 				line = ''
 			end
 			line = line .. (getWeaponNameFromID(weapon) or weapon)
-			drawShadowText(line, 25, screenHeight - 110 + 14*linenum, tocolor(240, 240, 240))
+			drawShadowText(line, 25, screenHeight - 110 + 14 * linenum, tocolor(240, 240, 240))
 		end
 	end
 end
@@ -200,7 +196,7 @@ end
 
 function destroyClassSelGUI()
 	if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
-		for i,elem in pairs(g_ClassSelectionInfo.gui) do
+		for i, elem in pairs(g_ClassSelectionInfo.gui) do
 			destroyElement(elem)
 		end
 		g_ClassSelectionInfo.gui = nil
@@ -208,13 +204,12 @@ function destroyClassSelGUI()
 	end
 	setPlayerHudComponentVisible('radar', true)
 	setCameraTarget(localPlayer)
-	setGravity(0.008)
 	setElementCollisionsEnabled(localPlayer, true)
 	showCursor(false)
 	if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
-		removeEventHandler ( "onClientGUIClick", g_ClassSelectionInfo.gui.btnLeft, ClassSelLeft )
-		removeEventHandler ( "onClientGUIClick", g_ClassSelectionInfo.gui.btnRight, ClassSelRight )
-		removeEventHandler ( "onClientGUIClick", g_ClassSelectionInfo.gui.btnSpawn, ClassSelSpawn )
+		removeEventHandler('onClientGUIClick', g_ClassSelectionInfo.gui.btnLeft, ClassSelLeft)
+		removeEventHandler('onClientGUIClick', g_ClassSelectionInfo.gui.btnRight, ClassSelRight)
+		removeEventHandler('onClientGUIClick', g_ClassSelectionInfo.gui.btnSpawn, ClassSelSpawn)
 	end
 end
 
@@ -229,15 +224,6 @@ addEventHandler('onClientResourceStop', resourceRoot,
 function requestSpawn()
 	triggerServerEvent('onRequestSpawn', localPlayer, g_ClassSelectionInfo.selectedclass)
 end
-
-addEventHandler('onClientPlayerWeaponFire', resourceRoot,
-	function(weapon, ammo, ammoInClip, hitX, hitY, hitZ)
-		--if localPlayer ~= source then return end
-		serverAMXEvent('OnPlayerShoot', getElemID(source), weapon, ammo, ammoInClip, hitX, hitY, hitZ)
-	end,
-	false
-)
-
 -----------------------------
 -- Camera
 
@@ -276,10 +262,11 @@ function showIntroScene()
 end
 -----------------------------
 -- Pickup related
-function pickupOnInteriorChangeLoop() 
+
+function pickupOnInteriorChangeLoop()
 	local vw = getElementDimension(localPlayer)
 	local interior = getElementInterior(localPlayer)
-	for i, v in ipairs(getElementsByType("pickup", root)) do --Only for those that are streamed in
+	for i, v in ipairs(getElementsByType('pickup', root)) do -- Only for those that are streamed in
 		if isElement(v) then
 			setElementInterior(v, interior)
 			setElementDimension(v, vw)
@@ -288,41 +275,43 @@ function pickupOnInteriorChangeLoop()
 end
 
 local function clientPlayerPickupHit(thePickup, matchingDimension)
-	triggerServerEvent('OnPlayerPickUpPickup_Ev', resourceRoot, thePickup)
+	if source ~= localPlayer then return end
+	triggerServerEvent('OnPlayerPickUpPickup_Ev', localPlayer, thePickup)
 end
-addEventHandler("onClientPlayerPickupHit", root, clientPlayerPickupHit)
+addEventHandler('onClientPlayerPickupHit', root, clientPlayerPickupHit)
 -----------------------------
 -- Interior related
+
 local interiorTimerPtr = false
 function AMX_OnPlayerInteriorChange(interior, oldInt)
 	if not interiorTimerPtr then
-		interiorTimerPtr = setTimer ( pickupOnInteriorChangeLoop, 1000, 0 ) --Every second check for pickups
+		interiorTimerPtr = setTimer(pickupOnInteriorChangeLoop, 1000, 0) -- Every second check for pickups
 	end
 end
-
 -----------------------------
 -- Camera related
+
 function removeCamHandlers()
 	removeInterpCamHandler()
 	removeCamAttachHandler()
 end
 
 -- Camera attachments
---Based on https://forum.mtasa.com/topic/36692-move-camera-by-mouse-like-normal/?do=findComment&comment=368670
+-- Based on https://forum.multitheftauto.com/topic/36692-move-camera-by-mouse-like-normal/#comment-368670
 local ca = {}
 ca.active = 0
 ca.objCamPos = nil
 ca.dist = 0.025
-ca.speed = 5 
-ca.x = math.rad(60) 
-ca.y = math.rad(60) 
-ca.z = math.rad(15) 
-ca.maxZ = math.rad(89) 
-ca.minZ = math.rad(-45) 
+ca.speed = 5
+ca.x = math.rad(60)
+ca.y = math.rad(60)
+ca.z = math.rad(15)
+ca.maxZ = math.rad(89)
+ca.minZ = math.rad(-45)
 
 function removeCamAttachHandler()
 	outputConsole('removeCamAttachHandler was called')
-	if(ca.active == 1) then
+	if (ca.active == 1) then
 		outputConsole('Destroying cam attach handler...')
 		ca.active = 0
 	end
@@ -330,146 +319,182 @@ end
 
 function camAttachRender()
 	if (ca.active == 1) then
-		local x1,y1,z1 = 0.0, 0.0, 0.0
+		if isCursorShowing() then return end
+
+		local x1, y1, z1 = 0.0, 0.0, 0.0
 		if ca.objCamPos ~= nil then
-			x1,y1,z1 = getElementPosition(ca.objCamPos)
+			x1, y1, z1 = getElementPosition(ca.objCamPos)
 			if not x1 then x1 = 0.0 end
 			if not y1 then y1 = 0.0 end
 			if not z1 then z1 = 0.0 end
 		end
-		local camDist = ca.dist 
-		local cosZ = math.cos(ca.z) 
-		local camX = x1 + math.cos(ca.x)*camDist*cosZ 
-		local camY = y1 + math.sin(ca.y)*camDist*cosZ 
-		local camZ = z1 + math.sin(ca.z)*camDist 
-		setCameraMatrix(camX, camY, camZ, x1, y1, z1) 
+		local camDist = ca.dist
+		local cosZ = math.cos(ca.z)
+		local camX = x1 + math.cos(ca.x) * camDist * cosZ
+		local camY = y1 + math.sin(ca.y) * camDist * cosZ
+		local camZ = z1 + math.sin(ca.z) * camDist
+		setCameraMatrix(camX, camY, camZ, x1, y1, z1)
 
-		--If aiming, set the target (does nothing, todo fix)
-		if getPedTask(localPlayer, "secondary", 0) == "TASK_SIMPLE_USE_GUN" or isPedDoingGangDriveby(localPlayer) then
-			setPedAimTarget ( localPlayer, camX, camY, camZ )
-			setPlayerHudComponentVisible ( localPlayer, "crosshair", true )
+		-- If aiming, set the target (does nothing, todo fix)
+		if getPedTask(localPlayer, 'secondary', 0) == 'TASK_SIMPLE_USE_GUN' or isPedDoingGangDriveby(localPlayer) then
+			setPedAimTarget(localPlayer, camX, camY, camZ)
+			setPlayerHudComponentVisible(localPlayer, 'crosshair', true)
 			outputConsole('ped is aiming')
 		end
-		
-		--outputConsole(string.format("camAttachRender - Camera Matrix is: CamPos: %f %f %f CamLookAt: %f %f %f", camX, camY, camZ, x1,y1,z1))
+
+		--outputConsole(string.format("camAttachRender - Camera Matrix is: CamPos: %f %f %f CamLookAt: %f %f %f", camX, camY, camZ, x1, y1, z1))
 	else
-		removeEventHandler("onClientPreRender", root, camAttachRender)
+		removeEventHandler('onClientPreRender', root, camAttachRender)
 	end
 end
 
 function cursorMouseMoveHandler(curX, curY, absX, absY)
 	if (ca.active == 1) then
-		local diffX = curX - 0.5 
-		local diffY = curY - 0.5 
-		local camX = ca.x - diffX*ca.speed 
-		local camY = ca.y - diffX*ca.speed 
-		local camZ = ca.z + (diffY*ca.speed)/math.pi 
-		if(camZ > ca.maxZ) then 
-			camZ = ca.maxZ 
-		end 
-		if(camZ < ca.minZ) then 
-			camZ = ca.minZ 
-		end 
-		ca.x = camX 
-		ca.y = camY 
-		ca.z = camZ 
+		if isCursorShowing() then return end
+
+		local diffX = curX - 0.5
+		local diffY = curY - 0.5
+		local camX = ca.x - diffX * ca.speed
+		local camY = ca.y - diffX * ca.speed
+		local camZ = ca.z + (diffY * ca.speed) / math.pi
+		if (camZ > ca.maxZ) then
+			camZ = ca.maxZ
+		end
+		if (camZ < ca.minZ) then
+			camZ = ca.minZ
+		end
+		ca.x = camX
+		ca.y = camY
+		ca.z = camZ
 	else
-		removeEventHandler("onClientCursorMove", root, cursorMouseMoveHandler)
+		removeEventHandler('onClientCursorMove', root, cursorMouseMoveHandler)
 	end
 end
 
 function AttachCameraToObject(camObj)
 	outputConsole('AttachCameraToObject was called')
+
+	if not isElement(camObj) then
+		return
+	end
+
 	ca.active = 1
 	ca.objCamPos = camObj
-	addEventHandler("onClientPreRender", root, camAttachRender)
-	addEventHandler("onClientCursorMove", root, cursorMouseMoveHandler)
+
+	addEventHandler('onClientPreRender', root, camAttachRender)
+	addEventHandler('onClientCursorMove', root, cursorMouseMoveHandler)
+end
+
+function AttachCameraToPlayerObject(camobjID)
+	outputConsole('AttachCameraToPlayerObject was called')
+
+	if not isElement(g_PlayerObjects[camobjID]) then
+		return
+	end
+
+	ca.active = 1
+	ca.objCamPos = g_PlayerObjects[camobjID]
+
+	addEventHandler('onClientPreRender', root, camAttachRender)
+	addEventHandler('onClientCursorMove', root, cursorMouseMoveHandler)
 end
 
 -- Camera Interpolation
---Originally from https://wiki.multitheftauto.com/wiki/SmoothMoveCamera
+-- Originally from https://wiki.multitheftauto.com/wiki/SmoothMoveCamera
 local sm = {}
 sm.moov = 0
-sm.objCamPos,sm.objLookAt = nil,nil
- 
+sm.objCamPos, sm.objLookAt = nil, nil
+
 function removeInterpCamHandler()
 	outputConsole('removeInterpCamHandler was called')
-	if(sm.moov == 1) then
+	if (sm.moov == 1) then
 		outputConsole('Destroying cam handler...')
 		sm.moov = 0
 	end
 end
- 
+
 function camRender()
 	if (sm.moov == 1) then
-		local x1,y1,z1,x2,y2,z2 = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+		local x1, y1, z1, x2, y2, z2 = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 		if sm.objCamPos ~= nil then
-			x1,y1,z1 = getElementPosition(sm.objCamPos)
+			x1, y1, z1 = getElementPosition(sm.objCamPos)
 			if not x1 then x1 = 0.0 end
 			if not y1 then y1 = 0.0 end
 			if not z1 then z1 = 0.0 end
 		end
 		if sm.objLookAt ~= nil then
-			x2,y2,z2 = getElementPosition(sm.objLookAt)
+			x2, y2, z2 = getElementPosition(sm.objLookAt)
 			if not x2 then x2 = 0.0 end
 			if not y2 then y2 = 0.0 end
 			if not z2 then z2 = 0.0 end
 		end
-		--outputConsole(string.format("Current Camera Matrix is: CamPos: %f %f %f CamLookAt: %f %f %f", x1,y1,z1,x2,y2,z2))
-		setCameraMatrix(x1,y1,z1,x2,y2,z2)
+		--outputConsole(string.format("Current Camera Matrix is: CamPos: %f %f %f CamLookAt: %f %f %f", x1, y1, z1, x2, y2, z2))
+		setCameraMatrix(x1, y1, z1, x2, y2, z2)
 	else
-		removeEventHandler("onClientPreRender", root, camRender)
+		removeEventHandler('onClientPreRender', root, camRender)
 	end
 end
 
-function setupCameraObject(camObj, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
+function setupCameraObject(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	sm.moov = 1
-	camObj = createObject(1337, FromX, FromY, FromZ)
-	setElementCollisionsEnabled (camObj, false) 
+	local camObj = createObject(1337, FromX, FromY, FromZ)
+	setElementCollisionsEnabled(camObj, false)
 	setElementAlpha(camObj, 0)
 	setObjectScale(camObj, 0.01)
-	moveObject(camObj, time, ToX, ToY, ToZ, ToX, ToY, ToZ, "InOutQuad")
-	setTimer(removeInterpCamHandler,time,1)
-	setTimer(destroyElement,time,1,camObj)
+	moveObject(camObj, time, ToX, ToY, ToZ, ToX, ToY, ToZ, 'InOutQuad')
+	setTimer(removeInterpCamHandler, time, 1)
+	setTimer(destroyElement, time, 1, camObj)
 	return camObj
 end
 
 function InterpolateCameraPos(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	outputConsole(string.format("InterpolateCameraPos called with args %f %f %f %f %f %f %d %d", FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut))
-	sm.objCamPos = setupCameraObject(sm.objCamPos, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
-	addEventHandler("onClientPreRender", root, camRender)
-	return true
+	sm.objCamPos = setupCameraObject(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
+	addEventHandler('onClientPreRender', root, camRender)
 end
+
 function InterpolateCameraLookAt(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	outputConsole(string.format("InterpolateCameraLookAt called with args %f %f %f %f %f %f %d %d", FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut))
-	sm.objLookAt = setupCameraObject(sm.objLookAt, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
-	addEventHandler("onClientPreRender", root, camRender)
-	return true
+	sm.objLookAt = setupCameraObject(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
+	addEventHandler('onClientPreRender', root, camRender)
 end
 -----------------------------
 -- Player objects
+
 function RemoveBuildingForPlayer(model, x, y, z, radius)
 	if model == -1 then
-		for i=550,20000 do --Remove all world models around radius if they sent -1
+		for i = 550, 20000 do -- Remove all world models around radius if they sent -1
 			removeWorldModel(i, radius, x, y, z)
 		end
-		return true --Don't run the rest of the code
+		return -- Don't run the rest of the code
 	end
 	removeWorldModel(model, radius, x, y, z)
-	return true
+	return
 end
 
 function AttachPlayerObjectToPlayer(objID, attachPlayer, offsetX, offsetY, offsetZ, rX, rY, rZ)
 	local obj = g_PlayerObjects[objID]
 	if not obj then
-		return false
+		return
 	end
 	attachElements(obj, attachPlayer, offsetX, offsetY, offsetZ, rX, rY, rZ)
-	return true
+end
+
+function AttachPlayerObjectToVehicle(objID, attachVehicle, offsetX, offsetY, offsetZ, rX, rY, rZ)
+	local obj = g_PlayerObjects[objID]
+	if not obj then
+		return
+	end
+	attachElements(obj, attachVehicle, offsetX, offsetY, offsetZ, rX, rY, rZ)
 end
 
 function CreatePlayerObject(objID, model, x, y, z, rX, rY, rZ)
 	g_PlayerObjects[objID] = createObject(model, x, y, z, rX, rY, rZ)
+	if g_PlayerObjects[objID] == false then
+		g_PlayerObjects[objID] = createObject(1337, x, y, z, rX, rY, rZ) -- Create a dummy object anyway since createobject can also be used to make camera attachments
+		setElementAlpha(g_PlayerObjects[objID], 0)
+		setElementCollisionsEnabled(g_PlayerObjects[objID], false)
+	end
 end
 
 function DestroyPlayerObject(objID)
@@ -481,51 +506,60 @@ function DestroyPlayerObject(objID)
 	g_PlayerObjects[objID] = nil
 end
 
-function MovePlayerObject(objID, x, y, z, speed)
+function MovePlayerObject(objID, x, y, z, speed, rX, rY, rZ)
 	local obj = g_PlayerObjects[objID]
-	local rX, rY, rZ = getElementRotation(obj)
 	local distance = getDistanceBetweenPoints3D(x, y, z, getElementPosition(obj))
-	local time = distance/speed*1000
-	moveObject(obj, time, x, y, z)
-	setElementRotation(obj, rX, rY, rZ)
+	local time = distance / speed * 1000
+
+	-- We need relative rotation
+	local cRotX, cRotY, cRotZ = getElementRotation(obj)
+	cRotX = cRotX - rX
+	cRotY = cRotY - rY
+	cRotZ = cRotZ - rZ
+
+	-- -1000 or less means no rotation change, so set it to 0.0
+	if rX <= -1000.0 then cRotX = 0.0 end
+	if rY <= -1000.0 then cRotY = 0.0 end
+	if rZ <= -1000.0 then cRotZ = 0.0 end
+
+	moveObject(obj, time, x, y, z, cRotX, cRotY, cRotZ)
+	return math.floor(time)
 end
 
 function SetPlayerObjectPos(objID, x, y, z)
 	local obj = g_PlayerObjects[objID]
 	if not obj then
-		return false
+		return
 	end
 	setElementPosition(obj, x, y, z)
-	return true
 end
 
 function SetPlayerObjectRot(objID, rX, rY, rZ)
 	local obj = g_PlayerObjects[objID]
 	if not obj then
-		return false
+		return
 	end
 	setElementRotation(obj, rX, rY, rZ)
-	return true
 end
 
 function StopPlayerObject(objID)
 	local obj = g_PlayerObjects[objID]
 	if not obj then
-		return false
+		return
 	end
 	stopObject(obj)
-	return true
 end
+-----------------------------
+-- Audio
 
---- Audio
-local pAudioStreamSound = nil --samp can only do one stream at a time anyway
+local pAudioStreamSound = nil -- SA-MP can only do one stream at a time anyway
 function PlayAudioStreamForPlayer(url, posX, posY, posZ, distance, usepos)
 	--outputConsole(string.format("PlayAudioStreamForPlayer called with args %s %f %f %f %f %d", url, posX, posY, posZ, distance, usepos))
-	if pAudioStreamSound ~= nil then --If there's one already playing, stop it
+	if pAudioStreamSound ~= nil then -- If there's one already playing, stop it
 		--outputConsole("PlayAudioStreamForPlayer is stopping an audio stream")
 		StopAudioStreamForPlayer()
 	end
-	if usepos == nil or usepos == 0 then
+	if not usepos then
 		--outputConsole(string.format("PlayAudioStreamForPlayer now playing non-3d sound %s", url))
 		pAudioStreamSound = playSound(url)
 	else
@@ -536,10 +570,11 @@ function PlayAudioStreamForPlayer(url, posX, posY, posZ, distance, usepos)
 	if pAudioStreamSound ~= nil then
 		setSoundVolume(pAudioStreamSound, 1.0)
 	end
-	return true
 end
+
 function StopAudioStreamForPlayer()
-    stopSound(pAudioStreamSound)
+	if pAudioStreamSound == nil then return end
+	stopSound(pAudioStreamSound)
 end
 -----------------------------
 -- Checkpoints
@@ -564,7 +599,7 @@ function DisablePlayerCheckpoint()
 	end
 	removeEventHandler('onClientColShapeHit', g_PlayerCheckpoint.colshape, OnPlayerEnterCheckpoint)
 	removeEventHandler('onClientColShapeLeave', g_PlayerCheckpoint.colshape, OnPlayerLeaveCheckpoint)
-	for k,elem in pairs(g_PlayerCheckpoint) do
+	for k, elem in pairs(g_PlayerCheckpoint) do
 		destroyElement(elem)
 	end
 	g_PlayerCheckpoint = nil
@@ -605,7 +640,7 @@ function DisablePlayerRaceCheckpoint()
 	end
 	removeEventHandler('onClientColShapeHit', g_PlayerRaceCheckpoint.colshape, OnPlayerEnterRaceCheckpoint)
 	removeEventHandler('onClientColShapeLeave', g_PlayerRaceCheckpoint.colshape, OnPlayerLeaveRaceCheckpoint)
-	for k,elem in pairs(g_PlayerRaceCheckpoint) do
+	for k, elem in pairs(g_PlayerRaceCheckpoint) do
 		destroyElement(elem)
 	end
 	g_PlayerRaceCheckpoint = nil
@@ -617,7 +652,7 @@ function SetPlayerRaceCheckpoint(type, x, y, z, nextX, nextY, nextZ, size)
 	end
 	g_PlayerRaceCheckpoint = {
 		marker = createMarker(x, y, z, type < 2 and 'checkpoint' or 'ring', size, 255, 0, 0),
-		colshape = type < 2 and createColCircle(x, y, size) or createColSphere(x, y, z, size*1.5),
+		colshape = type < 2 and createColCircle(x, y, size) or createColSphere(x, y, z, size * 1.5),
 		blip = createBlip(x, y, z, 0, 2, 255, 0, 0),
 		nextblip = createBlip(nextX, nextY, nextZ, 0, 1, 255, 0, 0)
 	}
@@ -631,15 +666,8 @@ function SetPlayerRaceCheckpoint(type, x, y, z, nextX, nextY, nextZ, size)
 	addEventHandler('onClientColShapeHit', g_PlayerRaceCheckpoint.colshape, OnPlayerEnterRaceCheckpoint)
 	addEventHandler('onClientColShapeLeave', g_PlayerRaceCheckpoint.colshape, OnPlayerLeaveRaceCheckpoint)
 end
-
-
 -----------------------------
 -- Vehicles
-
-function SetPlayerPosFindZ(x, y, z)
-	setElementPosition(localPlayer, x, y, getGroundPosition(x, y, z) + 1)
-	return true
-end
 
 function SetVehicleParamsForPlayer(vehicle, isObjective, doorsLocked)
 	local vehID = getElemID(vehicle)
@@ -667,7 +695,6 @@ function SetVehicleParamsForPlayer(vehicle, isObjective, doorsLocked)
 	setVehicleLocked(vehicle, doorsLocked)
 end
 
-
 local vehicleDrops = {}		-- { [vehicle] = { timer = timer, tries = tries } }
 
 function dropVehicle(vehicle)
@@ -687,7 +714,7 @@ function dropVehicle(vehicle)
 		return
 	end
 
-	local left, back, bottom, right, front, top = getElementBoundingBox(vehicle)
+	local _, _, bottom, _, _, top = getElementBoundingBox(vehicle)
 	if not bottom then
 		top = getElementDistanceFromCentreOfMassToBaseOfModel(vehicle)
 		if not top then
@@ -696,14 +723,15 @@ function dropVehicle(vehicle)
 		bottom = -top
 	end
 	local x, y, z = getElementPosition(vehicle)
-	local rx, ry, rz = getElementRotation(vehicle)
 
-	local hit, hitX, hitY, hitZ = processLineOfSight(x, y, z + top, x, y, z - 10, true, false)
+	local _, _, _, hitZ = processLineOfSight(x, y, z + top, x, y, z - 10, true, false)
+	hitZ = hitZ or getGroundPosition(x, y, z + top)
 	if hitZ then
 		setElementCollisionsEnabled(vehicle, true)
 		if z < hitZ - bottom - 0.5 or top > 2 then
-			setElementPosition(vehicle, x, y, hitZ + 2*math.abs(bottom))
-			setElementRotation(vehicle, 0, ry, rz)
+			local _, _, rz = getElementRotation(vehicle)
+			setElementPosition(vehicle, x, y, hitZ + 2 * math.abs(bottom))
+			setElementRotation(vehicle, 0, 0, rz)
 			setElementVelocity(vehicle, 0, 0, -0.05)
 		end
 		if dropdata.tries < VEHICLE_DROP_MAX_TRIES then
@@ -734,7 +762,7 @@ addEventHandler('onClientElementStreamIn', root,
 			triggerServerEvent('onAmxClientVehicleStream', localPlayer, getElemID(source), true)
 		elseif getElementType(source) == 'player' then
 			triggerServerEvent('onAmxClientPlayerStream', localPlayer, getElemID(source), true)
-		elseif getElementType(source) == 'ped' and getElementData(source, 'amx.actorped') then
+		elseif getElementType(source) == 'ped' and getElementData(source, 'ActorPed') then
 			triggerServerEvent('onAmxClientActorStream', localPlayer, getElemID(source), true)
 		end
 	end
@@ -754,11 +782,25 @@ addEventHandler('onClientElementStreamOut', root,
 			triggerServerEvent('onAmxClientVehicleStream', localPlayer, getElemID(source), false)
 		elseif getElementType(source) == 'player' then
 			triggerServerEvent('onAmxClientPlayerStream', localPlayer, getElemID(source), false)
-		elseif getElementType(source) == 'ped' and getElementData(source, 'amx.actorped') then
+		elseif getElementType(source) == 'ped' and getElementData(source, 'ActorPed') then
 			triggerServerEvent('onAmxClientActorStream', localPlayer, getElemID(source), false)
 		end
 	end
 )
+
+local function clientVehicleDamage(attacker, weapon, loss, x, y, z, tire)
+	if not isElement(source) then return end
+
+	local driver = getVehicleOccupant(source)
+	if not driver then
+		-- Block any damage for unoccupied vehicles like SA-MP does
+		return cancelEvent()
+	end
+
+	if driver ~= localPlayer then return end
+	triggerServerEvent('OnVehicleDamageStatusUpdate_Ev', localPlayer, source)
+end
+addEventHandler('onClientVehicleDamage', root, clientVehicleDamage)
 
 -- emulate SA-MP behaviour: block enter attempts as driver to locked vehicles
 addEventHandler('onClientVehicleStartEnter', root,
@@ -772,7 +814,6 @@ addEventHandler('onClientVehicleStartEnter', root,
 function DestroyVehicle(vehID)
 	g_Vehicles[vehID] = nil
 end
-
 -----------------------------
 -- Text
 
@@ -832,12 +873,12 @@ end
 
 local textDrawColorMapping = {
 	r = {180, 25, 29},
-	g = {53, 101, 43},
+	g = {54, 104, 44},
 	b = {50, 60, 127},
-	o = {239, 141, 27},
-	w = {255, 255, 255},
-	y = {222, 188, 97},
-	p = {180, 25, 180},
+	o = {215, 146, 24},
+	w = {225, 225, 225},
+	y = {226, 192, 99},
+	p = {168, 110, 252},
 	l = {10, 10, 10}
 }
 
@@ -886,20 +927,20 @@ function initTextDraw(textdraw)
 
 	local scale = (textdraw.lwidth or 0.5)
 	local tWidth, tHeight = dxGetTextSize(textdraw.text, scale)
-	local lineHeight = (tHeight or 0.25) / 2 --space between lines (vertical) also used to calculate size of the box if any
-	local lineWidth = (textdraw.lwidth or 0.25) --space between words (horizontal)
+	local lineHeight = (tHeight or 0.25) / 2 -- space between lines (vertical) also used to calculate size of the box if any
+	local lineWidth = (textdraw.lwidth or 0.25) -- space between words (horizontal)
 
-	--Set the height based on the text size
+	-- Set the height based on the text size
 	textdraw.theight = tHeight
 	textdraw.twidth = tWidth
-	
+
 	local text = textdraw.text:gsub('~k~~(.-)~', getSAMPBoundKey)
 	local lines = {}
 	local pos, stop, c
 	stop = 0
 	while true do
 		pos, stop, c = text:find('~(%a)~', stop + 1)
-		if c == 'n' then --If we found a new line
+		if c == 'n' then -- If we found a new line
 			lines[#lines + 1] = text:sub(1, pos - 1)
 			text = text:sub(stop + 1)
 			stop = 0
@@ -917,11 +958,11 @@ function initTextDraw(textdraw)
 	local font = textDrawFonts[textdraw.font and textdraw.font >= 0 and textdraw.font <= #textDrawFonts and textdraw.font or 0]
 	font = font.font
 
-	local TDXPos = textdraw.x or 640 - #lines*lineWidth
-	local TDYPos = textdraw.y or 448 - #lines*lineHeight
+	local TDXPos = textdraw.x or 640 - #lines * lineWidth
+	local TDYPos = textdraw.y or 448 - #lines * lineHeight
 
-	--Process the lines we previously found
-	for i,line in ipairs(lines) do
+	-- Process the lines we previously found
+	for _, line in ipairs(lines) do
 		local colorpos = 1
 		local color
 
@@ -949,11 +990,11 @@ function initTextDraw(textdraw)
 			if color or extrabright > 0 then
 				if extrabright > 0 then
 					color = color and table.shallowcopy(color) or { 255, 255, 255 }
-					for i=1,3 do
-						color[i] = math.min(color[i] + extrabright*40, 255)
+					for i = 1, 3 do
+						color[i] = math.min(color[i] + extrabright * 40, 255)
 					end
 				end
-				line = line:sub(1, start-1) .. ('#%02X%02X%02X'):format(unpack(color)) .. line:sub(colorpos)
+				line = line:sub(1, start - 1) .. ('#%02X%02X%02X'):format(unpack(color)) .. line:sub(colorpos)
 			end
 		end
 
@@ -973,8 +1014,8 @@ function initTextDraw(textdraw)
 		color = textdraw.color or tocolor(255, 255, 255)
 		colorpos = 1
 		local nextcolorpos
-		while colorpos < line:len()+1 do
-			local r, g, b = line:sub(colorpos, colorpos+6):match('#(%x%x)(%x%x)(%x%x)')
+		while colorpos < line:len() + 1 do
+			local r, g, b = line:sub(colorpos, colorpos + 6):match('#(%x%x)(%x%x)(%x%x)')
 			if r then
 				color = tocolor(tonumber(r, 16), tonumber(g, 16), tonumber(b, 16))
 				colorpos = colorpos + 7
@@ -987,11 +1028,11 @@ function initTextDraw(textdraw)
 		end
 		TDYPos = TDYPos + lineHeight
 	end
-	textdraw.absheight = tHeight*#lines
+	textdraw.absheight = tHeight * #lines
 end
 
 function renderTextDraws()
-	for id,textdraw in pairs(g_TextDraws) do
+	for id, textdraw in pairs(g_TextDraws) do
 		if textdraw.visible and textdraw.parts and not (textdraw.text:match('^%s*$')) then-- and not textdraw.usebox) then
 			local font = textDrawFonts[textdraw.font and textdraw.font >= 0 and textdraw.font <= #textDrawFonts and textdraw.font or 0]
 
@@ -1007,34 +1048,34 @@ function renderTextDraws()
 			local vertHudScale = hudGetVerticalScale()
 			local horHudScale = hudGetHorizontalScale()
 
-			local scalex = screenWidth * horHudScale * letterWidth;
-			local scaley = screenHeight * vertHudScale * letterHeight * 0.5;
-			
+			local scalex = screenWidth * horHudScale * letterWidth
+			local scaley = screenHeight * vertHudScale * letterHeight * 0.5
+
 			local sourceY = screenHeight - ((DEFAULT_SCREEN_HEIGHT - textdraw.y) * (screenHeight * vertHudScale))
 			local sourceX = screenWidth - ((DEFAULT_SCREEN_WIDTH - textdraw.x) * (screenWidth * horHudScale))
 
 			font = font.font
-			--Process box alignments
+			-- Process box alignments
 			if textdraw.usebox ~= nil and textdraw.usebox ~= 0 then
 				--outputConsole('textdraw uses box: ' .. textdraw.text)
-				local boxcolor = textdraw.boxcolor or tocolor(0, 0, 0, 120*(textdraw.alpha or 1))
+				local boxcolor = textdraw.boxcolor or tocolor(0, 0, 0, 120 * (textdraw.alpha or 1))
 				local x, y, w, h
 				w = textdraw.width
-				if textdraw.align == 1 then --left
+				if textdraw.align == 1 then -- left
 					x = sourceX
 					if textdraw.boxsize then
 						w = textdraw.boxsize[1]-- - x
 					else
 						w = textdraw.width
 					end
-				elseif textdraw.align == 2 then --centered
+				elseif textdraw.align == 2 then -- centered
 					x = sourceX-- / 2
 					if textdraw.boxsize then
 						w = textdraw.boxsize[1]
 					else
 						w = textdraw.width
 					end
-				elseif textdraw.align == 3 then --right
+				elseif textdraw.align == 3 then -- right
 					x = sourceX - w
 					if textdraw.boxsize then
 						w = sourceX - textdraw.boxsize[1]
@@ -1043,8 +1084,8 @@ function renderTextDraws()
 					end
 				end
 				y = sourceY
-				
-				--Calculates box height
+
+				-- Calculates box height
 				if textdraw.boxsize and textdraw.text:match('^%s*$') then
 					h = textdraw.boxsize[2]
 				else
@@ -1054,21 +1095,21 @@ function renderTextDraws()
 				dxDrawRectangle(x, y, w * getAspectRatio(), h * getAspectRatio(), boxcolor)
 				--outputConsole(string.format("Drawing textdraw box: sourceX: %f, sourceY: %f %s", sourceX, sourceY, textdraw.text))
 			end
-				
-			for i,part in pairs(textdraw.parts) do
+
+			for i, part in pairs(textdraw.parts) do
 
 				sourceY = screenHeight - ((DEFAULT_SCREEN_HEIGHT - part.y) * (screenHeight * vertHudScale))
 				sourceX = screenWidth - ((DEFAULT_SCREEN_WIDTH - part.x) * (screenWidth * horHudScale))
 
 				--outputConsole(string.format("text: %s partx: %f, party: %f sourceX: %f, sourceY: %f", part.text, part.x, part.y, sourceX, sourceY))
 
-				if textdraw.shade and textdraw.shade > 0 then --Draw the shadow
-					dxDrawText(part.text, sourceX + 5, sourceY + 5, sourceX + 5, sourceY + 5, tocolor(0, 0, 0, 100*(textdraw.alpha or 1)), scalex, scaley, font)
+				if textdraw.shade and textdraw.shade > 0 then -- Draw the shadow
+					dxDrawText(part.text, sourceX + 5, sourceY + 5, sourceX + 5, sourceY + 5, tocolor(0, 0, 0, 100 * (textdraw.alpha or 1)), scalex, scaley, font)
 				end
-				--Draw the actual text
+				-- Draw the actual text
 				drawBorderText(
 					part.text, sourceX, sourceY,
-					textdraw.alpha and setcoloralpha(part.color, math.floor(textdraw.alpha*255)) or part.color,
+					textdraw.alpha and setcoloralpha(part.color, math.floor(textdraw.alpha * 255)) or part.color,
 					scalex, scaley, font, textdraw.outlinesize,
 					textdraw.outlinecolor
 				)
@@ -1102,10 +1143,10 @@ function GameTextForPlayer(text, time, style)
 		destroyGameText(gIndex)
 	end
 
-	destroyAllGameTextsWithStyle(style) --So same styles don't overlap
+	destroyAllGameTextsWithStyle(style) -- So same styles don't overlap
 
 	--[[
-		alignments 	
+		alignments
 			1 = left
 			2 = center
 			3 = right
@@ -1119,13 +1160,13 @@ function GameTextForPlayer(text, time, style)
 		gameText[gIndex].align = 3
 		gameText[gIndex].upscaley = 3.0
 		gameText[gIndex].upscalex = 1.0
-		time = 8000 --Fades out after 8 seconds regardless of time set according to the wiki
+		time = 8000 -- Fades out after 8 seconds regardless of time set according to the wiki
 	elseif style == 2 then
 		gameText[gIndex].x = 0.9 * 640
 		gameText[gIndex].y = 0.7 * 448
 		gameText[gIndex].align = 3
 	elseif style >= 3 then
-		--★
+		-- ★
 		-- GTA replaces these with stars
 		gameText[gIndex].text = text:gsub("]", "★")
 		gameText[gIndex].x = 0.5 * 640
@@ -1139,23 +1180,23 @@ function GameTextForPlayer(text, time, style)
 	initTextDraw(gameText[gIndex])
 	showTextDraw(gameText[gIndex])
 	gameText[gIndex].timer = setTimer(destroyGameText, time, 1, gIndex)
-	gIndex = gIndex > 100 and 1 or gIndex + 1 --Limit to 100
+	gIndex = gIndex > 100 and 1 or gIndex + 1 -- Limit to 100
 end
 
-function destroyGameText(gIndex)
-	if gameText[gIndex] == nil then
+function destroyGameText(index)
+	if gameText[index] == nil then
 		return
 	end
-	destroyTextDraw(gameText[gIndex])
-	if gameText[gIndex].timer then
-		killTimer(gameText[gIndex].timer)
-		gameText[gIndex].timer = nil
+	destroyTextDraw(gameText[index])
+	if gameText[index].timer then
+		killTimer(gameText[index].timer)
+		gameText[index].timer = nil
 	end
-	gameText[gIndex] = nil
+	gameText[index] = nil
 end
 
 function renderTextLabels()
-	for id,textlabel in pairs(g_TextLabels) do
+	for id, textlabel in pairs(g_TextLabels) do
 		if textlabel.enabled then
 			if textlabel.attached then
 				local oX, oY, oZ = getElementPosition(textlabel.attachedTo)
@@ -1168,25 +1209,25 @@ function renderTextLabels()
 			end
 
 			local screenX, screenY = getScreenFromWorldPosition(textlabel.X, textlabel.Y, textlabel.Z, textlabel.dist, false)
-			local pX, pY, pZ, _, _, _ = getCameraMatrix()--getElementPosition(localPlayer)
+			local pX, pY, pZ, _, _, _ = getCameraMatrix() --getElementPosition(localPlayer)
 			local dist = getDistanceBetweenPoints3D(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z)
 			local vw = getElementDimension(localPlayer)
 			local LOS = isLineOfSightClear(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z, true, false, false)
-			
-			if screenX and dist <= textlabel.dist and (vw == textlabel.vw or textlabel.vw == -1) then --Because player textlabels don't have VW's, since we're processing both here
+
+			if screenX and dist <= textlabel.dist and (vw == textlabel.vw or textlabel.vw == -1) then -- Because player textlabels don't have VW's, since we're processing both here
 				if not textlabel.los then
-					dxDrawText(textlabel.text, screenX, screenY, screenX, screenY, tocolor(textlabel.color.r, textlabel.color.g, textlabel.color.b, textlabel.color.a), 1.0, "default-bold", "center", "top", false, false, false, true)
+					dxDrawText(textlabel.text, screenX, screenY, screenX, screenY, tocolor(textlabel.color.r, textlabel.color.g, textlabel.color.b, textlabel.color.a), 1.0, 'default-bold', 'center', 'top', false, false, false, true)
 				elseif LOS then
-					dxDrawText(textlabel.text, screenX, screenY, screenX, screenY, tocolor(textlabel.color.r, textlabel.color.g, textlabel.color.b, textlabel.color.a), 1.0, "default-bold", "center", "top", false, false, false, true)
+					dxDrawText(textlabel.text, screenX, screenY, screenX, screenY, tocolor(textlabel.color.r, textlabel.color.g, textlabel.color.b, textlabel.color.a), 1.0, 'default-bold', 'center', 'top', false, false, false, true)
 				end
 			end
 		end
 	end
 end
-addEventHandler("onClientRender", root, renderTextLabels)
+addEventHandler('onClientRender', root, renderTextLabels)
 
 function checkTextLabels()
-	for id,textlabel in pairs(g_TextLabels) do
+	for id, textlabel in pairs(g_TextLabels) do
 
 		local pX, pY, pZ = getElementPosition(localPlayer)
 		local dist = getDistanceBetweenPoints3D(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z)
@@ -1199,7 +1240,6 @@ function checkTextLabels()
 
 	end
 end
-
 
 function Create3DTextLabel(id, textlabel)
 	textlabel.id = id
@@ -1230,14 +1270,14 @@ function TextDrawCreate(id, textdraw)
 		textdraw.x = textdraw.x
 		textdraw.y = textdraw.y
 	end
-	for prop,val in pairs(textdraw) do
+	for prop, val in pairs(textdraw) do
 		TextDrawPropertyChanged(id, prop, val, true)
 	end
 	initTextDraw(textdraw)
 end
 
 function findTextDrawHandleByID(id)
-	for _,textdraw in pairs(g_TextDraws) do
+	for _, textdraw in pairs(g_TextDraws) do
 		if textdraw.clientTDId == id then
 			return textdraw.clientTDId
 		end
@@ -1278,8 +1318,8 @@ function TextDrawPropertyChanged(id, prop, newval, skipInit)
 
 	local textdraw = g_TextDraws[clientTDIdx]
 
-	--outputConsole('[TextDrawPropertyChanged]: Received new property ' .. prop .. ' - ' .. newval .. ' for ' .. textdraw.text) 
-	
+	--outputConsole('[TextDrawPropertyChanged]: Received new property ' .. prop .. ' - ' .. newval .. ' for ' .. textdraw.text)
+
 	textdraw[prop] = newval
 	if prop == 'boxsize' then
 		textdraw.boxsize[1] = textdraw.boxsize[1]
@@ -1305,7 +1345,7 @@ function displayFadingMessage(text, r, g, b, fadeInTime, stayTime, fadeOutTime)
 	local lineHeight = 40
 	local label = guiCreateLabel(screenWidth, screenHeight, 500, lineHeight, text, false)
 	local width = guiLabelGetTextExtent(label)
-	guiSetPosition(label, screenWidth/2 - width/2, 3*screenHeight/4, false)
+	guiSetPosition(label, screenWidth / 2 - width / 2, 3 * screenHeight / 4, false)
 	guiSetSize(label, width, lineHeight, false)
 	guiSetAlpha(label, 0)
 	if r and g and b then
@@ -1322,13 +1362,12 @@ function displayFadingMessage(text, r, g, b, fadeInTime, stayTime, fadeOutTime)
 	)
 	anim:play()
 end
-
 -----------------------------
 -- Menus
 
 local function updateMenuSize(menu)
-	menu.width = (#menu.items[1] > 0 and (menu.leftColumnWidth + menu.rightColumnWidth) or (menu.leftColumnWidth)) + 2*MENU_SIDE_PADDING
-	menu.height = MENU_ITEM_HEIGHT*math.max(#menu.items[0], #menu.items[1]) + MENU_TOP_PADDING + MENU_BOTTOM_PADDING
+	menu.width = (#menu.items[1] > 0 and (menu.leftColumnWidth + menu.rightColumnWidth) or (menu.leftColumnWidth)) + 2 * MENU_SIDE_PADDING
+	menu.height = MENU_ITEM_HEIGHT * math.max(#menu.items[0], #menu.items[1]) + MENU_TOP_PADDING + MENU_BOTTOM_PADDING
 end
 
 function AddMenuItem(id, column, caption)
@@ -1346,7 +1385,7 @@ function CreateMenu(id, menu)
 	while g_TextDraws['m' .. id] do
 		id = id + 1
 	end
-	menu.titletextdraw = { text = menu.title, id = 'm' .. id, x = menu.x + MENU_SIDE_PADDING, y = menu.y - 0.5*MENU_ITEM_HEIGHT, align = 1, font = 2 }
+	menu.titletextdraw = { text = menu.title, id = 'm' .. id, x = menu.x + MENU_SIDE_PADDING, y = menu.y - 0.5 * MENU_ITEM_HEIGHT, align = 1, font = 2 }
 	initTextDraw(menu.titletextdraw)
 	hideTextDraw(menu.titletextdraw)
 	updateMenuSize(menu)
@@ -1371,7 +1410,7 @@ function ShowMenuForPlayer(menuID)
 
 	local prevMenu = g_CurrentMenu
 	g_CurrentMenu = g_Menus[menuID]
-	local closebtnSide = screenWidth*(30/1024)
+	local closebtnSide = screenWidth * (30 / 1024)
 	if not prevMenu then
 		g_CurrentMenu.alpha = 0
 		g_CurrentMenu.titletextdraw.alpha = 0
@@ -1454,8 +1493,8 @@ end
 function setMenuAlpha(menu, alpha)
 	menu.alpha = alpha
 	menu.titletextdraw.alpha = alpha
-	guiSetAlpha(menu.closebtn, .75*alpha)
-	guiSetAlpha(menu.closebtnhover, .75*alpha)
+	guiSetAlpha(menu.closebtn, .75 * alpha)
+	guiSetAlpha(menu.closebtnhover, .75 * alpha)
 end
 
 function closeMenu()
@@ -1485,36 +1524,36 @@ function renderMenu()
 	end
 
 	-- background
-	dxDrawRectangle(menu.x, menu.y, menu.width, menu.height, tocolor(0, 0, 0, 128*menu.alpha))
+	dxDrawRectangle(menu.x, menu.y, menu.width, menu.height, tocolor(0, 0, 0, 128 * menu.alpha))
 
 	local cursorX, cursorY = getCursorPosition()
-	cursorY = screenHeight*cursorY
+	cursorY = screenHeight * cursorY
 	-- selected row
 	local selectedRow
 	if cursorY >= menu.y + MENU_TOP_PADDING and cursorY < menu.y + menu.height - MENU_BOTTOM_PADDING then
 		selectedRow = math.floor((cursorY - menu.y - MENU_TOP_PADDING) / MENU_ITEM_HEIGHT)
-		dxDrawRectangle(menu.x, menu.y + MENU_TOP_PADDING + selectedRow*MENU_ITEM_HEIGHT, menu.width, MENU_ITEM_HEIGHT, tocolor(98, 152, 219, 192*menu.alpha))
+		dxDrawRectangle(menu.x, menu.y + MENU_TOP_PADDING + selectedRow * MENU_ITEM_HEIGHT, menu.width, MENU_ITEM_HEIGHT, tocolor(98, 152, 219, 192 * menu.alpha))
 	end
 
 	-- menu items
-	for column=0,1 do
-		for i,text in pairs(menu.items[column]) do
-			local x = menu.x + MENU_SIDE_PADDING + column*menu.leftColumnWidth
+	for column = 0, 1 do
+		for i, text in pairs(menu.items[column]) do
+			local x = menu.x + MENU_SIDE_PADDING + column * menu.leftColumnWidth
 			local y
 			local color, scale
 			if i < 13 then
 				-- regular item
-				y = menu.y + MENU_TOP_PADDING + (i-1)*MENU_ITEM_HEIGHT
-				if menu.disabledrows and table.find(menu.disabledrows, i-1) then
-					color = tocolor(100, 100, 100, 255*menu.alpha)
+				y = menu.y + MENU_TOP_PADDING + (i - 1) * MENU_ITEM_HEIGHT
+				if menu.disabledrows and table.find(menu.disabledrows, i - 1) then
+					color = tocolor(100, 100, 100, 255 * menu.alpha)
 				else
-					color = (i-1) == selectedRow and tocolor(255, 255, 255, 255*menu.alpha) or tocolor(180, 180, 180, 255*menu.alpha)
+					color = (i - 1) == selectedRow and tocolor(255, 255, 255, 255 * menu.alpha) or tocolor(180, 180, 180, 255 * menu.alpha)
 				end
 				scale = 0.7
 			else
 				-- column header
 				y = menu.y + MENU_TOP_PADDING - MENU_ITEM_HEIGHT
-				color = tocolor(228, 190, 57, 255*menu.alpha)
+				color = tocolor(228, 190, 57, 255 * menu.alpha)
 				scale = 0.8
 			end
 			drawShadowText(text, x, y + 5, color, scale, 'pricedown')
@@ -1530,8 +1569,8 @@ function menuClickHandler(button, state, clickX, clickY)
 		return
 	end
 	local cursorX, cursorY = getCursorPosition()
-	cursorY = screenHeight*cursorY
-	if cursorY < g_CurrentMenu.y + MENU_TOP_PADDING or cursorY > g_CurrentMenu.y + MENU_TOP_PADDING + math.max(#g_CurrentMenu.items[0], #g_CurrentMenu.items[1])*MENU_ITEM_HEIGHT then
+	cursorY = screenHeight * cursorY
+	if cursorY < g_CurrentMenu.y + MENU_TOP_PADDING or cursorY > g_CurrentMenu.y + MENU_TOP_PADDING + math.max(#g_CurrentMenu.items[0], #g_CurrentMenu.items[1]) * MENU_ITEM_HEIGHT then
 		return
 	end
 	local selectedRow = math.floor((clickY - g_CurrentMenu.y - MENU_TOP_PADDING) / MENU_ITEM_HEIGHT)
@@ -1542,17 +1581,75 @@ function menuClickHandler(button, state, clickX, clickY)
 end
 
 function OnKeyPress(key, keyState)
-	if ( keyState == "down" ) then
+	if (keyState == 'down') then
 		exitMenu()
 	end
 end
-
 -----------------------------
 -- Others
 
+function SetPlayerPosFindZ(x, y, z)
+	setElementPosition(localPlayer, x, y, getGroundPosition(x, y, z) + 1)
+end
+
+local function clientPlayerWeaponFire(weapon, ammo, ammoInClip, hitX, hitY, hitZ, hitElement, startX, startY, startZ)
+	if weapon < 22 or (weapon > 34 and weapon ~= 38) then return end
+	if source ~= localPlayer then return end
+
+	local hitId, hitType = 65535, 0
+	local offsetX, offsetY, offsetZ = hitX, hitY, hitZ
+
+	if hitElement and isElement(hitElement) then
+		local elemType = getElementType(hitElement)
+
+		hitType = ({
+			player = 1,
+			vehicle = 2,
+			object = 3
+		})[elemType] or 0
+
+		if hitType > 0 then
+			hitId = getElemID(hitElement)
+
+			for k, elem in pairs(g_PlayerObjects) do
+				if elem == hitElement then
+					hitId = k
+					hitType = 4
+					break
+				end
+			end
+
+			offsetX, offsetY, offsetZ = getElementPosition(hitElement)
+			offsetX = hitX - offsetX
+			offsetY = hitY - offsetY
+			offsetZ = hitZ - offsetZ
+		end
+	end
+
+	triggerServerEvent('OnPlayerWeaponShot_Ev', localPlayer, weapon, hitType, hitId, startX, startY, startZ, hitX, hitY, hitZ, offsetX, offsetY, offsetZ)
+end
+addEventHandler('onClientPlayerWeaponFire', root, clientPlayerWeaponFire)
+
+local function clientPedDamage(attacker, weapon, bodypart, loss)
+	if getElementType(source) == 'ped' and getElementData(source, 'ActorPed') then
+		local issuer = attacker
+		if issuer and getElementType(issuer) == 'vehicle' then
+			issuer = getVehicleOccupant(issuer)
+		end
+
+		if issuer == localPlayer and not getElementData(source, 'Invulnerable') then
+			triggerServerEvent('OnPlayerGiveDamageActor_Ev', localPlayer, source, loss, weapon, bodypart)
+		end
+
+		-- Actor damage controlled by the server in any case
+		return cancelEvent()
+	end
+end
+addEventHandler('onClientPedDamage', root, clientPedDamage)
+
 function enableWeaponSyncing(enable)
 	if enable and not g_WeaponSyncTimer then
-		g_WeaponSyncTimer = setTimer(sendWeapons, 5000, 0)
+		g_WeaponSyncTimer = setTimer(sendWeapons, 1000, 0)
 	elseif not enable and g_WeaponSyncTimer then
 		killTimer(g_WeaponSyncTimer)
 		g_WeaponSyncTimer = nil
@@ -1563,7 +1660,7 @@ local prevWeapons
 function sendWeapons()
 	local weapons = {}
 	local needResync = false
-	for slot=0,12 do
+	for slot = 0, 12 do
 		weapons[slot] = { id = getPedWeapon(localPlayer, slot), ammo = getPedTotalAmmo(localPlayer, slot) }
 		if not needResync and (not prevWeapons or prevWeapons[slot].ammo ~= weapons[slot].ammo or prevWeapons[slot].id ~= weapons[slot].id) then
 			needResync = true
@@ -1584,12 +1681,16 @@ function RemovePlayerMapIcon(blipID)
 	return false
 end
 
-function SetPlayerMapIcon(blipID, x, y, z, type, r, g, b, a)
+function SetPlayerMapIcon(blipID, x, y, z, type, r, g, b, a, style)
 	if g_Blips[blipID] then
 		destroyElement(g_Blips[blipID])
 		g_Blips[blipID] = nil
 	end
 	g_Blips[blipID] = createBlip(x, y, z, type, 2, r, g, b, a)
+	-- TODO: Implement checkpoint styles
+	if style == 0 or style == 2 then -- Local / local checkpoint
+		setBlipVisibleDistance(g_Blips[blipID], 250.0)
+	end
 	return true
 end
 
@@ -1680,28 +1781,28 @@ end
 
 function createListDialog(titleText, message, button1txt, button2txt)
 	if listWindow ~= nil then
-		removeEventHandler("onClientGUIClick", getRootElement(), OnListDialogButton1Click) --Remove handlers so they are not registered more than once
-		removeEventHandler("onClientGUIClick", getRootElement(), OnListDialogButton2Click)
-		destroyElement(listWindow) --Assuming inputWindow is the parent of everything, it should remove the whole hierarchy
+		removeEventHandler('onClientGUIClick', getRootElement(), OnListDialogButton1Click) -- Remove handlers so they are not registered more than once
+		removeEventHandler('onClientGUIClick', getRootElement(), OnListDialogButton2Click)
+		destroyElement(listWindow) -- Assuming inputWindow is the parent of everything, it should remove the whole hierarchy
 	end
 
 	listDialog = nil
-	listWindow = guiCreateWindow(screenWidth/2 - 541/2,screenHeight/2 - 352/2,541,352, titleText, false)
-	guiWindowSetMovable(listWindow,false)
-	guiWindowSetSizable(listWindow,false)
-	listGrid = guiCreateGridList(0.0, 0.1, 1.0, 0.8,true,listWindow)
-	guiGridListSetSelectionMode(listGrid,2)
+	listWindow = guiCreateWindow(screenWidth / 2 - 541 / 2, screenHeight / 2 - 352 / 2, 541, 352, titleText, false)
+	guiWindowSetMovable(listWindow, false)
+	guiWindowSetSizable(listWindow, false)
+	listGrid = guiCreateGridList(0.0, 0.1, 1.0, 0.8, true, listWindow)
+	guiGridListSetSelectionMode(listGrid, 2)
 	guiGridListSetScrollBars(listGrid, true, true)
-	guiGridListSetSortingEnabled (listGrid, false)
-	--listColumn = guiGridListAddColumn(listGrid, "List", 0.85)
+	guiGridListSetSortingEnabled(listGrid, false)
+	--listColumn = guiGridListAddColumn(listGrid, 'List', 0.85)
 
 	local xpos = 0.0
 	if #button1txt == 0 or #button2txt == 0 then
-		xpos = 0.40 --Center
+		xpos = 0.40 -- Center
 	end
-	
-	listButton1 = guiCreateButton(xpos ~= 0.0 and xpos or 0.3, 0.9, 0.15, 0.1, button1txt,true,listWindow)
-	listButton2 = guiCreateButton(xpos ~= 0.0 and xpos or 0.5, 0.9, 0.15, 0.1, button2txt,true,listWindow)
+
+	listButton1 = guiCreateButton(xpos ~= 0.0 and xpos or 0.3, 0.9, 0.15, 0.1, button1txt, true, listWindow)
+	listButton2 = guiCreateButton(xpos ~= 0.0 and xpos or 0.5, 0.9, 0.15, 0.1, button2txt, true, listWindow)
 
 	if #button1txt == 0 then
 		guiSetVisible(listButton1, false)
@@ -1711,31 +1812,31 @@ function createListDialog(titleText, message, button1txt, button2txt)
 	end
 
 	guiSetVisible(listWindow, false)
-	addEventHandler("onClientGUIClick", listButton1, OnListDialogButton1Click, false)
-	addEventHandler("onClientGUIClick", listButton2, OnListDialogButton2Click, false)
+	addEventHandler('onClientGUIClick', listButton1, OnListDialogButton1Click, false)
+	addEventHandler('onClientGUIClick', listButton2, OnListDialogButton2Click, false)
 	return listGrid
 end
 
 function createInputDialog(titleText, message, button1txt, button2txt)
 		if inputWindow ~= nil then
-			removeEventHandler("onClientGUIClick", getRootElement(), OnInputDialogButton1Click) --Remove handlers so they are not registered more than once
-			removeEventHandler("onClientGUIClick", getRootElement(), OnInputDialogButton2Click)
-			destroyElement(inputWindow) --Assuming inputWindow is the parent of everything, it should remove the whole hierarchy
+			removeEventHandler('onClientGUIClick', getRootElement(), OnInputDialogButton1Click) -- Remove handlers so they are not registered more than once
+			removeEventHandler('onClientGUIClick', getRootElement(), OnInputDialogButton2Click)
+			destroyElement(inputWindow) -- Assuming inputWindow is the parent of everything, it should remove the whole hierarchy
 		end
 		inputDialog = nil
-		inputWindow = guiCreateWindow(screenWidth/2 - 541/2,screenHeight/2 - 352/2,541,352, titleText, false)
-		guiWindowSetMovable(inputWindow,false)
-		guiWindowSetSizable(inputWindow,false)
+		inputWindow = guiCreateWindow(screenWidth / 2 - 541 / 2, screenHeight / 2 - 352 / 2, 541, 352, titleText, false)
+		guiWindowSetMovable(inputWindow, false)
+		guiWindowSetSizable(inputWindow, false)
 		inputLabel = guiCreateColoredLabel(0.1, 0.1, 1.0, 0.8, message, inputWindow, true)
-		inputEdit = guiCreateEdit(0.0, 0.7, 1.0, 0.1, "", true, inputWindow)
+		inputEdit = guiCreateEdit(0.0, 0.7, 1.0, 0.1, '', true, inputWindow)
 
 		local xpos = 0.0
 		if #button1txt == 0 or #button2txt == 0 then
-			xpos = 0.40 --Center
+			xpos = 0.40 -- Center
 		end
 
-		inputButton1 = guiCreateButton(xpos ~= 0.0 and xpos or 0.3, 0.9, 0.15, 0.1, button1txt, true,inputWindow) --x, y, width, height
-		inputButton2 = guiCreateButton(xpos ~= 0.0 and xpos or 0.5, 0.9, 0.15, 0.1, button2txt, true,inputWindow)
+		inputButton1 = guiCreateButton(xpos ~= 0.0 and xpos or 0.3, 0.9, 0.15, 0.1, button1txt, true, inputWindow) -- x, y, width, height
+		inputButton2 = guiCreateButton(xpos ~= 0.0 and xpos or 0.5, 0.9, 0.15, 0.1, button2txt, true, inputWindow)
 
 		if #button1txt == 0 then
 			guiSetVisible(inputButton1, false)
@@ -1743,32 +1844,32 @@ function createInputDialog(titleText, message, button1txt, button2txt)
 		if #button2txt == 0 then
 			guiSetVisible(inputButton2, false)
 		end
-		
+
 		guiSetVisible(inputWindow, false)
-		addEventHandler("onClientGUIClick", inputButton1, OnInputDialogButton1Click, false)
-		addEventHandler("onClientGUIClick", inputButton2, OnInputDialogButton2Click, false)
+		addEventHandler('onClientGUIClick', inputButton1, OnInputDialogButton1Click, false)
+		addEventHandler('onClientGUIClick', inputButton2, OnInputDialogButton2Click, false)
 end
 
-function createMessageDialog(titleText, message, button1txt, button2txt )
+function createMessageDialog(titleText, message, button1txt, button2txt)
 		if msgWindow ~= nil then
-			removeEventHandler("onClientGUIClick", getRootElement(), OnMessageDialogButton1Click) --Remove handlers so they are not registered more than once
-			removeEventHandler("onClientGUIClick", getRootElement(), OnMessageDialogButton2Click)
-			destroyElement(msgWindow) --Assuming msgWindow is the parent of everything, it should remove the whole hierarchy
+			removeEventHandler('onClientGUIClick', getRootElement(), OnMessageDialogButton1Click) -- Remove handlers so they are not registered more than once
+			removeEventHandler('onClientGUIClick', getRootElement(), OnMessageDialogButton2Click)
+			destroyElement(msgWindow) -- Assuming msgWindow is the parent of everything, it should remove the whole hierarchy
 		end
 
 		msgDialog = nil
-		msgWindow = guiCreateWindow(screenWidth/2 - 541/2,screenHeight/2 - 352/2,541,352, titleText, false)
-		guiWindowSetMovable(msgWindow,false)
-		guiWindowSetSizable(msgWindow,false)
+		msgWindow = guiCreateWindow(screenWidth / 2 - 541 / 2, screenHeight / 2 - 352 / 2, 541, 352, titleText, false)
+		guiWindowSetMovable(msgWindow, false)
+		guiWindowSetSizable(msgWindow, false)
 		msgLabel = guiCreateColoredLabel(0.1, 0.1, 1.0, 0.7, message, msgWindow, true)
 
 		local xpos = 0.0
 		if #button1txt == 0 or #button2txt == 0 then
-			xpos = 0.40 --Center
+			xpos = 0.40 -- Center
 		end
 
-		msgButton1 = guiCreateButton(xpos ~= 0.0 and xpos or 0.3, 0.9, 0.15, 0.1, button1txt,true,msgWindow) --x, y, width, height
-		msgButton2 = guiCreateButton(xpos ~= 0.0 and xpos or 0.5, 0.9, 0.15, 0.1, button2txt,true,msgWindow)
+		msgButton1 = guiCreateButton(xpos ~= 0.0 and xpos or 0.3, 0.9, 0.15, 0.1, button1txt, true, msgWindow) -- x, y, width, height
+		msgButton2 = guiCreateButton(xpos ~= 0.0 and xpos or 0.5, 0.9, 0.15, 0.1, button2txt, true, msgWindow)
 
 		if #button1txt == 0 then
 			guiSetVisible(msgButton1, false)
@@ -1778,27 +1879,27 @@ function createMessageDialog(titleText, message, button1txt, button2txt )
 		end
 
 		guiSetVisible(msgWindow, false)
-		addEventHandler("onClientGUIClick", msgButton1, OnMessageDialogButton1Click, false)
-		addEventHandler("onClientGUIClick", msgButton2, OnMessageDialogButton2Click, false)
+		addEventHandler('onClientGUIClick', msgButton1, OnMessageDialogButton1Click, false)
+		addEventHandler('onClientGUIClick', msgButton2, OnMessageDialogButton2Click, false)
 end
 
 function clearListItem()
-	guiGridListRemoveColumn(listGrid, listColumn) --First remove the default column
+	guiGridListRemoveColumn(listGrid, listColumn) -- First remove the default column
 	local colAmount = guiGridListGetColumnCount(listGrid)
-	for i=1, colAmount do --Column indexes appear to start from 1
-		if not guiGridListRemoveColumn(listGrid, i) then --Always clean up all columns
-			outputConsole('[AMX:ShowPlayerDialog] Error: Couldn\'t remove column: ' .. 'idx: ' .. i)
+	for i = 1, colAmount do -- Column indexes appear to start from 1
+		if not guiGridListRemoveColumn(listGrid, i) then -- Always clean up all columns
+			outputConsole('[ShowPlayerDialog] Error: Couldn\'t remove column: ' .. 'idx: ' .. i)
 		end
 		outputConsole('vals: ' .. 'idx: ' .. i)
 	end
 	guiGridListClear(listGrid)
 end
 
-function OnListDialogButton1Click( button, state )
-	if button == "left" then
+function OnListDialogButton1Click(button, state)
+	if button == 'left' then
 		local row, column = guiGridListGetSelectedItem(listGrid)
 		local text = guiGridListGetItemText(listGrid, row, column)
-		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), listDialog, 1, row, text);
+		serverAMXEvent('OnDialogResponse', getElemID(localPlayer), listDialog, 1, row, text)
 		guiSetVisible(listWindow, false)
 		showCursor(false)
 		listDialog = nil
@@ -1806,11 +1907,11 @@ function OnListDialogButton1Click( button, state )
 	end
 end
 
-function OnListDialogButton2Click( button, state )
-	if button == "left" then
+function OnListDialogButton2Click(button, state)
+	if button == 'left' then
 		local row, column = guiGridListGetSelectedItem(listGrid)
 		local text = guiGridListGetItemText(listGrid, row, column)
-		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), listDialog, 0, row, text);
+		serverAMXEvent('OnDialogResponse', getElemID(localPlayer), listDialog, 0, row, text)
 		guiSetVisible(listWindow, false)
 		showCursor(false)
 		listDialog = nil
@@ -1818,119 +1919,139 @@ function OnListDialogButton2Click( button, state )
 	end
 end
 
-function OnInputDialogButton1Click( button, state )
-	if button == "left" then
-		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), inputDialog, 1, 0, guiGetText(inputEdit));
+function OnInputDialogButton1Click(button, state)
+	if button == 'left' then
+		serverAMXEvent('OnDialogResponse', getElemID(localPlayer), inputDialog, 1, 0, guiGetText(inputEdit))
 		guiSetVisible(inputWindow, false)
 		showCursor(false)
 		inputDialog = nil
 	end
 end
 
-function OnInputDialogButton2Click( button, state )
-	if button == "left" then
-		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), inputDialog, 0, 0, guiGetText(inputEdit));
+function OnInputDialogButton2Click(button, state)
+	if button == 'left' then
+		serverAMXEvent('OnDialogResponse', getElemID(localPlayer), inputDialog, 0, 0, guiGetText(inputEdit))
 		guiSetVisible(inputWindow, false)
 		showCursor(false)
 		inputDialog = nil
 	end
 end
 
-function OnMessageDialogButton1Click( button, state )
-	if button == "left" then
-		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), msgDialog, 1, 0, "");
+function OnMessageDialogButton1Click(button, state)
+	if button == 'left' then
+		serverAMXEvent('OnDialogResponse', getElemID(localPlayer), msgDialog, 1, 0, '')
 		guiSetVisible(msgWindow, false)
 		showCursor(false)
 		msgDialog = nil
 	end
 end
 
-function OnMessageDialogButton2Click( button, state )
-	if button == "left" then
-		serverAMXEvent("OnDialogResponse", getElemID(localPlayer), msgDialog, 0, 0, "");
+function OnMessageDialogButton2Click(button, state)
+	if button == 'left' then
+		serverAMXEvent('OnDialogResponse', getElemID(localPlayer), msgDialog, 0, 0, '')
 		guiSetVisible(msgWindow, false)
-		msgDialog = nil
 		showCursor(false)
+		msgDialog = nil
 	end
 end
 
--- Originally by UAEpro from here: https://forum.mtasa.com/topic/33149-colorcodes-in-labels/?tab=comments#comment-335358
-function guiCreateColoredLabel(ax, ay, bx, by,str, parent, relative) --x, y, width, height
+-- Originally by UAEpro from here: https://forum.multitheftauto.com/topic/33149-colorcodes-in-labels/#comment-335358
+function guiCreateColoredLabel(ax, ay, bx, by,str, parent, relative) -- x, y, width, height
 	if not relative then
 		relative = true
 	end
 
-	local scrollpane = guiCreateScrollPane(ax,ay,bx,by,relative,parent)
+	local scrollpane = guiCreateScrollPane(ax, ay, bx, by, relative, parent)
 	--outputConsole('main string:' .. str)
 
-	local pat = "(.-)#(%x%x%x%x%x%x)" 
-	local s, e, cap, col = str:find(pat, 1) 
-	local last = 1 
-	local labels = {} 
+	local pat = "(.-)#(%x%x%x%x%x%x)"
+	local s, e, cap, col = str:find(pat, 1)
+	local last = 1
+	local labels = {}
 	local incy = 0
 	local incx = 0
-	while s do 
-		
-        if cap == "" and col then r,g,b = tonumber("0x"..col:sub(1, 2)), tonumber("0x"..col:sub(3, 4)), tonumber("0x"..col:sub(5, 6)) end 
-		if (s ~= 1) or cap ~= "" then 
+	while s do
+		if cap == '' and col then
+			r, g, b = tonumber('0x' .. col:sub(1, 2)), tonumber('0x' .. col:sub(3, 4)), tonumber('0x' .. col:sub(5, 6))
+		end
+		if (s ~= 1) or cap ~= '' then
 			--outputConsole('guiCreateColoredLabel: ' .. cap)
 
-			lbl = guiCreateLabel(ax + incx, ay + incy, 1.0, by, cap, relative, scrollpane) 
-			guiLabelSetHorizontalAlign(lbl, "left")
-			table.insert(labels, lbl) 
-			if (r == nil) then r = 255 end 
-			if (g == nil) then g = 255 end 
-			if (b == nil) then b = 255 end 
-			guiLabelSetColor(lbl,r,g,b)  
-			r,g,b = tonumber("0x"..col:sub(1, 2)), tonumber("0x"..col:sub(3, 4)), tonumber("0x"..col:sub(5, 6)) 
+			lbl = guiCreateLabel(ax + incx, ay + incy, 1.0, by, cap, relative, scrollpane)
+			guiLabelSetHorizontalAlign(lbl, 'left')
+			table.insert(labels, lbl)
+			if (r == nil) then r = 255 end
+			if (g == nil) then g = 255 end
+			if (b == nil) then b = 255 end
+			guiLabelSetColor(lbl, r, g, b)
+			r, g, b = tonumber('0x' .. col:sub(1, 2)), tonumber('0x' .. col:sub(3, 4)), tonumber('0x' .. col:sub(5, 6))
 
-			local match = cap:find("\n")
+			local match = cap:find('\n')
 			if match ~= nil then
-				local xtxtsize, ytxtsize = guiGetSize(lbl, true) --not relative
-				incy = incy + (ytxtsize / 8) --We found a /n so send it further down on the next line
-				incx = 0 --Don't add spaces on new lines
+				local xtxtsize, ytxtsize = guiGetSize(lbl, true) -- not relative
+				incy = incy + (ytxtsize / 8) -- We found a /n so send it further down on the next line
+				incx = 0 -- Don't add spaces on new lines
 				--outputConsole('found a new line')
 			else
-				if r ~= 255 or g ~= 255 or b ~= 255 then --It's colored so separate it
+				if r ~= 255 or g ~= 255 or b ~= 255 then -- It's colored so separate it
 					incy = 0
-					local xsize, ysize = guiGetSize(scrollpane, false) --not relative
-					incx = incx + (guiLabelGetTextExtent ( lbl ) / xsize) --Make space for the next word, relative to the parent width
+					local xsize, ysize = guiGetSize(scrollpane, false) -- not relative
+					incx = incx + (guiLabelGetTextExtent(lbl) / xsize) -- Make space for the next word, relative to the parent width
 					--outputConsole('Separating string')
 				else
 					incy = 0
 					incx = 0
 				end
 			end
-        end 
-        last = e + 1 
-        s, e, cap, col = str:find(pat, last) 
-    end 
-    if (last <= #str) then 
-        cap = str:sub(last) 
-        lbl2 = guiCreateLabel(ax + incx, ay + incy, 1.0, by, cap, relative, scrollpane) 
-        table.insert(labels, lbl2) 
-	if (r == nil) then r = 255 end 
-	if (g == nil) then g = 255 end 
-	if (b == nil) then b = 255 end 
-        guiLabelSetColor(lbl2,r,g,b) 
-    end
-    return labels 
+		end
+		last = e + 1
+		s, e, cap, col = str:find(pat, last)
+	end
+	if (last <= #str) then
+		cap = str:sub(last)
+		lbl2 = guiCreateLabel(ax + incx, ay + incy, 1.0, by, cap, relative, scrollpane)
+		table.insert(labels, lbl2)
+		if (r == nil) then r = 255 end
+		if (g == nil) then g = 255 end
+		if (b == nil) then b = 255 end
+		guiLabelSetColor(lbl2, r, g, b)
+	end
+	return labels
 end
 
---replace colors
-function colorizeString(string) 
+-- replace colors
+function colorizeString(string)
 	return string:gsub("(=?{[0-9A-Fa-f]*})",
 	function(colorMatches)
-		colorMatches = colorMatches:gsub("[{}]+", "") --replace the curly brackets with nothing
-		colorMatches = '#' .. colorMatches --Append to the beginning
-		return colorMatches 
+		colorMatches = colorMatches:gsub("[{}]+", "") -- replace the curly brackets with nothing
+		colorMatches = '#' .. colorMatches -- Append to the beginning
+		return colorMatches
 	end)
 end
 
 function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
+	if dialogid < -1 then
+		return true
+	elseif dialogid == -1 then
+		if msgDialog then
+			guiSetVisible(msgWindow, false)
+			msgDialog = nil
+		end
+		if inputDialog then
+			guiSetVisible(inputWindow, false)
+			inputDialog = nil
+		end
+		if listDialog then
+			guiSetVisible(listWindow, false)
+			listDialog = nil
+			clearListItem()
+		end
+		showCursor(false)
+		return true
+	end
 	showCursor(true)
 	if dialogtype == 0 then
-		createMessageDialog(caption, colorizeString(info), button1, button2 )
+		createMessageDialog(caption, colorizeString(info), button1, button2)
 		guiSetVisible(msgWindow, true)
 		msgDialog = dialogid
 	elseif dialogtype == 1 or dialogtype == 3 then
@@ -1938,61 +2059,62 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 		guiEditSetMasked(inputEdit, dialogtype == 3)
 		guiSetVisible(inputWindow, true)
 		inputDialog = dialogid
-	elseif dialogtype == 2 or dialogtype == 4 or dialogtype == 5 then --DIALOG_STYLE_LIST, DIALOG_STYLE_TABLIST, DIALOG_STYLE_TABLIST_HEADER
-		--Setup the UI
+	elseif dialogtype == 2 or dialogtype == 4 or dialogtype == 5 then -- DIALOG_STYLE_LIST, DIALOG_STYLE_TABLIST, DIALOG_STYLE_TABLIST_HEADER
+		-- Setup the UI
 		createListDialog(caption, colorizeString(info), button1, button2)
 		guiSetVisible(listWindow, true)
 		listDialog = dialogid
 		-- Done
 
-		--Process each
-		--DIALOG_STYLE_LIST
+		-- Process each
+		-- DIALOG_STYLE_LIST
 		if dialogtype == 2 then
 			local items = info:gsub("\t", "        ")
-			items = items:split("\n")
-			listColumn = guiGridListAddColumn(listGrid, "List", 0.85)
-			for k,v in ipairs(items) do
-				local row = guiGridListAddRow ( listGrid )
-				guiGridListSetItemText ( listGrid, row, listColumn, v, false, true)
+			items = items:split('\n')
+			listColumn = guiGridListAddColumn(listGrid, 'List', 0.85)
+			for k, v in ipairs(items) do
+				local row = guiGridListAddRow(listGrid)
+				guiGridListSetItemText(listGrid, row, listColumn, v, false, true)
 			end
 			return true
 		end
 
-		--DIALOG_STYLE_TABLIST, DIALOG_STYLE_TABLIST_HEADER
-		--Add the columns
-		local items = info:split("\n") -- Get the first one which is the header
+		-- DIALOG_STYLE_TABLIST, DIALOG_STYLE_TABLIST_HEADER
+		-- Add the columns
+		local items = info:split('\n') -- Get the first one which is the header
 		if #items < 1 then
 			outputConsole('Error, your dialog either has no items, its format is wrong or you\'re missing a newline character in the string')
 			outputConsole('The raw string was: ' .. info)
-			return false --Abort if there's no items
+			return false -- Abort if there's no items
 		end
 
-		--Create the header
-		local headerCols = items[1]:split("\t")
-		for k,v in ipairs(headerCols) do
-			local colIdx = guiGridListAddColumn( listGrid, (dialogtype == 5 and v or ''), 0.5 ) --If it's the DIALOG_STYLE_TABLIST_HEADER add the name, otherwise leave it blank
+		-- Create the header
+		local headerCols = items[1]:split('\t')
+		for k, v in ipairs(headerCols) do
+			local colIdx = guiGridListAddColumn(listGrid, (dialogtype == 5 and v or ''), 0.5) -- If it's the DIALOG_STYLE_TABLIST_HEADER add the name, otherwise leave it blank
 			--outputConsole('headerCols - colidx: ' .. colIdx .. 'k: ' .. k .. 'v: ' .. v)
 		end
 
-		if dialogtype == 5 then --Only remove if it's a DIALOG_STYLE_TABLIST_HEADER
-			table.remove(items, 1) --remove the first item which is the header
+		if dialogtype == 5 then -- Only remove if it's a DIALOG_STYLE_TABLIST_HEADER
+			table.remove(items, 1) -- remove the first item which is the header
 		end
 
-		--Add the rows ordered under each column
-		for k,v in ipairs(items) do --rows
-			local row = guiGridListAddRow ( listGrid ) --add the row
-			--Now process every individual column (columns are tabulated)
-			for hk,hv in ipairs(v:split("\t")) do --header key, header value
+		-- Add the rows ordered under each column
+		for k, v in ipairs(items) do -- rows
+			local row = guiGridListAddRow(listGrid) -- add the row
+			-- Now process every individual column (columns are tabulated)
+			for hk, hv in ipairs(v:split('\t')) do -- header key, header value
 				--outputConsole('hk: ' .. hk .. 'hv: ' .. hv)
-				guiGridListSetItemText ( listGrid, row, hk, hv, false, true)
+				guiGridListSetItemText(listGrid, row, hk, hv, false, true)
 			end
 		end
 	end
 	return true
 end
 
-addEvent("onPlayerClickPlayer")
-function OnPlayerClickPlayer(element)
-	serverAMXEvent('OnPlayerClickPlayer', getElemID(localPlayer), getElemID(element), 0)
+-- depends on scoreboard resource
+local function clientPlayerScoreboardClick(selected, cX, cY, clickedColumn)
+	if getElementType(source) ~= 'player' then return end
+	serverAMXEvent('OnPlayerClickPlayer', getElemID(localPlayer), getElemID(source), 0)
 end
-addEventHandler("onPlayerClickPlayer", root, OnPlayerClickPlayer)
+addEventHandler('onClientPlayerScoreboardClick', root, clientPlayerScoreboardClick)

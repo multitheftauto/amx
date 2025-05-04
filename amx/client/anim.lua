@@ -235,7 +235,7 @@ end
 function Phase:_setup(parent)
 	self.parent = parent
 	if self[1] then
-		for i,phase in ipairs(self) do
+		for i, phase in ipairs(self) do
 			if type(phase) == 'function' then
 				phase = { fn = phase }
 				self[i] = phase
@@ -255,7 +255,7 @@ end
 
 function Phase:addPhase(phase)
 	setmetatable(phase, Phase)
-	self[#self+1] = phase
+	self[#self + 1] = phase
 	if #self == 1 then
 		self.curphase = 1
 	end
@@ -263,7 +263,7 @@ function Phase:addPhase(phase)
 end
 
 function Phase:addPhases(...)
-	for i,phase in ipairs({ ... }) do
+	for i, phase in ipairs({ ... }) do
 		self:addPhase(phase)
 	end
 end
@@ -274,7 +274,7 @@ function updateAnim()
 	local curTick = getTickCount()
 	local phaseEnded
 
-	for i,anim in ipairs(Animation.collection) do
+	for i, anim in ipairs(Animation.collection) do
 		if anim.playing then
 			phase = anim
 			while phase.curphase do
@@ -331,7 +331,7 @@ function updateAnim()
 				end
 			end
 			if anim and phase.fn then
-				phase.value = phase.from + phase.speed*phase.passed
+				phase.value = phase.from + phase.speed * phase.passed
 				if elem then
 					phase.fn(elem, phase.transform and phase.transform(phase.value) or phase.value, phase)
 				else
@@ -345,7 +345,7 @@ end
 function table.find(t, ...)
 	local args = { ... }
 	if #args == 0 then
-		for k,v in pairs(t) do
+		for k, v in pairs(t) do
 			if v then
 				return k, v
 			end
@@ -357,8 +357,8 @@ function table.find(t, ...)
 	if value == '[nil]' then
 		value = nil
 	end
-	for k,v in pairs(t) do
-		for i,index in ipairs(args) do
+	for k, v in pairs(t) do
+		for i, index in ipairs(args) do
 			if type(index) == 'function' then
 				v = index(v)
 			else
@@ -376,7 +376,7 @@ function table.find(t, ...)
 end
 
 function table.removevalue(t, val)
-	for i,v in ipairs(t) do
+	for i, v in ipairs(t) do
 		if v == val then
 			table.remove(t, i)
 			return i
@@ -384,8 +384,6 @@ function table.removevalue(t, val)
 	end
 	return false
 end
-
-
 
 --[[
 
@@ -398,20 +396,20 @@ function Animation.presets.guiPulse(time, value, phase)
 	-- guiPulse(time)
 	-- Pulses an image (scale down/up). time = ms for a complete pulsation cycle
 	if type(time) ~= 'userdata' then
-		return { from = 0, to = 2*math.pi, transform = math.sin, time = time, repeats = 0, fn = Animation.presets.pulse }
+		return { from = 0, to = 2 * math.pi, transform = math.sin, time = time, repeats = 0, fn = Animation.presets.pulse }
 	else
 		local elem = time
 		if not phase.width then
 			phase.width, phase.height = guiGetSize(elem, false)
 			phase.centerX, phase.centerY = guiGetPosition(elem, false)
-			phase.centerX = phase.centerX + math.floor(phase.width/2)
-			phase.centerY = phase.centerY + math.floor(phase.height/2)
+			phase.centerX = phase.centerX + math.floor(phase.width / 2)
+			phase.centerY = phase.centerY + math.floor(phase.height / 2)
 		end
-		local pct = 1 - (value+1)*0.1
-		local width = pct*phase.width
-		local height = pct*phase.height
-		local x = phase.centerX - math.floor(width/2)
-		local y = phase.centerY - math.floor(height/2)
+		local pct = 1 - (value + 1) * 0.1
+		local width = pct * phase.width
+		local height = pct * phase.height
+		local x = phase.centerX - math.floor(width / 2)
+		local y = phase.centerY - math.floor(height / 2)
 		guiSetPosition(elem, x, y, false)
 		guiSetSize(elem, width, height, false)
 	end
@@ -428,18 +426,18 @@ end
 function Animation.presets.guiMove(endX, endY, time, loop, startX, startY, speedUpSlowDown)
 	-- guiMove(endX, endY, [ time = 1000, loop = false, startX = current X, startY = current Y, speedUpSlowDown = false ])
 	if type(endX) ~= 'userdata' then
-		return { from = speedUpSlowDown and -math.pi/2 or 0, to = speedUpSlowDown and math.pi/2 or 1,
+		return { from = speedUpSlowDown and -math.pi / 2 or 0, to = speedUpSlowDown and math.pi / 2 or 1,
 		         time = time or 1000, repeats = loop and 0 or 1, fn = Animation.presets.guiMove,
 		         startX = startX, startY = startY, endX = endX, endY = endY, speedUpSlowDown = speedUpSlowDown }
 	else
 		local elem, value, phase = endX, endY, time
 		if phase.speedUpSlowDown then
-			value = (value + 1)/2
+			value = (value + 1) / 2
 		end
 		if not phase.startX then
 			phase.startX, phase.startY = guiGetPosition(elem, false)
 		end
-		guiSetPosition(elem, phase.startX + (phase.endX - phase.startX)*value, phase.startY + (phase.endY - phase.startY)*value, false)
+		guiSetPosition(elem, phase.startX + (phase.endX - phase.startX) * value, phase.startY + (phase.endY - phase.startY) * value, false)
 	end
 end
 
@@ -447,20 +445,20 @@ function Animation.presets.guiMoveResize(endX, endY, endWidth, endHeight, time, 
 	-- guiMoveResize(endX, endY, endWidth, endHeight, [ time = 1000, loop = false, startX = current X, startY = current Y,
 	--   startWidth = current width, startHeiht = current height, speedUpSlowDown = false ])
 	if type(endX) ~= 'userdata' then
-		return { from = speedUpSlowDown and -math.pi/2 or 0, to = speedUpSlowDown and math.pi/2 or 1,
+		return { from = speedUpSlowDown and -math.pi / 2 or 0, to = speedUpSlowDown and math.pi / 2 or 1,
 		         time = time or 1000, repeats = loop and 0 or 1, transform = math.sin, fn = Animation.presets.guiMoveResize,
 		         startX = startX, startY = startY, startWidth = startWidth, startHeight = startHeight,
 		         endX = endX, endY = endY, endWidth = endWidth, endHeight = endHeight, speedUpSlowDown = speedUpSlowDown }
 	else
 		local elem, value, phase = endX, endY, endWidth
 		if phase.speedUpSlowDown then
-			value = (value + 1)/2
+			value = (value + 1) / 2
 		end
 		if not phase.startX then
 			phase.startX, phase.startY = guiGetPosition(elem, false)
 			phase.startWidth, phase.startHeight = guiGetSize(elem, false)
 		end
-		guiSetPosition(elem, math.floor(phase.startX + value*(phase.endX - phase.startX)), math.floor(phase.startY + value*(phase.endY - phase.startY)), false)
-		guiSetSize(elem, math.floor(phase.startWidth + value*(phase.endWidth - phase.startWidth)), math.floor(phase.startHeight + value*(phase.endHeight - phase.startHeight)), false)
+		guiSetPosition(elem, math.floor(phase.startX + value * (phase.endX - phase.startX)), math.floor(phase.startY + value * (phase.endY - phase.startY)), false)
+		guiSetSize(elem, math.floor(phase.startWidth + value * (phase.endWidth - phase.startWidth)), math.floor(phase.startHeight + value * (phase.endHeight - phase.startHeight)), false)
 	end
 end

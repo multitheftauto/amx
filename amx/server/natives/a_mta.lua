@@ -6,18 +6,25 @@ end
 function GetPlayerClothes(amx, player, type)
 	local texture, model = getPedClothes(player, type)
 	if not texture then
-		return
+		return -1
 	end
-	local type, index = getTypeIndexFromClothes(texture, model)
-	return index
+	local cType, cIndex = getTypeIndexFromClothes(texture, model)
+	if not cType then
+		return -1
+	end
+	return cIndex
 end
 
 function RemovePlayerClothes(amx, player, type)
 	return removePedClothes(player, type)
 end
 
+AddBotClothes = AddPlayerClothes
+GetBotClothes = GetPlayerClothes
+RemoveBotClothes = RemovePlayerClothes
 -----------------------------------------------------
 -- Alpha funcs
+
 function GetAlpha(amx, elem)
 	return getElementAlpha(alpha)
 end
@@ -25,6 +32,7 @@ end
 function SetAlpha(amx, elem, alpha)
 	return setElementAlpha(elem, alpha)
 end
+
 GetPlayerAlpha = GetAlpha
 GetVehicleAlpha = GetAlpha
 GetObjectAlpha = GetAlpha
@@ -35,12 +43,17 @@ SetObjectAlpha = SetAlpha
 SetBotAlpha = SetAlpha
 -----------------------------------------------------
 -- Misc player funcs
+
 function IsPlayerInWater(amx, player)
 	return isElementInWater(player)
 end
 
 function IsPlayerOnFire(amx, player)
 	return isElementOnFire(player)
+end
+
+function SetPlayerOnFire(amx, player, fire)
+	return setElementOnFire(player, fire)
 end
 
 function IsPlayerDucked(amx, player)
@@ -51,8 +64,20 @@ function IsPlayerOnGround(amx, player)
 	return isPedOnGround(amx, player)
 end
 
-function SetPlayerOnFire(amx, player, state)
-	return setElementOnFire(player, state)
+function IsPlayerChoking(amx, player)
+	return isPedChoking(amx, player)
+end
+
+function SetPlayerChoking(amx, player, choking)
+	return setPedChoking(player, choking)
+end
+
+function GetPlayerWalkingStyle(amx, player)
+	return getPedWalkingStyle(player)
+end
+
+function SetPlayerWalkingStyle(amx, player, style)
+	return setPedWalkingStyle(player, style)
 end
 
 function GetPlayerStat(amx, player, stat)
@@ -63,31 +88,42 @@ function SetPlayerStat(amx, player, stat, value)
 	return setPedStat(player, stat, value)
 end
 
-function GetPlayerDoingDriveBy(amx, ped)
-	return getElementData(pedt, 'DoingDriveBy')
+function GetPlayerDoingDriveBy(amx, player)
+	return getElementData(player, 'DoingDriveBy')
 end
 
-function SetPlayerDoingDriveBy(amx, ped, state)
-	clientCall(root, 'setPedDoingGangDriveby', ped, state)
-	return setElementData(ped, 'DoingDriveBy', state)
+function SetPlayerDoingDriveBy(amx, player, driveBy)
+	clientCall(root, 'setPedDoingGangDriveby', player, driveBy)
+	return setElementData(player, 'DoingDriveBy', driveBy)
 end
 
-function GetPlayerCanBeKnockedOffBike(amx, ped)
-	return getElementData(ped, 'CanBeKnockedOffBike')
+function GetPlayerCanBeKnockedOffBike(amx, player)
+	return getElementData(player, 'CanBeKnockedOffBike')
 end
 
-function SetPlayerCanBeKnockedOffBike(amx, ped, state)
-	clientCall(root, 'setPedCanBeKnockedOffBike', ped, state)
-	return setElementData(ped, 'CanBeKnockedOffBike', state)
+function SetPlayerCanBeKnockedOffBike(amx, player, knockOff)
+	clientCall(root, 'setPedCanBeKnockedOffBike', player, knockOff)
+	return setElementData(player, 'CanBeKnockedOffBike', knockOff)
 end
 
-function SetPlayerWeaponSlot(amx, ped, slot)
-	clientCall(root, 'setPedWeaponSlot', ped, slot)
-	return true
+function GetPlayerWeaponSlot(amx, player)
+	return getPedWeaponSlot(player)
 end
 
-function SetPlayerHeadless(amx, ped, state)
-	return setPedHeadless(ped, state)
+function SetPlayerWeaponSlot(amx, player, slot)
+	return setPedWeaponSlot(player, slot)
+end
+
+function GetPlayerAmmoInClip(amx, player)
+	return getPedAmmoInClip(player)
+end
+
+function IsPlayerHeadless(amx, player)
+	return isPedHeadless(player)
+end
+
+function SetPlayerHeadless(amx, player, headless)
+	return setPedHeadless(player, headless)
 end
 
 function GetPlayerBlurLevel(amx, player)
@@ -98,43 +134,49 @@ function SetPlayerBlurLevel(amx, player, level)
 	return setPlayerBlurLevel(player, level)
 end
 
-function SetPlayerControlState(amx, player, control, state)
-	return setControlState(player, control, state)
+function FadePlayerCamera(amx, player, fadeIn, timeToFade, red, green, blue)
+	return fadeCamera(player, fadeIn, timeToFade, red, green, blue)
+end
+
+function SetPlayerControlState(amx, player, control, controlState)
+	return setControlState(player, control, controlState)
+end
+
+function IsPlayerCursorShowing(amx, player)
+	return isCursorShowing(player)
+end
+
+function ShowPlayerCursor(amx, player, show, controls)
+	return showCursor(player, show, controls)
+end
+
+function RemovePlayerWeapon(amx, player, weaponID)
+	return takeWeapon(player, weaponID)
+end
+
+function GetPlayerGravity(amx, player)
+	return float2cell(getPedGravity(player))
+end
+
+function SetPlayerGravity(amx, player, gravity)
+	return setPedGravity(player, gravity)
 end
 
 function GetPlayerSkillLevel(amx, player, skill)
 	return getPedStat(player, skill + 69)
 end
-
-IsBotInWater = IsPlayerInWater
-IsBotOnFire = IsPlayerOnFire
-IsBotDucked = IsPlayerDucked
-IsBotOnGround = IsPlayerOnGround
-GetBotFightingStyle = GetPlayerFightingStyle
-SetBotFightingStyle = SetPlayerFightingStyle
-SetBotOnFire = SetPlayerOnFire
-GetBotSkin = GetPlayerSkin
-SetBotSkin = SetPlayerSkin
-GetBotStat = GetPlayerStat
-SetBotStat = SetPlayerStat
-GetBotDoingDriveBy = GetPlayerDoingDriveBy
-SetBotDoingDriveBy = SetPlayerDoingDriveBy
-GetBotCanBeKnockedOffBike = GetPlayerCanBeKnockedOffBike
-SetBotCanBeKnockedOffBike = SetPlayerCanBeKnockedOffBike
-SetBotWeaponSlot = SetPlayerWeaponSlot
-SetBotHeadless = SetPlayerHeadless
-GetBotVehicleSeat = GetPlayerVehicleSeat
-GetBotVelocity = GetPlayerVelocity
-SetBotVelocity = SetPlayerVelocity
 -----------------------------------------------------
 -- Bots
+
 function CreateBot(amx, model, x, y, z, name)
-	local ped = createPed(model, x, y, z)
-	setElementData(ped, 'amx.shownametag', true, true)
-	setElementData(ped, 'BotName', name, true)
-	local pedID = addElem(g_Bots, ped)
-	procCallOnAll('OnBotConnect', pedID, name)
-	return pedID
+	local bot = createPed(model, x, y, z)
+	setElementData(bot, 'ShowNameTag', true)
+	setElementData(bot, 'BotName', name)
+	local botId = addElem(g_Bots, bot)
+	procCallOnAll('OnBotConnect', botId, name)
+	g_Bots[botId].state = PLAYER_STATE_ONFOOT
+	g_Bots[botId].vehicle = nil
+	return botId
 end
 
 function DestroyBot(amx, bot)
@@ -143,23 +185,60 @@ function DestroyBot(amx, bot)
 	return true
 end
 
+function GetBotRot(amx, bot, refX, refY, refZ)
+	if not bot then
+		return false
+	end
+	local rX, rY, rZ = getPedRotation(bot)
+	writeMemFloat(amx, refX, rX)
+	writeMemFloat(amx, refY, rY)
+	writeMemFloat(amx, refZ, rZ)
+	return true
+end
+
+function SetBotRot(amx, bot, rX, rY, rZ)
+	return setPedRotation(bot, rX, rY, rZ)
+end
+
+function GetBotInterior(amx, bot)
+	return getElementInterior(bot)
+end
+
+function SetBotInterior(amx, bot, interior)
+	return setElementInterior(bot, interior)
+end
+
 function GetBotState(amx, bot)
 	return getBotState(bot)
 end
 
 function PutBotInVehicle(amx, bot, vehicle, seat)
-	return warpPedIntoVehicle(bot, vehicle, seat)
+	if not warpPedIntoVehicle(bot, vehicle, seat) then
+		return false
+	end
+	if g_RCVehicles[getElementModel(vehicle)] then
+		setPedWeaponSlot(bot, 0)
+		setElementCollisionsEnabled(bot, false)
+		setElementAlpha(bot, 0)
+	end
+	return true
 end
 
 function RemoveBotFromVehicle(amx, bot)
 	local vehicle = getPedOccupiedVehicle(bot)
 	if vehicle then
-		return removePedFromVehicle(bot)
+		removePedFromVehicle(bot)
+		if g_RCVehicles[getElementModel(vehicle)] then
+			setElementCollisionsEnabled(bot, true)
+			setElementAlpha(bot, 255)
+		end
+		return true
 	end
+	return false
 end
 
-function SetBotControlState(amx, bot, control, state)
-	clientCall(root, 'setPedControlState', bot, control, state)
+function SetBotControlState(amx, bot, control, controlState)
+	clientCall(root, 'setPedControlState', bot, control, controlState)
 	return true
 end
 
@@ -176,37 +255,62 @@ function KillBot(amx, bot)
 	return killPed(bot)
 end
 
-function GetBotRot(amx, ped, refX, refY, refZ)
-	if not ped then
-		return false
-	end
-	local rX, rX, rZ = getPedRotation(ped)
-	writeMemFloat(amx, refX, rX)
-	writeMemFloat(amx, refY, rY)
-	writeMemFloat(amx, refZ, rZ)
-	return true
-end
-
-function SetBotRot(amx, Ped, rX, rY, rY)
-	return setPedRotation(ped, rX, rY, rZ)
-end
-
 function GetBotName(amx, bot, nameBuf, bufSize)
+	if bufSize <= 0 then return 0 end
+
 	local name = getElementData(bot, 'BotName')
-	if #name <= bufSize then
-		writeMemString(amx, nameBuf, name)
-		return string.len(name)
-	end
+
+	local copyLen = math.min(#name, bufSize)
+	writeMemString(amx, nameBuf, name:sub(1, copyLen))
+	return copyLen
 end
 
+IsBotInWater = IsPlayerInWater
+IsBotOnFire = IsPlayerOnFire
+SetBotOnFire = SetPlayerOnFire
+IsBotDucked = IsPlayerDucked
+IsBotOnGround = IsPlayerOnGround
+IsBotChoking = IsPlayerChoking
+SetBotChoking = SetPlayerChoking
 GetBotHealth = GetPlayerHealth
 SetBotHealth = SetPlayerHealth
 GetBotArmour = GetPlayerArmour
 SetBotArmour = SetPlayerArmour
-GetBotPos = GetObjectPos
-SetBotPos = SetObjectPos
+GetBotPos = GetPlayerPos
+SetBotPos = SetPlayerPos
+GetBotVelocity = GetPlayerVelocity
+SetBotVelocity = SetPlayerVelocity
+GetBotVirtualWorld = GetPlayerVirtualWorld
+SetBotVirtualWorld = SetPlayerVirtualWorld
+GetBotFightingStyle = GetPlayerFightingStyle
+SetBotFightingStyle = SetPlayerFightingStyle
+GetBotWalkingStyle = GetPlayerWalkingStyle
+SetBotWalkingStyle = SetPlayerWalkingStyle
+GetBotSkin = GetPlayerSkin
+SetBotSkin = SetPlayerSkin
+GetBotSkillLevel = GetPlayerSkillLevel
+SetBotSkillLevel = SetPlayerSkillLevel
+GetBotStat = GetPlayerStat
+SetBotStat = SetPlayerStat
+GetBotVehicleID = GetPlayerVehicleID
+GetBotVehicleSeat = GetPlayerVehicleSeat
+IsBotInVehicle = IsPlayerInVehicle
+IsBotInAnyVehicle = IsPlayerInAnyVehicle
+GetBotDoingDriveBy = GetPlayerDoingDriveBy
+SetBotDoingDriveBy = SetPlayerDoingDriveBy
+GetBotCanBeKnockedOffBike = GetPlayerCanBeKnockedOffBike
+SetBotCanBeKnockedOffBike = SetPlayerCanBeKnockedOffBike
+GetBotAmmo = GetPlayerAmmo
+GetBotWeaponState = GetPlayerWeaponState
+GetBotWeapon = GetPlayerWeapon
+GetBotWeaponSlot = GetPlayerWeaponSlot
+SetBotWeaponSlot = SetPlayerWeaponSlot
+GetBotAmmoInClip = GetPlayerAmmoInClip
+IsBotHeadless = IsPlayerHeadless
+SetBotHeadless = SetPlayerHeadless
 -----------------------------------------------------
 -- Native Markers
+
 function CreateMarker(amx, x, y, z, typeid, size, r, g, b, a)
 	local marker = createMarker(x, y, z, typeid, size, r, g, b, a, root)
 	local markerID = addElem(g_Markers, marker)
@@ -221,29 +325,36 @@ function DestroyMarker(amx, marker)
 end
 
 function GetMarkerColor(amx, marker, colorid)
-	local R, G, B, A = getMarkerColor( marker )
+	local R, G, B, A = getMarkerColor(marker)
 	if colorid == 0 then return R end
 	if colorid == 1 then return G end
 	if colorid == 2 then return B end
 	if colorid == 3 then return A end
-	return false
+	return 0
 end
 
 function GetMarkerIcon(amx, marker)
 	local icon = getMarkerIcon(marker)
-	if icon == "none" then return 0 end
-	if icon == "arrow" then return 1 end
-	if icon == "finish" then return 2 end
-	return false
+	if icon == false then return -1 end
+	if icon == 'none' then return 0 end
+	if icon == 'arrow' then return 1 end
+	if icon == 'finish' then return 2 end
+	return -1
 end
 
 function GetMarkerSize(amx, marker, refSize)
+	if not marker then
+		return false
+	end
 	local size = getMarkerSize(marker)
-	writeMemFloat(amx, refSize, marker)
+	writeMemFloat(amx, refSize, size)
 	return true
 end
 
 function GetMarkerTarget(amx, marker, refX, refY, refZ)
+	if not marker then
+		return false
+	end
 	local x, y, z = getMarkerTarget(marker)
 	if x == false then return false end
 	writeMemFloat(amx, refX, x)
@@ -254,13 +365,13 @@ end
 
 function GetMarkerType(amx, marker)
 	local mtype = getMarkerType(marker)
-	if mtype == false then return false end
-	if mtype == "checkpoint" then return 0 end
-	if mtype == "ring" then return 1 end
-	if mtype == "cylinder" then return 2 end
-	if mtype == "arrow" then return 3 end
-	if mtype == "corona" then return 4 end
-	return false
+	if mtype == false then return -1 end
+	if mtype == 'checkpoint' then return 0 end
+	if mtype == 'ring' then return 1 end
+	if mtype == 'cylinder' then return 2 end
+	if mtype == 'arrow' then return 3 end
+	if mtype == 'corona' then return 4 end
+	return -1
 end
 
 function SetMarkerColor(amx, marker, red, green, blue, alpha)
@@ -268,9 +379,9 @@ function SetMarkerColor(amx, marker, red, green, blue, alpha)
 end
 
 function SetMarkerIcon(amx, marker, icon)
-	if icon == 0 then icon = "none"
-	elseif icon == 1 then icon = "arrow"
-	elseif icon == 2 then icon = "finish"
+	if icon == 0 then icon = 'none'
+	elseif icon == 1 then icon = 'arrow'
+	elseif icon == 2 then icon = 'finish'
 	else return false end
 	return setMarkerIcon(amx, marker, icon)
 end
@@ -284,11 +395,11 @@ function SetMarkerTarget(amx, marker, x, y, z)
 end
 
 function SetMarkerType(amx, marker, typeid)
-	if typeid == 0 then typeid = "checkpoint"
-	elseif typeid == 1 then typeid = "ring"
-	elseif typeid == 2 then typeid = "cylinder"
-	elseif typeid == 3 then typeid = "arrow"
-	elseif typeid == 4 then typeid = "corona"
+	if typeid == 0 then typeid = 'checkpoint'
+	elseif typeid == 1 then typeid = 'ring'
+	elseif typeid == 2 then typeid = 'cylinder'
+	elseif typeid == 3 then typeid = 'arrow'
+	elseif typeid == 4 then typeid = 'corona'
 	else return false end
 	return setMarkerType(marker, typeid)
 end
@@ -299,92 +410,97 @@ end
 
 IsVehicleInMarker = IsPlayerInMarker
 IsBotInMarker = IsPlayerInMarker
-
------------------------------------------------------
--- SlothBots
---
 -----------------------------------------------------
 -- Player Data
-function SetPlayerDataInt(amx, player, key, value)
+
+function SetPlayerIntData(amx, player, key, value)
 	return setElementData(player, key, value)
 end
 
-function GetPlayerDataInt(amx, player, key)
+function GetPlayerIntData(amx, player, key)
 	return getElementData(player, key)
 end
 
-SetPlayerDataFloat = SetPlayerDataInt
-GetPlayerDataFloat = GetPlayerDataInt
-SetPlayerDataBool = SetPlayerDataInt
-GetPlayerDataBool = GetPlayerDataInt
-SetPlayerDataStr = SetPlayerDataInt
+SetPlayerFloatData = SetPlayerIntData
 
-function GetPlayerDataStr(amx, player, key, buf, len)
-	local data = getElementData(player, key)
-	if #data <= len then
-		writeMemString(amx, buf, data)
-	end
+function GetPlayerFloatData(amx, player, key)
+	return float2cell(getElementData(player, key))
 end
 
-function IsPlayerDataSet(amx, player, key)
-	return true
+SetPlayerBoolData = SetPlayerIntData
+GetPlayerBoolData = GetPlayerIntData
+SetPlayerStringData = SetPlayerIntData
+
+function GetPlayerStringData(amx, player, key, buf, len)
+	if len <= 0 then return 0 end
+
+	local data = getElementData(player, key)
+
+	local copyLen = math.min(#data, len)
+	writeMemString(amx, buf, data:sub(1, copyLen))
+	return copyLen
 end
 
 function ResetPlayerData(amx, player, key)
 	return setElementData(player, key, nil)
 end
-
-function ResetAllPlayerData(amx, player)
-	return true
-end
-
-
 -----------------------------------------------------
 -- Vehicles
+
+function SetVehicleModel(amx, vehicle, model)
+	return setElementModel(vehicle, model)
+end
+
+function GetVehicleMaxPassengers(amx, vehicle)
+	return getVehicleMaxPassengers(vehicle)
+end
+
 function GetVehicleEngineState(amx, vehicle)
 	return getVehicleEngineState(vehicle)
 end
 
-function SetVehicleEngineState(amx, vehicle, state)
-	return setVehicleEngineState(vehicle, state)
+function SetVehicleEngineState(amx, vehicle, engine)
+	return setVehicleEngineState(vehicle, engine)
+end
+
+function GetVehicleSirenState(amx, vehicle)
+	return getVehicleSirensOn(vehicle)
+end
+
+function SetVehicleSirenState(amx, vehicle, siren)
+	return setVehicleSirensOn(vehicle, siren)
 end
 
 function GetVehicleDoorState(amx, vehicle, door)
 	return getVehicleDoorState(vehicle, door)
 end
 
-function SetVehicleDoorState(amx, vehicle, door, state)
-	return setVehicleDoorState(vehicle, door, state)
+function SetVehicleDoorState(amx, vehicle, door, doorState)
+	return setVehicleDoorState(vehicle, door, doorState)
 end
-
-
-function GetVehicleMaxPassengers(amx, vehicle)
-	return getVehicleMaxPassengers(vehicle)
-end
-
 
 function GetVehicleLightState(amx, vehicle, light)
 	return getVehicleLightState(vehicle, light)
 end
 
-function SetVehicleLightState(amx, vehicle, light, state)
-	return setVehicleLightState(vehicle, light, state)
+function SetVehicleLightState(amx, vehicle, light, lightState)
+	return setVehicleLightState(vehicle, light, lightState)
 end
 
 function GetVehicleOverrideLights(amx, vehicle)
-	return  getVehicleOverrideLights(vehicle)
+	return getVehicleOverrideLights(vehicle)
 end
 
-function SetVehicleOverrideLights(amx, vehicle, state)
-	return setVehicleOverrideLights(vehicle, state)
+function SetVehicleOverrideLights(amx, vehicle, override)
+	return setVehicleOverrideLights(vehicle, override)
 end
 
-function GetVehicleWheelState(amx, vehicle, wheelid)
-	local w1, w2, w3, w4 = getVehicleWheelStates(vehicleid)
-	if wheelid == 0 then return w1 end
-	if wheelid == 1 then return w2 end
-	if wheelid == 2 then return w3 end
-	if wheelid == 3 then return w4 end
+function GetVehicleWheelState(amx, vehicle, wheel)
+	local w1, w2, w3, w4 = getVehicleWheelStates(vehicle)
+	if wheel == 0 then return w1 end
+	if wheel == 1 then return w2 end
+	if wheel == 2 then return w3 end
+	if wheel == 3 then return w4 end
 end
 
 function SetVehicleWheelState(amx, vehicle, frontLeft, rearLeft, frontRight, rearRight)
@@ -395,50 +511,52 @@ function GetVehiclePanelState(amx, vehicle, panel)
 	return getVehiclePanelState(vehicle, panel)
 end
 
-function SetVehiclePanelState(amx, vehicle, panel, state)
-	return setVehiclePanelState(vehicle, panel, state)
+function SetVehiclePanelState(amx, vehicle, panel, panelState)
+	return setVehiclePanelState(vehicle, panel, panelState)
 end
 
-function GetVehiclePaintjob(amx, vehicle)
-	return getVehiclePaintjob(vehicle)
+function GetVehicleVariant(amx, vehicle, refVar1, refVar2)
+	if not vehicle then
+		return false
+	end
+	local variant1, variant2 = getVehicleVariant(vehicle)
+	amx.memDAT[refVar1] = variant1
+	amx.memDAT[refVar2] = variant2
+	return true
 end
 
-
-
-function GetVehicleSirensOn(amx, vehicle)
-	return getVehicleSirensOn(vehicle)
-end
-
-
-function SetVehicleSirensOn(amx, vehicle, state)
-	return setVehicleSirensOn(vehicle, state)
+function SetVehicleVariant(amx, vehicle, variant1, variant2)
+	return setVehicleVariant(vehicle, variant1, variant2)
 end
 
 function IsTrainDerailable(amx, train)
 	return isTrainDerailable(train)
 end
 
+function SetTrainDerailable(amx, train, derailable)
+	return setTrainDerailable(train, derailable)
+end
+
 function IsTrainDerailed(amx, train)
 	return isTrainDerailed(train)
 end
 
-function SetTrainDerailable(amx, train, state)
-	return setTrainDerailable(train, state)
-end
-
-function SetTrainDerailed(amx, train, state)
-	return setTrainDerailed(train, state)
+function SetTrainDerailed(amx, train, derailed)
+	return setTrainDerailed(train, derailed)
 end
 
 function GetTrainDirection(amx, train)
 	return getTrainDirection(train)
 end
 
-function SetTrainDirection(amx, train, direction)
-	return setTrainDirection(train, direction)
+function SetTrainDirection(amx, train, clockwise)
+	return setTrainDirection(train, clockwise)
 end
 
 function GetTrainSpeed(amx, train, refSpeed)
+	if not train then
+		return false
+	end
 	local speed = getTrainSpeed(train)
 	writeMemFloat(amx, refSpeed, speed)
 	return true
@@ -448,11 +566,46 @@ function SetTrainSpeed(amx, train, speed)
 	return setTrainSpeed(train, speed)
 end
 
+function GetVehicleDriver(amx, vehicle)
+	local player = getVehicleOccupant(vehicle)
+	if not player then
+		return INVALID_PLAYER_ID
+	end
+	return getElemID(player)
+end
 
+function GetVehicleNumberPlate(amx, vehicle, buf, len)
+	if len <= 0 then return 0 end
+
+	local plate = getVehiclePlateText(vehicle)
+
+	local copyLen = math.min(#plate, len)
+	writeMemString(amx, buf, plate:sub(1, copyLen))
+	return copyLen
+end
+
+function GetVehicleColor(amx, vehicle, refColor1, refColor2)
+	if not vehicle then
+		return false
+	end
+	local color1, color2 = getVehicleColor(vehicle, false)
+	amx.memDAT[refColor1] = color1
+	amx.memDAT[refColor2] = color2
+	return true
+end
+
+function GetVehiclePaintjob(amx, vehicle)
+	return getVehiclePaintjob(vehicle)
+end
+
+GetVehicleInterior = GetPlayerInterior
+IsVehicleInWater = IsPlayerInWater
+IsVehicleOnGround = IsPlayerOnGround
 -----------------------------------------------------
 -- Water
+
 function GetWaveHeight(amx)
-	return getWaveHeight()
+	return float2cell(getWaveHeight())
 end
 
 function SetWaveHeight(amx, height)
@@ -463,30 +616,79 @@ function SetWaterLevel(amx, level)
 	return setWaterLevel(level)
 end
 -----------------------------------------------------
+-- Objects
+
+function IsObjectBreakable(amx, object)
+	return isObjectBreakable(object)
+end
+
+function SetObjectBreakable(amx, object, breakable)
+	return setObjectBreakable(object, breakable)
+end
+
+function GetObjectScale(amx, object, refX, refY, refZ)
+	if not object then
+		return false
+	end
+	local sX, sY, sZ = getObjectScale(object)
+	writeMemFloat(amx, refX, sX)
+	writeMemFloat(amx, refY, sY)
+	writeMemFloat(amx, refZ, sZ)
+	return true
+end
+
+function SetObjectScale(amx, object, sX, sY, sZ)
+	return setObjectScale(object, sX, sY, sZ)
+end
+
+-----------------------------------------------------
 -- Pickups
+
 function GetPickupType(amx, pickup)
 	return getPickupType(pickup)
 end
 
-function SetPickupType(amx, pickup, typeid, amount, ammo)
-	return setPickupType(pickup, typeid, amount, ammo)
-end
-
-function GetPickupWeapon(amx, pickup)
-	return getPickupWeapon(pickup)
+function SetPickupType(amx, pickup, typeid, model, ammo)
+	return setPickupType(pickup, typeid, model, ammo)
 end
 
 function GetPickupAmount(amx, pickup)
 	return getPickupAmount(pickup)
 end
 
+function GetPickupWeapon(amx, pickup)
+	return getPickupWeapon(pickup)
+end
+
 function GetPickupAmmo(amx, pickup)
 	return getPickupAmmo(pickup)
 end
 -----------------------------------------------------
--- Misc
-function SetSkyGradient(amx, topRed, topGreen, topBlue, bottomRed, bottomGreen, bottomBlue)
-	return setSkyGradient(topRed, topGreen, topBlue, bottomRed, bottomGreen, bottomBlue)
+-- World
+
+function GetGameSpeed(amx)
+	return float2cell(getGameSpeed())
+end
+
+function SetGameSpeed(amx, speed)
+	return setGameSpeed(speed)
+end
+
+function GetSkyGradient(amx, refTopRed, refTopGreen, refTopBlue, refBtmRed, refBtmGreen, refBtmBlue)
+	local topRed, topGreen, topBlue, btmRed, btmGreen, btmBlue = getSkyGradient()
+
+	amx.memDAT[refTopRed] = topRed
+	amx.memDAT[refTopGreen] = topGreen
+	amx.memDAT[refTopBlue] = topBlue
+	amx.memDAT[refBtmRed] = btmRed
+	amx.memDAT[refBtmGreen] = btmGreen
+	amx.memDAT[refBtmBlue] = btmBlue
+
+	return true
+end
+
+function SetSkyGradient(amx, topRed, topGreen, topBlue, btmRed, btmGreen, btmBlue)
+	return setSkyGradient(topRed, topGreen, topBlue, btmRed, btmGreen, btmBlue)
 end
 
 function ResetSkyGradient(amx)
@@ -497,96 +699,119 @@ function GetCloudsEnabled(amx)
 	return getCloudsEnabled()
 end
 
-function SetCloudsEnabled(amx, state)
-	return setCloudsEnabled(state)
+function SetCloudsEnabled(amx, enable)
+	return setCloudsEnabled(enable)
+end
+
+function GetInteriorSoundsEnabled(amx)
+	return getInteriorSoundsEnabled()
+end
+
+function SetInteriorSoundsEnabled(amx, enable)
+	return setInteriorSoundsEnabled(enable)
 end
 
 function IsGarageOpen(amx, garage)
 	return isGarageOpen(garage)
 end
 
-function SetGarageOpen(amx, garage, state)
-	return setGarageOpen( garage, state )
+function SetGarageOpen(amx, garage, open)
+	return setGarageOpen(garage, open)
 end
 
 function IsGlitchEnabled(amx, glitch)
 	return isGlitchEnabled(glitch)
 end
 
-function SetGlitchEnabled(amx, glitch, state)
-	return setGlitchEnabled(amx, glitch, state)
+function SetGlitchEnabled(amx, glitch, enable)
+	return setGlitchEnabled(amx, glitch, enable)
 end
 
-function SetFPSLimit(amx, limit)
-	return setFPSLimit(limit)
+function GetAircraftMaxVelocity(amx)
+	return float2cell(getAircraftMaxVelocity())
+end
+
+function SetAircraftMaxVelocity(amx, velocity)
+	return setAircraftMaxVelocity(velocity)
+end
+
+function GetAircraftMaxHeight(amx)
+	return float2cell(getAircraftMaxHeight())
+end
+
+function SetAircraftMaxHeight(amx, height)
+	return setAircraftMaxHeight(height)
+end
+
+function GetJetpackMaxHeight(amx)
+	return float2cell(getJetpackMaxHeight())
+end
+
+function SetJetpackMaxHeight(amx, height)
+	return setJetpackMaxHeight(height)
 end
 
 function GetFPSLimit(amx)
 	return getFPSLimit()
 end
 
-function GetPlayerCount(amx)
-	return getPlayerCount(amx)
+function SetFPSLimit(amx, limit)
+	return setFPSLimit(limit)
 end
 
 function GetRandomPlayer(amx)
 	return getElemID(getRandomPlayer())
 end
 
-function FadePlayerCamera(amx, player, fadeIn, timeToFade, red, green, blue)
-	return fadeCamera(player, fadeIn, timeToFade, red, green, blue)
+function GetPlayerCount(amx)
+	return getPlayerCount(amx)
+end
+-----------------------------------------------------
+-- Rules
+
+function IsValidServerRule(amx, rule)
+	return getRuleValue(rule) and true or false
 end
 
-function GetRuleValue(amx, rule, nameBuf, bufSize)
+function GetServerRule(amx, rule, nameBuf, bufSize)
+	if bufSize <= 0 then return 0 end
+
 	local ruleval = getRuleValue(rule)
-	if #ruleval <= bufSize then
-		writeMemString(amx, nameBuf, ruleval)
-	end
+
+	local copyLen = math.min(#ruleval, bufSize)
+	writeMemString(amx, nameBuf, ruleval:sub(1, copyLen))
+	return copyLen
 end
 
-function SetRuleValue(amx, rule, value)
+function SetServerRule(amx, rule, value)
 	return setRuleValue(rule, value)
 end
 
-function RemoveRuleValue(amx, rule)
+function RemoveServerRule(amx, rule)
 	return removeRuleValue(rule)
 end
+-----------------------------------------------------
+-- Scoreboard
 
-function md5hash(amx, str, refStr, refSize)
-	local hash = md5(str)
-	if #hash <= refSize then
-		writeMemString(amx, refStr, hash)
-	end
+function AddScoreBoardColumn(amx, column)
+	local scoreboard = getResourceFromName('scoreboard')
+	if getResourceState(scoreboard) ~= 'running' then return false end
+	return exports.scoreboard:scoreboardAddColumn(column)
 end
 
-function GetDistanceBetweenPoints2D(amx, x1, y1, x2, y2)
-	return getDistanceBetweenPoints2D(x1, y1, x2, y2)
+function SetPlayerScoreBoardData(amx, player, column, data)
+	local scoreboard = getResourceFromName('scoreboard')
+	if getResourceState(scoreboard) ~= 'running' then return false end
+	return setElementData(player, column, data)
 end
 
-function GetDistanceBetweenPoints3D(amx, x1, y1, z1, x2, y2, z2)
-	return getDistanceBetweenPoints3D(x1, y1, z1, x2, y2, z2)
-end
-
-function AddScoreboardColumn(amx, column)
-	outputDebugString("AddScoreboardColumn is being ignored!")
-	-- TODO(q): this needs to be added back later
-	-- return exports.amxscoreboard:addScoreboardColumn('_' .. column)
-end
-
-function RemoveScoreboardColumn(amx, column)
-	outputDebugString("RemoveScoreboardColumn is being ignored!")
-	-- TODO(q): this needs to be added back later
-	-- return exports.amxscoreboard:removeScoreboardColumn('_' .. column)
-end
-
-function SetScoreboardData(amx, player, column, data)
-	return setElementData(player, '_' .. column, data)
+function RemoveScoreBoardColumn(amx, column)
+	local scoreboard = getResourceFromName('scoreboard')
+	if getResourceState(scoreboard) ~= 'running' then return false end
+	return exports.scoreboard:scoreboardRemoveColumn(column)
 end
 -----------------------------------------------------
-
-function ShowCursor(amx, player, show, controls)
-	return showCursor(player, show, controls)
-end
+-- Misc
 
 function AddEventHandler(amx, event, func)
 	if g_EventNames[event] then
@@ -598,6 +823,10 @@ function RemoveEventHandler(amx, func)
 	g_Events[func] = nil
 end
 
-function AttachElementToElement(amx, elem, toelem, xPos, yPos, zPos, xRot, yRot, zRot)
-	return attachElements(elem, toelem, xPos, yPos, zPos, xRot, yRot, zRot)
+function AttachElementToElement(amx, elem, toelem, posX, posY, posZ, rotX, rotY, rotZ)
+	return attachElements(elem, toelem, posX, posY, posZ, rotX, rotY, rotZ)
+end
+
+function IsPluginLoaded(amx, pluginName)
+	return amxIsPluginLoaded(pluginName)
 end

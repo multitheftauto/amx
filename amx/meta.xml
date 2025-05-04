@@ -1,9 +1,10 @@
 <meta>
     <info name="AMX" author="adamix" type="gamemode" />
-    <min_mta_version server="1.5.5-9.14060"></min_mta_version>
+    <min_mta_version server="1.6.0-9.22457"></min_mta_version>
 
     <script src="server/defines.lua" type="server" />
     <script src="shared/anim_define.lua" type="shared" />
+    <script src="shared/vehicle_info.lua" type="shared" />
     <script src="server/util.lua" type="server" />
     <script src="server/_triggerqueue.lua" type="server" />
     <script src="server/rcon.lua" type="server" />
@@ -36,16 +37,14 @@
         https://wiki.multitheftauto.com/wiki/Resource:Bone_attach 
     -->
     <script src="shared/bone_attach.lua" />
-	<script src="client/bone_attach_c.lua" type="client" />
-	<script src="shared/attach_func.lua" />
-	<script src="shared/attach_func.lua" type="client" />
-	<script src="client/bone_pos_rot.lua" type="client" />
+    <script src="client/bone_attach_c.lua" type="client" />
+    <script src="shared/attach_func.lua" />
+    <script src="shared/attach_func.lua" type="client" />
+    <script src="client/bone_pos_rot.lua" type="client" />
 
     <file src="client/logo_small.png" />
     <file src="client/closebtn.png" />
     <file src="client/closebtn_hover.png" />
-
-    <!-- <include resource="amxscoreboard" /> -->
 
     <aclrequest>
 
@@ -54,6 +53,8 @@
         <right name="function.startResource" access="true"></right>
         <right name="function.stopResource" access="true"></right>
         <right name="function.restartResource" access="true"></right>
+        <right name="function.getServerPassword" access="true"></right>
+        <right name="function.setServerPassword" access="true"></right>
     </aclrequest>
 
     <settings>

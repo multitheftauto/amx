@@ -1,7 +1,16 @@
 g_ServerVars = {
-	announce = true,
-	anticheat = false,
-	bind = '',
+	announce = {
+		get = function()
+			local browse = getServerConfigSetting('ase')
+			return tonumber(browse) == 1 or false
+		end
+	},
+	bind = {
+		get = function()
+			local bindIp = getServerConfigSetting('serverip') or ''
+			return bindIp ~= 'auto' and bindIp or ''
+		end
+	},
 	filterscripts = get('amx.filterscripts') or '',
 	gamemode0 = '',
 	gamemode1 = '',
@@ -19,7 +28,15 @@ g_ServerVars = {
 	gamemode13 = '',
 	gamemode14 = '',
 	gamemode15 = '',
-	gamemodetext = '',
+	gamemodetext = {
+		get = function()
+			return getGameType() or 'Unknown'
+		end,
+		set = function(gmN)
+			gmN = gmN:len() >= 1 and gmN or 'Unknown'
+			return setGameType(gmN)
+		end
+	},
 	gravity = {
 		get = function()
 			return tostring(getGravity())
@@ -32,17 +49,54 @@ g_ServerVars = {
 		end
 	},
 	hostname = { get = getServerName },
-	instagib = false,
-	lanmode = false,
-	mapname = { get = function() return getMapName() or '' end, set = setMapName },
+	lagcomp = 'On',
+	lagcompmode = 1,
+	language = {
+		get = function()
+			return getRuleValue('language') or ''
+		end,
+		set = function(lang)
+			lang = lang:len() >= 1 and lang or ''
+			return setRuleValue('language', lang)
+		end
+	},
+	lanmode = {
+		get = function()
+			local noLan = getServerConfigSetting('donotbroadcastlan')
+			return tonumber(noLan) == 0 or false
+		end
+	},
+	mapname = {
+		get = function()
+			local mapN = getMapName()
+			return (mapN and mapN ~= 'None') and mapN or 'San Andreas'
+		end,
+		set = function(mapN)
+			mapN = mapN:len() >= 1 and mapN or 'San Andreas'
+			return setMapName(mapN)
+		end
+	},
 	maxplayers = { get = getMaxPlayers },
-	myriad = false,
-	nosign = '',
-	password = { get = function() return getServerPassword() or '' end },
+	password = {
+		get = function()
+			return getServerPassword() or ''
+		end,
+		set = function(pass)
+			pass = pass:len() >= 1 and pass or ''
+			return setServerPassword(pass)
+		end
+	},
 	plugins = get('amx.plugins') or '',
 	port = { get = getServerPort },
 	query = true,
-	rcon_password = '',
+	rcon_password = {
+		get = function()
+			return get('amx.rcon_password') or ''
+		end,
+		set = function(pass)
+			return set('amx.rcon_password', pass)
+		end
+	},
 	timestamp = true,
 	version = amxVersionString(),
 	weather = {
@@ -59,19 +113,19 @@ g_ServerVars = {
 	weburl = 'www.mtasa.com',
 	worldtime = {
 		get = function()
-			local h, m = getTime()
-			return h .. ':' .. m
+			local h = getTime()
+			return string.format('%02d:00', h)
 		end,
 		set = function(str)
-			local h, m = str:match('^(%d+):(%d+)$')
+			local h = str:match('^(%d+):$')
 			if h then
-				setTime(tonumber(h), tonumber(m))
+				setTime(tonumber(h), 0)
 			end
 		end
 	}
 }
 
-local readOnlyVars = table.create({ 'announce', 'anticheat', 'bind', 'filterscripts', 'hostname', 'maxplayers', 'nosign', 'plugins', 'port', 'version' }, true)
+local readOnlyVars = table.create({ 'announce', 'bind', 'filterscripts', 'hostname', 'lagcomp', 'lagcompmode', 'maxplayers', 'plugins', 'port', 'version' }, true)
 g_ServerVars = { shadow = g_ServerVars }
 setmetatable(
 	g_ServerVars,
@@ -130,9 +184,9 @@ local function cmdBan(id)
 	end
 	local name = getPlayerName(g_Players[id].elem)
 	if banPlayer(g_Players[id].elem) then
-		return 'Added ' .. id .. ' (' .. name .. ') to the ban list'
+		return name .. ' <' .. id .. '> has been banned.'
 	else
-		return 'Failed to ban ' .. id .. ' (' .. name .. ')'
+		return 'Failed to ban ' .. name .. ' <' .. id .. '>'
 	end
 end
 
@@ -141,7 +195,7 @@ local function cmdBanIP(ip)
 		return 'banip <ip>'
 	end
 	if addBan(ip) then
-		return 'Added ' .. ip .. ' to the ban list'
+		return 'IP ' .. ip .. ' has been banned.'
 	else
 		return 'Failed to ban ' .. ip
 	end
@@ -159,7 +213,8 @@ local function cmdExec(fname)
 	if not fname then
 		return 'exec <filename>'
 	end
-	return doRCONFromFile(fname) or ('exec: invalid file name ' .. fname)
+	fname = fname .. '.cfg'
+	return doRCONFromFile(fname) or ('Unable to exec file \'' .. fname .. '\'.')
 end
 
 local function cmdChangeMode(mode)
@@ -168,7 +223,7 @@ local function cmdChangeMode(mode)
 	end
 	local newRes = getResourceFromName('amx-' .. mode)
 	if not newRes then
-		return 'No gamemode named ' .. mode
+		return 'Unable to load gamemode \'' .. mode .. '\'.'
 	end
 	local amx = getRunningGameMode(mode)
 	if amx then
@@ -207,9 +262,9 @@ local function cmdKick(id)
 	end
 	local name = getPlayerName(g_Players[id].elem)
 	if kickPlayer(g_Players[id].elem) then
-		return 'Kicked ' .. id .. ' (' .. name .. ')'
+		return name .. ' <' .. id .. '> has been kicked.'
 	else
-		return 'Failed to kick ' .. id .. ' (' .. name .. ')'
+		return 'Failed to kick ' .. name .. ' <' .. id .. '>'
 	end
 end
 
@@ -219,7 +274,7 @@ local function cmdLoadFS(fsname)
 	end
 	local res = getResourceFromName('amx-fs-' .. fsname)
 	if not res then
-		return 'No such filterscript: ' .. fsname
+		return 'Filterscript \'' .. fsname .. '\' load failed.'
 	end
 	startResource(res)
 end
@@ -229,20 +284,23 @@ local function cmdLoadPlugin(pluginName)
 		return 'loadplugin <pluginname>'
 	end
 	if amxIsPluginLoaded(pluginName) then
-		return 'Plugin ' .. pluginName .. ' is already loaded'
+		return 'Plugin \'' .. pluginName .. '\' is already loaded.'
 	end
 	if amxLoadPlugin(pluginName) then
-		return 'Plugin ' .. pluginName .. ' loaded'
+		return 'Plugin \'' .. pluginName .. '\' loaded.'
 	else
-		return 'Failed loading plugin ' .. pluginName
+		return 'Unable to load plugin \'' .. pluginName .. '\'.'
 	end
 end
 
 local function cmdPlayers()
-	local result = ''
-	for id,data in pairs(g_Players) do
-		result = result .. ('%5d  %s\n'):format(id, getPlayerName(data.elem))
+	local counter = 0
+	local result = '\nID\tName\tPing\tIP'
+	for id, data in pairs(g_Players) do
+		result = result .. ('\n%d\t%s\t%d\t%s'):format(id, getPlayerName(data.elem), getPlayerPing(data.elem), getPlayerIP(data.elem))
+		counter = counter + 1
 	end
+	if counter < 1 then return '' end
 	return result
 end
 
@@ -252,7 +310,7 @@ local function cmdReloadFS(fsname)
 	end
 	local res = getResourceFromName('amx-fs-' .. fsname)
 	if not res then
-		return 'No such filterscript: ' .. fsname
+		return 'Filterscript \'' .. fsname .. '\' load failed.'
 	end
 	restartResource(res)
 end
@@ -261,10 +319,10 @@ local function cmdUnbanIP(ip)
 	if not ip then
 		return 'unbanip <ip>'
 	end
-	for banID, ban in ipairs (getBans()) do
+	for banID, ban in ipairs(getBans()) do
 		if getBanIP(ban) == ip then
 			if removeBan(ban) then
-				return 'Removed ' .. ip .. ' from the ban list'
+				return 'IP ' .. ip .. ' has been unbanned.'
 			else
 				return 'Failed to unban ' .. ip
 			end
@@ -279,7 +337,7 @@ local function cmdUnloadFS(fsname)
 	end
 	local res = getResourceFromName('amx-fs-' .. fsname)
 	if not res then
-		return 'No such filterscript: ' .. fsname
+		return 'Filterscript \'' .. fsname .. '\' unload failed.'
 	end
 	stopResource(res)
 end
@@ -287,7 +345,7 @@ end
 local function cmdVarList()
 	local result = ''
 	local keys = table.sort(table.keys(g_ServerVars.shadow))
-	for i,k in ipairs(keys) do
+	for i, k in ipairs(keys) do
 		result = result .. presentServerVar(k) .. '\n'
 	end
 	return result
@@ -378,7 +436,7 @@ addCommandHandler('rcon',
 		local result = doRCON(str)
 		if result then
 			local lines = result:split('\n')
-			for i,line in ipairs(lines) do
+			for i, line in ipairs(lines) do
 				outputConsole(line)
 			end
 		end

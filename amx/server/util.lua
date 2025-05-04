@@ -1,14 +1,14 @@
 --[[
 local function fndebug(...)
 	local args = { ... }
-	for i,name in ipairs(args) do
+	for i, name in ipairs(args) do
 		local fn = _G[name]
 		_G[name] = function(...)
 			local args = { ... }
 			local result = fn(...)
 
 			local logstr = 'Server: ' .. name .. '('
-			for i,a in ipairs(args) do
+			for i, a in ipairs(args) do
 				if i > 1 then
 					logstr = logstr .. ', '
 				end
@@ -44,7 +44,7 @@ fndebug(
 function clientCall(player, fnName, ...)
 	local called = triggerClientEvent(player, 'onClientCall', resourceRoot, fnName, ...)
 	if called == nil or called == false then
-		called = false --if it's null set it to false to prevent stuff like 'concatenating nil values'
+		called = false -- if it's null set it to false to prevent stuff like 'concatenating nil values'
 	end
 	return called
 end
@@ -159,43 +159,45 @@ g_Keys = {
 g_EventNames = {
 	OnPlayerConnect = true,
 	OnPlayerDisconnect = true,
-	OnPlayerShoot = true,
+	OnPlayerWeaponShot = true,
 	OnPlayerEnterCheckpoint = true,
 	OnPlayerLeaveCheckpoint = true,
 	OnPlayerEnterRaceCheckpoint = true,
 	OnPlayerLeaveRaceCheckpoint = true,
 	OnVehicleStreamIn = true,
 	OnPlayerStreamIn = true,
+	OnActorStreamIn = true,
 	OnVehicleStreamOut = true,
 	OnPlayerStreamOut = true,
+	OnActorStreamOut = true,
 	OnPlayerExitedMenu = true,
 	OnPlayerSelectedMenuRow = true,
 	OnDialogResponse = true,
 	OnGameModeInit = true,
 	OnFilterScriptInit = true,
-	OnPlayerConnect = true,
 	OnGameModeExit = true,
 	OnFilterScriptExit = true,
-	OnPlayerRequestClass = true,
 	OnPlayerUpdate = true,
-	OnPlayerConnect = true,
+	OnPlayerInteriorChange = true,
 	OnPlayerKeyStateChange = true,
-	OnKeyPress = true,
+	OnPlayerKeyDown = true,
+	OnPlayerKeyUp = true,
 	OnPlayerRequestClass = true,
 	OnPlayerRequestSpawn = true,
 	OnPlayerSpawn = true,
 	OnPlayerText = true,
-	OnPlayerShootingPlayer = true,
+	OnPlayerGiveDamage = true,
+	OnPlayerTakeDamage = true,
+	OnPlayerGiveDamageActor = true,
 	OnPlayerWeaponSwitch = true,
 	OnPlayerDeath = true,
-	OnPlayerDisconnect = true,
 	OnVehicleSpawn = true,
 	OnBotEnterVehicle = true,
 	OnPlayerEnterVehicle = true,
 	OnBotExitVehicle = true,
 	OnPlayerExitVehicle = true,
+	OnVehicleDamageStatusUpdate = true,
 	OnVehicleDeath = true,
-	OnVehicleDamage = true,
 	OnMarkerHit = true,
 	OnMarkerLeave = true,
 	OnBotDeath = true,
@@ -206,7 +208,7 @@ g_EventNames = {
 	OnPlayerClickWorldPlayer = true,
 	OnPlayerClickWorldObject = true,
 	OnPlayerClickWorldVehicle = true,
-	OnPlayerPickUpPickup = true,
+	OnPlayerClickPlayer = true,
 	OnObjectMoved = true,
 	OnPlayerObjectMoved = true,
 	OnBotConnect = true,
@@ -244,12 +246,33 @@ function isPlayerInACLGroup(player, groupName)
 		return false
 	end
 	local accountName = getAccountName(account)
-	for i,obj in ipairs(aclGroupListObjects(group)) do
+	for i, obj in ipairs(aclGroupListObjects(group)) do
 		if obj == 'user.' .. accountName or obj == 'user.*' then
 			return true
 		end
 	end
 	return false
+end
+
+local glitches = {
+	'quickreload',
+	'fastmove',
+	'fastfire',
+	'crouchbug',
+	'fastsprint',
+	'quickstand'
+}
+
+function toggleGlitches()
+	for _, glitch in ipairs(glitches) do
+		setGlitchEnabled(glitch, true)
+	end
+end
+
+function toggleSpecialProperties()
+	setWorldSpecialPropertyEnabled('randomfoliage', false)
+	setWorldSpecialPropertyEnabled('roadsignstext', false)
+	setWorldSpecialPropertyEnabled('snipermoon', true)
 end
 
 local _warpPedIntoVehicle = warpPedIntoVehicle
@@ -265,7 +288,7 @@ function bindKey(player, key, ...)
 		return _bindKey(player, key, ...)
 	elseif type(key) == 'table' then
 		local result = true
-		for i,k in ipairs(key) do
+		for i, k in ipairs(key) do
 			result = result and _bindKey(player, k, ...)
 		end
 		return result
@@ -278,7 +301,7 @@ function unbindKey(player, key, ...)
 		return _unbindKey(player, key, ...)
 	elseif type(key) == 'table' then
 		local result = true
-		for i,k in ipairs(key) do
+		for i, k in ipairs(key) do
 			result = result and _unbindKey(player, k, ...)
 		end
 		return result
@@ -305,11 +328,11 @@ function destroyBlipsAttachedTo(elem)
 end
 
 function giveWeapons(player, weapons, currentslot)
-	for slot,weapon in pairs(weapons) do
+	for slot, weapon in pairs(weapons) do
 		giveWeapon(player, weapon.id, weapon.ammo)
 	end
 	if currentslot then
-		setPedWeaponSlot(player, currenslot)
+		setPedWeaponSlot(player, currentslot)
 	end
 end
 
@@ -357,8 +380,8 @@ function addElem(amx, listname, elem)
 	if not id then
 		id = 0
 
-		-- vehicles in sa-mp start at ID 1
-		if list == g_Vehicles then
+		-- vehicles and objects in SA-MP start at ID 1
+		if list == g_Vehicles or list == g_Objects then
 			id = 1
 		end
 
@@ -418,27 +441,31 @@ function setPlayerState(player, state)
 	local playerID = getElemID(player)
 	local oldState = g_Players[playerID].state or PLAYER_STATE_NONE
 	g_Players[playerID].state = state
-	procCallOnAll('OnPlayerStateChange', playerID, state, oldState)
+	if state ~= oldState then
+		procCallOnAll('OnPlayerStateChange', playerID, state, oldState)
+	end
 end
 
 function setBotState(bot, state)
 	local botID = getElemID(bot)
 	local oldState = g_Bots[botID].state or PLAYER_STATE_NONE
 	g_Bots[botID].state = state
-	procCallOnAll('OnBotStateChange', botID, state, oldState)
+	if state ~= oldState then
+		procCallOnAll('OnBotStateChange', botID, state, oldState)
+	end
 end
 
 -- Clamping values
 function clamp(n, min, max)
 	return math.max(min, math.min(max, n))
  end
- 
+
 -- Table extensions
 
 local _table_insert = table.insert
 function table.insert(t, i, v)
 	if not v then
-		local id = #t+1
+		local id = #t + 1
 		t[id] = i
 		return id
 	else
@@ -460,16 +487,16 @@ end
 
 function table.append(t, ...)
 	local args = { ... }
-	for i,a in ipairs(args) do
-		t[#t+1] = a
+	for i, a in ipairs(args) do
+		t[#t + 1] = a
 	end
 	return t
 end
 
 function table.keys(t)
 	local result = {}
-	for k,v in pairs(t) do
-		result[#result+1] = k
+	for k, v in pairs(t) do
+		result[#result + 1] = k
 	end
 	return result
 end
@@ -486,7 +513,7 @@ function table.find(t, ...)
 	end
 	local args = { ... }
 	if #args == 0 then
-		for k,v in pairs(t) do
+		for k, v in pairs(t) do
 			if v then
 				return k, v
 			end
@@ -498,8 +525,8 @@ function table.find(t, ...)
 	if value == '[nil]' then
 		value = nil
 	end
-	for k,v in pairs(t) do
-		for i,index in ipairs(args) do
+	for k, v in pairs(t) do
+		for i, index in ipairs(args) do
 			if type(index) == 'function' then
 				v = index(v)
 			else
@@ -528,7 +555,7 @@ function table.deepcopy(t)
 	local known = {}
 	local function _deepcopy(t)
 		local result = {}
-		for k,v in pairs(t) do
+		for k, v in pairs(t) do
 			if type(v) == 'table' then
 				if not known[v] then
 					known[v] = _deepcopy(v)
@@ -545,7 +572,7 @@ end
 
 function table.shallowcopy(t)
 	local result = {}
-	for k,v in pairs(t) do
+	for k, v in pairs(t) do
 		result[k] = v
 	end
 	return result
@@ -555,7 +582,7 @@ function table.flatten(t, result)
 	if not result then
 		result = {}
 	end
-	for k,v in ipairs(t) do
+	for k, v in ipairs(t) do
 		if type(v) == 'table' then
 			table.flatten(v, result)
 		else
@@ -568,11 +595,11 @@ end
 function table.create(keys, vals)
 	local result = {}
 	if type(vals) == 'table' then
-		for i,k in ipairs(keys) do
+		for i, k in ipairs(keys) do
 			result[k] = vals[i]
 		end
 	else
-		for i,k in ipairs(keys) do
+		for i, k in ipairs(keys) do
 			result[k] = vals
 		end
 	end
@@ -580,7 +607,7 @@ function table.create(keys, vals)
 end
 
 function table.map(t, callback, ...)
-	for k,v in ipairs(t) do
+	for k, v in ipairs(t) do
 		t[k] = callback(v, ...)
 	end
 	return t
@@ -593,7 +620,7 @@ function table.each(t, index, callback, ...)
 		callback = index
 		index = false
 	end
-	for k,v in pairs(t) do
+	for k, v in pairs(t) do
 		if index then
 			v = v[index]
 		end
@@ -606,7 +633,7 @@ function table.cmp(t1, t2)
 	if not t1 or not t2 or #t1 ~= #t2 then
 		return false
 	end
-	for i,v in ipairs(t1) do
+	for i, v in ipairs(t1) do
 		if v ~= t2[i] then
 			return false
 		end
@@ -615,7 +642,7 @@ function table.cmp(t1, t2)
 end
 
 function table.removevalue(t, val)
-	for i,v in ipairs(t) do
+	for i, v in ipairs(t) do
 		if v == val then
 			table.remove(t, i)
 			return i
@@ -628,7 +655,7 @@ function table.filter(t, callback, cmpval)
 	if cmpval == nil then
 		cmpval = true
 	end
-	for k,v in pairs(t) do
+	for k, v in pairs(t) do
 		if callback(v) ~= cmpval then
 			t[k] = nil
 		end
@@ -639,7 +666,7 @@ end
 function table.shadowize(t, ...)
 	t.shadow = {}
 	local args = { ... }
-	for i=1,#args-1 do
+	for i = 1, #args - 1 do
 		t.shadow[args[i]] = t[args[i]]
 		t[args[i]] = nil
 	end
@@ -648,7 +675,7 @@ end
 
 function table.deshadowize(t, copy)
 	local result = copy and table.deepcopy(t) or t
-	for k,v in pairs(result.shadow) do
+	for k, v in pairs(result.shadow) do
 		result[k] = v
 	end
 	result.shadow = nil
@@ -671,10 +698,10 @@ function table.dump(t, caption, depth)
 		local braceIndent = string.rep('  ', depth-1)
 		local fieldIndent = braceIndent .. '  '
 		outputConsole(braceIndent .. '{')
-		for k,v in pairs(t) do
+		for k, v in pairs(t) do
 			if type(v) == 'table' and k ~= 'siblings' and k ~= 'parent' then
 				outputConsole(fieldIndent .. tostring(k) .. ' = ')
-				table.dump(v, nil, depth+1)
+				table.dump(v, nil, depth + 1)
 			else
 				outputConsole(fieldIndent .. tostring(k) .. ' = ' .. tostring(v))
 			end
@@ -690,7 +717,7 @@ local string, fileSetPos, fileRead = string, fileSetPos, fileRead
 function getResourceAMXFiles(res)
 	local result = false
 
-	local meta = xmlLoadFile(':' .. getResourceName(res) .. '/' .. 'meta.xml' )
+	local meta = xmlLoadFile(':' .. getResourceName(res) .. '/' .. 'meta.xml')
 	if not meta then
 		return false
 	end
@@ -702,7 +729,7 @@ function getResourceAMXFiles(res)
 		if not amxNode then
 			break
 		end
-		result[#result+1] = xmlNodeGetAttribute(amxNode, 'src')
+		result[#result + 1] = xmlNodeGetAttribute(amxNode, 'src')
 		i = i + 1
 	end
 	xmlUnloadFile(meta)
@@ -746,7 +773,7 @@ end
 
 function readWORD(hFile)
 	local b0, b1 = string.byte(fileRead(hFile, 2), 1, 2)
-	return b1*256 + b0
+	return b1 * 256 + b0
 end
 
 function readWORDAt(hFile, offset)
@@ -756,7 +783,7 @@ end
 
 function readDWORD(hFile)
 	local b0, b1, b2, b3 = string.byte(fileRead(hFile, 4), 1, 4)
-	return b3*16777216 + b2*65536 + b1*256 + b0
+	return b3 * 16777216 + b2 * 65536 + b1 * 256 + b0
 end
 
 function readDWORDAt(hFile, offset)
@@ -767,14 +794,14 @@ end
 function readDWORDs(hFile, offset, length)
 	local result = {}
 	fileSetPos(hFile, offset)
-	for i=0,length-4,4 do
+	for i = 0, length - 4, 4 do
 		result[i] = readDWORD(amx)
 	end
 	return result
 end
 
 function readString(hFile, offset)
-	local result = ""
+	local result = ''
 	fileSetPos(hFile, offset)
 	local curByte = readBYTE(hFile)
 	while curByte ~= 0 do
@@ -791,7 +818,7 @@ function dumpAMXTable(amx, tableName, chunk)
 		chunk.rTemp = 1
 	end
 	chunk:newtable(chunk.rTemp, 0, 0)
-	for k,v in pairs(amx[tableName]) do
+	for k, v in pairs(amx[tableName]) do
 		chunk:settable(chunk.rTemp, chunk:K(k), chunk:K(v))
 	end
 	chunk:settable(chunk.rAMX, chunk:K(tableName), chunk.rTemp)
@@ -809,107 +836,24 @@ function writeMemString(amx, offset, str)
 end
 
 function writeMemFloat(amx, offset, float)
+	if not float then return end
 	amx.memDAT[offset] = float2cell(float)
-end
-
--- Binary operations
-
-function binand(val1, val2)
-	local i, result = 0, 0
-	while val1 ~= 0 and val2 ~= 0 do
-		result = result + ( ((val1 % 2) == 1 and (val2 % 2) == 1) and (2^i) or 0 )
-		val1 = math.floor(val1/2)
-		val2 = math.floor(val2/2)
-		i = i + 1
-	end
-	return result
-end
-
-function binor(val1, val2)
-	local i, result = 0, 0
-	while val1 ~= 0 or val2 ~= 0 do
-		result = result + ( ((val1 % 2) == 1 or (val2 % 2) == 1) and (2^i) or 0 )
-		val1 = math.floor(val1/2)
-		val2 = math.floor(val2/2)
-		i = i + 1
-	end
-	return result
-end
-
-function binxor(val1, val2)
-	local i, result = 0, 0
-	local b1, b2
-	while val1 ~= 0 or val2 ~= 0 do
-		b1 = val1 % 2
-		b2 = val2 % 2
-		result = result + ( ((b1 == 1 and b2 == 0) or (b1 == 0 and b2 == 1)) and (2^i) or 0 )
-		val1 = math.floor(val1/2)
-		val2 = math.floor(val2/2)
-		i = i + 1
-	end
-	return result
-end
-
-function binnot(num)
-	local result = 0
-	local bit = 1
-	local nextbit
-	for i=0,31 do
-		nextbit = bit * 2
-		if num % nextbit < bit then
-			result = result + bit
-		end
-		bit = nextbit
-	end
-	return result
-end
-
-function binshl(val, dist)
-	return val * (2^dist)
-end
-
-function binshr(val, dist)
-	return math.floor(val / (2^dist))
-end
-
-function binsar(val, dist)
-	local signext = 0
-	if val >= 0x80000000 then
-		for i=31,31-dist,-1 do
-			signext = signext + 2^i
-		end
-	end
-	return signext + math.floor(val / (2^dist))
-end
-
-function sgn(val)
-	if val >= 0x80000000 then
-		val = -(binnot(val) + 1)
-	end
-	return val
-end
-
-function unsgn(val)
-	if val < 0 then
-		val = binnot(-val) + 1
-	end
-	return val
 end
 
 --[[
 function cell2float(cell)
-	if not cell or cell == 0 then
+	if cell == 0 then
 		return 0
 	end
 
 	local sign = cell >= 0x80000000 and -1 or 1
-	local exp = (math.floor(cell / (2^23)) % (2^8)) - 127
-	local mantissa = (cell % (2^23)) / (2^23)
-	return sign * (2^exp) * (1 + mantissa)
+	local exp = (math.floor(cell / (2 ^ 23)) % (2 ^ 8)) - 127
+	local mantissa = (cell % (2 ^ 23)) / (2 ^ 23)
+	return sign * (2 ^ exp) * (1 + mantissa)
 end
 
 function float2cell(float)
-	if not float or float == 0 then
+	if float == 0 then
 		return 0
 	end
 	local ldexp = math.ldexp
@@ -917,42 +861,42 @@ function float2cell(float)
 	-- sign bit
 	local sign = 0
 	if float < 0 then
-		sign = 2^31
+		sign = 2 ^ 31
 		float = -float
 	end
 	local ipart, fpart = math.modf(float)
 	-- exponent
 	local exp = 0
-	while ipart > 2^exp do
+	while ipart > 2 ^ exp do
 		exp = exp + 1
 	end
-	if 2^exp > ipart then
+	if 2 ^ exp > ipart then
 		exp = exp - 1
 	end
 	-- mantissa
 	local numFPartBits = 0
 	local fpartBits = 0
 	while fpart ~= 0 and numFPartBits < 23 do
-		fpart = 2*fpart
+		fpart = 2 * fpart
 		if fpart >= 1 then
 			fpart = fpart - 1
-			fpartBits = fpartBits*2 + 1
+			fpartBits = fpartBits * 2 + 1
 		else
-			fpartBits = fpartBits*2
+			fpartBits = fpartBits * 2
 		end
 		numFPartBits = numFPartBits + 1
 	end
-	ipart = ipart - 2^exp
+	ipart = ipart - 2 ^ exp
 	local mantissa = ldexp(ipart, numFPartBits) + fpartBits
 
 	-- build
-	return sign + ldexp(exp+127, 23) + ldexp(mantissa, 23 - (exp+numFPartBits))
+	return sign + ldexp(exp + 127, 23) + ldexp(mantissa, 23 - (exp + numFPartBits))
 end
 --]]
 
 function string.dword(num)
 	local floor = math.floor
-	return string.char(num % 256, floor(num/256) % 256, floor(num/65536) % 256, floor(num/16777216) % 256)
+	return string.char(num % 256, floor(num / 256) % 256, floor(num / 65536) % 256, floor(num / 16777216) % 256)
 end
 
 function string.double(dbl)
@@ -965,39 +909,39 @@ function string.double(dbl)
 	-- sign bit
 	local sign = 0
 	if dbl < 0 then
-		sign = 2^63
+		sign = 2 ^ 63
 		dbl = -dbl
 	end
 	local ipart, fpart = math.modf(dbl)
 	-- exponent
 	local exp = 0
-	while ipart > 2^exp do
+	while ipart > 2 ^ exp do
 		exp = exp + 1
 	end
-	if 2^exp > ipart then
+	if 2 ^ exp > ipart then
 		exp = exp - 1
 	end
 	-- mantissa
 	local numFPartBits = 0
 	local fpartBits = 0
 	while fpart ~= 0 and numFPartBits < 52 do
-		fpart = 2*fpart
+		fpart = 2 * fpart
 		if fpart >= 1 then
 			fpart = fpart - 1
-			fpartBits = fpartBits*2 + 1
+			fpartBits = fpartBits * 2 + 1
 		else
-			fpartBits = fpartBits*2
+			fpartBits = fpartBits * 2
 		end
 		numFPartBits = numFPartBits + 1
 	end
-	ipart = ipart - 2^exp
+	ipart = ipart - 2 ^ exp
 	local mantissa = ldexp(ipart, numFPartBits) + fpartBits
 
 	-- build
-	local num = sign + ldexp(exp+1023, 52) + ldexp(mantissa, 52 - (exp+numFPartBits))
+	local num = sign + ldexp(exp + 1023, 52) + ldexp(mantissa, 52 - (exp + numFPartBits))
 	local result = ''
-	for i=0,7 do
-		result = result .. string.char(floor(num/(2^(i*8))) % 256)
+	for i = 0, 7 do
+		result = result .. string.char(floor(num / (2 ^ (i * 8))) % 256)
 	end
 	return result
 end
@@ -1012,24 +956,30 @@ function string:split(sep)
 	local to
 	repeat
 		to = self:find(sep, from, true) or (#self + 1)
-		result[#result+1] = self:sub(from, to - 1)
+		result[#result + 1] = self:sub(from, to - 1)
 		from = to + 1
 	until from == #self + 2
 	return result
 end
 
 function cell2color(val)
-	local binshr = binshr
-	return binshr(val, 24), binshr(val, 16) % 0x100, binshr(val, 8) % 0x100, val % 0x1000
+	local r = bitExtract(val, 24, 8)
+	local g = bitExtract(val, 16, 8)
+	local b = bitExtract(val, 8, 8)
+	local a = bitExtract(val, 0, 8)
+	return r, g, b, a
 end
 
 function color2cell(r, g, b, a)
-	local binshl = binshl
-	return binshl(r, 24) + binshl(g, 16) + binshl(b, 8) + (a or 255)
+	r = math.min(math.max(r, 0), 255)
+	g = math.min(math.max(g, 0), 255)
+	b = math.min(math.max(b, 0), 255)
+	a = a and math.min(math.max(a, 0), 255) or 255
+	return bitLShift(r, 24) + bitLShift(g, 16) + bitLShift(b, 8) + a
 end
 
 function isPed(elem)
-	if getElementType(elem) == "ped" then
+	if getElementType(elem) == 'ped' then
 		return true
 	end
 	return false
@@ -1045,27 +995,27 @@ end
 
 function deprecated(native, version, additional)
 	if native ~= nil then
-		if version ~= '' or version ~= nil then 
-			outputDebugString(native..' has been deprecated since '..version..' and will no longer be available.')
-			return;
+		if version ~= '' or version ~= nil then
+			outputDebugString(native .. ' has been deprecated since ' .. version .. ' and will no longer be available.')
+			return
 		end
-		if additional ~= '' or additional ~= nil then 
-			outputDebugString(native..' has been deprecated since '..version..' and will no longer be available. More info: '.. additional .. '.')
-			return;
+		if additional ~= '' or additional ~= nil then
+			outputDebugString(native .. ' has been deprecated since ' .. version .. ' and will no longer be available. More info: ' .. additional .. '.')
+			return
 		end
-		outputDebugString(native..' is deprecated and will no longer be available.')
+		outputDebugString(native .. ' is deprecated and will no longer be available.')
 	end
 end
 
 function notImplemented(native, additional)
 	if ShowUnimplementedErrors then
 		if native ~= nil then
-			if additional == '' or additional == nil then 
-				outputDebugString('Sorry, but '..native..' is not implemented.')
-				return;
+			if additional == '' or additional == nil then
+				outputDebugString('Sorry, but ' .. native .. ' is not implemented.')
+				return
 			else
-				outputDebugString('Sorry, but '..native..' is not implemented. More info: '.. additional..'.')
-				return;
+				outputDebugString('Sorry, but ' .. native .. ' is not implemented. More info: ' .. additional .. '.')
+				return
 			end
 		end
 	end

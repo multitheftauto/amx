@@ -231,7 +231,7 @@ dircopy($oldsrvpath . "/scriptfiles/", $newsrvpath . "/mods/deathmatch/resources
 
 print "> Configuring\n";
 
-# Read sa-mp config
+# Read SA-MP config
 my %sampcfg;
 open SAMPCFG, $oldsrvpath . "/server.cfg";
 while(<SAMPCFG>) {
@@ -279,7 +279,7 @@ if($amxcfg->safe_parsefile($amxcfgpath)) {
 
 	# Get filterscripts already in amx meta.xml
 	my %usedFilterscripts = %{{ map {$_ => 1 if(!/^$/)} split(/\s+/, $filterscriptsNode->att("value")) }};
-	# Add filterscripts that are in samp's server.cfg and also exist in MTA
+	# Add filterscripts that are in SA-MP's server.cfg and also exist in MTA
 	if($sampcfg{filterscripts}) {
 		for(split /\s+/, $sampcfg{filterscripts}) {
 			next if(!-e $newsrvpath . "/mods/deathmatch/resources/amx-fs-$_");
@@ -289,7 +289,7 @@ if($amxcfg->safe_parsefile($amxcfgpath)) {
 
 	# Get plugins already in amx meta.xml
 	my %usedPlugins = %{{ map {$_ => 1 if(!/^$/)} split(/\s+/, $pluginsNode->att("value")) }};
-	# Add plugins that are in samp's server.cfg and also exist in MTA
+	# Add plugins that are in SA-MP's server.cfg and also exist in MTA
 	if($sampcfg{plugins}) {
 		for(split /\s+/, $sampcfg{plugins}) {
 			next if(!-e $newsrvpath . "/mods/deathmatch/resources/amx/plugins/$_.dll" && !-e $newsrvpath . "/mods/deathmatch/resources/amx/plugins/$_.so");

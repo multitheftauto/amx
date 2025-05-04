@@ -34,8 +34,8 @@ public OnGameModeInit()
 	AddPlayerClass(0, 1958.3783, 1343.1572, 15.3746, 269.1425, 0, 0, 0, 0, 0, 0);
 
 	new buf[64];
-	SetRuleValue("nya", "test");
-	GetRuleValue("nya", buf, sizeof(buf));
+	SetServerRule("nya", "test");
+	GetServerRule("nya", buf, sizeof(buf));
 	printf("val: %s", buf);
 
 	bot = CreateBot(0, 0.5, 0.5, 0.5, "Nyashk");
@@ -83,11 +83,10 @@ public OnPlayerConnect(playerid)
 
 	new listitems[] = "1\tDeagle\n2\tSawnoff\n3\tPistol\n4\tGrenade\n5\tParachute\n6\tLorikeet";
  	ShowPlayerDialog(playerid, 2, DIALOG_STYLE_LIST, "List of weapons:", listitems, "Select", "Cancel");
-	//ShowPlayerDialog(playerid, 1, DIALOG_STYLE_LIST, "testcapt", "info", "Okay", "Canceled");
+	//ShowPlayerDialog(playerid, 1, DIALOG_STYLE_LIST, "testcapt", "info", "Okay", "Cancel");
 	return 1;
 }
 
-forward OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]);
 public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 {
 	if(dialogid == 0) { // Our example msgbox
@@ -164,13 +163,13 @@ public OnBotConnect(botid, name[])
 	return 1;
 }
 
-public OnMarkerHit(markerid, elemtype[], elemid, matchingDimension)
+public OnMarkerHit(markerid, type[], id, worldid)
 {
-	printf("OnMarkerHit(%d, %s, %d)", markerid, elemtype, elemid);
+	printf("OnMarkerHit(%d, %s, %d)", markerid, type, id);
 	return 1;
 }
 
-public OnBotEnterVehicle(botid, vehicleid, seatid)
+public OnBotEnterVehicle(botid, vehicleid, ispassenger)
 {
 	return 1;
 }
@@ -186,21 +185,21 @@ public OnBotDeath(botid, killerid, weaponid, bodypart)
 	return 1;
 }
 
-public OnPlayerWeaponSwitch(playerid, previousWeaponID, currentWeaponID)
+public OnPlayerWeaponSwitch(playerid, oldweaponid, newweaponid)
 {
-	printf("OnPlayerWeaponSwitch(%d, %d, %d)", playerid, previousWeaponID, currentWeaponID);
+	printf("OnPlayerWeaponSwitch(%d, %d, %d)", playerid, oldweaponid, newweaponid);
 	return 1;
 }
 
-public OnPlayerShoot(playerid, weapon, ammo, ammoInClip, Float:hitX, Float:hitY, Float:hitZ)
+public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY, Float:fZ)
 {
-	printf("OnPlayerShoot(%d, %d, %d, %d, %f, %f, %f)", playerid, weapon, ammo, ammoInClip, hitX, hitY, hitZ);
+	printf("OnPlayerWeaponShot(%d, %d, %d, %d, %f, %f, %f)", playerid, weaponid, hittype, hitid, Float:fX, Float:fY, Float:fZ);
 	return 1;
 }
 
-public OnVehicleDamage(vehicleid, Float:loss)
+public OnVehicleDamageStatusUpdate(vehicleid, playerid)
 {
-	printf("OnVehicleDamage(%d, %f)", vehicleid, loss);
+	printf("OnVehicleDamageStatusUpdate(%d, %d)", vehicleid, playerid);
 	return 1;
 }
 

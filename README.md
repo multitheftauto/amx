@@ -4,7 +4,7 @@
 
 *amx* is a software package that allows the execution of unmodified San
 Andreas: Multiplayer 0.3.7 gamemodes, filterscripts and plugins on Multi
-Theft Auto: San Andreas 1.5.8 and higher servers. It is open source, and [**a prebuilt
+Theft Auto: San Andreas 1.6 and higher servers. It is open source, and [**a prebuilt
 binary for Windows is available for testing purposes right now**](https://github.com/multitheftauto/amx/releases).
 
 - [License](#license)
@@ -86,12 +86,19 @@ features:
 ## Installation
 
 *amx* consists of a binary server module (.dll/.so) and a Lua resource.
-It will only run on MTA:SA 1.0 and later. Installation steps are lined
+It will only run on MTA:SA 1.6 and later. Installation steps are lined
 out below.
 
 ### Extracting
 
-Extract the "mods" folder into your MTA "server" directory.
+- All needed binary files are in the archive provided on Releases
+  page. Unpack amx.zip and extract the `mods` folder into your MTA
+  `server` directory.
+
+- `amx` folder located in mods/deathmatch/resources is a place for the
+  mentioned Lua resources. It will be empty at this point, so you need
+  to copy all the latest files of `amx` folder from this repository
+  into your `amx` folder.
 
 ### Configuration
 
@@ -125,12 +132,15 @@ Extract the "mods" folder into your MTA "server" directory.
 
   The following rights are used for the following purposes:
 
-  - `general.ModifyOtherObjects`: to access files of `amx-*`
-    resources
+  - `general.ModifyOtherObjects`:
+      - to access files of `amx-*` resources
   - `function.startResource`  \
     `function.stopResource`  \
     `function.restartResource`:
       - to automatically (re)start filterscripts when `amx` starts
+      - for rcon
+  - `function.getServerPassword`  \
+    `function.setServerPassword`:
       - for rcon
 
 ### Migrating gamemodes, filterscripts, plugins from an SA-MP server
@@ -179,7 +189,7 @@ Information about this is lined out below.
 
 - In SA-MP, there is one folder that contains all gamemodes and
   another that contains all filterscripts. In MTA, it is the
-  convention to create a separate resource (i.e. folder) for each
+  convention to create a separate resource (i.e. folder) for each
   gamemode. *amx* follows the MTA convention for better integration,
   which means that a resource needs to be created for each gamemode
   and filterscript. The naming convention for these is amx-*name* for
@@ -250,7 +260,7 @@ Information about this is lined out below.
 
 ## Running gamemodes and filterscripts
 
-Before you can run sa-mp modes or filterscripts, you need to start the
+Before you can run SA-MP modes or filterscripts, you need to start the
 *amx* resource. Type this command in the server console or as admin in
 the ingame console:
 
@@ -378,7 +388,7 @@ amxRegisterPawnPrototypes(prototypes);
 native amxVersion ( &Float:ver );
 ```
 
-Retrieves the *amx* version as a floating point number, e.g. `1.3`.
+Retrieves the *amx* version as a floating point number, e.g. `1.3`.
 
 ### amxVersionString
 
@@ -523,7 +533,7 @@ with [amxRegisterLuaPrototypes](#amxRegisterLuaPrototypes). Both
 functions associate a number of function names with their argument types
 and (optionally) return type. To specify a return type, prepend the
 function name with the type letter followed by a colon (:), for example:
-`f:testfn`. If you do not specify a return type (i.e. only specify the
+`f:testfn`. If you do not specify a return type (i.e. only specify the
 name, `testfn`), "i" will be assumed.
 
 See the syntax sections of the two registration functions for the
@@ -666,16 +676,11 @@ is perfect. Below is a list of limitations that may or may not be
 addressed in later versions of *amx* and Multi Theft Auto.
 
 - The following scripting functions are currently not implemented and
-  will have no effect when called: AllowAdminTeleport,
-  AllowInteriorWeapons, AllowPlayerTeleport,
-  DisableInteriorEnterExits, EnableStuntBonusForAll,
-  EnableStuntBonusForPlayer, EnableTirePopping (tire popping is always
-  on), EnableZoneNames, LimitGlobalChatRadius, PlayerPlaySound,
-  SendDeathMessage (use the "killmessages" resource on your server
-  instead for graphical death messages), SetDeathDropAmount,
-  SetDisabledWeapons, SetEchoDestination, SetNameTagDrawDistance,
-  SetPlayerDisabledWeapons, SetTeamCount, SetVehicleNumberPlate,
-  ShowPlayerNameTagForPlayer, TextDrawSetProportional,
+  will have no effect when called: DisableInteriorEnterExits,
+  EnableStuntBonusForAll, EnableStuntBonusForPlayer, EnableTirePopping
+  (tire popping is always on), PlayerPlaySound, SendDeathMessage (use
+  the "killmessages" resource on your server instead for graphical
+  death messages), SetNameTagDrawDistance, TextDrawSetProportional,
   UsePlayerPedAnims.
 
 ## Credits

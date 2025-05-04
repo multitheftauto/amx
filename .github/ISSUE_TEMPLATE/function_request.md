@@ -18,4 +18,4 @@ labels: function
 <!-- If you know equivalent of the function or functions in MTA, please write it here. -->
 
 **Additional information**
-<!-- The additional information can be an article about it, wiki of SAMP or something that can helps us. -->
+<!-- The additional information can be an article about it, wiki of SA-MP or something that can helps us. -->

@@ -13,7 +13,7 @@ local pi = math.pi
 local _setCameraMatrix = setCameraMatrix
 
 local function scale(factor, baseX, baseY, baseZ, x, y, z)
-	return baseX + factor*(x-baseX), baseY + factor*(y-baseY), baseZ + factor*(z-baseZ)
+	return baseX + factor * (x - baseX), baseY + factor * (y - baseY), baseZ + factor * (z - baseZ)
 end
 
 local function onRender()
@@ -21,10 +21,10 @@ local function onRender()
 		return
 	end
 	local x, y, z = getElementPosition(target)
-	local camX = x + 3*distance*cos(phi)*cos(theta)
-	local camY = y + 3*distance*sin(phi)*cos(theta)
-	local camZ = z + 0.4*distance + 2*distance*sin(theta)
-	local camLookZ = z + 0.5*distance
+	local camX = x + 3 * distance * cos(phi) * cos(theta)
+	local camY = y + 3 * distance * sin(phi) * cos(theta)
+	local camZ = z + 0.4 * distance + 2 * distance * sin(theta)
+	local camLookZ = z + 0.5 * distance
 	local hit, hitX, hitY, hitZ = processLineOfSight(x, y, camLookZ, camX, camY, camZ, true, false, false)
 	if hit then
 		camX, camY, camZ = scale(0.9, x, y, camLookZ, hitX, hitY, hitZ)
@@ -36,14 +36,14 @@ local function onMouseMove(relX, relY, absX, absY)
 	if isMTAWindowActive() then
 		return
 	end
-	absX = absX - screenWidth/2
-	absY = absY - screenHeight/2
-	phi = (phi - 0.005*absX) % (2*pi)
-	theta = theta + 0.005*absY
-	if theta > 0.4*pi then
-		theta = 0.4*pi
-	elseif theta < -0.4*pi then
-		theta = -0.4*pi
+	absX = absX - screenWidth / 2
+	absY = absY - screenHeight / 2
+	phi = (phi - 0.005 * absX) % (2 * pi)
+	theta = theta + 0.005 * absY
+	if theta > 0.4 * pi then
+		theta = 0.4 * pi
+	elseif theta < -0.4 * pi then
+		theta = -0.4 * pi
 	end
 end
 
@@ -72,5 +72,3 @@ function setCameraTarget(_target)
 		registerHandlers()
 	end
 end
-
-

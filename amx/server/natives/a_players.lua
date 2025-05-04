@@ -20,17 +20,31 @@ function SetPlayerPosFindZ(amx, player, x, y, z)
 	return true
 end
 
-GetPlayerPos = GetObjectPos
-function SetPlayerFacingAngle(amx, player, angle)
-	return setPedRotation(player, angle)
-end
-function GetPlayerFacingAngle(amx, player, refRot)
+function GetPlayerPos(amx, player, refX, refY, refZ)
 	if not player then
 		return false
 	end
-	writeMemFloat(amx, refRot, getPedRotation(player))
+	local x, y, z = getElementPosition(player)
+	writeMemFloat(amx, refX, x)
+	writeMemFloat(amx, refY, y)
+	writeMemFloat(amx, refZ, z)
 	return true
 end
+
+function SetPlayerFacingAngle(amx, player, angle)
+	local rotX, rotY, rotZ = getElementRotation(player)
+	return setElementRotation(player, rotX, rotY, angle)
+end
+
+function GetPlayerFacingAngle(amx, player, refAng)
+	if not player then
+		return false
+	end
+	local rX, rY, rZ = getElementRotation(player)
+	writeMemFloat(amx, refAng, rZ)
+	return true
+end
+
 function IsPlayerInRangeOfPoint(amx, player, range, pX, pY, pZ)
 	return getDistanceBetweenPoints3D(pX, pY, pZ, getElementPosition(player)) <= range
 end
@@ -95,7 +109,7 @@ end
 
 -- Weapon
 function GetPlayerWeaponState(amx, player)
-	-- -1 WEAPONSTATE_UNKNOWN 
+	-- -1 WEAPONSTATE_UNKNOWN
 	-- 0 WEAPONSTATE_NO_BULLETS
 	-- 1 WEAPONSTATE_LAST_BULLET
 	-- 2 WEAPONSTATE_MORE_BULLETS
@@ -104,25 +118,38 @@ function GetPlayerWeaponState(amx, player)
 	local vehicle = getPedOccupiedVehicle(player)
 	if vehicle ~= nil then return -1 end
 
-	-- TODO: Function don't return 3 because a isPedReloadingWeapon function only client-side
+	if isPedReloadingWeapon(player) then
+		return 3
+	end
+
 	local ammo = getPedAmmoInClip(player)
-	if ammo == 0 then 
+	if ammo == 0 then
 		return 0
-	elseif ammo == 1 then 
+	elseif ammo == 1 then
 		return 1
-	elseif ammo >= 2 then 
+	elseif ammo >= 2 then
 		return 2
 	else
 		return -1
 	end
 end
--- TODO: GetPlayerTargetPlayer
+
+function GetPlayerTargetPlayer(amx, player)
+	local elem = getPedTarget(player)
+
+	if elem and getElementType(elem) == 'player' then
+		return getElemID(elem)
+	end
+	return INVALID_PLAYER_ID
+end
 
 function GetPlayerTargetActor(amx, player)
 	local elem = getPedTarget(player)
 
-	if getElementType(elem) == 'ped' and getElementData(elem, 'amx.actorped') then
-		return getElemID(elem)
+	if elem and getElementType(elem) == 'ped' then
+		if getElementData(elem, 'ActorPed') then
+			return getElemID(elem)
+		end
 	end
 	return INVALID_ACTOR_ID
 end
@@ -143,20 +170,22 @@ function GetPlayerScore(amx, player)
 	return getElementData(player, 'Score')
 end
 
-function GetPlayerDrunkLevel(player)
+function GetPlayerDrunkLevel(amx, player)
 	notImplemented('GetPlayerDrunkLevel', 'SCM is not supported.')
 	return 0
 end
 
-function SetPlayerDrunkLevel(player)
+function SetPlayerDrunkLevel(amx, player, level)
 	notImplemented('SetPlayerDrunkLevel', 'SCM is not supported.')
-	return 0
+	return false
 end
 
 function SetPlayerColor(amx, player, r, g, b)
 	setPlayerNametagColor(player, r, g, b)
-	if g_ShowPlayerMarkers then
-		setBlipColor(g_Players[getElemID(player)].blip, r, g, b, 255)
+
+	local playerdata = g_Players[getElemID(player)]
+	if g_PlayerMarkersMode ~= 0 and playerdata.blip then
+		setBlipColor(playerdata.blip, r, g, b, 255)
 	end
 	return true
 end
@@ -183,7 +212,7 @@ function ResetPlayerWeapons(amx, player)
 end
 
 function SetPlayerArmedWeapon(amx, player, weapon)
-	return setPedWeaponSlot(player, weapon)
+	return setPedWeaponSlot(player, getSlotFromWeapon(weapon))
 end
 
 function GetPlayerWeaponData(amx, player, slot, refWeapon, refAmmo)
@@ -218,12 +247,15 @@ end
 function GetPlayerIp(amx, player, refName, len)
 	if not player then
 		return -1
+	elseif len <= 0 then
+		return 0
 	end
+
 	local ip = getPlayerIP(player)
-	if #ip < len then
-		writeMemString(amx, refName, ip)
-		return string.len(ip)
-	end
+
+	local copyLen = math.min(#ip, len)
+	writeMemString(amx, refName, ip:sub(1, copyLen))
+	return copyLen
 end
 
 function GetPlayerPing(amx, player)
@@ -242,18 +274,19 @@ function GetPlayerKeys(amx, player, refKeys, refUpDown, refLeftRight)
 end
 
 function GetPlayerName(amx, player, nameBuf, bufSize)
+	if bufSize <= 0 then return 0 end
+
 	local name = getPlayerName(player)
-	if #name <= bufSize then
-		writeMemString(amx, nameBuf, name)
-		return string.len(name)
-	end
+
+	local copyLen = math.min(#name, bufSize)
+	writeMemString(amx, nameBuf, name:sub(1, copyLen))
+	return copyLen
 end
 
 function SetPlayerTime(amx, player, hours, minutes)
 	clientCall(player, 'setTime', hours, minutes)
 	return true
 end
-
 
 function GetPlayerTime(amx, player, refHour, refMinute)
 	amx.memDAT[refHour], amx.memDAT[refMinute] = getTime()
@@ -306,7 +339,6 @@ function GetPlayerVelocity(amx, player, refVX, refVY, refVZ)
 	return true
 end
 
--- dummy
 function PlayCrimeReportForPlayer(amx, player, suspectid, crimeid)
 	notImplemented('PlayCrimeReportForPlayer')
 	return false
@@ -322,7 +354,7 @@ function StopAudioStreamForPlayer(amx, player)
 	return true
 end
 
-function SetPlayerShopName(amx)
+function SetPlayerShopName(amx, player, shopname)
 	notImplemented('SetPlayerShopName')
 	return false
 end
@@ -332,13 +364,30 @@ function SetPlayerSkillLevel(amx, player, skill, level)
 end
 
 function GetPlayerSurfingVehicleID(amx, player)
-	notImplemented('GetPlayerSurfingVehicleID')
+	if not player then return end
+	local surfElement = getPedContactElement(player)
+	if surfElement and getElementType(surfElement) == 'vehicle' then
+		if getVehicleOccupant(surfElement) then
+			return getElemID(surfElement)
+		end
+	end
 	return INVALID_VEHICLE_ID
 end
 
-function GetPlayerSurfingObjectID(amx)
-	notImplemented('GetPlayerSurfingObjectID')
+function GetPlayerSurfingObjectID(amx, player)
+	if not player then return end
+	local surfElement = getPedContactElement(player)
+	if surfElement and getElementType(surfElement) == 'object' then
+		if isObjectMoving(surfElement) then
+			return getElemID(surfElement)
+		end
+	end
 	return INVALID_OBJECT_ID
+end
+
+function CreateExplosionForPlayer(amx, player, x, y, z, type, radius)
+	clientCall(player, 'createExplosion', x, y, z, type, true, -1.0, false)
+	return true
 end
 
 function RemoveBuildingForPlayer(amx, player, model, x, y, z, radius)
@@ -346,23 +395,33 @@ function RemoveBuildingForPlayer(amx, player, model, x, y, z, radius)
 	return true
 end
 
-function GetPlayerLastShotVectors(amx)
-	notImplemented('GetPlayerLastShotVectors')
-	return false
+function GetPlayerLastShotVectors(amx, player, refOrigX, refOrigY, refOrigZ, refHitX, refHitY, refHitZ)
+	local playerID = getElemID(player)
+	local playerData = g_Players[playerID]
+	if not playerData then return end
+
+	writeMemFloat(amx, refOrigX, playerData.shotVect.oX)
+	writeMemFloat(amx, refOrigY, playerData.shotVect.oY)
+	writeMemFloat(amx, refOrigZ, playerData.shotVect.oZ)
+
+	writeMemFloat(amx, refHitX, playerData.shotVect.hX)
+	writeMemFloat(amx, refHitY, playerData.shotVect.hY)
+	writeMemFloat(amx, refHitZ, playerData.shotVect.hZ)
+	return true
 end
 
 function SetPlayerAttachedObject(amx, player, index, modelid, bone, fOffsetX, fOffsetY, fOffsetZ, fRotX, fRotY, fRotZ, fScaleX, fScaleY, fScaleZ, materialcolor1, materialcolor2)
-	local x, y, z = getElementPosition (player)
+	local x, y, z = getElementPosition(player)
 	local mtaBone = g_BoneMapping[bone]
 	local obj = createObject(modelid, x, y, z)
 
 	if obj ~= false then
 		local playerID = getElemID(player)
 		g_Players[playerID].attachedObjects[index] = obj
-		setElementCollisionsEnabled (obj, false)
-		setObjectScale (obj, fScaleX, fScaleY, fScaleZ)
+		setElementCollisionsEnabled(obj, false)
+		setObjectScale(obj, fScaleX, fScaleY, fScaleZ)
 		attachElementToBone(obj, player, mtaBone, fOffsetX, fOffsetY, fOffsetZ, fRotX, fRotY, fRotZ)
-		--Todo: Implement material colors
+		-- TODO: Implement material colors
 	else
 		outputDebugString('SetPlayerAttachedObject: Cannot attach object since the model is invalid. Model id was ' .. modelid)
 		return false
@@ -372,22 +431,26 @@ end
 
 function RemovePlayerAttachedObject(amx, player, index)
 	local playerID = getElemID(player)
-	local obj = g_Players[playerID].attachedObjects[index] --Get the object stored at this slot
+	local obj = g_Players[playerID].attachedObjects[index] -- Get the object stored at this slot
 	if obj ~= false then
-		detachElementFromBone( obj )
-		destroyElement( obj )
+		detachElementFromBone(obj)
+		destroyElement(obj)
 		g_Players[playerID].attachedObjects[index] = nil
 		return true
 	end
 	return false
 end
 
-function IsPlayerAttachedObjectSlotUsed(amx)
-	notImplemented('IsPlayerAttachedObjectSlotUsed')
+function IsPlayerAttachedObjectSlotUsed(amx, player, index)
+	local playerID = getElemID(player)
+	local obj = g_Players[playerID].attachedObjects[index] -- Get the object stored at this slot
+	if obj ~= false then
+		return true
+	end
 	return false
 end
 
-function EditAttachedObject(amx)
+function EditAttachedObject(amx, player, index)
 	notImplemented('EditAttachedObject')
 	return false
 end
@@ -395,15 +458,15 @@ end
 function CreatePlayerTextDraw(amx, player, x, y, text)
 	outputDebugString('CreatePlayerTextDraw called with args ' .. x .. ' ' .. y .. ' ' .. text)
 
-	if ( not g_PlayerTextDraws[player] ) then --Create dimension if it doesn't exist
+	if (not g_PlayerTextDraws[player]) then -- Create dimension if it doesn't exist
 		outputDebugString('Created dimension for g_PlayerTextDraws[player]')
 		g_PlayerTextDraws[player] = {}
 	end
 
-	local serverTDId = #g_PlayerTextDraws[player]+1
+	local serverTDId = #g_PlayerTextDraws[player] + 1
 	local clientTDId = #g_TextDraws + serverTDId
 
-	local textdraw = { x = x, y = y, lwidth=0.5, lheight = 0.5, shadow = { visible=0, align=1, text=text, font=1, lwidth=0.5, lheight = 0.5 } }
+	local textdraw = { x = x, y = y, lwidth = 0.5, lheight = 0.5, shadow = { visible = 0, align = 1, text = text, font = 1, lwidth = 0.5, lheight = 0.5 } }
 	textdraw.clientTDId = clientTDId
 	textdraw.serverTDId = serverTDId
 	textdraw.visible = 0
@@ -426,7 +489,7 @@ function CreatePlayerTextDraw(amx, player, x, y, text)
 					end
 				end
 				if different then
-					--table.dump(v, 1, nil) --Dump the data
+					--table.dump(v, 1, nil) -- Dump the data
 					--outputDebugString(string.format('A property changed for %d string: %s', textdraw.clientTDId, textdraw.text))
 					clientCall(player, 'TextDrawPropertyChanged', textdraw.clientTDId, k, v)
 					t.shadow[k] = v
@@ -441,16 +504,16 @@ function CreatePlayerTextDraw(amx, player, x, y, text)
 end
 
 function PlayerTextDrawDestroy(amx, player, textdrawID)
-  if not IsPlayerTextDrawValid(player, textdrawID) then
-      return false
-  end
-  outputDebugString('Sending textdraw id s->' .. g_PlayerTextDraws[player][textdrawID].serverTDId .. ' c->' .. g_PlayerTextDraws[player][textdrawID].clientTDId .. ' for destruction')
-  clientCall(player, 'TextDrawDestroy', g_PlayerTextDraws[player][textdrawID].clientTDId)
-  g_PlayerTextDraws[player][textdrawID] = nil
-  return true
+	if not IsPlayerTextDrawValid(player, textdrawID) then
+		return false
+	end
+	outputDebugString('Sending textdraw id s->' .. g_PlayerTextDraws[player][textdrawID].serverTDId .. ' c->' .. g_PlayerTextDraws[player][textdrawID].clientTDId .. ' for destruction')
+	clientCall(player, 'TextDrawDestroy', g_PlayerTextDraws[player][textdrawID].clientTDId)
+	g_PlayerTextDraws[player][textdrawID] = nil
+	return true
 end
 
-function PlayerTextDrawLetterSize(amx, player, textdrawID, x, y)
+function PlayerTextDrawLetterSize(amx, player, textdrawID, width, height)
 	if not IsPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
@@ -476,11 +539,11 @@ function PlayerTextDrawAlignment(amx, player, textdrawID, align)
 end
 
 function PlayerTextDrawColor(amx, player, textdrawID, r, g, b, a)
-  if not IsPlayerTextDrawValid(player, textdrawID) then
-      return false
-  end
-  g_PlayerTextDraws[player][textdrawID].color = { r, g, b }
-  return true
+	if not IsPlayerTextDrawValid(player, textdrawID) then
+		return false
+	end
+	g_PlayerTextDraws[player][textdrawID].color = { r, g, b }
+	return true
 end
 
 function PlayerTextDrawUseBox(amx, player, textdrawID, usebox)
@@ -501,11 +564,11 @@ function PlayerTextDrawBoxColor(amx, player, textdrawID, r, g, b, a)
 end
 
 function PlayerTextDrawSetShadow(amx, player, textdrawID, size)
- if not IsPlayerTextDrawValid(player, textdrawID) then
-     return false
- end
- g_PlayerTextDraws[player][textdrawID].shade = size
- return true
+	if not IsPlayerTextDrawValid(player, textdrawID) then
+		return false
+	end
+	g_PlayerTextDraws[player][textdrawID].shade = size
+	return true
 end
 
 function PlayerTextDrawSetOutline(amx, player, textdrawID, size)
@@ -515,9 +578,10 @@ function PlayerTextDrawSetOutline(amx, player, textdrawID, size)
 	g_PlayerTextDraws[player][textdrawID].outlinesize = size
 	return true
 end
+
 function PlayerTextDrawSetProportional(amx, player, textdrawID, proportional)
 	notImplemented('PlayerTextDrawSetProportional')
-	--TextDrawSetProportional(amx, textdraw, proportional)
+	return false
 end
 
 function PlayerTextDrawBackgroundColor(amx, player, textdrawID, r, g, b, a)
@@ -527,6 +591,7 @@ function PlayerTextDrawBackgroundColor(amx, player, textdrawID, r, g, b, a)
 	g_PlayerTextDraws[player][textdrawID].outlinecolor = { r, g, b, a }
 	return true
 end
+
 function PlayerTextDrawFont(amx, player, textdrawID, font)
 	if not IsPlayerTextDrawValid(player, textdrawID) then
 		return false
@@ -535,7 +600,7 @@ function PlayerTextDrawFont(amx, player, textdrawID, font)
 	return true
 end
 
-function PlayerTextDrawSetSelectable(amx)
+function PlayerTextDrawSetSelectable(amx, player, textdrawID, selectable)
 	notImplemented('PlayerTextDrawSetSelectable')
 	return false
 end
@@ -553,6 +618,7 @@ function PlayerTextDrawShow(amx, player, textdrawID)
 	--outputDebugString('PlayerTextDrawShow: proccessed for ' .. textdrawID .. ' with ' .. g_PlayerTextDraws[player][textdrawID].text)
 	return true
 end
+
 function PlayerTextDrawHide(amx, player, textdrawID)
 	if not IsPlayerTextDrawValid(player, textdrawID) then
 		return false
@@ -567,24 +633,24 @@ function PlayerTextDrawHide(amx, player, textdrawID)
 end
 
 function PlayerTextDrawSetString(amx, player, textdrawID, str)
- if not IsPlayerTextDrawValid(player, textdrawID) then
-     return false
- end
- g_PlayerTextDraws[player][textdrawID].text = str
- return true
+	if not IsPlayerTextDrawValid(player, textdrawID) then
+		return false
+	end
+	g_PlayerTextDraws[player][textdrawID].text = str
+	return true
 end
 
-function PlayerTextDrawSetPreviewModel(amx)
+function PlayerTextDrawSetPreviewModel(amx, player, textdrawID, model)
 	notImplemented('PlayerTextDrawSetPreviewModel')
 	return false
 end
 
-function PlayerTextDrawSetPreviewRot(amx)
+function PlayerTextDrawSetPreviewRot(amx, player, textdrawID, rX, rY, rZ, zoom)
 	notImplemented('PlayerTextDrawSetPreviewRot')
 	return false
 end
 
-function PlayerTextDrawSetPreviewVehCol(amx)
+function PlayerTextDrawSetPreviewVehCol(amx, player, textdrawID, color1, color2)
 	notImplemented('PlayerTextDrawSetPreviewVehCol')
 	return false
 end
@@ -599,54 +665,74 @@ end
 
 function SetPVarInt(amx, player, varname, value)
 	g_Players[getElemID(player)].pvars[varname] = {PLAYER_VARTYPE_INT, value}
-	return 1
+	return true
 end
 
 function GetPVarString(amx, player, varname, outbuf, length)
+	if length <= 0 then return 0 end
+
 	local value = g_Players[getElemID(player)].pvars[varname]
 	if not value or value[1] ~= PLAYER_VARTYPE_STRING then
 		return 0
 	end
 
-	if #value[2] < length then
-		writeMemString(amx, outbuf, value[2])
-	else
-		writeMemString(amx, outbuf, string.sub(value, 0, length - 1))
-	end
-	return 1
+	local copyLen = math.min(#value[2], length)
+	writeMemString(amx, outbuf, string.sub(value[2], 1, copyLen))
+	return copyLen
 end
 
 function SetPVarString(amx, player, varname, value)
 	g_Players[getElemID(player)].pvars[varname] = {PLAYER_VARTYPE_STRING, value}
-	return 1
+	return true
 end
 
 function GetPVarFloat(amx, player, varname)
 	local value = g_Players[getElemID(player)].pvars[varname]
 	if not value or value[1] ~= PLAYER_VARTYPE_FLOAT then
-		return 0
+		return float2cell(0)
 	end
 	return float2cell(value[2])
 end
 
 function SetPVarFloat(amx, player, varname, value)
 	g_Players[getElemID(player)].pvars[varname] = {PLAYER_VARTYPE_FLOAT, value}
-	return 1
+	return true
 end
 
 function DeletePVar(amx, player, varname)
 	g_Players[getElemID(player)].pvars[varname] = nil
-	return 1
+	return true
 end
 
-function GetPVarsUpperIndex(amx)
-	notImplemented('GetPVarsUpperIndex')
-	return false
+function GetPVarsUpperIndex(amx, player)
+	local playerID = getElemID(player)
+	if not g_Players[playerID] then return 0 end
+
+	local varCount = 0
+	for _ in pairs(g_Players[playerID].pvars) do
+		varCount = varCount + 1
+	end
+
+	return varCount
 end
 
-function GetPVarNameAtIndex(amx)
-	notImplemented('GetPVarNameAtIndex')
-	return false
+function GetPVarNameAtIndex(amx, player, index, outbuf, length)
+	if length <= 0 or index < 0 then return 0 end
+
+	local playerID = getElemID(player)
+	if not g_Players[playerID] then return 0 end
+
+	local varNames = {}
+	for name in pairs(g_Players[playerID].pvars) do
+		table.insert(varNames, name)
+	end
+
+	if index >= #varNames then return 0 end
+	local varName = string.upper(varNames[index + 1])
+
+	local copyLen = math.min(#varName, length)
+	writeMemString(amx, outbuf, varName:sub(1, copyLen))
+	return copyLen
 end
 
 function GetPVarType(amx, player, varname)
@@ -663,12 +749,16 @@ function SetPlayerChatBubble(amx, player, text, color, dist, exptime)
 end
 
 function PutPlayerInVehicle(amx, player, vehicle, seat)
-	warpPedIntoVehicle(player, vehicle, seat)
+	if not warpPedIntoVehicle(player, vehicle, seat) then
+		return false
+	end
 	if g_RCVehicles[getElementModel(vehicle)] then
+		setPedWeaponSlot(player, 0)
+		setElementCollisionsEnabled(player, false)
 		setElementAlpha(player, 0)
 	end
 	--setPlayerState(player, seat == 0 and PLAYER_STATE_DRIVER or PLAYER_STATE_PASSENGER)
-	--No need to do this since the vehicle event gets called when we enter a vehicle
+	-- No need to do this since the vehicle event gets called when we enter a vehicle
 	return true
 end
 
@@ -693,14 +783,16 @@ function RemovePlayerFromVehicle(amx, player)
 	if vehicle then
 		if g_RCVehicles[getElementModel(vehicle)] then
 			removePedFromVehicle(player)
+			clientCall(root, 'setElementCollisionsEnabled', player, true)
 			clientCall(root, 'setElementAlpha', player, 255)
 		else
 			removePedFromVehicleEx(player)
 		end
+		return true
 	end
 	--setPlayerState(player, PLAYER_STATE_ONFOOT)
-	--No need to do this since the vehicle event gets called when we exit a vehicle
-	return true
+	-- No need to do this since the vehicle event gets called when we exit a vehicle
+	return false
 end
 
 function TogglePlayerControllable(amx, player, enable)
@@ -709,10 +801,11 @@ end
 
 function PlayerPlaySound(amx, player, soundID, x, y, z)
 	notImplemented('PlayerPlaySound')
+	return false
 end
 
 function ApplyAnimation(amx, player, animlib, animname, fDelta, loop, lockx, locky, freeze, time, forcesync)
-	--time = Timer in ms. For a never-ending loop it should be 0.
+	-- time = Timer in ms. For a never-ending loop it should be 0.
 	if time == 0 then
 		loop = true
 	end
@@ -721,21 +814,33 @@ function ApplyAnimation(amx, player, animlib, animname, fDelta, loop, lockx, loc
 	return true
 end
 
-function ClearAnimations(amx, player)
+function ClearAnimations(amx, player, forcesync)
 	removePedFromVehicle(player)
 	setPedAnimation(player, false)
 	g_Players[getElemID(player)].specialaction = SPECIAL_ACTION_NONE
 	return true
 end
 
-function GetPlayerAnimationIndex(player)
+function GetPlayerAnimationIndex(amx, player)
 	notImplemented('GetPlayerAnimationIndex')
 	return 0
 end
 
-function GetAnimationName(amx)
-	notImplemented('GetAnimationName')
-	return false
+function GetAnimationName(amx, index, animLib, libLen, animName, nameLen)
+	if libLen <= 0 or nameLen <= 0 then return false end
+
+	local foundKey = lookupAnimByID[index]
+	if not foundKey then return false end
+
+	local animLibPart, animNamePart = foundKey:match("^([^:]+):([^:]+)$")
+	if not animLibPart or not animNamePart then return false end
+
+	local copyLen = math.min(#animLibPart, libLen)
+	writeMemString(amx, animLib, animLibPart:sub(1, copyLen))
+	copyLen = math.min(#animNamePart, nameLen)
+	writeMemString(amx, animName, animNamePart:sub(1, copyLen))
+
+	return true
 end
 
 function GetPlayerSpecialAction(amx, player)
@@ -763,7 +868,7 @@ function SetPlayerSpecialAction(amx, player, actionID)
 	return true
 end
 
-function DisableRemoteVehicleCollisions(amx)
+function DisableRemoteVehicleCollisions(amx, player, disable)
 	notImplemented('DisableRemoteVehicleCollisions')
 	return false
 end
@@ -793,7 +898,6 @@ function DisablePlayerRaceCheckpoint(amx, player)
 end
 
 -- SetPlayerWorldBounds client
-
 -- SetPlayerMarkerForPlayer client
 
 function ShowPlayerNameTagForPlayer(amx, player, playerToShow, show)
@@ -806,6 +910,12 @@ end
 
 function AllowPlayerTeleport(amx, player, allow)
 	deprecated('AllowPlayerTeleport', '0.3d')
+	return true
+end
+
+function SetPlayerDisabledWeapons(amx, player, ...)
+	deprecated('SetPlayerDisabledWeapons', '0.3')
+	return true
 end
 
 function SetPlayerCameraPos(amx, player, x, y, z)
@@ -817,7 +927,7 @@ function SetPlayerCameraPos(amx, player, x, y, z)
 	return true
 end
 
-function SetPlayerCameraLookAt(amx, player, lx, ly, lz)
+function SetPlayerCameraLookAt(amx, player, lx, ly, lz, cut)
 	if not player then
 		return false
 	end
@@ -828,7 +938,7 @@ function SetPlayerCameraLookAt(amx, player, lx, ly, lz)
 end
 
 function SetCameraBehindPlayer(amx, player)
-	--In samp calling SetCameraBehindPlayer also unsets camera interpolation
+	-- In SA-MP calling SetCameraBehindPlayer also unsets camera interpolation
 	clientCall(player, 'removeCamHandlers')
 	return setCameraTarget(player, player)
 end
@@ -849,67 +959,61 @@ function GetPlayerCameraFrontVector(amx, player, refX, refY, refZ)
 		return false
 	end
 	local x, y, z, lx, ly, lz = getCameraMatrix(player)
-	writeMemFloat(amx, refX, lx)
-	writeMemFloat(amx, refY, ly)
-	writeMemFloat(amx, refZ, lz)
+	writeMemFloat(amx, refX, lx - x)
+	writeMemFloat(amx, refY, ly - y)
+	writeMemFloat(amx, refZ, lz - z)
 	return true
 end
 
-function GetPlayerCameraMode(amx)
+function GetPlayerCameraMode(amx, player)
 	notImplemented('GetPlayerCameraMode')
 	return -1
 end
 
-function EnablePlayerCameraTarget(amx)
+function EnablePlayerCameraTarget(amx, player, enable)
 	notImplemented('EnablePlayerCameraTarget')
 	return false
 end
 
-function GetPlayerCameraTargetObject(amx)
+function GetPlayerCameraTargetObject(amx, player)
 	notImplemented('GetPlayerCameraTargetObject')
 	return INVALID_OBJECT_ID
 end
 
-function GetPlayerCameraTargetVehicle(amx)
+function GetPlayerCameraTargetVehicle(amx, player)
 	notImplemented('GetPlayerCameraTargetVehicle')
 	return INVALID_VEHICLE_ID
 end
 
-function GetPlayerCameraTargetPlayer(amx)
+function GetPlayerCameraTargetPlayer(amx, player)
 	notImplemented('GetPlayerCameraTargetPlayer')
 	return INVALID_PLAYER_ID
 end
 
-function GetPlayerCameraTargetActor(amx)
+function GetPlayerCameraTargetActor(amx, player)
 	notImplemented('GetPlayerCameraTargetActor')
 	return INVALID_ACTOR_ID
 end
 
-function GetPlayerCameraAspectRatio(amx)
+function GetPlayerCameraAspectRatio(amx, player)
 	notImplemented('GetPlayerCameraAspectRatio')
 	return float2cell(0)
 end
 
-function GetPlayerCameraZoom(amx)
+function GetPlayerCameraZoom(amx, player)
 	notImplemented('GetPlayerCameraZoom')
 	return float2cell(0)
 end
 
-function AttachCameraToObject(amx, player, object)
-	clientCall(player, 'AttachCameraToObject', object)
-	return true
-end
-
-function AttachCameraToPlayerObject(amx)
-	notImplemented('AttachCameraToPlayerObject')
-	return false
-end
+-- AttachCameraToObject client
+-- AttachCameraToPlayerObject client
 
 --playerid, Float:FromX, Float:FromY, Float:FromZ, Float:ToX, Float:ToY, Float:ToZ, time, cut = CAMERA_CUT
 function InterpolateCameraPos(amx, player, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	clientCall(player, 'InterpolateCameraPos', FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	return true
 end
+
 function InterpolateCameraLookAt(amx, player, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	clientCall(player, 'InterpolateCameraLookAt', FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	return true
@@ -933,7 +1037,7 @@ function IsPlayerInCheckpoint(amx, player)
 		return false
 	end
 	local x, y = getElementPosition(player)
-	return math.sqrt((playerdata.checkpoint.x - x)^2 + (playerdata.checkpoint.y - y)^2) <= playerdata.checkpoint.radius
+	return math.sqrt((playerdata.checkpoint.x - x) ^ 2 + (playerdata.checkpoint.y - y) ^ 2) <= playerdata.checkpoint.radius
 end
 
 function IsPlayerInRaceCheckpoint(amx, player)
@@ -942,7 +1046,7 @@ function IsPlayerInRaceCheckpoint(amx, player)
 		return false
 	end
 	local x, y = getElementPosition(player)
-	return math.sqrt((playerdata.racecheckpoint.x - x)^2 + (playerdata.racecheckpoint.y - y)^2) <= playerdata.racecheckpoint.radius
+	return math.sqrt((playerdata.racecheckpoint.x - x) ^ 2 + (playerdata.racecheckpoint.y - y) ^ 2) <= playerdata.racecheckpoint.radius
 end
 
 function IsPlayerInVehicle(amx, player, vehicle)
@@ -955,32 +1059,39 @@ end
 
 function EnableStuntBonusForAll(amx, enable)
 	notImplemented('EnableStuntBonusForAll')
+	return true
 end
 
 function EnableStuntBonusForPlayer(amx, player, enable)
 	notImplemented('EnableStuntBonusForPlayer')
+	return false
 end
 
 function TogglePlayerSpectating(amx, player, enable)
 	if enable then
 		fadeCamera(player, true)
 		setCameraMatrix(player, 75.461357116699, 64.600051879883, 51.685581207275, 149.75857543945, 131.53228759766, 40.597320556641)
+		toggleAllControls(player, false, true, false) -- will be re-enabled in spawn event
+		setPedWeaponSlot(player, 0)
+		setElementAlpha(player, 0)
+		setElementCollisionsEnabled(player, false)
 		setPlayerHudComponentVisible(player, 'radar', false)
 		setPlayerState(player, PLAYER_STATE_SPECTATING)
 	else
 		local playerdata = g_Players[getElemID(player)]
 		local spawninfo = playerdata.spawninfo or (g_PlayerClasses and g_PlayerClasses[playerdata.selectedclass])
-		if not spawninfo or playerdata.returntoclasssel then
+		if playerdata.returntoclasssel then
 			playerdata.returntoclasssel = nil
 			putPlayerInClassSelection(player)
-			return true
+		else
+			spawnPlayerBySelectedClass(player)
+			setPlayerHudComponentVisible(player, 'radar', true)
 		end
-		spawnPlayerBySelectedClass(player)
-		--In samp calling TogglePlayerSpectating also unsets camera interpolation
-		clientCall(player, 'removeCamHandlers')
+		setElementAlpha(player, 255)
 		setCameraTarget(player, player)
-		clientCall(player, 'setCameraTarget', player) --Clear the one on the client as well, otherwise we can't go back to normal camera after spectating vehicles
-		setPlayerHudComponentVisible(player, 'radar', true)
+		clientCall(player, 'setCameraTarget', player) -- Clear the one on the client as well, otherwise we can't go back to normal camera after spectating vehicles
+		-- In SA-MP calling TogglePlayerSpectating also unsets camera interpolation
+		clientCall(player, 'removeCamHandlers')
 	end
 	return true
 end
@@ -998,28 +1109,22 @@ function PlayerSpectateVehicle(amx, player, vehicleToSpectate, mode)
 	end
 end
 
-function StartRecordingPlayerData(amx)
+function StartRecordingPlayerData(amx, player, type, name)
 	notImplemented('StartRecordingPlayerData')
 	return false
 end
 
-function StopRecordingPlayerData(amx)
+function StopRecordingPlayerData(amx, player)
 	notImplemented('StopRecordingPlayerData')
 	return false
 end
 
-function SelectTextDraw(amx)
+function SelectTextDraw(amx, player, hovercolor)
 	notImplemented('SelectTextDraw')
 	return false
 end
 
-function CancelSelectTextDraw(amx)
+function CancelSelectTextDraw(amx, player)
 	notImplemented('CancelSelectTextDraw')
 	return false
-end
-
--- Explosion
-function CreateExplosionForPlayer(amx, player, x, y, z, type, radius)
-	clientCall(player, 'createExplosion', x, y, z, type, true, -1.0, false)
-	return true
 end

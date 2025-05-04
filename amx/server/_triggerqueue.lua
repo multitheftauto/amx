@@ -8,7 +8,7 @@ end
 
 addEventHandler('onResourceStart', resourceRoot,
 	function()
-		for i,player in ipairs(getElementsByType('player')) do
+		for i, player in ipairs(getElementsByType('player')) do
 			joinHandler(player)
 		end
 	end,
@@ -21,7 +21,7 @@ addEvent('onLoadedAtClient', true)
 addEventHandler('onLoadedAtClient', resourceRoot,
 	function(player)
 		playerData[player].loaded = true
-		for i,event in ipairs(playerData[player].pending) do
+		for i, event in ipairs(playerData[player].pending) do
 			_triggerClientEvent(player, event.name, event.source, unpack(event.args))
 		end
 		playerData[player].pending = nil
@@ -36,7 +36,7 @@ addEventHandler('onPlayerQuit', root,
 )
 
 local function addToQueue(player, name, source, args)
-	for i,a in pairs(args) do
+	for i, a in pairs(args) do
 		if type(a) == 'table' then
 			args[i] = table.deepcopy(a)
 		end
@@ -59,7 +59,7 @@ function triggerClientEvent(...)
 	if triggerFor == root then
 		-- trigger for everyone
 		local triggerNow = true
-		for player,data in pairs(playerData) do
+		for player, data in pairs(playerData) do
 			if not data.loaded then
 				triggerNow = false
 				break
@@ -68,7 +68,7 @@ function triggerClientEvent(...)
 		if triggerNow then
 			_triggerClientEvent(root, name, source, unpack(args))
 		else
-			for player,data in pairs(playerData) do
+			for player, data in pairs(playerData) do
 				addToQueue(player, name, source, args)
 			end
 		end

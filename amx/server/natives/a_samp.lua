@@ -1,6 +1,5 @@
-
 ----------------------------------------------
---  Start of SA-MP API implementation
+-- Start of SA-MP API implementation
 
 skinReplace = {
 	-- invalid skins
@@ -18,13 +17,13 @@ skinReplace = {
 	[208] = 0,
 	[273] = 0,
 }
---replace colors
-function colorizeString(string) 
+-- replace colors
+function colorizeString(string)
 	return string:gsub("(=?{[0-9A-Fa-f]*})",
 	function(colorMatches)
-		colorMatches = colorMatches:gsub("[{}]+", "") --replace the curly brackets with nothing
-		colorMatches = '#' .. colorMatches --Append to the beginning
-		return colorMatches 
+		colorMatches = colorMatches:gsub("[{}]+", "") -- replace the curly brackets with nothing
+		colorMatches = '#' .. colorMatches -- Append to the beginning
+		return colorMatches
 	end)
 end
 
@@ -37,13 +36,13 @@ function SendClientMessage(amx, player, r, g, b, a, message)
 		message = ('*'):rep(44)
 	--[[
 	else
-		for mta,samp in pairs(g_CommandMapping) do
+		for mta, samp in pairs(g_CommandMapping) do
 			message = message:gsub('/' .. samp, '/' .. mta)
 		end
-	]] --Why is command mapping stuff here? This replaces any part of a string, causing commands such as '/quitfaction' to display as '/outfaction'
+	]] -- Why is command mapping stuff here? This replaces any part of a string, causing commands such as '/quitfaction' to display as '/outfaction'
 	end
 
-	--replace colors
+	-- replace colors
 	return outputChatBox(colorizeString(message), player, r, g, b, true)
 end
 
@@ -52,10 +51,10 @@ function SendClientMessageToAll(amx, r, g, b, a, message)
 		return false
 	end
 
-	--replace colors
+	-- replace colors
 	message = colorizeString(message)
 
-	for i,data in pairs(g_Players) do
+	for i, data in pairs(g_Players) do
 		SendClientMessage(amx, data.elem, r, g, b, a, message)
 	end
 	return true
@@ -73,12 +72,16 @@ function SendDeathMessage(amx, killer, victim, reason)
 	-- no implementation needed, killmessages resource shows kills already
 end
 
+function SendDeathMessageToPlayer(amx, player, killer, victim, reason)
+	-- no implementation needed, killmessages resource shows kills already
+end
+
 function GameTextForAll(amx, str, time, style)
 	str = str:lower()
-	for mta,samp in pairs(g_CommandMapping) do
+	for mta, samp in pairs(g_CommandMapping) do
 		str = str:gsub('/' .. samp, '/' .. mta)
 	end
-	for i,player in pairs(g_Players) do
+	for i, player in pairs(g_Players) do
 		GameTextForPlayer(amx, player.elem, str, time, style)
 	end
 	return true
@@ -86,7 +89,7 @@ end
 
 function GameTextForPlayer(amx, player, str, time, style)
 	str = str:lower()
-	for mta,samp in pairs(g_CommandMapping) do
+	for mta, samp in pairs(g_CommandMapping) do
 		str = str:gsub('/' .. samp, '/' .. mta)
 	end
 	clientCall(player, 'GameTextForPlayer', str, time, style)
@@ -95,7 +98,7 @@ end
 
 function SetTimerEx(amx, fnName, interval, repeating, fmt, ...)
 	local vals = { ... }
-	for i,val in ipairs(vals) do
+	for i, val in ipairs(vals) do
 		if fmt:sub(i, i) == 's' then
 			vals[i] = readMemString(amx, val)
 		else
@@ -109,8 +112,8 @@ function SetTimerEx(amx, fnName, interval, repeating, fmt, ...)
 	else
 		local id = table.insert(amx.timers, false)
 		local timer = setTimer(
-			function(id, ...)
-				amx.timers[id] = nil
+			function(timerID, ...)
+				amx.timers[timerID] = nil
 				procCallInternal(amx, fnName, ...)
 			end,
 			interval, 1, id, unpack(vals)
@@ -141,7 +144,7 @@ end
 
 function CallLocalFunction(amx, fnName, fmt, ...)
 	local args = { ... }
-	for i=1,math.min(#fmt, #args) do
+	for i = 1, math.min(#fmt, #args) do
 		if fmt:sub(i, i) == 's' then
 			args[i] = readMemString(amx, args[i])
 		else
@@ -153,7 +156,7 @@ end
 
 function CallRemoteFunction(amx, fnName, fmt, ...)
 	local args = { ... }
-	for i=1,math.min(#fmt, #args) do
+	for i = 1, math.min(#fmt, #args) do
 		if fmt:sub(i, i) == 's' then
 			args[i] = readMemString(amx, args[i])
 		else
@@ -164,7 +167,7 @@ function CallRemoteFunction(amx, fnName, fmt, ...)
 end
 
 function VectorSize(amx, x, y, z)
-	return float2cell(math.sqrt( (x^2) + (y^2) + (z^2)))
+	return float2cell(math.sqrt((x ^ 2) + (y ^ 2) + (z ^ 2)))
 end
 
 function acos(amx, f)
@@ -185,7 +188,7 @@ end
 
 function GetPlayerPoolSize(amx)
 	local highestId = 0
-	for id,v in pairs(g_Players) do
+	for id, v in pairs(g_Players) do
 		if id > highestId then
 			highestId = id
 		end
@@ -193,10 +196,9 @@ function GetPlayerPoolSize(amx)
 	return highestId
 end
 
-
 function GetVehiclePoolSize(amx)
 	local highestId = 0
-	for id,v in pairs(g_Vehicles) do
+	for id, v in pairs(g_Vehicles) do
 		if id > highestId then
 			highestId = id
 		end
@@ -207,68 +209,105 @@ end
 -- Security
 
 function SHA256_PassHash(amx, pass, salt, ret_hash, ret_hash_len)
-	local secret = hash ( 'sha256', pass .. '' .. salt ) -- who is it guy which writes salt after pass?
-	writeMemString(amx, ret_hash, string.upper(secret) )
+	if ret_hash_len <= 0 then return 0 end
+
+	local secret = hash('sha256', pass .. '' .. salt) -- who is it guy which writes salt after pass?
+	secret = string.upper(secret)
+
+	local copy_len = math.min(#secret, ret_hash_len)
+	writeMemString(amx, ret_hash, secret:sub(1, copy_len))
+	return copy_len
 end
 
-function SetSVarInt(amx)
-	notImplemented('SetSVarInt')
-	return false
+function GetSVarInt(amx, varname)
+	local value = g_SVars[varname]
+	if not value or value[1] ~= SERVER_VARTYPE_INT then
+		return 0
+	end
+	return value[2]
 end
 
-function GetSVarInt(amx)
-	notImplemented('GetSVarInt')
-	return false
+function SetSVarInt(amx, varname, value)
+	g_SVars[varname] = {SERVER_VARTYPE_INT, value}
+	return true
 end
 
-function SetSVarString(amx)
-	notImplemented('SetSVarString')
-	return false
+function GetSVarString(amx, varname, outbuf, length)
+	if length <= 0 then return 0 end
+
+	local value = g_SVars[varname]
+	if not value or value[1] ~= SERVER_VARTYPE_STRING then
+		return 0
+	end
+
+	local copyLen = math.min(#value[2], length)
+	writeMemString(amx, outbuf, string.sub(value[2], 1, copyLen))
+	return copyLen
 end
 
-function GetSVarString(amx)
-	notImplemented('GetSVarString')
-	return false
+function SetSVarString(amx, varname, value)
+	g_SVars[varname] = {SERVER_VARTYPE_STRING, value}
+	return true
 end
 
-function SetSVarFloat(amx)
-	notImplemented('SetSVarFloat')
-	return false
+function GetSVarFloat(amx, varname)
+	local value = g_SVars[varname]
+	if not value or value[1] ~= SERVER_VARTYPE_FLOAT then
+		return float2cell(0)
+	end
+	return float2cell(value[2])
 end
 
-function GetSVarFloat(amx)
-	notImplemented('GetSVarFloat')
-	return false
+function SetSVarFloat(amx, varname, value)
+	g_SVars[varname] = {SERVER_VARTYPE_FLOAT, value}
+	return true
 end
 
-function DeleteSVar(amx)
-	notImplemented('DeleteSVar')
-	return false
+function DeleteSVar(amx, varname)
+	g_SVars[varname] = nil
+	return true
 end
 
 function GetSVarsUpperIndex(amx)
-	notImplemented('GetSVarsUpperIndex')
-	return false
+	local varCount = 0
+	for _ in pairs(g_SVars) do
+		varCount = varCount + 1
+	end
+
+	return varCount
 end
 
-function GetSVarNameAtIndex(amx)
-	notImplemented('GetSVarNameAtIndex')
-	return false
+function GetSVarNameAtIndex(amx, index, outbuf, length)
+	if length <= 0 or index < 0 then return 0 end
+
+	local varNames = {}
+	for name in pairs(g_SVars) do
+		table.insert(varNames, name)
+	end
+
+	if index >= #varNames then return 0 end
+	local varName = string.upper(varNames[index + 1])
+
+	local copyLen = math.min(#varName, length)
+	writeMemString(amx, outbuf, varName:sub(1, copyLen))
+	return copyLen
 end
 
-function GetSVarType(amx)
-	notImplemented('GetSVarType')
-	return false
+function GetSVarType(amx, varname)
+	local value = g_SVars[varname]
+	if value then
+		return value[1]
+	end
+	return SERVER_VARTYPE_NONE
 end
-
-
 
 function SetGameModeText(amx, gamemodeName)
 	return setGameType(gamemodeName)
 end
 
 function SetTeamCount(amx, count)
-	notImplemented('SetTeamCount')
+	deprecated('SetTeamCount', '0.3')
+	return false
 end
 
 function AddPlayerClass(amx, skin, x, y, z, angle, weap1, weap1_ammo, weap2, weap2_ammo, weap3, weap3_ammo)
@@ -280,24 +319,23 @@ function AddPlayerClassEx(amx, team, skin, x, y, z, angle, weap1, weap1_ammo, we
 		g_PlayerClasses,
 		{
 			x, y, z, angle, skinReplace[skin] or skin, 0, 0, team,
-			weapons={
-				{weap1, weap1_ammo},
-				{weap2, weap2_ammo},
-				{weap3, weap3_ammo}
+			weapons = {
+				{ weap1, weap1_ammo },
+				{ weap2, weap2_ammo },
+				{ weap3, weap3_ammo }
 			}
 		}
 	)
 	return id
 end
 
-
 function AddStaticVehicle(amx, model, x, y, z, angle, color1, color2)
 	return AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, 120)
 end
 
-function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnDelay)
+function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnDelay, addSiren)
 	local vehicle = createVehicle(model, x, y, z, 0, 0, angle)
-	if(vehicle == false) then
+	if (vehicle == false) then
 		return INVALID_VEHICLE_ID
 	end
 
@@ -309,26 +347,32 @@ function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnD
 		respawnDelay = 120
 	end
 	g_Vehicles[vehID].vehicleIsAlive = true
-	g_Vehicles[vehID].respawndelay = respawnDelay*1000
+	g_Vehicles[vehID].respawndelay = respawnDelay * 1000
 	g_Vehicles[vehID].spawninfo = { x = x, y = y, z = z, angle = angle }
 	if ManualVehEngineAndLights then
-		if (getVehicleType(vehicle) ~= "Plane" and getVehicleType(vehicle) ~= "Helicopter") then
+		if (getVehicleType(vehicle) ~= 'Plane' and getVehicleType(vehicle) ~= 'Helicopter') then
 			setVehicleEngineState(vehicle, false)
-			for i=0, 4 do
+			for i = 0, 4 do
 				setVehicleLightState(vehicle, i, 0)
 			end
 			g_Vehicles[vehID].engineState = false
 		end
 	end
+	if getVehicleType(vehicle) == 'Train' then
+		setTrainDerailable(vehicle, false)
+	end
+	if addSiren then
+		addVehicleSirens(vehicle, 1, 1)
+	end
 	return vehID
 end
 
-local function housePickup()
+local function onHousePickupUse()
 	procCallOnAll('OnPlayerPickUpPickup', getElemID(player), getElemID(source))
 	cancelEvent()
 end
 
-function AddStaticPickup(amx, model, type, x, y, z)
+function AddStaticPickup(amx, model, type, x, y, z, world)
 	local mtaPickupType, mtaPickupAmount, respawntime
 	if model == 1240 then		-- health
 		mtaPickupType = 0
@@ -351,11 +395,14 @@ function AddStaticPickup(amx, model, type, x, y, z)
 	local pickup = createPickup(x, y, z, mtaPickupType, mtaPickupAmount)
 	if not pickup then
 		outputDebugString('Failed to create pickup of model ' .. model, 2)
-		return 0
+		return -1
+	end
+	if world and world ~= -1 then
+		setElementDimension(pickup, world)
 	end
 	if isCustomPickup(pickup) then
 		-- house pickups don't disappear on pickup
-		addEventHandler('onPickupUse', pickup, housePickup, false)
+		addEventHandler('onPickupUse', pickup, onHousePickupUse, false)
 	end
 	return addElem(g_Pickups, pickup)
 end
@@ -373,10 +420,10 @@ function ShowNameTags(amx, show)
 	return true
 end
 
-function ShowPlayerMarkers(amx, show)
-	g_ShowPlayerMarkers = show
-	for i,data in pairs(g_Players) do
-		ShowPlayerMarker(amx, data.elem, show)
+function ShowPlayerMarkers(amx, mode)
+	g_PlayerMarkersMode = mode
+	for i, data in pairs(g_Players) do
+		ShowPlayerMarker(amx, data.elem, mode)
 	end
 	return true
 end
@@ -394,21 +441,19 @@ function SetWorldTime(amx, hours)
 	return setTime(hours, 0)
 end
 
-
 function GetWeaponName(amx, weaponID, buf, len)
+	if len <= 0 then return 0 end
+
 	local name = getWeaponNameFromID(weaponID)
-	if name ~= false and #name < len then
-		writeMemString(amx, buf, name)
-		return 1
-	else
-		writeMemString(amx, buf, '') --I was going to return 'None' in here, but I believe SA-MP just returns a blank string
-		return 0
-	end
-	return 1
+	if not name then name = '' end
+
+	local copyLen = math.min(#name, len)
+	writeMemString(amx, buf, name:sub(1, copyLen))
+	return copyLen
 end
 
 function EnableTirePopping(amx, enable)
-
+	-- doesn't work in SA-MP as well, tire popping is always on
 end
 
 function EnableVehicleFriendlyFire(amx)
@@ -417,13 +462,13 @@ function EnableVehicleFriendlyFire(amx)
 end
 
 function AllowInteriorWeapons(amx, allow)
-	deprecated('AllowInteriorWeapons', '0.3d')
+	deprecated('AllowInteriorWeapons', '0.3')
+	return true
 end
 
 function SetWeather(amx, weatherID)
 	return setWeather(weatherID % 256)
 end
-
 
 function SetGravity(amx, gravity)
 	setGravity(gravity)
@@ -431,55 +476,90 @@ function SetGravity(amx, gravity)
 	return true
 end
 
+function GetGravity(amx)
+	return float2cell(getGravity())
+end
+
 function AllowAdminTeleport(amx, allow)
 	deprecated('AllowAdminTeleport', '0.3d')
+	return true
+end
+
+function SetDisabledWeapons(amx, ...)
+	deprecated('SetDisabledWeapons', '0.3')
+	return true
 end
 
 function SetDeathDropAmount(amx, amount)
-	notImplemented('SetDeathDropAmount')
+	deprecated('SetDeathDropAmount', '0.3')
+	return true
 end
 
 function CreateExplosion(amx, x, y, z, type, radius)
 	return createExplosion(x, y, z, type)
 end
 
-function ShowPlayerMarker(amx, player, show)
-	local data = g_Players[getElemID(player)]
-	if not show and data.blip then
-		destroyElement(data.blip)
-		data.blip = nil
-	elseif show and not data.blip then
-		local r, g, b = getPlayerNametagColor(player)
-		data.blip = createBlipAttachedTo(player, 0, 2, r, g, b)
-	end
-end
+function ShowPlayerMarker(amx, player, mode)
+	local playerdata = g_Players[getElemID(player)]
+	if not playerdata then return false end
+	if not mode then mode = 0 end
 
+	if mode == 0 and playerdata.blip then
+		destroyElement(playerdata.blip)
+		playerdata.blip = nil
+	elseif mode ~= 0 and not playerdata.blip then
+		local r, g, b = getPlayerNametagColor(player)
+		playerdata.blip = createBlipAttachedTo(player, 0, 2, r, g, b)
+
+		if mode == 1 and g_PlayerMarkerRadius then -- Mode global
+			setBlipVisibleDistance(playerdata.blip, g_PlayerMarkerRadius)
+		elseif mode == 2 then -- Mode streamed
+			setBlipVisibleDistance(playerdata.blip, 250.0)
+		end
+	end
+	return true
+end
 
 function EnableZoneNames(amx, enable)
 	g_ShowZoneNames = enable
-	for i,data in pairs(g_Players) do
+	for i, data in pairs(g_Players) do
 		setPlayerHudComponentVisible(data.elem, 'area_name', enable)
 	end
+	return true
 end
 
 function UsePlayerPedAnims(amx)
 	notImplemented('UsePlayerPedAnims')
+	return true
 end
-
 
 function DisableInteriorEnterExits(amx)
 	notImplemented('DisableInteriorEnterExits')
+	return true
 end
 
+function DisableNameTagLOS(amx)
+	notImplemented('DisableNameTagLOS')
+	return true
+end
 
 function SetNameTagDrawDistance(amx, distance)
 	notImplemented('SetNameTagDrawDistance')
+	return true
 end
 
 function LimitGlobalChatRadius(amx, radius)
 	if radius > 0 then
 		g_GlobalChatRadius = radius
 	end
+	return true
+end
+
+function LimitPlayerMarkerRadius(amx, radius)
+	if radius > 0 then
+		g_PlayerMarkerRadius = radius
+	end
+	return true
 end
 
 function ConnectNPC(amx, name, script)
@@ -515,8 +595,8 @@ end
 function SpawnPlayer(amx, player)
 	local playerdata = g_Players[getElemID(player)]
 	if playerdata.doingclasssel then
-		--Call requestSpawn instead so we clear up any binds
-		--since there's a workaround in SA-MP to skip the spawn selection screen
+		-- Call requestSpawn instead so we clear up any binds
+		-- since there's a workaround in SA-MP to skip the spawn selection screen
 		requestSpawn(player, false, false)
 	else
 		spawnPlayerBySelectedClass(player)
@@ -524,42 +604,117 @@ function SpawnPlayer(amx, player)
 	return true
 end
 
--- GetPlayerNetworkStats
--- GetNetworkStats
--- GetPlayerVersion
-function GetPlayerNetworkStats(amx)
-	notImplemented('GetPlayerNetworkStats')
+function GetPlayerNetworkStats(amx, player, nameBuf, bufSize)
+	if bufSize <= 0 then return false end
+
+	local result = {}
+	for index, value in pairs(getNetworkStats(player)) do
+		table.insert(result, tostring(index) .. ': ' .. tostring(value))
+	end
+	result = table.concat(result, '\n')
+
+	local copyLen = math.min(#result, bufSize)
+	writeMemString(amx, nameBuf, string.sub(result, 1, copyLen))
+	return true
+end
+
+function GetNetworkStats(amx, nameBuf, bufSize)
+	if bufSize <= 0 then return false end
+
+	local result = {}
+	for index, value in pairs(getNetworkStats()) do
+		table.insert(result, tostring(index) .. ': ' .. tostring(value))
+	end
+	result = table.concat(result, '\n')
+
+	local copyLen = math.min(#result, bufSize)
+	writeMemString(amx, nameBuf, string.sub(result, 1, copyLen))
+	return true
+end
+
+function GetPlayerVersion(amx, player, nameBuf, bufSize)
+	if bufSize <= 0 then return 0 end
+
+	local version = getPlayerVersion(player)
+
+	local copyLen = math.min(#version, bufSize)
+	writeMemString(amx, nameBuf, version:sub(1, copyLen))
+	return copyLen
+end
+
+function BlockIpAddress(amx, ip, time)
+	notImplemented('BlockIpAddress')
 	return false
 end
 
-function GetNetworkStats(amx)
-	notImplemented('GetNetworkStats')
-	return false
-end
-
-function GetPlayerVersion(amx)
-	notImplemented('GetPlayerVersion')
+function UnBlockIpAddress(amx, ip)
+	notImplemented('UnBlockIpAddress')
 	return false
 end
 
 function GetServerVarAsBool(amx, varname)
-	return get('amx.' .. varname) and true
+	if not varname or varname == '' then
+		return false
+	end
+
+	if g_ServerVars[varname] ~= nil then
+		local val = tonumber(g_ServerVars[varname])
+
+		if val then
+			return val ~= 0
+		elseif type(g_ServerVars[varname]) == 'boolean' then
+			return g_ServerVars[varname]
+		end
+
+		return false
+	end
+
+	local val = get('amx.' .. varname)
+
+	local numVal = tonumber(val)
+	if numVal then
+		return numVal ~= 0
+	end
+
+	return val and true
 end
 
 function GetServerVarAsInt(amx, varname)
+	if not varname or varname == '' then
+		return 0
+	end
+
+	if g_ServerVars[varname] ~= nil then
+		local val = tonumber(g_ServerVars[varname])
+
+		if val then
+			return val
+		elseif type(g_ServerVars[varname]) == 'boolean' then
+			return g_ServerVars[varname] and 1 or 0
+		end
+
+		return 0
+	end
+
 	local val = get('amx.' .. varname)
-	return val and tonumber(val)
+	return val and tonumber(val) or 0
 end
 
 function GetServerVarAsString(amx, varname, buf, buflen)
-	local val = get('amx.' .. varname)
-	writeMemString(amx, buf, val and #val < buflen and val or '')
+	if buflen <= 0 then return 0 end
+	if not varname or varname == '' then return 0 end
+
+	local rawVal = g_ServerVars[varname] or get('amx.' .. varname)
+	local valStr = (type(rawVal) == 'string') and rawVal or ''
+
+	local copyLen = math.min(#valStr, buflen - 1)
+	writeMemString(amx, buf, valStr:sub(1, copyLen))
+	return #valStr
 end
 
 GetConsoleVarAsBool = GetServerVarAsBool
 GetConsoleVarAsInt = GetServerVarAsInt
 GetConsoleVarAsString = GetServerVarAsString
-
 
 function CreateMenu(amx, title, columns, x, y, leftColumnWidth, rightColumnWidth)
 	local menu = { title = title, x = x, y = y, leftColumnWidth = leftColumnWidth, rightColumnWidth = rightColumnWidth, items = { [0] = {}, [1] = {} } }
@@ -570,7 +725,7 @@ function CreateMenu(amx, title, columns, x, y, leftColumnWidth, rightColumnWidth
 end
 
 function DestroyMenu(amx, menu)
-	for i,playerdata in pairs(g_Players) do
+	for i, playerdata in pairs(g_Players) do
 		if playerdata.menu == menu then
 			playerdata.menu = nil
 		end
@@ -614,7 +769,7 @@ function DisableMenu(amx, menuID)
 		return false
 	end
 	menu.disabled = true
-	for id,player in pairs(g_Players) do
+	for id, player in pairs(g_Players) do
 		if GetPlayerMenu(amx, player.elem) == menuID then
 			clientCall(player.elem, 'HideMenuForPlayer', menuID)
 		end
@@ -638,7 +793,7 @@ end
 
 function TextDrawCreate(amx, x, y, text)
 	outputDebugString('TextDrawCreate called with args ' .. x .. ' ' .. y .. ' ' .. text)
-	local textdraw = { x = x, y = y, shadow = {align=1, text=text, font=1, lwidth=0.5, lheight = 0.5} }
+	local textdraw = { x = x, y = y, shadow = {align = 1, text = text, font = 1, lwidth = 0.5, lheight = 0.5} }
 	textdraw.clientTDId = #g_TextDraws + 1
 	local id = table.insert(g_TextDraws, textdraw)
 
@@ -669,11 +824,11 @@ function TextDrawCreate(amx, x, y, text)
 	return id
 end
 
---Mainly just wrappers to the other non-player functions
+-- Mainly just wrappers to the other non-player functions
 
 function IsPlayerTextDrawValid(player, textdrawID)
 	local tableType = type(g_PlayerTextDraws[player])
-	if tableType ~= "table" then
+	if tableType ~= 'table' then
 		outputDebugString("[ERROR_NOT_A_TABLE] IsPlayerTextDrawValid: g_PlayerTextDraws[player] is not a table yet for textdrawID: " .. textdrawID .. " it's actually a " .. tableType)
 		return false
 	end
@@ -694,7 +849,7 @@ function TextDrawUseBox(amx, textdraw, usebox)
 	return true
 end
 
---End of player textdraws
+-- End of player textdraws
 function TextDrawDestroy(amx, textdrawID)
 	if not g_TextDraws[textdrawID] then
 		return false
@@ -704,7 +859,6 @@ function TextDrawDestroy(amx, textdrawID)
 	return true
 end
 
-
 function TextDrawLetterSize(amx, textdraw, width, height)
 	textdraw.lwidth = width
 	textdraw.lheight = height
@@ -712,7 +866,7 @@ function TextDrawLetterSize(amx, textdraw, width, height)
 end
 
 function TextDrawTextSize(amx, textdraw, x, y)
-	textdraw.boxsize = { x, y } --Game does 448 not 480
+	textdraw.boxsize = { x, y } -- Game does 448 not 480
 	return true
 end
 
@@ -730,7 +884,6 @@ function TextDrawBoxColor(amx, textdraw, r, g, b, a)
 	textdraw.boxcolor = { r, g, b, a }
 	return true
 end
-
 
 function TextDrawSetShadow(amx, textdraw, size)
 	textdraw.shade = size
@@ -753,11 +906,13 @@ function TextDrawFont(amx, textdraw, font)
 end
 
 function TextDrawSetProportional(amx, textdraw, proportional)
-
+	notImplemented('TextDrawSetProportional')
+	return false
 end
 
-function TextDrawSetSelectable(amx)
+function TextDrawSetSelectable(amx, textdraw, selectable)
 	notImplemented('TextDrawSetSelectable')
+	return false
 end
 
 function TextDrawShowForPlayer(amx, player, textdrawID)
@@ -779,15 +934,14 @@ function TextDrawHideForPlayer(amx, player, textdrawID)
 end
 
 function TextDrawShowForAll(amx, textdrawID)
-	for id,player in pairs(g_Players) do
+	for id, player in pairs(g_Players) do
 		TextDrawShowForPlayer(amx, player.elem, textdrawID)
 	end
 	return true
 end
 
-
 function TextDrawHideForAll(amx, textdrawID)
-	for id,player in pairs(g_Players) do
+	for id, player in pairs(g_Players) do
 		TextDrawHideForPlayer(amx, player.elem, textdrawID)
 	end
 	return true
@@ -798,16 +952,23 @@ function TextDrawSetString(amx, textdraw, str)
 	return true
 end
 
-function TextDrawSetPreviewModel(amx)
+function TextDrawSetPreviewModel(amx, textdraw, model)
 	notImplemented('TextDrawSetPreviewModel')
+	return false
 end
 
-function TextDrawSetPreviewRot(amx)
+function TextDrawSetPreviewRot(amx, textdraw, rX, rY, rZ, zoom)
 	notImplemented('TextDrawSetPreviewRot')
+	return false
+end
+
+function TextDrawSetPreviewVehCol(amx, textdraw, color1, color2)
+	notImplemented('TextDrawSetPreviewVehCol')
+	return false
 end
 
 function GangZoneCreate(amx, minX, minY, maxX, maxY)
-	local zone = createRadarArea(minX + (maxX - minX)/2, minY + (maxY - minY)/2, maxX - minX, maxY - minY)
+	local zone = createRadarArea(minX + (maxX - minX) / 2, minY + (maxY - minY) / 2, maxX - minX, maxY - minY)
 	local id = addElem(g_GangZones, zone)
 	setElementVisibleTo(zone, root, false)
 	return id
@@ -879,7 +1040,7 @@ function CreatePlayer3DTextLabel(amx, player, text, r, g, b, a, x, y, z, dist, a
 	local textlabel = { text = colorizeString(text), color = {r = r, g = g, b = b, a = a}, X = x, Y = y, Z = z, dist = dist, vw = -1, los = los, attached = false }
 	local id = table.insert(g_TextLabels, textlabel)
 
-	textlabel.id = id	
+	textlabel.id = id
 	if attachedplayer ~= INVALID_PLAYER_ID or attachedvehicle ~= INVALID_VEHICLE_ID then
 		textlabel.attached = true
 	end
@@ -891,11 +1052,11 @@ function CreatePlayer3DTextLabel(amx, player, text, r, g, b, a, x, y, z, dist, a
 	if attachedvehicle ~= INVALID_VEHICLE_ID then
 		textlabel.attachedTo = g_Vehicles[attachedvehicle] and g_Vehicles[attachedvehicle].elem
 	end
-	
+
 	textlabel.offX = 0.0
 	textlabel.offY = 0.0
 	textlabel.offZ = 0.0
-	
+
 	clientCall(root, 'Create3DTextLabel', id, textlabel)
 
 	return id
@@ -943,16 +1104,15 @@ end
 
 function Update3DTextLabelText(amx, textlabel, r, g, b, a, text)
 	textlabel.text = text
-	textlabel.color = {r = r, g = g, b = b, a = a}
+	textlabel.color = { r = r, g = g, b = b, a = a }
 	return true
 end
 
 function UpdatePlayer3DTextLabelText(amx, textlabel, r, g, b, a, text)
 	textlabel.text = text
-	textlabel.color = {r = r, g = g, b = b, a = a}
+	textlabel.color = { r = r, g = g, b = b, a = a }
 	return true
 end
-
 
 function floatstr(amx, str)
 	return float2cell(tonumber(str) or 0)
@@ -983,23 +1143,30 @@ function format(amx, outBuf, outBufSize, fmt, ...)
 	fmt = fmt:gsub('(%%[%-%d%.]*)%*(%a)', '%1%2')
 	local result = fmt:format(unpack(args))
 
-	if #result+1 <= outBufSize then
-		writeMemString(amx, outBuf, result)
-	end
+	local copyLen = math.min(#result, outBufSize)
+	writeMemString(amx, outBuf, result:sub(1, copyLen))
+	return true
+end
+
+function SendClientCheck(amx, player, opcode, addr, offset, bytes)
+	notImplemented('SendClientCheck')
+	return false
 end
 
 function gpci(amx, player, nameBuf, bufSize)
+	if bufSize <= 0 then return 0 end
+
 	local serial = getPlayerSerial(player)
-	if #serial <= bufSize then
-		writeMemString(amx, nameBuf, serial)
-		return string.len(serial)
-	end
+
+	local copyLen = math.min(#serial, bufSize)
+	writeMemString(amx, nameBuf, serial:sub(1, copyLen))
+	return copyLen
 end
 
 function SetSpawnInfo(amx, player, team, skin, x, y, z, angle, weap1, weap1_ammo, weap2, weap2_ammo, weap3, weap3_ammo)
 	g_Players[getElemID(player)].spawninfo = {
 		x, y, z, angle, skinReplace[skin] or skin, 0, 0, team,
-		weapons={ {weap1, weap1_ammo}, {weap2, weap2_ammo}, {weap3, weap3_ammo} }
+		weapons = { { weap1, weap1_ammo }, { weap2, weap2_ammo }, { weap3, weap3_ammo } }
 	}
 	return true
 end
@@ -1016,33 +1183,49 @@ end
 
 function NetStats_ConnectionStatus(amx, player)
 	notImplemented('NetStats_ConnectionStatus')
+	return 0 -- Status no action
 end
 
 function NetStats_GetConnectedTime(amx, player)
-	notImplemented('NetStats_GetConnectedTime')
+	local playerID = getElemID(player)
+	if not g_Players[playerID].conntick then return 0 end
+	return getTickCount() - g_Players[playerID].conntick
 end
 
 function NetStats_GetIpPort(amx, player, ip_port, ip_port_len)
+	if ip_port_len <= 0 then return 0 end
+
 	local ip = getPlayerIP(player)
+	if not ip then ip = '0.0.0.0' end
 	local port = 0 -- We haven't a solution for getting a client port
-	local ipandport = tostring(ip).. ":".. tostring(port)
-	writeMemString(amx, ip_port, ipandport)
-	return string.len(ipandport);
+	local ipandport = tostring(ip) .. ':' .. tostring(port)
+
+	local copy_len = math.min(#ipandport, ip_port_len)
+	writeMemString(amx, ip_port, ipandport:sub(1, copy_len))
+	return copy_len
 end
 
 function NetStats_MessagesReceived(amx, player)
 	notImplemented('NetStats_MessagesReceived')
+	return 0
 end
 
 function NetStats_MessagesRecvPerSecond(amx, player)
 	notImplemented('NetStats_MessagesRecvPerSecond')
+	return 0
 end
 
 function NetStats_MessagesSent(amx, player)
 	notImplemented('NetStats_MessagesSent')
+	return 0
 end
 
 function NetStats_PacketLossPercent(amx, player)
 	local networkStat = getNetworkStats(player)
-	return networkStat.packetlossTotal or 0
+	return float2cell(networkStat.packetlossTotal or 0)
+end
+
+function GetServerTickRate(amx)
+	notImplemented('GetServerTickRate')
+	return 0
 end

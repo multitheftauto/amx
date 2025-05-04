@@ -68,7 +68,7 @@ g_CommandMapping = setmetatable({
 
 local controlMappingMT = {
 	__index = function(t, k)
-		for samp,mta in pairs(t) do
+		for samp, mta in pairs(t) do
 			if type(mta) == 'table' then
 				if table.find(mta, k) then
 					return samp
@@ -82,10 +82,10 @@ local controlMappingMT = {
 
 g_KeyMapping = setmetatable({
 	[1] = 'action',
-	[2 ^ 1] = {'crouch', 'horn'},
+	[2 ^ 1] = { 'crouch', 'horn' },
 	[2 ^ 2] = { 'fire', 'vehicle_fire' },
 	[2 ^ 3] = 'sprint',
-	[2 ^ 4] = { 'enter_exit','vehicle_secondary_fire' },
+	[2 ^ 4] = { 'enter_exit', 'vehicle_secondary_fire' },
 	[2 ^ 5] = 'jump',
 	[2 ^ 6] = 'vehicle_look_right',
 	[2 ^ 7] = { 'handbrake', 'aim_weapon' },
@@ -100,7 +100,7 @@ g_KeyMapping = setmetatable({
 	[2 ^ 16] = 'conversation_yes',
 	[2 ^ 17] = 'conversation_no',
 	[2 ^ 18] = 'group_control_back',
-	[2 ^ 19] = 'enter_passenger', --This one's undefined
+	[2 ^ 19] = 'enter_passenger', -- This one's undefined
 }, controlMappingMT)
 
 g_LeftRightMapping = setmetatable({
@@ -135,7 +135,7 @@ g_PoliceVehicles = {
 	[601] = true
 }
 
---Left is SAMP, right is MTA
+-- Left is SA-MP, right is MTA
 g_BoneMapping = setmetatable({
 	[2] = 1,	-- Head
 	[17] = 2,	-- Neck
@@ -146,7 +146,7 @@ g_BoneMapping = setmetatable({
 	[4] = 10,	-- Right Upper Arm
 	[5] = 11,	-- Left Hand
 	[6] = 12,	-- Right Hand
-	[7] = 13,	-- Left thigh (Samp doesn't really have hips)
+	[7] = 13,	-- Left thigh (SA-MP doesn't really have hips)
 	[8] = 14,	-- Right thigh
 	[12] = 15,	-- Left calf
 	[11] = 16,	-- Right Calf
@@ -154,8 +154,8 @@ g_BoneMapping = setmetatable({
 	[10] = 20	-- Right Foot
 }, {
 	__index = function(t, k)
-		if k == 18 then --Since 18 is jaw in SAMP
-			k = 2 --Default to head
+		if k == 18 then -- Since 18 is jaw in SA-MP
+			k = 2 -- Default to head
 		end
 		if k >= 1 and k <= 17 then
 			return k
@@ -199,6 +199,11 @@ PLAYER_VARTYPE_INT = 1
 PLAYER_VARTYPE_STRING = 2
 PLAYER_VARTYPE_FLOAT = 3
 
+SERVER_VARTYPE_NONE = 0
+SERVER_VARTYPE_INT = 1
+SERVER_VARTYPE_STRING = 2
+SERVER_VARTYPE_FLOAT = 3
+
 INVALID_ACTOR_ID = 0xFFFF
 INVALID_OBJECT_ID = 0xFFFF
 INVALID_PLAYER_ID = 0xFFFF
@@ -209,6 +214,6 @@ ShowUnimplementedErrors = false
 
 -- Just add <setting name="amx.debug" value="true"></setting> in settings.xml
 -- if you want to see debug infromation
-if get('amx.debug') == 'true' then 
-	ShowUnimplementedErrors = true 
+if get('amx.debug') == 'true' then
+	ShowUnimplementedErrors = true
 end
