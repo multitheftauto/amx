@@ -570,8 +570,8 @@ function SetTrainSpeed(amx, train, speed)
 	return setTrainSpeed(train, speed)
 end
 
-function GetVehicleDriver(amx, vehicle)
-	local player = getVehicleOccupant(vehicle)
+function GetVehicleOccupant(amx, vehicle, seat)
+	local player = getVehicleOccupant(vehicle, seat)
 	if not player then
 		return INVALID_PLAYER_ID
 	end

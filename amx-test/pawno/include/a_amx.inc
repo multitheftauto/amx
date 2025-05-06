@@ -169,7 +169,7 @@ native GetTrainDirection(vehicleid);
 native SetTrainDirection(vehicleid, bool:clockwise);
 native GetTrainSpeed(vehicleid, &Float:speed);
 native SetTrainSpeed(vehicleid, Float:speed);
-native GetVehicleDriver(vehicleid);
+native GetVehicleOccupant(vehicleid, seatid);
 native GetVehicleNumberPlate(vehicleid, plate[], len = sizeof(plate));
 native GetVehicleColor(vehicleid, &color1, &color2);
 native GetVehiclePaintjob(vehicleid);
