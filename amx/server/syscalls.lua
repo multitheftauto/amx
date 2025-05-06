@@ -580,6 +580,7 @@ g_SAMPSyscallPrototypes = {
 	GetPlayerWeaponSlot = {'p'},
 	SetPlayerWeaponSlot = {'p', 'i'},
 	GetPlayerAmmoInClip = {'p'},
+	GetPlayerIdleTime = {'p'},
 	IsPlayerHeadless = {'p'},
 	SetPlayerHeadless = {'p', 'b'},
 	GetPlayerBlurLevel = {'p'},

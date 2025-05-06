@@ -122,6 +122,7 @@ native SetPlayerCanBeKnockedOffBike(playerid, bool:knockOff);
 native GetPlayerWeaponSlot(playerid);
 native SetPlayerWeaponSlot(playerid, slotid);
 native GetPlayerAmmoInClip(playerid);
+native GetPlayerIdleTime(playerid);
 native IsPlayerHeadless(playerid);
 native SetPlayerHeadless(playerid, bool:headless);
 native GetPlayerBlurLevel(playerid);

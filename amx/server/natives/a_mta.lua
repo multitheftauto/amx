@@ -118,6 +118,10 @@ function GetPlayerAmmoInClip(amx, player)
 	return getPedAmmoInClip(player)
 end
 
+function GetPlayerIdleTime(amx, player)
+	return getPlayerIdleTime(player)
+end
+
 function IsPlayerHeadless(amx, player)
 	return isPedHeadless(player)
 end
