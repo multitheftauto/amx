@@ -415,7 +415,7 @@ function SetPlayerAttachedObject(amx, player, index, modelid, bone, fOffsetX, fO
 	local mtaBone = g_BoneMapping[bone]
 	local obj = createObject(modelid, x, y, z)
 
-	if obj ~= false then
+	if obj then
 		local playerID = getElemID(player)
 		g_Players[playerID].attachedObjects[index] = obj
 		setElementCollisionsEnabled(obj, false)
@@ -432,7 +432,7 @@ end
 function RemovePlayerAttachedObject(amx, player, index)
 	local playerID = getElemID(player)
 	local obj = g_Players[playerID].attachedObjects[index] -- Get the object stored at this slot
-	if obj ~= nil and obj ~= false then
+	if obj then
 		detachElementFromBone(obj)
 		destroyElement(obj)
 		g_Players[playerID].attachedObjects[index] = nil
@@ -444,7 +444,7 @@ end
 function IsPlayerAttachedObjectSlotUsed(amx, player, index)
 	local playerID = getElemID(player)
 	local obj = g_Players[playerID].attachedObjects[index] -- Get the object stored at this slot
-	if obj ~= nil and obj ~= false then
+	if obj then
 		return true
 	end
 	return false
