@@ -3,19 +3,9 @@
 
 skinReplace = {
 	-- invalid skins
-	[3] = 0,
-	[4] = 0,
-	[5] = 0,
-	[6] = 0,
-	[8] = 0,
-	[42] = 0,
-	[65] = 0,
 	[74] = 0,
-	[86] = 0,
-	[119] = 0,
 	[149] = 0,
-	[208] = 0,
-	[273] = 0,
+	[208] = 0
 }
 -- replace colors
 function colorizeString(string)
