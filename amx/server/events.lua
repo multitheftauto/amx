@@ -259,7 +259,6 @@ function spawnPlayerBySelectedClass(player, x, y, z, r)
 		spawninfo[1], spawninfo[2], spawninfo[3], spawninfo[4] = x, y, z, r or spawninfo[4]
 	end
 	spawnPlayer(player, unpack(spawninfo))
-	setPlayerState(player, PLAYER_STATE_SPAWNED)
 	for i, weapon in ipairs(spawninfo.weapons) do
 		if weapon[1] ~= -1 then
 			giveWeapon(player, weapon[1], weapon[2], true)
@@ -282,7 +281,7 @@ addEventHandler('onPlayerSpawn', root,
 		toggleAllControls(source, true)
 		setElementCollisionsEnabled(source, true)
 		procCallOnAll('OnPlayerSpawn', playerID)
-		setPlayerState(source, PLAYER_STATE_ONFOOT)
+		setPlayerState(source, PLAYER_STATE_SPAWNED)
 
 		if g_Players[playerID].updatetimer then
 			killTimer(g_Players[playerID].updatetimer)
@@ -435,15 +434,21 @@ addEventHandler('onPlayerQuit', root,
 
 addEventHandler('onResourceStart', resourceRoot,
 	function()
-		setTimer(checkIfLeftVehicleByOtherMeans, 1000, 0)
+		setTimer(checkAndUpdatePlayerStates, 1000, 0)
 	end,
 	false
 )
 
-function checkIfLeftVehicleByOtherMeans() -- If the player is slapped, or the vehicle is destroyed by a command, we need to handle such
+--[[ 
+	If the player is slapped, or the vehicle is destroyed by a command, we need to handle such
+	We also now check if the player has spawned or has a state of 'none', 
+	if so and if they're on foot, we set their state
+]]
+function checkAndUpdatePlayerStates()
 	for i, data in pairs(g_Players) do
 		local state = getPlayerState(data.elem)
-		if state == PLAYER_STATE_DRIVER or state == PLAYER_STATE_PASSENGER then
+		if (state == PLAYER_STATE_DRIVER or state == PLAYER_STATE_PASSENGER) or 
+			(state == PLAYER_STATE_SPAWNED or state == PLAYER_STATE_NONE) then
 			if not isPedInVehicle(data.elem) then
 				setPlayerState(data.elem, PLAYER_STATE_ONFOOT)
 				setElementCollisionsEnabled(data.elem, true)
