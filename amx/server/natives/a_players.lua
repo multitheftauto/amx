@@ -432,7 +432,7 @@ end
 function RemovePlayerAttachedObject(amx, player, index)
 	local playerID = getElemID(player)
 	local obj = g_Players[playerID].attachedObjects[index] -- Get the object stored at this slot
-	if obj ~= false then
+	if obj ~= nil and obj ~= false then
 		detachElementFromBone(obj)
 		destroyElement(obj)
 		g_Players[playerID].attachedObjects[index] = nil
@@ -444,7 +444,7 @@ end
 function IsPlayerAttachedObjectSlotUsed(amx, player, index)
 	local playerID = getElemID(player)
 	local obj = g_Players[playerID].attachedObjects[index] -- Get the object stored at this slot
-	if obj ~= false then
+	if obj ~= nil and obj ~= false then
 		return true
 	end
 	return false
