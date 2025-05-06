@@ -2,11 +2,33 @@
 -- Start of SA-MP API implementation
 
 skinReplace = {
-	-- invalid skins
-	[74] = 0,
-	[149] = 0,
-	[208] = 0
+	[3] = 303, -- andre
+	[4] = 310, -- bbthin
+	[6] = 302, -- emmet
+	[8] = 309, -- janitor
+	[42] = 305, -- jethro
+	[65] = 304, -- kendl
+	[74] = 0, -- unused
+	[86] = 301, -- ryder3
+	[119] = 308, -- sindaco
+	[149] = 311, -- smokev
+	[208] = 42, -- suzie
+	[273] = 307, -- tbone
+	[289] = 306, -- zero
+	[300] = 280, -- lapd1
+	[301] = 281, -- sfpd1
+	[302] = 282, -- lvpd1
+	[303] = 60, -- omyst
+	[304] = 250, -- swmycr
+	[305] = 170, -- somyst
+	[306] = 284, -- lapdm1
+	[307] = 4, -- sfpdm1
+	[308] = 276, -- sfemt1
+	[309] = 119, -- lvpdm1
+	[310] = 283, -- csher
+	[311] = 288 -- dsher
 }
+
 -- replace colors
 function colorizeString(string)
 	return string:gsub("(=?{[0-9A-Fa-f]*})",
