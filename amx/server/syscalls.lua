@@ -790,12 +790,8 @@ g_SAMPSyscallPrototypes = {
 	-- network stats
 	NetStats_BytesReceived = {'p'},
 	NetStats_BytesSent = {'p'},
-	NetStats_ConnectionStatus = {'p'},
 	NetStats_GetConnectedTime = {'p'},
 	NetStats_GetIpPort = {'p', 'r', 'i'},
-	NetStats_MessagesReceived = {'p'},
-	NetStats_MessagesRecvPerSecond = {'p'},
-	NetStats_MessagesSent = {'p'},
 	NetStats_PacketLossPercent = {'p'},
 
 	-- dummy (unimplemented)
@@ -855,6 +851,10 @@ g_SAMPSyscallPrototypes = {
 	GetPlayerCameraTargetActor = {'p'},
 	BlockIpAddress = {'s', 'i'},
 	UnBlockIpAddress = {'s'},
+	NetStats_ConnectionStatus = {'p'},
+	NetStats_MessagesReceived = {'p'},
+	NetStats_MessagesRecvPerSecond = {'p'},
+	NetStats_MessagesSent = {'p'},
 	GetServerTickRate = {},
 	UsePlayerPedAnims = {},
 
