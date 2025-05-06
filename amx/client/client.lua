@@ -1366,43 +1366,50 @@ end
 -- Menus
 
 local function updateMenuSize(menu)
+	if not menu then return end
+
 	menu.width = (#menu.items[1] > 0 and (menu.leftColumnWidth + menu.rightColumnWidth) or (menu.leftColumnWidth)) + 2 * MENU_SIDE_PADDING
 	menu.height = MENU_ITEM_HEIGHT * math.max(#menu.items[0], #menu.items[1]) + MENU_TOP_PADDING + MENU_BOTTOM_PADDING
 end
 
-function AddMenuItem(id, column, caption)
-	local menu = g_Menus[id]
+function AddMenuItem(menuID, column, caption)
+	local menu = g_Menus[menuID]
+	if not menu then return end
+
 	table.insert(menu.items[column], caption)
 	updateMenuSize(menu)
 end
 
-function CreateMenu(id, menu)
+function CreateMenu(menuID, menu)
+	if not menu then return end
+
 	menu.x = math.floor(menu.x * screenWidth / 640)
 	menu.y = math.floor(menu.y * screenHeight / 480)
 	menu.leftColumnWidth = math.floor(menu.leftColumnWidth * screenWidth / 640)
-	menu.rightColumnWidth = math.floor(menu.rightColumnWidth * screenWidth / 480)
-	local id = 1
-	while g_TextDraws['m' .. id] do
-		id = id + 1
-	end
-	menu.titletextdraw = { text = menu.title, id = 'm' .. id, x = menu.x + MENU_SIDE_PADDING, y = menu.y - 0.5 * MENU_ITEM_HEIGHT, align = 1, font = 2 }
-	initTextDraw(menu.titletextdraw)
-	hideTextDraw(menu.titletextdraw)
+	menu.rightColumnWidth = math.floor(menu.rightColumnWidth * screenWidth / 640)
+
+	g_Menus[menuID] = menu
 	updateMenuSize(menu)
-	g_Menus[id] = menu
 end
 
 function DisableMenuRow(menuID, rowID)
 	local menu = g_Menus[menuID]
+	if not menu then return end
+
 	menu.disabledrows = menu.disabledrows or {}
 	table.insert(menu.disabledrows, rowID)
 end
 
 function SetMenuColumnHeader(menuID, column, text)
-	g_Menus[menuID].items[column][13] = text
+	local menu = g_Menus[menuID]
+	if not menu then return end
+
+	menu.items[column][13] = text
 end
 
 function ShowMenuForPlayer(menuID)
+	if not g_Menus[menuID] then return end
+
 	if g_CurrentMenu and g_CurrentMenu.anim then
 		g_CurrentMenu.anim:remove()
 		g_CurrentMenu.anim = nil
@@ -1410,10 +1417,10 @@ function ShowMenuForPlayer(menuID)
 
 	local prevMenu = g_CurrentMenu
 	g_CurrentMenu = g_Menus[menuID]
-	local closebtnSide = screenWidth * (30 / 1024)
+	local closebtnSide = screenWidth * (27 / 1024)
+
 	if not prevMenu then
 		g_CurrentMenu.alpha = 0
-		g_CurrentMenu.titletextdraw.alpha = 0
 
 		g_CurrentMenu.closebtn = guiCreateStaticImage(g_CurrentMenu.x + g_CurrentMenu.width - closebtnSide, g_CurrentMenu.y, closebtnSide, closebtnSide, 'client/closebtn.png', false, nil)
 		guiSetAlpha(g_CurrentMenu.closebtn, 0)
@@ -1450,8 +1457,9 @@ function ShowMenuForPlayer(menuID)
 			{ time = 500, from = 0, to = 1, fn = setMenuAlpha },
 			function()
 				setMenuAlpha(g_CurrentMenu, 1)
-				g_CurrentMenu.titletextdraw.alpha = nil
-				g_CurrentMenu.anim = nil
+				if g_CurrentMenu then
+					g_CurrentMenu.anim = nil
+				end
 			end
 		)
 
@@ -1459,16 +1467,15 @@ function ShowMenuForPlayer(menuID)
 		addEventHandler('onClientClick', root, menuClickHandler)
 		showCursor(true)
 	else
-		hideTextDraw(prevMenu.titletextdraw)
 		g_CurrentMenu.closebtn = prevMenu.closebtn
 		prevMenu.closebtn = nil
 		guiSetPosition(g_CurrentMenu.closebtn, g_CurrentMenu.x + g_CurrentMenu.width - closebtnSide, g_CurrentMenu.y, false)
 		g_CurrentMenu.closebtnhover = prevMenu.closebtnhover
 		prevMenu.closebtnhover = nil
 		guiSetPosition(g_CurrentMenu.closebtnhover, g_CurrentMenu.x + g_CurrentMenu.width - closebtnSide, g_CurrentMenu.y, false)
-		g_CurrentMenu.alpha = 1
+		setMenuAlpha(g_CurrentMenu, 1)
 	end
-	showTextDraw(g_CurrentMenu.titletextdraw)
+
 	bindKey('enter', 'down', OnKeyPress)
 end
 
@@ -1478,29 +1485,39 @@ function HideMenuForPlayer(menuID)
 			g_CurrentMenu.anim:remove()
 			g_CurrentMenu.anim = nil
 		end
-		g_CurrentMenu.anim = Animation.createAndPlay(g_CurrentMenu, { time = 500, from = 1, to = 0, fn = setMenuAlpha }, exitMenu)
+		if menuID then
+			g_CurrentMenu.anim = Animation.createAndPlay(g_CurrentMenu, { time = 500, from = 1, to = 0, fn = setMenuAlpha }, closeMenu)
+		else
+			g_CurrentMenu.anim = Animation.createAndPlay(g_CurrentMenu, { time = 500, from = 1, to = 0, fn = setMenuAlpha }, exitMenu)
+		end
 	end
 end
 
 function DestroyMenu(menuID)
-	destroyTextDraw(g_Menus[menuID].titletextdraw)
+	if not g_Menus[menuID] then return end
+
 	if g_CurrentMenu and menuID == g_CurrentMenu.id then
-		exitMenu()
+		closeMenu()
 	end
+
 	g_Menus[menuID] = nil
 end
 
 function setMenuAlpha(menu, alpha)
+	if not menu then return end
+
 	menu.alpha = alpha
-	menu.titletextdraw.alpha = alpha
-	guiSetAlpha(menu.closebtn, .75 * alpha)
-	guiSetAlpha(menu.closebtnhover, .75 * alpha)
+
+	if menu.closebtn then
+		guiSetAlpha(menu.closebtn, .75 * alpha)
+	end
+	if menu.closebtnhover then
+		guiSetAlpha(menu.closebtnhover, .75 * alpha)
+	end
 end
 
 function closeMenu()
 	removeEventHandler('onClientRender', root, renderMenu)
-	hideTextDraw(g_CurrentMenu.titletextdraw)
-	g_CurrentMenu.titletextdraw.alpha = nil
 	removeEventHandler('onClientClick', root, menuClickHandler)
 	g_CurrentMenu.anim = nil
 	destroyElement(g_CurrentMenu.closebtn)
@@ -1526,7 +1543,19 @@ function renderMenu()
 	-- background
 	dxDrawRectangle(menu.x, menu.y, menu.width, menu.height, tocolor(0, 0, 0, 128 * menu.alpha))
 
+	if menu.title then
+		local titleX = menu.x + MENU_SIDE_PADDING
+		local titleY = menu.y + MENU_ITEM_HEIGHT - MENU_BOTTOM_PADDING
+		dxDrawText(menu.title, titleX, titleY, titleX, titleY, tocolor(255, 255, 255, 255 * menu.alpha), 0.9, 'bankgothic', 'left', 'center', false, false, false, true)
+	end
+
 	local cursorX, cursorY = getCursorPosition()
+
+	if not cursorX then
+		closeMenu()
+		return
+	end
+
 	cursorY = screenHeight * cursorY
 	-- selected row
 	local selectedRow
@@ -1539,8 +1568,7 @@ function renderMenu()
 	for column = 0, 1 do
 		for i, text in pairs(menu.items[column]) do
 			local x = menu.x + MENU_SIDE_PADDING + column * menu.leftColumnWidth
-			local y
-			local color, scale
+			local y, color, scale
 			if i < 13 then
 				-- regular item
 				y = menu.y + MENU_TOP_PADDING + (i - 1) * MENU_ITEM_HEIGHT
@@ -1565,18 +1593,21 @@ function menuClickHandler(button, state, clickX, clickY)
 	if state ~= 'up' then
 		return
 	end
+
 	if not g_CurrentMenu then
 		return
 	end
+
 	local cursorX, cursorY = getCursorPosition()
 	cursorY = screenHeight * cursorY
 	if cursorY < g_CurrentMenu.y + MENU_TOP_PADDING or cursorY > g_CurrentMenu.y + MENU_TOP_PADDING + math.max(#g_CurrentMenu.items[0], #g_CurrentMenu.items[1]) * MENU_ITEM_HEIGHT then
 		return
 	end
+
 	local selectedRow = math.floor((clickY - g_CurrentMenu.y - MENU_TOP_PADDING) / MENU_ITEM_HEIGHT)
 	if not (g_CurrentMenu.disabledrows and table.find(g_CurrentMenu.disabledrows, selectedRow)) then
 		serverAMXEvent('OnPlayerSelectedMenuRow', g_PlayerID, selectedRow)
-		exitMenu()
+		closeMenu()
 	end
 end
 
