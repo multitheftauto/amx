@@ -190,7 +190,7 @@ function unloadAMX(amx, notifyClient)
 	if amx.type == 'gamemode' then
 		procCallInternal(amx, 'OnGameModeExit')
 		fadeCamera(root, false, 0)
-		ShowPlayerMarkers(amx, false)
+		ShowPlayerMarkers(amx, 0)
 		destroyGlobalElements()
 
 		if notifyClient == nil or notifyClient == true then

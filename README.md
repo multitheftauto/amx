@@ -296,7 +296,7 @@ introduces. To use them, `#include <a_amx>` in Pawno.
 [clothes page]: https://wiki.multitheftauto.com/wiki/CJ_Clothes
 
 ```pawn
-native AddPlayerClothes ( playerid, type, index );
+native AddPlayerClothes(playerid, type, index);
 ```
 
 Applies the specified clothing to a player. See the [clothes page] for a
@@ -306,7 +306,7 @@ visible effect on players with the CJ skin.
 ### GetPlayerClothes
 
 ```pawn
-native GetPlayerClothes ( playerid, type );
+native GetPlayerClothes(playerid, type);
 ```
 
 Returns the clothes index of the specified type which the player is
@@ -317,7 +317,7 @@ relevant for players with the CJ skin.
 ### RemovePlayerClothes
 
 ```pawn
-native RemovePlayerClothes ( playerid, type );
+native RemovePlayerClothes(playerid, type);
 ```
 
 Removes the specified clothing from a player. See the [clothes page] for a
@@ -327,7 +327,7 @@ on players with the CJ skin.
 ### ShowPlayerMarker
 
 ```pawn
-native ShowPlayerMarker ( playerid, show );
+native ShowPlayerMarker(playerid, mode);
 ```
 
 Shows or hides the blip of one specific player.
@@ -335,7 +335,7 @@ Shows or hides the blip of one specific player.
 ### SetVehicleModel
 
 ```pawn
-native SetVehicleModel ( vehicleid, model )
+native SetVehicleModel(vehicleid, model);
 ```
 
 Changes the model of a vehicle; more practical than destroying and
@@ -344,7 +344,7 @@ recreating it.
 ### lua
 
 ```pawn
-native lua ( const fnName[], {Float,_}:... );
+native lua(const fnName[], {Float,_}:...);
 ```
 
 Calls a Lua function. The function must be defined in a .lua file in the
@@ -361,7 +361,7 @@ new playerid = lua("luaTestfn1", 1.3, "Test string");
 ### amxRegisterPawnPrototypes
 
 ```pawn
-native amxRegisterPawnPrototypes ( const prototype[][] );
+native amxRegisterPawnPrototypes(const prototype[][]);
 ```
 
 Registers prototypes for public functions that can be subsequently
@@ -385,7 +385,7 @@ amxRegisterPawnPrototypes(prototypes);
 ### amxVersion
 
 ```pawn
-native amxVersion ( &Float:ver );
+native amxVersion(&Float:ver);
 ```
 
 Retrieves the *amx* version as a floating point number, e.g. `1.3`.
@@ -393,7 +393,7 @@ Retrieves the *amx* version as a floating point number, e.g. `1.3`.
 ### amxVersionString
 
 ```pawn
-native amxVersionString ( buffer[], size );
+native amxVersionString(buffer[], size);
 ```
 
 Retrieves the complete *amx* version string.
