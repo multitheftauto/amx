@@ -1,5 +1,5 @@
 function CreateActor(amx, model, x, y, z, rotation)
-	local actor = createPed(model, x, y, z, rotation, false)
+	local actor = createPed(skinReplace[model] or model, x, y, z, rotation, false)
 	setElementData(actor, 'ActorPed', true)
 	setElementData(actor, 'Invulnerable', true)
 	return addElem(g_Actors, actor)

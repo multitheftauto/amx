@@ -173,7 +173,7 @@ end
 -- Bots
 
 function CreateBot(amx, model, x, y, z, name)
-	local bot = createPed(model, x, y, z)
+	local bot = createPed(skinReplace[model] or model, x, y, z)
 	setElementData(bot, 'ShowNameTag', true)
 	setElementData(bot, 'BotName', name)
 	local botId = addElem(g_Bots, bot)
