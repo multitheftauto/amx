@@ -283,6 +283,9 @@ addEventHandler('onPlayerSpawn', root,
 		procCallOnAll('OnPlayerSpawn', playerID)
 		setPlayerState(source, PLAYER_STATE_SPAWNED)
 
+		-- wanna see CJ in a white singlet?
+		addPedClothes(source, 'vest', 'vest', 0)
+
 		if not g_UseCJWalk then
 			local skin = getElementModel(source)
 			setPedWalkingStyle(source, WalkingStyle[skin] or 0)

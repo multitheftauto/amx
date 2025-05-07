@@ -302,7 +302,7 @@ function AddPlayerClassEx(amx, team, skin, x, y, z, angle, weap1, weap1_ammo, we
 	local id = table.insert0(
 		g_PlayerClasses,
 		{
-			x, y, z, angle, skinReplace[skin] or skin, 0, 0, team,
+			x, y, z, angle, g_SkinReplace[skin] or skin, 0, 0, team,
 			weapons = {
 				{ weap1, weap1_ammo },
 				{ weap2, weap2_ammo },
@@ -1153,7 +1153,7 @@ end
 
 function SetSpawnInfo(amx, player, team, skin, x, y, z, angle, weap1, weap1_ammo, weap2, weap2_ammo, weap3, weap3_ammo)
 	g_Players[getElemID(player)].spawninfo = {
-		x, y, z, angle, skinReplace[skin] or skin, 0, 0, team,
+		x, y, z, angle, g_SkinReplace[skin] or skin, 0, 0, team,
 		weapons = { { weap1, weap1_ammo }, { weap2, weap2_ammo }, { weap3, weap3_ammo } }
 	}
 	return true

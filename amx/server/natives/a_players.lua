@@ -197,9 +197,14 @@ end
 
 function SetPlayerSkin(amx, player, skin)
 	local skinset = setElementModel(player, g_SkinReplace[skin] or skin)
-	if skinset and not g_UseCJWalk then
-		-- update walking style for a new skin
-		setPedWalkingStyle(player, WalkingStyle[skin] or 0)
+	if skinset then
+		-- wanna see CJ in a white singlet?
+		addPedClothes(player, 'vest', 'vest', 0)
+
+		if not g_UseCJWalk then
+			-- update walking style for a new skin
+			setPedWalkingStyle(player, WalkingStyle[skin] or 0)
+		end
 	end
 	return skinset
 end

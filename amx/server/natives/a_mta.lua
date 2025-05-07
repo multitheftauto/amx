@@ -180,6 +180,7 @@ end
 
 function CreateBot(amx, model, x, y, z, name)
 	local bot = createPed(g_SkinReplace[model] or model, x, y, z)
+	addPedClothes(bot, 'vest', 'vest', 0)
 	setElementData(bot, 'ShowNameTag', true)
 	setElementData(bot, 'BotName', name)
 	local botId = addElem(g_Bots, bot)
