@@ -405,7 +405,7 @@ A number of new Lua functions were also introduced.
 ### pawn
 
 ```lua
-variant pawn ( string fnName, ... )
+variant pawn(string fnName, ...)
 ```
 
 Calls a Pawn function. The function must be public, must be defined in
@@ -422,7 +422,7 @@ local player = pawn('pawnTestfn1', 0.5, 'Test string')
 ### amxIsPluginLoaded
 
 ```lua
-bool amxIsPluginLoaded ( string pluginName )
+bool amxIsPluginLoaded(string pluginName)
 ```
 
 Checks if a specific SA-MP server plugin is currently loaded. pluginName
@@ -431,7 +431,7 @@ is the name of the plugin without a file extension.
 ### amxRegisterLuaPrototypes
 
 ```lua
-bool amxRegisterLuaPrototypes ( table prototypes )
+bool amxRegisterLuaPrototypes(table prototypes)
 ```
 
 Registers prototypes of Lua functions that can subsequently be called
@@ -453,7 +453,7 @@ amxRegisterLuaPrototypes(
 ### amxVersion
 
 ```lua
-float amxVersion ( )
+float amxVersion()
 ```
 
 Returns the *amx* version as a floating point number, for example `1.3`.
@@ -461,7 +461,7 @@ Returns the *amx* version as a floating point number, for example `1.3`.
 ### amxVersionString
 
 ```lua
-string amxVersionString ( )
+string amxVersionString()
 ```
 
 Returns the complete *amx* version string.
@@ -474,7 +474,7 @@ unloaded.
 ### onAMXStart
 
 ```lua
-onAMXStart ( resource res, string amxName )
+onAMXStart(resource res, string amxName)
 ```
 
 Triggered when an .amx file has just finished loading and initializing.
@@ -489,7 +489,7 @@ registered their functions yet.
 ### onAMXStop
 
 ```lua
-onAMXStop ( resource res, string amxName )
+onAMXStop(resource res, string amxName)
 ```
 
 Triggered when an .amx file was unloaded. The source of this event is
