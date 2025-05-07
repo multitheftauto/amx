@@ -680,8 +680,7 @@ addressed in later versions of *amx* and Multi Theft Auto.
   EnableStuntBonusForAll, EnableStuntBonusForPlayer, EnableTirePopping
   (tire popping is always on), PlayerPlaySound, SendDeathMessage (use
   the "killmessages" resource on your server instead for graphical
-  death messages), SetNameTagDrawDistance, TextDrawSetProportional,
-  UsePlayerPedAnims.
+  death messages), SetNameTagDrawDistance, TextDrawSetProportional.
 
 ## Credits
 
