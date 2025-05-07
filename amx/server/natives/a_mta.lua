@@ -77,6 +77,12 @@ function GetPlayerWalkingStyle(amx, player)
 end
 
 function SetPlayerWalkingStyle(amx, player, style)
+	-- if style is MOVE_DEFAULT and CJ walk isn't enabled
+	if style == 0 and not g_UseCJWalk then
+		-- return walking style back to default for this skin
+		local skin = getElementModel(player)
+		return setPedWalkingStyle(player, WalkingStyle[skin] or 0)
+	end
 	return setPedWalkingStyle(player, style)
 end
 
@@ -173,7 +179,7 @@ end
 -- Bots
 
 function CreateBot(amx, model, x, y, z, name)
-	local bot = createPed(skinReplace[model] or model, x, y, z)
+	local bot = createPed(g_SkinReplace[model] or model, x, y, z)
 	setElementData(bot, 'ShowNameTag', true)
 	setElementData(bot, 'BotName', name)
 	local botId = addElem(g_Bots, bot)

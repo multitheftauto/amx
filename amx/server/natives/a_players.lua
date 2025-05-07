@@ -196,7 +196,12 @@ function GetPlayerColor(amx, player)
 end
 
 function SetPlayerSkin(amx, player, skin)
-	return setElementModel(player, skinReplace[skin] or skin)
+	local skinset = setElementModel(player, g_SkinReplace[skin] or skin)
+	if skinset and not g_UseCJWalk then
+		-- update walking style for a new skin
+		setPedWalkingStyle(player, WalkingStyle[skin] or 0)
+	end
+	return skinset
 end
 
 function GetPlayerSkin(amx, player)

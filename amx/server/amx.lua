@@ -25,6 +25,7 @@ function initGameModeGlobals()
 	g_PlayerMarkerRadius = false
 	g_ShowZoneNames = true
 	g_GlobalChatRadius = false
+	g_UseCJWalk = false
 end
 
 addEventHandler('onResourceStart', resourceRoot,

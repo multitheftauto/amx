@@ -461,6 +461,7 @@ g_SAMPSyscallPrototypes = {
 	TogglePlayerSpectating = {'p', 'b'},
 
 	UpdateVehicleDamageStatus = {'v', 'i', 'i', 'i', 'i'},
+	UsePlayerPedAnims = {},
 
 	VectorSize = {'f', 'f', 'f'},
 
@@ -857,7 +858,6 @@ g_SAMPSyscallPrototypes = {
 	NetStats_MessagesRecvPerSecond = {'p'},
 	NetStats_MessagesSent = {'p'},
 	GetServerTickRate = {},
-	UsePlayerPedAnims = {},
 
 	-- NPCs dummy
 	SendChat = {'s'},

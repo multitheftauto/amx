@@ -1,34 +1,6 @@
 ----------------------------------------------
 -- Start of SA-MP API implementation
 
-skinReplace = {
-	[3] = 303, -- andre
-	[4] = 310, -- bbthin
-	[6] = 302, -- emmet
-	[8] = 309, -- janitor
-	[42] = 305, -- jethro
-	[65] = 304, -- kendl
-	[74] = 0, -- unused
-	[86] = 301, -- ryder3
-	[119] = 308, -- sindaco
-	[149] = 311, -- smokev
-	[208] = 42, -- suzie
-	[273] = 307, -- tbone
-	[289] = 306, -- zero
-	[300] = 280, -- lapd1
-	[301] = 281, -- sfpd1
-	[302] = 282, -- lvpd1
-	[303] = 280, -- lapd1
-	[304] = 280, -- lapd1
-	[305] = 282, -- lvpd1
-	[306] = 211, -- wfyclot
-	[307] = 11, -- vbfycrp
-	[308] = 211, -- wfyclot
-	[309] = 211, -- wfyclot
-	[310] = 283, -- csher
-	[311] = 288 -- dsher
-}
-
 -- replace colors
 function colorizeString(string)
 	return string:gsub("(=?{[0-9A-Fa-f]*})",
@@ -541,7 +513,11 @@ function EnableZoneNames(amx, enable)
 end
 
 function UsePlayerPedAnims(amx)
-	notImplemented('UsePlayerPedAnims')
+	g_UseCJWalk = true
+	for i, data in pairs(g_Players) do
+		-- update walking style to default
+		setPedWalkingStyle(data.elem, 0)
+	end
 	return true
 end
 

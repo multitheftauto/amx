@@ -283,6 +283,11 @@ addEventHandler('onPlayerSpawn', root,
 		procCallOnAll('OnPlayerSpawn', playerID)
 		setPlayerState(source, PLAYER_STATE_SPAWNED)
 
+		if not g_UseCJWalk then
+			local skin = getElementModel(source)
+			setPedWalkingStyle(source, WalkingStyle[skin] or 0)
+		end
+
 		if g_Players[playerID].updatetimer then
 			killTimer(g_Players[playerID].updatetimer)
 		end
