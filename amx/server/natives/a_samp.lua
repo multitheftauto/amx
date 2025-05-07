@@ -1,22 +1,6 @@
 ----------------------------------------------
 -- Start of SA-MP API implementation
 
-skinReplace = {
-	-- invalid skins
-	[3] = 0,
-	[4] = 0,
-	[5] = 0,
-	[6] = 0,
-	[8] = 0,
-	[42] = 0,
-	[65] = 0,
-	[74] = 0,
-	[86] = 0,
-	[119] = 0,
-	[149] = 0,
-	[208] = 0,
-	[273] = 0,
-}
 -- replace colors
 function colorizeString(string)
 	return string:gsub("(=?{[0-9A-Fa-f]*})",
@@ -318,7 +302,7 @@ function AddPlayerClassEx(amx, team, skin, x, y, z, angle, weap1, weap1_ammo, we
 	local id = table.insert0(
 		g_PlayerClasses,
 		{
-			x, y, z, angle, skinReplace[skin] or skin, 0, 0, team,
+			x, y, z, angle, g_SkinReplace[skin] or skin, 0, 0, team,
 			weapons = {
 				{ weap1, weap1_ammo },
 				{ weap2, weap2_ammo },
@@ -529,7 +513,11 @@ function EnableZoneNames(amx, enable)
 end
 
 function UsePlayerPedAnims(amx)
-	notImplemented('UsePlayerPedAnims')
+	g_UseCJWalk = true
+	for i, data in pairs(g_Players) do
+		-- update walking style to default
+		setPedWalkingStyle(data.elem, 0)
+	end
 	return true
 end
 
@@ -1165,7 +1153,7 @@ end
 
 function SetSpawnInfo(amx, player, team, skin, x, y, z, angle, weap1, weap1_ammo, weap2, weap2_ammo, weap3, weap3_ammo)
 	g_Players[getElemID(player)].spawninfo = {
-		x, y, z, angle, skinReplace[skin] or skin, 0, 0, team,
+		x, y, z, angle, g_SkinReplace[skin] or skin, 0, 0, team,
 		weapons = { { weap1, weap1_ammo }, { weap2, weap2_ammo }, { weap3, weap3_ammo } }
 	}
 	return true

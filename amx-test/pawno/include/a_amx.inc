@@ -43,8 +43,8 @@ native GetInteriorSoundsEnabled();
 native SetInteriorSoundsEnabled(bool:enable);
 native IsGarageOpen(garageid);
 native SetGarageOpen(garageid, bool:open);
-native IsGlitchEnabled(name[]);
-native SetGlitchEnabled(name[], bool:enable);
+native IsGlitchEnabled(const name[]);
+native SetGlitchEnabled(const name[], bool:enable);
 native Float:GetAircraftMaxVelocity();
 native SetAircraftMaxVelocity(Float:velocity);
 native Float:GetAircraftMaxHeight();
@@ -69,7 +69,7 @@ native GetPickupWeapon(pickupid);
 native GetPickupAmmo(pickupid);
 
 // Native Markers
-native CreateMarker(Float:X, Float:Y, Float:Z, type[], Float:size, red, green, blue, alpha);
+native CreateMarker(Float:X, Float:Y, Float:Z, const type[], Float:size, red, green, blue, alpha);
 native DestroyMarker(markerid);
 native GetMarkerColor(markerid, colorid); // Color IDs: 0 = Red, 1 = Green, 2 = Blue, 3 = Alpha
 native GetMarkerIcon(markerid); // 0 = No icon, 1 = Arrow, 2 = Race finish
@@ -86,10 +86,10 @@ native IsBotInMarker(markerid, botid);
 native IsVehicleInMarker(markerid, vehicleid);
 
 // Rules
-native IsValidServerRule(name[]);
-native GetServerRule(name[], buf[], bufsize = sizeof(buf));
-native SetServerRule(name[], value[]);
-native RemoveServerRule(name[]);
+native IsValidServerRule(const name[]);
+native GetServerRule(const name[], buf[], bufsize = sizeof(buf));
+native SetServerRule(const name[], const value[]);
+native RemoveServerRule(const name[]);
 
 // Objects
 native IsObjectBreakable(objectid);
@@ -122,12 +122,13 @@ native SetPlayerCanBeKnockedOffBike(playerid, bool:knockOff);
 native GetPlayerWeaponSlot(playerid);
 native SetPlayerWeaponSlot(playerid, slotid);
 native GetPlayerAmmoInClip(playerid);
+native GetPlayerIdleTime(playerid);
 native IsPlayerHeadless(playerid);
 native SetPlayerHeadless(playerid, bool:headless);
 native GetPlayerBlurLevel(playerid);
 native SetPlayerBlurLevel(playerid, level);
 native FadePlayerCamera(playerid, bool:fadeIn, Float:timeToFade = 1.0, red = 0, green = 0, blue = 0);
-native SetPlayerControlState(playerid, control[], bool:controlState);
+native SetPlayerControlState(playerid, const control[], bool:controlState);
 native IsPlayerCursorShowing(playerid);
 native ShowPlayerCursor(playerid, bool:show, bool:controls);
 native GetPlayerAlpha(playerid);
@@ -168,14 +169,14 @@ native GetTrainDirection(vehicleid);
 native SetTrainDirection(vehicleid, bool:clockwise);
 native GetTrainSpeed(vehicleid, &Float:speed);
 native SetTrainSpeed(vehicleid, Float:speed);
-native GetVehicleDriver(vehicleid);
+native GetVehicleOccupant(vehicleid, seatid);
 native GetVehicleNumberPlate(vehicleid, plate[], len = sizeof(plate));
 native GetVehicleColor(vehicleid, &color1, &color2);
 native GetVehiclePaintjob(vehicleid);
 native GetVehicleInterior(vehicleid);
 
 // Bots
-native CreateBot(modelid, Float:x, Float:y, Float:z, name[] = "Bot");
+native CreateBot(modelid, Float:x, Float:y, Float:z, const name[] = "Bot");
 native DestroyBot(botid);
 native AddBotClothes(botid, type, index);
 native GetBotClothes(botid, type);
@@ -218,7 +219,7 @@ native GetBotVehicleID(botid);
 native GetBotVehicleSeat(botid);
 native IsBotInVehicle(botid, vehicleid);
 native IsBotInAnyVehicle(botid);
-native SetBotControlState(botid, control[], bool:controlState);
+native SetBotControlState(botid, const control[], bool:controlState);
 native SetBotAimTarget(botid, Float:X, Float:Y, Float:Z);
 native GetBotDoingDriveBy(botid);
 native SetBotDoingDriveBy(botid, bool:driveBy);
@@ -239,22 +240,22 @@ native GetBotAlpha(botid);
 native SetBotAlpha(botid, alpha);
 
 // Scoreboard
-native AddScoreBoardColumn(column[]);
-native SetPlayerScoreBoardData(playerid, column[], data[]);
-native RemoveScoreBoardColumn(column[]);
+native AddScoreBoardColumn(const column[]);
+native SetPlayerScoreBoardData(playerid, const column[], const data[]);
+native RemoveScoreBoardColumn(const column[]);
 
 // Player Data
-native SetPlayerIntData(playerid, key[], value);
-native GetPlayerIntData(playerid, key[]);
-native SetPlayerFloatData(playerid, key[], Float:value);
-native Float:GetPlayerFloatData(playerid, key[]);
-native SetPlayerBoolData(playerid, key[], bool:value);
-native GetPlayerBoolData(playerid, key[]);
-native SetPlayerStringData(playerid, key[], value[]);
-native GetPlayerStringData(playerid, key[], buf[], bufsize = sizeof(buf));
-native ResetPlayerData(playerid, key[]);
+native SetPlayerIntData(playerid, const key[], value);
+native GetPlayerIntData(playerid, const key[]);
+native SetPlayerFloatData(playerid, const key[], Float:value);
+native Float:GetPlayerFloatData(playerid, const key[]);
+native SetPlayerBoolData(playerid, const key[], bool:value);
+native GetPlayerBoolData(playerid, const key[]);
+native SetPlayerStringData(playerid, const key[], const value[]);
+native GetPlayerStringData(playerid, const key[], buf[], bufsize = sizeof(buf));
+native ResetPlayerData(playerid, const key[]);
 
 // Misc
-native AddEventHandler(event[], func[]);
-native RemoveEventHandler(func[]);
-native IsPluginLoaded(plugin[]);
+native AddEventHandler(const event[], const func[]);
+native RemoveEventHandler(const func[]);
+native IsPluginLoaded(const plugin[]);

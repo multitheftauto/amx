@@ -461,6 +461,7 @@ g_SAMPSyscallPrototypes = {
 	TogglePlayerSpectating = {'p', 'b'},
 
 	UpdateVehicleDamageStatus = {'v', 'i', 'i', 'i', 'i'},
+	UsePlayerPedAnims = {},
 
 	VectorSize = {'f', 'f', 'f'},
 
@@ -580,6 +581,7 @@ g_SAMPSyscallPrototypes = {
 	GetPlayerWeaponSlot = {'p'},
 	SetPlayerWeaponSlot = {'p', 'i'},
 	GetPlayerAmmoInClip = {'p'},
+	GetPlayerIdleTime = {'p'},
 	IsPlayerHeadless = {'p'},
 	SetPlayerHeadless = {'p', 'b'},
 	GetPlayerBlurLevel = {'p'},
@@ -626,7 +628,7 @@ g_SAMPSyscallPrototypes = {
 	SetTrainDirection = {'v', 'b'},
 	GetTrainSpeed = {'v', 'r'},
 	SetTrainSpeed = {'v', 'f'},
-	GetVehicleDriver = {'v'},
+	GetVehicleOccupant = {'v', 'i'},
 	GetVehicleNumberPlate = {'v', 'r', 'i'},
 	GetVehicleColor = {'v', 'r', 'r'},
 	GetVehiclePaintjob = {'v'},
@@ -790,12 +792,8 @@ g_SAMPSyscallPrototypes = {
 	-- network stats
 	NetStats_BytesReceived = {'p'},
 	NetStats_BytesSent = {'p'},
-	NetStats_ConnectionStatus = {'p'},
 	NetStats_GetConnectedTime = {'p'},
 	NetStats_GetIpPort = {'p', 'r', 'i'},
-	NetStats_MessagesReceived = {'p'},
-	NetStats_MessagesRecvPerSecond = {'p'},
-	NetStats_MessagesSent = {'p'},
 	NetStats_PacketLossPercent = {'p'},
 
 	-- dummy (unimplemented)
@@ -855,8 +853,11 @@ g_SAMPSyscallPrototypes = {
 	GetPlayerCameraTargetActor = {'p'},
 	BlockIpAddress = {'s', 'i'},
 	UnBlockIpAddress = {'s'},
+	NetStats_ConnectionStatus = {'p'},
+	NetStats_MessagesReceived = {'p'},
+	NetStats_MessagesRecvPerSecond = {'p'},
+	NetStats_MessagesSent = {'p'},
 	GetServerTickRate = {},
-	UsePlayerPedAnims = {},
 
 	-- NPCs dummy
 	SendChat = {'s'},

@@ -77,6 +77,12 @@ function GetPlayerWalkingStyle(amx, player)
 end
 
 function SetPlayerWalkingStyle(amx, player, style)
+	-- if style is MOVE_DEFAULT and CJ walk isn't enabled
+	if style == 0 and not g_UseCJWalk then
+		-- return walking style back to default for this skin
+		local skin = getElementModel(player)
+		return setPedWalkingStyle(player, WalkingStyle[skin] or 0)
+	end
 	return setPedWalkingStyle(player, style)
 end
 
@@ -116,6 +122,10 @@ end
 
 function GetPlayerAmmoInClip(amx, player)
 	return getPedAmmoInClip(player)
+end
+
+function GetPlayerIdleTime(amx, player)
+	return getPlayerIdleTime(player)
 end
 
 function IsPlayerHeadless(amx, player)
@@ -169,7 +179,8 @@ end
 -- Bots
 
 function CreateBot(amx, model, x, y, z, name)
-	local bot = createPed(model, x, y, z)
+	local bot = createPed(g_SkinReplace[model] or model, x, y, z)
+	addPedClothes(bot, 'vest', 'vest', 0)
 	setElementData(bot, 'ShowNameTag', true)
 	setElementData(bot, 'BotName', name)
 	local botId = addElem(g_Bots, bot)
@@ -566,8 +577,8 @@ function SetTrainSpeed(amx, train, speed)
 	return setTrainSpeed(train, speed)
 end
 
-function GetVehicleDriver(amx, vehicle)
-	local player = getVehicleOccupant(vehicle)
+function GetVehicleOccupant(amx, vehicle, seat)
+	local player = getVehicleOccupant(vehicle, seat)
 	if not player then
 		return INVALID_PLAYER_ID
 	end
