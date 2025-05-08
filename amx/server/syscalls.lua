@@ -361,6 +361,7 @@ g_SAMPSyscallPrototypes = {
 	MovePlayerObject = {'p', 'i', 'f', 'f', 'f', 'f', 'f', 'f', 'f'},
 
 	PlayAudioStreamForPlayer = {'p', 's', 'f', 'f', 'f', 'f', 'b'},
+	PlayerPlaySound = {'p', 'i', 'f', 'f', 'f'},
 	PlayerSpectatePlayer = {'p', 'p', 'i'},
 	PlayerSpectateVehicle = {'p', 'v', 'i'},
 	PutPlayerInVehicle = {'p', 'v', 'i'},
@@ -825,7 +826,6 @@ g_SAMPSyscallPrototypes = {
 	GetVehicleRotationQuat = {'v', 'r', 'r', 'r', 'r'},
 	GetVehicleParamsCarWindows = {'v', 'r', 'r', 'r', 'r'},
 	SetVehicleParamsCarWindows = {'v', 'b', 'b', 'b', 'b'},
-	PlayerPlaySound = {'p', 'i', 'f', 'f', 'f'},
 	PlayCrimeReportForPlayer = {'p', 'i', 'i'},
 	SetPlayerShopName = {'p', 's'},
 	GetPlayerCameraMode = {'p'},

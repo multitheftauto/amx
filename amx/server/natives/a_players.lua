@@ -809,9 +809,9 @@ function TogglePlayerControllable(amx, player, enable)
 	return toggleAllControls(player, enable, true, false)
 end
 
-function PlayerPlaySound(amx, player, soundID, x, y, z)
-	notImplemented('PlayerPlaySound')
-	return false
+function PlayerPlaySound(amx, player, soundID, posX, posY, posZ)
+	clientCall(player, 'PlayerPlaySound', soundID, posX, posY, posZ)
+	return true
 end
 
 function ApplyAnimation(amx, player, animlib, animname, fDelta, loop, lockx, locky, freeze, time, forcesync)

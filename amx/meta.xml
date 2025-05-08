@@ -5,6 +5,7 @@
     <script src="server/defines.lua" type="server" />
     <script src="shared/anim_define.lua" type="shared" />
     <script src="shared/ped_anim.lua" type="shared" />
+    <script src="shared/sound_offset.lua" type="shared" />
     <script src="shared/vehicle_info.lua" type="shared" />
     <script src="server/util.lua" type="server" />
     <script src="server/_triggerqueue.lua" type="server" />

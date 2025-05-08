@@ -550,15 +550,16 @@ function StopPlayerObject(objID)
 	stopObject(obj)
 end
 -----------------------------
--- Audio
+-- Audio & SFX
 
 local pAudioStreamSound = nil -- SA-MP can only do one stream at a time anyway
 function PlayAudioStreamForPlayer(url, posX, posY, posZ, distance, usepos)
 	--outputConsole(string.format("PlayAudioStreamForPlayer called with args %s %f %f %f %f %d", url, posX, posY, posZ, distance, usepos))
-	if pAudioStreamSound ~= nil then -- If there's one already playing, stop it
+	if pAudioStreamSound and isElement(pAudioStreamSound) then -- If there's one already playing, stop it
 		--outputConsole("PlayAudioStreamForPlayer is stopping an audio stream")
-		StopAudioStreamForPlayer()
+		stopSound(pAudioStreamSound)
 	end
+
 	if not usepos then
 		--outputConsole(string.format("PlayAudioStreamForPlayer now playing non-3d sound %s", url))
 		pAudioStreamSound = playSound(url)
@@ -567,14 +568,51 @@ function PlayAudioStreamForPlayer(url, posX, posY, posZ, distance, usepos)
 		pAudioStreamSound = playSound3D(url, posX, posY, posZ)
 		setSoundMaxDistance(pAudioStreamSound, distance)
 	end
-	if pAudioStreamSound ~= nil then
+
+	if pAudioStreamSound and isElement(pAudioStreamSound) then
 		setSoundVolume(pAudioStreamSound, 1.0)
 	end
 end
 
 function StopAudioStreamForPlayer()
-	if pAudioStreamSound == nil then return end
+	if not pAudioStreamSound then return end
+	if not isElement(pAudioStreamSound) then return end
+
 	stopSound(pAudioStreamSound)
+end
+
+local sfxSound = nil
+function PlayerPlaySound(soundid, posX, posY, posZ)
+	if sfxSound and isElement(sfxSound) then
+		stopSound(sfxSound)
+	end
+
+	-- only 'script' container supported
+	if not getSFXStatus('script') then return end
+
+	for bankId = 1, #SFX_Offset do
+		local bank = SFX_Offset[bankId]
+		local first = bank.first
+		local last = bank.last or first
+
+		if soundid >= first and soundid <= last then
+			local bankIdx = bankId - 1
+			local audioEvent = soundid - first
+
+			if posX ~= 0.0 or posY ~= 0.0 or posZ ~= 0.0 then
+				--outputConsole(string.format("PlayerPlaySound now playing 3d sound %d (bank %d)", audioEvent, bankIdx))
+				sfxSound = playSFX3D('script', bankIdx, audioEvent, posX, posY, posZ)
+			else
+				--outputConsole(string.format("PlayerPlaySound now playing non-3d sound %d (bank %d)", audioEvent, bankIdx))
+				sfxSound = playSFX('script', bankIdx, audioEvent)
+			end
+			break
+		end
+	end
+
+	if sfxSound and isElement(sfxSound) then
+		setSoundVolume(sfxSound, 1.0)
+	end
 end
 -----------------------------
 -- Checkpoints
