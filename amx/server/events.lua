@@ -75,7 +75,7 @@ function joinHandler(player)
 
 	-- Keybinds
 	bindKey(player, 'F4', 'down', 'changeclass')
-	bindKey(player, 'enter_exit', 'down', removePedJetPack)
+	bindKey(player, 'enter_exit', 'down', resetSpecialAction)
 	g_Players[playerID].keys = {}
 	local function bindControls(player, t)
 		for samp, mta in pairs(t) do
@@ -519,6 +519,7 @@ addEventHandler('onVehicleEnter', root,
 		local playerID = getElemID(player)
 		g_Players[playerID].vehicle = source
 		setPlayerState(player, seat == 0 and PLAYER_STATE_DRIVER or PLAYER_STATE_PASSENGER)
+		g_Players[playerID].specialaction = SPECIAL_ACTION_NONE
 
 		if g_Vehicles[vehID] and g_Vehicles[vehID].respawntimer then
 			killTimer(g_Vehicles[vehID].respawntimer)
