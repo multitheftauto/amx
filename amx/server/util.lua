@@ -278,8 +278,19 @@ end
 local _warpPedIntoVehicle = warpPedIntoVehicle
 function warpPedIntoVehicle(player, vehicle, seat)
 	removePedFromVehicle(player)
-	g_Players[getElemID(player)].vehicle = vehicle
-	setTimer(_warpPedIntoVehicle, 500, 1, player, vehicle, seat)
+	setTimer(
+		function()
+			_warpPedIntoVehicle(player, vehicle, seat)
+			if getElementType(player) == 'player' then
+				setCameraTarget(player, player)
+				g_Players[getElemID(player)].vehicle = vehicle
+			else
+				g_Bots[getElemID(player)].vehicle = vehicle
+			end
+		end,
+		500,
+		1
+	)
 end
 
 local _bindKey = bindKey

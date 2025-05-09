@@ -224,9 +224,10 @@ function GetBotState(amx, bot)
 end
 
 function PutBotInVehicle(amx, bot, vehicle, seat)
-	if not warpPedIntoVehicle(bot, vehicle, seat) then
+	if not bot then
 		return false
 	end
+	warpPedIntoVehicle(bot, vehicle, seat)
 	if g_RCVehicles[getElementModel(vehicle)] then
 		setPedWeaponSlot(bot, 0)
 		setElementCollisionsEnabled(bot, false)

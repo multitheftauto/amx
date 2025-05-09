@@ -759,9 +759,10 @@ function SetPlayerChatBubble(amx, player, text, color, dist, exptime)
 end
 
 function PutPlayerInVehicle(amx, player, vehicle, seat)
-	if not warpPedIntoVehicle(player, vehicle, seat) then
+	if not player then
 		return false
 	end
+	warpPedIntoVehicle(player, vehicle, seat)
 	if g_RCVehicles[getElementModel(vehicle)] then
 		setPedWeaponSlot(player, 0)
 		setElementCollisionsEnabled(player, false)

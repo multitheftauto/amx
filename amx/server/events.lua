@@ -279,9 +279,10 @@ addEventHandler('onPlayerSpawn', root,
 			return
 		end
 		toggleAllControls(source, true)
+		setElementAlpha(source, 255)
 		setElementCollisionsEnabled(source, true)
-		procCallOnAll('OnPlayerSpawn', playerID)
 		setPlayerState(source, PLAYER_STATE_SPAWNED)
+		procCallOnAll('OnPlayerSpawn', playerID)
 
 		-- wanna see CJ in a white singlet?
 		addPedClothes(source, 'vest', 'vest', 0)
@@ -458,6 +459,7 @@ function checkAndUpdatePlayerStates()
 		if (state == PLAYER_STATE_DRIVER or state == PLAYER_STATE_PASSENGER) or 
 			(state == PLAYER_STATE_SPAWNED or state == PLAYER_STATE_NONE) then
 			if not isPedInVehicle(data.elem) then
+				setCameraTarget(data.elem, data.elem)
 				setPlayerState(data.elem, PLAYER_STATE_ONFOOT)
 				setElementCollisionsEnabled(data.elem, true)
 				setElementAlpha(data.elem, 255)
@@ -650,6 +652,9 @@ addEventHandler('OnVehicleDamageStatusUpdate_Ev', root,
 
 local _getPedOccupiedVehicle = getPedOccupiedVehicle
 function getPedOccupiedVehicle(player)
+	if not player then
+		return false
+	end
 	if getElementType(player) ~= 'player' then
 		return _getPedOccupiedVehicle(player)
 	end
@@ -659,8 +664,11 @@ end
 
 local _removePedFromVehicle = removePedFromVehicle
 function removePedFromVehicle(player)
+	if not player then
+		return false
+	end
 	local playerdata = g_Players[getElemID(player)]
-	if not playerdata.vehicle then
+	if getElementType(player) ~= 'player' or not playerdata.vehicle then
 		return _removePedFromVehicle(player)
 	end
 	playerdata.vehicle = nil
