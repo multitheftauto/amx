@@ -34,13 +34,22 @@ forward OnPlayerKeyUp(playerid, key);
 // World
 native Float:GetGameSpeed();
 native SetGameSpeed(Float:speed);
+native Float:GetRainLevel();
+native SetRainLevel(Float:level);
+native ResetRainLevel();
 native GetSkyGradient(&topRed, &topGreen, &topBlue, &bottomRed, &bottomGreen, &bottomBlue);
 native SetSkyGradient(topRed = 0, topGreen = 0, topBlue = 0, bottomRed = 0, bottomGreen = 0, bottomBlue = 0);
 native ResetSkyGradient();
+native Float:GetFogDistance();
+native SetFogDistance(Float:distance);
+native ResetFogDistance();
 native GetCloudsEnabled();
 native SetCloudsEnabled(bool:enable);
+native SetWeatherBlended(weatherid);
 native GetInteriorSoundsEnabled();
 native SetInteriorSoundsEnabled(bool:enable);
+native GetOcclusionsEnabled();
+native SetOcclusionsEnabled(bool:enable);
 native IsGarageOpen(garageid);
 native SetGarageOpen(garageid, bool:open);
 native IsGlitchEnabled(const name[]);
@@ -127,6 +136,8 @@ native IsPlayerHeadless(playerid);
 native SetPlayerHeadless(playerid, bool:headless);
 native GetPlayerBlurLevel(playerid);
 native SetPlayerBlurLevel(playerid, level);
+native IsPlayerMapForced(playerid);
+native ForcePlayerMap(playerid, bool:forceOn);
 native FadePlayerCamera(playerid, bool:fadeIn, Float:timeToFade = 1.0, red = 0, green = 0, blue = 0);
 native SetPlayerControlState(playerid, const control[], bool:controlState);
 native IsPlayerCursorShowing(playerid);
@@ -241,7 +252,7 @@ native SetBotAlpha(botid, alpha);
 
 // Scoreboard
 native AddScoreBoardColumn(const column[]);
-native SetPlayerScoreBoardData(playerid, const column[], const data[]);
+native SetPlayerScoreBoardData(playerid, const column[], const value[]);
 native RemoveScoreBoardColumn(const column[]);
 
 // Player Data

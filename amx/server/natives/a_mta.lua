@@ -144,6 +144,14 @@ function SetPlayerBlurLevel(amx, player, level)
 	return setPlayerBlurLevel(player, level)
 end
 
+function IsPlayerMapForced(amx, player)
+	return isPlayerMapForced(player)
+end
+
+function ForcePlayerMap(amx, player, forceOn)
+	return forcePlayerMap(player, forceOn)
+end
+
 function FadePlayerCamera(amx, player, fadeIn, timeToFade, red, green, blue)
 	return fadeCamera(player, fadeIn, timeToFade, red, green, blue)
 end
@@ -686,6 +694,19 @@ function SetGameSpeed(amx, speed)
 	return setGameSpeed(speed)
 end
 
+function GetRainLevel(amx)
+	local rainLvl = getRainLevel() or 0
+	return float2cell(rainLvl)
+end
+
+function SetRainLevel(amx, level)
+	return setRainLevel(level)
+end
+
+function ResetRainLevel(amx)
+	return resetRainLevel()
+end
+
 function GetSkyGradient(amx, refTopRed, refTopGreen, refTopBlue, refBtmRed, refBtmGreen, refBtmBlue)
 	local topRed, topGreen, topBlue, btmRed, btmGreen, btmBlue = getSkyGradient()
 
@@ -707,6 +728,19 @@ function ResetSkyGradient(amx)
 	return resetSkyGradient()
 end
 
+function GetFogDistance(amx)
+	local fogDist = getFogDistance() or 0
+	return float2cell(fogDist)
+end
+
+function SetFogDistance(amx, distance)
+	return setFogDistance(distance)
+end
+
+function ResetFogDistance(amx)
+	return resetFogDistance()
+end
+
 function GetCloudsEnabled(amx)
 	return getCloudsEnabled()
 end
@@ -715,12 +749,24 @@ function SetCloudsEnabled(amx, enable)
 	return setCloudsEnabled(enable)
 end
 
+function SetWeatherBlended(amx, weather)
+	return setWeatherBlended(weather)
+end
+
 function GetInteriorSoundsEnabled(amx)
 	return getInteriorSoundsEnabled()
 end
 
 function SetInteriorSoundsEnabled(amx, enable)
 	return setInteriorSoundsEnabled(enable)
+end
+
+function GetOcclusionsEnabled(amx)
+	return getOcclusionsEnabled()
+end
+
+function SetOcclusionsEnabled(amx, enable)
+	return setOcclusionsEnabled(enable)
 end
 
 function IsGarageOpen(amx, garage)
@@ -811,10 +857,10 @@ function AddScoreBoardColumn(amx, column)
 	return exports.scoreboard:scoreboardAddColumn(column)
 end
 
-function SetPlayerScoreBoardData(amx, player, column, data)
+function SetPlayerScoreBoardData(amx, player, column, value)
 	local scoreboard = getResourceFromName('scoreboard')
 	if getResourceState(scoreboard) ~= 'running' then return false end
-	return setElementData(player, column, data)
+	return setElementData(player, column, value)
 end
 
 function RemoveScoreBoardColumn(amx, column)
