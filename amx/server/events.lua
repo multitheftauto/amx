@@ -751,7 +751,7 @@ addEventHandler('OnPlayerWeaponShot_Ev', root,
 		playerData.shotVect.hY = hitY
 		playerData.shotVect.hZ = hitZ
 
-		procCallOnAll('OnPlayerWeaponShot', playerID, weapon, hitType, hitId, offsetX, offsetY, offsetZ)
+		procCallOnAll('OnPlayerWeaponShot', playerID, weapon, hitType, hitId, float2cell(offsetX), float2cell(offsetY), float2cell(offsetZ))
 	end
 )
 
@@ -807,16 +807,16 @@ addEventHandler('onPlayerClick', root,
 		if buttonState == 'up' then iState = 0 end
 		if buttonState == 'down' then iState = 1 end
 
-		procCallOnAll('OnPlayerClickWorld', playerID, iButton, iState, worldPosX, worldPosY, worldPosZ)
+		procCallOnAll('OnPlayerClickWorld', playerID, iButton, iState, float2cell(worldPosX), float2cell(worldPosY), float2cell(worldPosZ))
 		if elem == nil then return end
 		if getElementType(elem) == 'player' then
-			procCallOnAll('OnPlayerClickWorldPlayer', playerID, iButton, iState, elemID, worldPosX, worldPosY, worldPosZ)
+			procCallOnAll('OnPlayerClickWorldPlayer', playerID, iButton, iState, elemID, float2cell(worldPosX), float2cell(worldPosY), float2cell(worldPosZ))
 		end
 		if getElementType(elem) == 'object' then
-			procCallOnAll('OnPlayerClickWorldObject', playerID, iButton, iState, elemID, worldPosX, worldPosY, worldPosZ)
+			procCallOnAll('OnPlayerClickWorldObject', playerID, iButton, iState, elemID, float2cell(worldPosX), float2cell(worldPosY), float2cell(worldPosZ))
 		end
 		if getElementType(elem) == 'vehicle' then
-			procCallOnAll('OnPlayerClickWorldVehicle', playerID, iButton, iState, elemID, worldPosX, worldPosY, worldPosZ)
+			procCallOnAll('OnPlayerClickWorldVehicle', playerID, iButton, iState, elemID, float2cell(worldPosX), float2cell(worldPosY), float2cell(worldPosZ))
 		end
 
 	end

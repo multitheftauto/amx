@@ -24,16 +24,6 @@ HealthBarInnerVertices =
 	{ x = 0, y = 0, z = 0, c = tocolor(185, 34, 40, 255) }
 }
 
-function applyColorAlpha(color, alpha)
-	if color < 0 then
-		color = 0x100000000 + color
-	end
-	local rgb = color % 0x1000000
-	local a = (color - rgb) / 0x1000000 * alpha
-	a = a - a % 1
-	return rgb + a * 0x1000000
-end
-
 function drawNameTag(position, nameText, health, armor, distance)
 	position.z = (distance * 0.025) + position.z + 0.3
 
@@ -203,7 +193,7 @@ addEventHandler('onClientRender', root,
 				local distance = getDistanceBetweenPoints3D(playerPosX, playerPosY, playerPosZ, fPosX, fPosY, fPosZ)
 				if distance < 45 then
 					local cx, cy, cz = getCameraMatrix(localPlayer)
-					if isLineOfSightClear(cx, cy, cz, fPosX, fPosY, fPosZ, true, true, false, true, true, false, false) then
+					if isLineOfSightClear(cx, cy, cz, fPosX, fPosY, fPosZ, true, false, false, true, true, false, false) then
 						drawNameTag({x = fPosX, y = fPosY, z = fPosZ}, getPlayerName(player) .. ' (' .. getElemID(player) .. ')', getElementHealth(player), getPedArmor(player), distance)
 					end
 				end
