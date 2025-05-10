@@ -1484,6 +1484,7 @@ function ShowMenuForPlayer(menuID)
 		addEventHandler('onClientGUIClick', g_CurrentMenu.closebtnhover,
 			function()
 				if not g_CurrentMenu.anim then
+					playSoundFrontEnd(2)
 					HideMenuForPlayer()
 				end
 			end,
@@ -1568,8 +1569,8 @@ function closeMenu()
 end
 
 function exitMenu()
-	closeMenu()
 	serverAMXEvent('OnPlayerExitedMenu', g_PlayerID)
+	closeMenu()
 end
 
 function renderMenu()
@@ -1644,20 +1645,25 @@ function menuClickHandler(button, state, clickX, clickY)
 
 	local selectedRow = math.floor((clickY - g_CurrentMenu.y - MENU_TOP_PADDING) / MENU_ITEM_HEIGHT)
 	if not (g_CurrentMenu.disabledrows and table.find(g_CurrentMenu.disabledrows, selectedRow)) then
+		playSoundFrontEnd(1)
 		serverAMXEvent('OnPlayerSelectedMenuRow', g_PlayerID, selectedRow)
 		closeMenu()
+	else
+		playSoundFrontEnd(4)
 	end
 end
 
 function OnKeyPress(key, keyState)
 	if (keyState == 'down') then
-		exitMenu()
+		playSoundFrontEnd(2)
+		HideMenuForPlayer()
 	end
 end
 -----------------------------
 -- Others
 
 function SetPlayerPosFindZ(x, y, z)
+	enginePreloadWorldArea(x, y, z)
 	setElementPosition(localPlayer, x, y, getGroundPosition(x, y, z) + 1)
 end
 

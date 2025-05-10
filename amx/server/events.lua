@@ -211,6 +211,11 @@ function requestClass(player, btn, state, dir)
 	end
 	local playerID = getElemID(player)
 	local data = g_Players[playerID]
+	if dir > 0 then
+		playSoundFrontEnd(player, 6)
+	elseif dir < 0 then
+		playSoundFrontEnd(player, 14)
+	end
 	data.selectedclass = data.selectedclass + dir
 	if data.selectedclass > #g_PlayerClasses then
 		data.selectedclass = 0
