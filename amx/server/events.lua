@@ -779,6 +779,15 @@ addEventHandler('OnPlayerPickUpPickup_Ev', root,
 	end
 )
 
+addEvent('OnPlayerClickMap_Ev', true)
+addEventHandler('OnPlayerClickMap_Ev', root,
+	function(clickX, clickY, clickZ)
+		local playerID = getElemID(source)
+
+		procCallOnAll('OnPlayerClickMap', playerID, float2cell(clickX), float2cell(clickY), float2cell(clickZ))
+	end
+)
+
 addEventHandler('onConsole', root,
 	function(cmd)
 		cmd = '/' .. cmd:gsub('^([^%s]*)', g_CommandMapping)

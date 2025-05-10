@@ -1663,7 +1663,6 @@ end
 -- Others
 
 function SetPlayerPosFindZ(x, y, z)
-	enginePreloadWorldArea(x, y, z)
 	setElementPosition(localPlayer, x, y, getGroundPosition(x, y, z) + 1)
 end
 

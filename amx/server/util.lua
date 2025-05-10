@@ -209,6 +209,7 @@ g_EventNames = {
 	OnPlayerClickWorldObject = true,
 	OnPlayerClickWorldVehicle = true,
 	OnPlayerClickPlayer = true,
+	OnPlayerClickMap = true,
 	OnObjectMoved = true,
 	OnPlayerObjectMoved = true,
 	OnBotConnect = true,
