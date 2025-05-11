@@ -995,10 +995,23 @@ function GetPlayerCameraFrontVector(amx, player, refX, refY, refZ)
 	if not player then
 		return false
 	end
+
 	local x, y, z, lx, ly, lz = getCameraMatrix(player)
-	writeMemFloat(amx, refX, lx - x)
-	writeMemFloat(amx, refY, ly - y)
-	writeMemFloat(amx, refZ, lz - z)
+	local vx, vy, vz = 0.0, 0.0, 0.0
+
+	if x and lx then
+		vx = lx - x
+	end
+	if y and ly then
+		vy = ly - y
+	end
+	if z and lz then
+		vz = lz - z
+	end
+
+	writeMemFloat(amx, refX, vx)
+	writeMemFloat(amx, refY, vy)
+	writeMemFloat(amx, refZ, vz)
 	return true
 end
 
