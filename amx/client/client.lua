@@ -139,7 +139,7 @@ function startClassSelection(classInfo)
 		g_ClassSelectionInfo.selectedclass = 0
 	end
 	g_ClassSelectionInfo.gui = {
-		img = guiCreateStaticImage(35, screenHeight - 410, 205, 236, 'client/logo_small.png', false),
+		img = guiCreateStaticImage(35, screenHeight - 410, 205, 236, 'images/logo_small.png', false),
 		btnLeft = guiCreateButton(screenWidth / 2 - 145 - 70, screenHeight - 100, 140, 20, '<<<', false),
 		btnRight = guiCreateButton(screenWidth / 2 - 70, screenHeight - 100, 140, 20, '>>>', false),
 		btnSpawn = guiCreateButton(screenWidth / 2 + 145 - 70, screenHeight - 100, 140, 20, 'Spawn', false)
@@ -1460,7 +1460,7 @@ function ShowMenuForPlayer(menuID)
 	if not prevMenu then
 		g_CurrentMenu.alpha = 0
 
-		g_CurrentMenu.closebtn = guiCreateStaticImage(g_CurrentMenu.x + g_CurrentMenu.width - closebtnSide, g_CurrentMenu.y, closebtnSide, closebtnSide, 'client/closebtn.png', false, nil)
+		g_CurrentMenu.closebtn = guiCreateStaticImage(g_CurrentMenu.x + g_CurrentMenu.width - closebtnSide, g_CurrentMenu.y, closebtnSide, closebtnSide, 'images/closebtn.png', false, nil)
 		guiSetAlpha(g_CurrentMenu.closebtn, 0)
 		addEventHandler('onClientMouseEnter', g_CurrentMenu.closebtn,
 			function()
@@ -1470,7 +1470,7 @@ function ShowMenuForPlayer(menuID)
 			false
 		)
 
-		g_CurrentMenu.closebtnhover = guiCreateStaticImage(g_CurrentMenu.x + g_CurrentMenu.width - closebtnSide, g_CurrentMenu.y, closebtnSide, closebtnSide, 'client/closebtn_hover.png', false, nil)
+		g_CurrentMenu.closebtnhover = guiCreateStaticImage(g_CurrentMenu.x + g_CurrentMenu.width - closebtnSide, g_CurrentMenu.y, closebtnSide, closebtnSide, 'images/closebtn_hover.png', false, nil)
 		guiSetVisible(g_CurrentMenu.closebtnhover, false)
 		guiSetAlpha(g_CurrentMenu.closebtnhover, .75)
 		addEventHandler('onClientMouseLeave', g_CurrentMenu.closebtnhover,
