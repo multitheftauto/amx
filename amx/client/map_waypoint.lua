@@ -15,8 +15,6 @@ local function handleMapTargetBlip()
 		return
 	end
 
-	wasMapOpened = true
-
 	if not isCursorShowing() then
 		showCursor(true, false)
 	end
@@ -58,5 +56,6 @@ local function handleMapTargetBlip()
 	end
 
 	wasLMBPressed, wasRMBPressed = isLMBPressed, isRMBPressed
+	wasMapOpened = true
 end
 addEventHandler('onClientRender', root, handleMapTargetBlip)

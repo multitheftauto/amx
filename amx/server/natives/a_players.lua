@@ -938,7 +938,7 @@ end
 -- SetPlayerMarkerForPlayer client
 
 function ShowPlayerNameTagForPlayer(amx, player, playerToShow, show)
-	clientCall(player, 'setPlayerNametagShowing', playerToShow, show)
+	clientCall(player, 'updateNameTagShowing', playerToShow, show)
 	return true
 end
 

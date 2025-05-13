@@ -809,6 +809,10 @@ function SetJetpackMaxHeight(amx, height)
 	return setJetpackMaxHeight(height)
 end
 
+function GetWeaponSlot(amx, weapon)
+	return getSlotFromWeapon(weapon) or -1
+end
+
 function GetFPSLimit(amx)
 	return getFPSLimit()
 end
@@ -879,10 +883,6 @@ end
 
 function RemoveEventHandler(amx, func)
 	g_Events[func] = nil
-end
-
-function AttachElementToElement(amx, elem, toelem, posX, posY, posZ, rotX, rotY, rotZ)
-	return attachElements(elem, toelem, posX, posY, posZ, rotX, rotY, rotZ)
 end
 
 function IsPluginLoaded(amx, pluginName)

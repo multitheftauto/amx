@@ -60,6 +60,7 @@ native Float:GetAircraftMaxHeight();
 native SetAircraftMaxHeight(Float:height);
 native Float:GetJetpackMaxHeight();
 native SetJetpackMaxHeight(Float:height);
+native GetWeaponSlot(weaponid);
 native GetFPSLimit();
 native SetFPSLimit(fps);
 native GetRandomPlayer();

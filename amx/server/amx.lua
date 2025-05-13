@@ -26,6 +26,9 @@ function initGameModeGlobals()
 	g_ShowZoneNames = true
 	g_GlobalChatRadius = false
 	g_UseCJWalk = false
+	g_ShowNameTags = true
+	g_NameTagsRadius = 70
+	g_NameTagsLOS = true
 end
 
 addEventHandler('onResourceStart', resourceRoot,

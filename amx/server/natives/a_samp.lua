@@ -400,7 +400,8 @@ function DestroyPickup(amx, pickup)
 end
 
 function ShowNameTags(amx, show)
-	table.each(g_Players, 'elem', setPlayerNametagShowing, show)
+	g_ShowNameTags = show
+	clientCall(root, 'updateNameTagGlobals', {status = show})
 	return true
 end
 
@@ -527,12 +528,14 @@ function DisableInteriorEnterExits(amx)
 end
 
 function DisableNameTagLOS(amx)
-	notImplemented('DisableNameTagLOS')
+	g_NameTagsLOS = false
+	clientCall(root, 'updateNameTagGlobals', {los = false})
 	return true
 end
 
 function SetNameTagDrawDistance(amx, distance)
-	notImplemented('SetNameTagDrawDistance')
+	g_NameTagsRadius = distance
+	clientCall(root, 'updateNameTagGlobals', {radius = distance})
 	return true
 end
 

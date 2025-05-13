@@ -1,3 +1,8 @@
+local showNameTags = true
+local nameTagsRadius = 70
+local nameTagsLOS = true
+local nameTagShowing = {}
+
 local font = 'arial' -- default font
 
 HealthBarBorderVertices =
@@ -185,19 +190,61 @@ end
 
 addEventHandler('onClientRender', root,
 	function()
+		if not showNameTags then return end
 		local playerPosX, playerPosY, playerPosZ = getElementPosition(localPlayer)
+
 		for k, player in pairs(getElementsByType('player')) do
 			if player ~= localPlayer and isElementOnScreen(player) then
-				--local fPosX, fPosY, fPosZ = getElementPosition(player)
-				local fPosX, fPosY, fPosZ = getPedBonePosition(player, 8)
-				local distance = getDistanceBetweenPoints3D(playerPosX, playerPosY, playerPosZ, fPosX, fPosY, fPosZ)
-				if distance < 45 then
-					local cx, cy, cz = getCameraMatrix(localPlayer)
-					if isLineOfSightClear(cx, cy, cz, fPosX, fPosY, fPosZ, true, false, false, true, true, false, false) then
-						drawNameTag({x = fPosX, y = fPosY, z = fPosZ}, getPlayerName(player) .. ' (' .. getElemID(player) .. ')', getElementHealth(player), getPedArmor(player), distance)
+				if nameTagShowing[player] ~= false then
+					--local fPosX, fPosY, fPosZ = getElementPosition(player)
+					local fPosX, fPosY, fPosZ = getPedBonePosition(player, 8)
+					local distance = getDistanceBetweenPoints3D(playerPosX, playerPosY, playerPosZ, fPosX, fPosY, fPosZ)
+
+					if distance < nameTagsRadius then
+						local cx, cy, cz = getCameraMatrix()
+
+						if not nameTagsLOS or isLineOfSightClear(cx, cy, cz, fPosX, fPosY, fPosZ, true, false, false, true, true, false, false) then
+							drawNameTag({x = fPosX, y = fPosY, z = fPosZ}, getPlayerName(player) .. ' (' .. getElemID(player) .. ')', getElementHealth(player), getPedArmor(player), distance)
+						end
+					end
+				end
+			end
+		end
+
+		for k, bot in pairs(getElementsByType('ped')) do
+			if isElementOnScreen(bot) then
+				if getElementData(bot, 'ShowNameTag') then
+					--local fPosX, fPosY, fPosZ = getElementPosition(bot)
+					local fPosX, fPosY, fPosZ = getPedBonePosition(bot, 8)
+					local distance = getDistanceBetweenPoints3D(playerPosX, playerPosY, playerPosZ, fPosX, fPosY, fPosZ)
+
+					if distance < nameTagsRadius then
+						local cx, cy, cz = getCameraMatrix()
+
+						if not nameTagsLOS or isLineOfSightClear(cx, cy, cz, fPosX, fPosY, fPosZ, true, false, false, true, true, false, false) then
+							local botName = getElementData(bot, 'BotName') or 'Bot'
+							drawNameTag({x = fPosX, y = fPosY, z = fPosZ}, botName .. ' (' .. getElemID(bot) .. ')', getElementHealth(bot), getPedArmor(bot), distance)
+						end
 					end
 				end
 			end
 		end
 	end
 )
+
+function updateNameTagGlobals(settings)
+	if settings.status ~= nil then
+		showNameTags = settings.status
+	end
+	if settings.radius ~= nil then
+		nameTagsRadius = settings.radius
+	end
+	if settings.los ~= nil then
+		nameTagsLOS = settings.los
+	end
+end
+
+-- ShowPlayerNameTagForPlayer
+function updateNameTagShowing(playerToShow, show)
+	nameTagShowing[playerToShow] = show
+end

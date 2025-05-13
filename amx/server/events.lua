@@ -29,6 +29,11 @@ function gameModeInit(player)
 	toggleAllControls(player, false, true, false)
 	clientCall(player, 'showIntroScene')
 	clientCall(player, 'TogglePlayerClock', false, false)
+	clientCall(player, 'updateNameTagGlobals', {
+		status = g_ShowNameTags,
+		radius = g_NameTagsRadius,
+		los = g_NameTagsLOS
+	})
 	g_Players[playerID].pvars = {}
 	g_Players[playerID].streamedActors = {}
 	g_Players[playerID].streamedVehicles = {}
