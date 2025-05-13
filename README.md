@@ -676,13 +676,13 @@ is perfect. Below is a list of limitations that may or may not be
 addressed in later versions of *amx* and Multi Theft Auto.
 
 - The following scripting functions are currently not implemented and
-  will have no effect when called: DisableInteriorEnterExits,
-  DisableRemoteVehicleCollisions, EnablePlayerCameraTarget,
-  EnableStuntBonusForAll, EnableStuntBonusForPlayer, EnableTirePopping
-  (tire popping is always on), EnableVehicleFriendlyFire,
-  SendDeathMessage (use the "killmessages" resource on your server
-  instead for graphical death messages), SetObjectNoCameraCol,
-  SetPlayerShopName, TextDrawSetProportional, TextDrawSetSelectable.
+  will have no effect when called: DisableRemoteVehicleCollisions,
+  EnablePlayerCameraTarget, EnableStuntBonusForAll,
+  EnableStuntBonusForPlayer, EnableTirePopping (tire popping is always
+  on), EnableVehicleFriendlyFire, SendDeathMessage (use the
+  "killmessages" resource on your server instead for graphical death
+  messages), SetObjectNoCameraCol, SetPlayerShopName,
+  TextDrawSetProportional, TextDrawSetSelectable.
 
 ## Credits
 
