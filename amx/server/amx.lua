@@ -23,7 +23,7 @@ function initGameModeGlobals()
 	g_Teams = setmetatable({}, { __index = function(t, k) t[k] = createTeam('Team ' .. (k + 1)) return t[k] end })
 	g_PlayerMarkersMode = 1
 	g_PlayerMarkerRadius = false
-	g_ShowZoneNames = true
+	g_ShowZoneNames = false
 	g_GlobalChatRadius = false
 	g_UseCJWalk = false
 	g_ShowNameTags = true
