@@ -202,6 +202,7 @@ function putPlayerInClassSelection(player)
 		killTimer(g_Players[playerID].updatetimer)
 		g_Players[playerID].updatetimer = nil
 	end
+	setPlayerHudComponentVisible(player, 'area_name', false)
 	clientCall(player, 'startClassSelection', g_PlayerClasses)
 	bindKey(player, 'arrow_l', 'down', requestClass, -1)
 	bindKey(player, 'arrow_r', 'down', requestClass, 1)
@@ -275,6 +276,7 @@ function spawnPlayerBySelectedClass(player, x, y, z, r)
 		end
 	end
 	clientCall(player, 'destroyClassSelGUI')
+	setPlayerHudComponentVisible(player, 'area_name', g_ShowZoneNames)
 	if playerdata.blip then
 		setElementVisibleTo(playerdata.blip, root, true)
 	end
