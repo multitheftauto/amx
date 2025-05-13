@@ -51,13 +51,6 @@ addEventHandler('onClientResourceStart', resourceRoot,
 	false
 )
 
-addEventHandler('onClientResourceStop', resourceRoot,
-	function()
-		TogglePlayerClock(false, true)
-	end,
-	false
-)
-
 function enableDebug()
 	local state = not isDebugViewActive()
 	setDebugViewActive(state)
@@ -216,6 +209,7 @@ end
 addEventHandler('onClientResourceStop', resourceRoot,
 	function()
 		destroyClassSelGUI()
+		TogglePlayerClock(false, true)
 		removeEventHandler('onClientRender', root, renderTextDraws)
 		removeEventHandler('onClientRender', root, renderMenu)
 	end
@@ -275,10 +269,9 @@ function pickupOnInteriorChangeLoop()
 end
 
 local function clientPlayerPickupHit(thePickup, matchingDimension)
-	if source ~= localPlayer then return end
 	triggerServerEvent('OnPlayerPickUpPickup_Ev', localPlayer, thePickup)
 end
-addEventHandler('onClientPlayerPickupHit', root, clientPlayerPickupHit)
+addEventHandler('onClientPlayerPickupHit', localPlayer, clientPlayerPickupHit)
 -----------------------------
 -- Interior related
 
@@ -1665,7 +1658,6 @@ end
 
 local function clientPlayerWeaponFire(weapon, ammo, ammoInClip, hitX, hitY, hitZ, hitElement, startX, startY, startZ)
 	if weapon < 22 or (weapon > 34 and weapon ~= 38) then return end
-	if source ~= localPlayer then return end
 
 	local hitId, hitType = 65535, 0
 	local offsetX, offsetY, offsetZ = hitX, hitY, hitZ
@@ -1699,7 +1691,7 @@ local function clientPlayerWeaponFire(weapon, ammo, ammoInClip, hitX, hitY, hitZ
 
 	triggerServerEvent('OnPlayerWeaponShot_Ev', localPlayer, weapon, hitType, hitId, startX, startY, startZ, hitX, hitY, hitZ, offsetX, offsetY, offsetZ)
 end
-addEventHandler('onClientPlayerWeaponFire', root, clientPlayerWeaponFire)
+addEventHandler('onClientPlayerWeaponFire', localPlayer, clientPlayerWeaponFire)
 
 local function clientPedDamage(attacker, weapon, bodypart, loss)
 	if getElementType(source) == 'ped' and getElementData(source, 'ActorPed') then
@@ -2183,7 +2175,7 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 	return true
 end
 
--- depends on scoreboard resource
+-- depends on scoreboard default resource
 local function clientPlayerScoreboardClick(selected, cX, cY, clickedColumn)
 	if getElementType(source) ~= 'player' then return end
 	serverAMXEvent('OnPlayerClickPlayer', getElemID(localPlayer), getElemID(source), 0)

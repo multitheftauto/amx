@@ -203,7 +203,7 @@ Information about this is lined out below.
 
   The meta.xml files of gamemodes and filterscripts are slightly
   different. Two resources, amx-test and amx-fs-test, are included
-  with the *amx* download as examples. Most times you can simply
+  in the *amx* repository as examples. Most times you can simply
   copy-paste these to a new resource and adjust the names in it.
 
 - To specify what **filterscripts to autostart** when *amx* loads,
@@ -224,10 +224,10 @@ Information about this is lined out below.
   plugins to start, separated by spaces. For example:
 
   ```xml
-  <setting name="plugins" value="irc sampmysql"/>
+  <setting name="plugins" value="irc mysql"/>
   ```
 
-  This will load irc.dll and sampmysql.dll on Windows, or .so on
+  This will load irc.dll and mysql.dll on Windows, or .so on
   Linux.
 
 - jbeta's mapcycler resource (shipped with the MTA server) is used for
