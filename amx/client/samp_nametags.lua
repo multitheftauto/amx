@@ -29,14 +29,17 @@ HealthBarInnerVertices =
 	{ x = 0, y = 0, z = 0, c = tocolor(185, 34, 40, 255) }
 }
 
-function drawNameTag(position, nameText, health, armor, distance)
+function drawNameTag(position, nameText, r, g, b, health, armor, distance)
+	if not r or not g or not b then
+		r = 255
+		g = 255
+		b = 255
+	end
+
 	position.z = (distance * 0.025) + position.z + 0.3
 
 	local screenCoordsX, screenCoordsY = getScreenFromWorldPosition(position.x, position.y, position.z)
-
-	if not screenCoordsX then
-		return
-	end
+	if not screenCoordsX then return end
 
 	local rect = {left = screenCoordsX, top = screenCoordsY, right = screenCoordsX + 1, bottom = screenCoordsY + 1}
 	local textSizeX, textSizeY = dxGetTextSize(nameText, 0, 1, 1, font)
@@ -82,7 +85,7 @@ function drawNameTag(position, nameText, health, armor, distance)
 
 	dxDrawText(
 		nameText, rect.left, rect.top, rect.right, rect.bottom,
-		tocolor(255, 255, 255, 255), 1, 1,
+		tocolor(r, g, b, 255), 1, 1,
 
 		font, 'left', 'top', false, false,
 		false, false, false,
@@ -204,7 +207,8 @@ addEventHandler('onClientRender', root,
 						local cx, cy, cz = getCameraMatrix()
 
 						if not nameTagsLOS or isLineOfSightClear(cx, cy, cz, fPosX, fPosY, fPosZ, true, false, false, true, true, false, false) then
-							drawNameTag({x = fPosX, y = fPosY, z = fPosZ}, getPlayerName(player) .. ' (' .. getElemID(player) .. ')', getElementHealth(player), getPedArmor(player), distance)
+							local r, g, b = getPlayerNametagColor(player)
+							drawNameTag({x = fPosX, y = fPosY, z = fPosZ}, getPlayerName(player) .. ' (' .. getElemID(player) .. ')', r, g, b, getElementHealth(player), getPedArmor(player), distance)
 						end
 					end
 				end
@@ -223,7 +227,7 @@ addEventHandler('onClientRender', root,
 
 						if not nameTagsLOS or isLineOfSightClear(cx, cy, cz, fPosX, fPosY, fPosZ, true, false, false, true, true, false, false) then
 							local botName = getElementData(bot, 'BotName') or 'Bot'
-							drawNameTag({x = fPosX, y = fPosY, z = fPosZ}, botName .. ' (' .. getElemID(bot) .. ')', getElementHealth(bot), getPedArmor(bot), distance)
+							drawNameTag({x = fPosX, y = fPosY, z = fPosZ}, botName .. ' (' .. getElemID(bot) .. ')', 255, 255, 255, getElementHealth(bot), getPedArmor(bot), distance)
 						end
 					end
 				end
