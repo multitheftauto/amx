@@ -637,16 +637,6 @@ addEventHandler('onVehicleExplode', root,
 	end
 )
 
-addEvent('OnVehicleDamageStatusUpdate_Ev', true)
-addEventHandler('OnVehicleDamageStatusUpdate_Ev', root,
-	function(vehicle)
-		local vehID = getElemID(vehicle)
-		if not vehID then return end
-
-		procCallOnAll('OnVehicleDamageStatusUpdate', vehID, getElemID(client))
-	end
-)
-
 local _getPedOccupiedVehicle = getPedOccupiedVehicle
 function getPedOccupiedVehicle(player)
 	if not player then

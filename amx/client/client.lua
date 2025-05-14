@@ -832,7 +832,7 @@ local function clientVehicleDamage(attacker, weapon, loss, x, y, z, tire)
 	end
 
 	if driver ~= localPlayer then return end
-	triggerServerEvent('OnVehicleDamageStatusUpdate_Ev', localPlayer, source)
+	serverAMXEvent('OnVehicleDamageStatusUpdate', getElemID(source), g_PlayerID)
 end
 addEventHandler('onClientVehicleDamage', root, clientVehicleDamage)
 
