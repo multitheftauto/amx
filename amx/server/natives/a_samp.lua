@@ -54,10 +54,12 @@ end
 
 function SendDeathMessage(amx, killer, victim, reason)
 	-- no implementation needed, killmessages resource shows kills already
+	return true
 end
 
 function SendDeathMessageToPlayer(amx, player, killer, victim, reason)
 	-- no implementation needed, killmessages resource shows kills already
+	return true
 end
 
 function GameTextForAll(amx, str, time, style)
