@@ -447,9 +447,12 @@ function ShowPlayerMarkers(amx, mode)
 end
 
 function GameModeExit(amx)
-	if getResourceState(getResourceFromName('mapcycler')) == 'running' then
+	local mapcycler = getResourceFromName('mapcycler')
+	local votemanager = getResourceFromName('votemanager')
+
+	if getResourceState(mapcycler) == 'running' then
 		triggerEvent('onRoundFinished', getResourceRootElement(getThisResource()))
-	else
+	elseif getResourceState(votemanager) == 'running' then
 		exports.votemanager:voteMap(getThisResource())
 	end
 	return true
@@ -557,11 +560,11 @@ end
 
 function DisableInteriorEnterExits(amx)
 	-- interiors resource implements enex markers
-	local resource = getResourceFromName('interiors')
+	local interiors = getResourceFromName('interiors')
 
 	-- as we want to disable it, stop this resource
-	if getResourceState(resource) == 'running' then
-		stopResource(resource)
+	if getResourceState(interiors) == 'running' then
+		stopResource(interiors)
 	end
 	return true
 end
