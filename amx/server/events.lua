@@ -619,12 +619,12 @@ addEventHandler('onVehicleStartExit', root,
 )
 
 addEventHandler('onVehicleExplode', root,
-	function()
+	function(withExplosion, player)
 		local vehID = getElemID(source)
 
 		-- So the OnVehicleDeath event only gets called once
 		if g_Vehicles[vehID] and g_Vehicles[vehID].vehicleIsAlive then
-			procCallOnAll('OnVehicleDeath', vehID, getElemID(client))
+			procCallOnAll('OnVehicleDeath', vehID, getElemID(player))
 
 			if g_Vehicles[vehID].respawntimer then
 				killTimer(g_Vehicles[vehID].respawntimer)
@@ -743,10 +743,10 @@ addEventHandler('OnPlayerWeaponShot_Ev', root,
 addEvent('OnPlayerGiveDamageActor_Ev', true)
 addEventHandler('OnPlayerGiveDamageActor_Ev', root,
 	function(actor, loss, weapon, bodypart)
-		if not actor or getElementData(actor, 'Invulnerable') then return end
-
 		local playerID, actorID = getElemID(source), getElemID(actor)
-		setTimer(procCallOnAll, 10, 1, 'OnPlayerGiveDamageActor', playerID, actorID, float2cell(loss), weapon, bodypart)
+		if not actorID then return end
+
+		setTimer(procCallOnAll, 1, 1, 'OnPlayerGiveDamageActor', playerID, actorID, float2cell(loss), weapon, bodypart)
 		-- This needs to be just a bit delayed to arrive after OnPlayerWeaponShot
 	end
 )
@@ -754,7 +754,10 @@ addEventHandler('OnPlayerGiveDamageActor_Ev', root,
 addEvent('OnPlayerPickUpPickup_Ev', true)
 addEventHandler('OnPlayerPickUpPickup_Ev', root,
 	function(pickup)
-		procCallOnAll('OnPlayerPickUpPickup', getElemID(source), getElemID(pickup))
+		local playerID, pickupID = getElemID(source), getElemID(pickup)
+		if not pickupID then return end
+
+		procCallOnAll('OnPlayerPickUpPickup', playerID, pickupID)
 
 		local model = getElementModel(pickup)
 		if model == 370 then

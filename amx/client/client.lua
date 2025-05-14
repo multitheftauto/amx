@@ -1995,7 +1995,7 @@ function OnListDialogButton1Click(button, state)
 	if button == 'left' then
 		local row, column = guiGridListGetSelectedItem(listGrid)
 		local text = guiGridListGetItemText(listGrid, row, column)
-		serverAMXEvent('OnDialogResponse', getElemID(localPlayer), listDialog, 1, row, text)
+		serverAMXEvent('OnDialogResponse', g_PlayerID, listDialog, 1, row, text)
 		guiSetVisible(listWindow, false)
 		showCursor(false)
 		listDialog = nil
@@ -2007,7 +2007,7 @@ function OnListDialogButton2Click(button, state)
 	if button == 'left' then
 		local row, column = guiGridListGetSelectedItem(listGrid)
 		local text = guiGridListGetItemText(listGrid, row, column)
-		serverAMXEvent('OnDialogResponse', getElemID(localPlayer), listDialog, 0, row, text)
+		serverAMXEvent('OnDialogResponse', g_PlayerID, listDialog, 0, row, text)
 		guiSetVisible(listWindow, false)
 		showCursor(false)
 		listDialog = nil
@@ -2017,7 +2017,7 @@ end
 
 function OnInputDialogButton1Click(button, state)
 	if button == 'left' then
-		serverAMXEvent('OnDialogResponse', getElemID(localPlayer), inputDialog, 1, 0, guiGetText(inputEdit))
+		serverAMXEvent('OnDialogResponse', g_PlayerID, inputDialog, 1, 0, guiGetText(inputEdit))
 		guiSetVisible(inputWindow, false)
 		showCursor(false)
 		inputDialog = nil
@@ -2026,7 +2026,7 @@ end
 
 function OnInputDialogButton2Click(button, state)
 	if button == 'left' then
-		serverAMXEvent('OnDialogResponse', getElemID(localPlayer), inputDialog, 0, 0, guiGetText(inputEdit))
+		serverAMXEvent('OnDialogResponse', g_PlayerID, inputDialog, 0, 0, guiGetText(inputEdit))
 		guiSetVisible(inputWindow, false)
 		showCursor(false)
 		inputDialog = nil
@@ -2035,7 +2035,7 @@ end
 
 function OnMessageDialogButton1Click(button, state)
 	if button == 'left' then
-		serverAMXEvent('OnDialogResponse', getElemID(localPlayer), msgDialog, 1, 0, '')
+		serverAMXEvent('OnDialogResponse', g_PlayerID, msgDialog, 1, 0, '')
 		guiSetVisible(msgWindow, false)
 		showCursor(false)
 		msgDialog = nil
@@ -2044,7 +2044,7 @@ end
 
 function OnMessageDialogButton2Click(button, state)
 	if button == 'left' then
-		serverAMXEvent('OnDialogResponse', getElemID(localPlayer), msgDialog, 0, 0, '')
+		serverAMXEvent('OnDialogResponse', g_PlayerID, msgDialog, 0, 0, '')
 		guiSetVisible(msgWindow, false)
 		showCursor(false)
 		msgDialog = nil
@@ -2208,9 +2208,9 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 	return true
 end
 
--- depends on scoreboard default resource
+-- depends on scoreboard resource
 local function clientPlayerScoreboardClick(selected, cX, cY, clickedColumn)
 	if getElementType(source) ~= 'player' then return end
-	serverAMXEvent('OnPlayerClickPlayer', getElemID(localPlayer), getElemID(source), 0)
+	serverAMXEvent('OnPlayerClickPlayer', g_PlayerID, getElemID(source), 0)
 end
 addEventHandler('onClientPlayerScoreboardClick', root, clientPlayerScoreboardClick)
