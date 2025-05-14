@@ -1656,6 +1656,29 @@ function SetPlayerPosFindZ(x, y, z)
 	setElementPosition(localPlayer, x, y, getGroundPosition(x, y, z) + 1)
 end
 
+local function clientPlayerDamage(attacker, weapon, bodypart, loss)
+	local issuer = attacker
+
+	if issuer then
+		if getElementType(issuer) == 'vehicle' then
+			issuer = getVehicleOccupant(issuer)
+		end
+		if issuer == source then
+			issuer = nil
+		end
+	end
+
+	if issuer == localPlayer then -- give damage
+		triggerServerEvent('OnPlayerDamage_Ev', issuer, source, true, loss, weapon, bodypart)
+	end
+
+	if source == localPlayer then -- take damage
+		if issuer and getElementType(issuer) ~= 'player' then issuer = nil end
+		triggerServerEvent('OnPlayerDamage_Ev', source, issuer, false, loss, weapon, bodypart)
+	end
+end
+addEventHandler('onClientPlayerDamage', root, clientPlayerDamage)
+
 local function clientPlayerWeaponFire(weapon, ammo, ammoInClip, hitX, hitY, hitZ, hitElement, startX, startY, startZ)
 	if weapon < 22 or (weapon > 34 and weapon ~= 38) then return end
 
@@ -1696,12 +1719,19 @@ addEventHandler('onClientPlayerWeaponFire', localPlayer, clientPlayerWeaponFire)
 local function clientPedDamage(attacker, weapon, bodypart, loss)
 	if getElementType(source) == 'ped' and getElementData(source, 'ActorPed') then
 		local issuer = attacker
+
 		if issuer and getElementType(issuer) == 'vehicle' then
-			issuer = getVehicleOccupant(issuer)
+			local driver = getVehicleOccupant(issuer)
+
+			if driver and getElementType(driver) == 'player' then
+				issuer = driver
+			else
+				issuer = nil
+			end
 		end
 
 		if issuer == localPlayer and not getElementData(source, 'Invulnerable') then
-			triggerServerEvent('OnPlayerGiveDamageActor_Ev', localPlayer, source, loss, weapon, bodypart)
+			triggerServerEvent('OnPlayerGiveDamageActor_Ev', issuer, source, loss, weapon, bodypart)
 		end
 
 		-- Actor damage controlled by the server in any case

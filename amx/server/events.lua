@@ -340,29 +340,20 @@ addEventHandler('onPlayerChat', root,
 	end
 )
 
-addEventHandler('onPlayerDamage', root,
-	function(attacker, weapon, body, loss)
-		local playerId = getElemID(source)
-		local attackerId = INVALID_PLAYER_ID
+addEvent('OnPlayerDamage_Ev', true)
+addEventHandler('OnPlayerDamage_Ev', root,
+	function(opponent, givetake, loss, weapon, body)
+		local playerId, attackerId = getElemID(source), getElemID(opponent)
 
-		if attacker ~= source and isElement(attacker) then
-			if getElementType(attacker) == 'player' then
-				attackerId = getElemID(attacker)
-			elseif getElementType(attacker) == 'vehicle' then
-				local driver = getVehicleOccupant(attacker)
-				if driver and getElementType(driver) == 'player' then
-					attackerId = getElemID(driver)
-				end
-			end
-		end
-
-		if attackerId ~= INVALID_PLAYER_ID then
-			setTimer(procCallOnAll, 10, 1, 'OnPlayerGiveDamage', attackerId, playerId, float2cell(loss), weapon, body)
+		if givetake then
+			if not opponent then return end
+			setTimer(procCallOnAll, 1, 1, 'OnPlayerGiveDamage', playerId, attackerId, float2cell(loss), weapon, body)
+			-- This needs to be just a bit delayed to arrive after OnPlayerWeaponShot
+		else
+			if not opponent then attackerId = INVALID_PLAYER_ID end
+			setTimer(procCallOnAll, 1, 1, 'OnPlayerTakeDamage', playerId, attackerId, float2cell(loss), weapon, body)
 			-- This needs to be just a bit delayed to arrive after OnPlayerWeaponShot
 		end
-
-		setTimer(procCallOnAll, 10, 1, 'OnPlayerTakeDamage', playerId, attackerId, float2cell(loss), weapon, body)
-		-- This needs to be just a bit delayed to arrive after OnPlayerWeaponShot
 	end
 )
 
@@ -378,19 +369,23 @@ addEventHandler('onPlayerWasted', root,
 		if g_Players[playerID].doingclasssel then
 			return
 		end
+
 		local killerID = INVALID_PLAYER_ID
 		if killer ~= source and isElement(killer) then
 			if getElementType(killer) == 'player' then
 				killerID = getElemID(killer)
 			elseif getElementType(killer) == 'vehicle' then
 				local driver = getVehicleOccupant(killer)
+
 				if driver and getElementType(driver) == 'player' then
 					killerID = getElemID(driver)
 				end
 			end
 		end
+
 		setPlayerState(source, PLAYER_STATE_WASTED)
 		procCallOnAll('OnPlayerDeath', playerID, killerID, weapon)
+
 		if g_Players[playerID].returntoclasssel then
 			g_Players[playerID].returntoclasssel = nil
 			--setTimer(putPlayerInClassSelection, 3000, 1, source)
@@ -726,17 +721,20 @@ addEventHandler('onPedWasted', root,
 	function(totalAmmo, killer, killerWeapon, bodypart)
 		if isPed(source) ~= true then return end
 		if getElementData(source, 'ActorPed') then return end
+
 		local killerID = INVALID_PLAYER_ID
 		if isElement(killer) then
 			if getElementType(killer) == 'player' then
 				killerID = getElemID(killer)
 			elseif getElementType(killer) == 'vehicle' then
 				local driver = getVehicleOccupant(killer)
+
 				if driver and getElementType(driver) == 'player' then
 					killerID = getElemID(driver)
 				end
 			end
 		end
+
 		setBotState(source, PLAYER_STATE_WASTED)
 		procCallOnAll('OnBotDeath', getElemID(source), killerID, killerWeapon, bodypart)
 	end
