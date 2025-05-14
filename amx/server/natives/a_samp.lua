@@ -523,7 +523,7 @@ function UsePlayerPedAnims(amx)
 end
 
 function DisableInteriorEnterExits(amx)
-	-- this default resource implements enex markers
+	-- interiors resource implements enex markers
 	local resource = getResourceFromName('interiors')
 
 	-- as we want to disable it, stop this resource

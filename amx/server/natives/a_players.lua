@@ -1121,18 +1121,26 @@ function TogglePlayerSpectating(amx, player, enable)
 	if enable then
 		fadeCamera(player, true)
 		setCameraMatrix(player, 75.461357116699, 64.600051879883, 51.685581207275, 149.75857543945, 131.53228759766, 40.597320556641)
-		toggleAllControls(player, false, true, false) -- will be re-enabled in spawn event
+		-- controls, alpha, collisions and blip will be re-enabled on spawn
+		toggleAllControls(player, false, true, false)
 		setPedWeaponSlot(player, 0)
 		setElementAlpha(player, 0)
 		setElementCollisionsEnabled(player, false)
 		setPlayerHudComponentVisible(player, 'radar', false)
 		setPlayerState(player, PLAYER_STATE_SPECTATING)
+		if playerdata.blip then
+			setElementVisibleTo(playerdata.blip, root, false)
+		end
 	else
 		local playerdata = g_Players[getElemID(player)]
 		local spawninfo = playerdata.spawninfo or (g_PlayerClasses and g_PlayerClasses[playerdata.selectedclass])
 		if playerdata.returntoclasssel then
 			playerdata.returntoclasssel = nil
-			putPlayerInClassSelection(player)
+			if procCallOnAll('OnPlayerRequestClass', getElemID(player), 0) then
+				putPlayerInClassSelection(player)
+			else
+				outputDebugString('Not allowed to select a class', 1)
+			end
 		else
 			spawnPlayerBySelectedClass(player)
 			setPlayerHudComponentVisible(player, 'radar', true)
