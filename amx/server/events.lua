@@ -861,3 +861,10 @@ addEventHandler('onAmxClientVehicleStream', root,
 		end
 	end
 )
+
+-- depends on killmessages resource
+local function playerKillMessage(killer, weapon, bodypart)
+	-- disable adding kill messages automatically
+	cancelEvent()
+end
+addEventHandler('onPlayerKillMessage', root, playerKillMessage)

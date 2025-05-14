@@ -379,8 +379,8 @@ g_SAMPSyscallPrototypes = {
 
 	SendClientMessage = {'p', 'c', 's'},
 	SendClientMessageToAll = {'c', 's'},
-	SendDeathMessage = {'p', 'p', 'i'},
-	SendDeathMessageToPlayer = {'p', 'p', 'p', 'i'},
+	SendDeathMessage = {'i', 'p', 'i'},
+	SendDeathMessageToPlayer = {'p', 'i', 'p', 'i'},
 	SendPlayerMessageToAll = {'p', 's'},
 	SendPlayerMessageToPlayer = {'p', 'p', 's'},
 	SendRconCommand = {'s'},

@@ -52,13 +52,44 @@ function SendPlayerMessageToPlayer(amx, playerTo, playerFrom, message)
 	return outputChatBox(getPlayerName(playerFrom) .. ' ' .. message, playerTo, 255, 255, 255, true)
 end
 
-function SendDeathMessage(amx, killer, victim, reason)
-	-- no implementation needed, killmessages resource shows kills already
+function SendDeathMessage(amx, killerID, victim, reason)
+	local killmessages = getResourceFromName('killmessages')
+	if not killmessages or getResourceState(killmessages) ~= 'running' then
+		return false
+	end
+
+	if isElement(victim) and getElementType(victim) == 'player' then
+		local killer = g_Players[killerID] and g_Players[killerID].elem or nil
+
+		local pR, pG, pB = getPlayerNametagColor(victim)
+		local kR, kG, kB = 255, 255, 255
+		if isElement(killer) then
+			kR, kG, kB = getPlayerNametagColor(killer)
+		end
+
+		triggerClientEvent(root, 'onClientPlayerKillMessage', victim, killer, reason, pR, pG, pB, kR, kG, kB)
+	end
 	return true
 end
 
-function SendDeathMessageToPlayer(amx, player, killer, victim, reason)
-	-- no implementation needed, killmessages resource shows kills already
+function SendDeathMessageToPlayer(amx, player, killerID, victim, reason)
+	local killmessages = getResourceFromName('killmessages')
+	if not killmessages or getResourceState(killmessages) ~= 'running' then
+		return false
+	end
+
+	if not player then return false end
+	if isElement(victim) and getElementType(victim) == 'player' then
+		local killer = g_Players[killerID] and g_Players[killerID].elem or nil
+
+		local pR, pG, pB = getPlayerNametagColor(victim)
+		local kR, kG, kB = 255, 255, 255
+		if isElement(killer) then
+			kR, kG, kB = getPlayerNametagColor(killer)
+		end
+
+		triggerClientEvent(player, 'onClientPlayerKillMessage', victim, killer, reason, pR, pG, pB, kR, kG, kB)
+	end
 	return true
 end
 
