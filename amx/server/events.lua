@@ -489,22 +489,23 @@ function respawnStaticVehicle(vehicle)
 	if not isElement(vehicle) then
 		return false
 	end
+
 	local vehID = getElemID(vehicle)
 	if not g_Vehicles[vehID] then
 		return false
 	end
+
 	if isTimer(g_Vehicles[vehID].respawntimer) then
 		killTimer(g_Vehicles[vehID].respawntimer)
 	end
-	local numPassengers = tonumber(getVehicleMaxPassengers(vehicle)) or 0
-	for seat = 0, numPassengers do
-		local player = getVehicleOccupant(vehicle, seat)
-		if player then
-			removePedFromVehicle(player)
-		end
+
+	for seat, player in pairs(getVehicleOccupants(vehicle)) do
+		removePedFromVehicle(player)
 	end
+
 	g_Vehicles[vehID].respawntimer = nil
 	g_Vehicles[vehID].vehicleIsAlive = true
+
 	local spawninfo = g_Vehicles[vehID].spawninfo
 	setTimer(
 		function()
@@ -590,12 +591,8 @@ addEventHandler('onVehicleExit', root,
 			setElementAlpha(player, 255)
 		end
 
-		local numPassengers = tonumber(getVehicleMaxPassengers(source)) or 0
-		for i = 0, numPassengers do
-			if getVehicleOccupant(source, i) then
-				return
-			end
-		end
+		local _, occupant = next(getVehicleOccupants(source))
+		if occupant then return end
 
 		if g_Vehicles[vehID] and g_Vehicles[vehID].respawntimer then
 			killTimer(g_Vehicles[vehID].respawntimer)
@@ -806,6 +803,7 @@ addEventHandler('onPlayerClick', root,
 		local iButton, iState, elemID = nil, nil, nil
 		local playerID = getElemID(source)
 		if elem ~= nil then elemID = getElemID(elem) end
+
 		if mouseButton == 'left' then iButton = 0 end
 		if mouseButton == 'middle' then iButton = 1 end
 		if mouseButton == 'right' then iButton = 2 end
