@@ -791,7 +791,7 @@ function GetPlayerMenu(amx, player)
 end
 
 function TextDrawCreate(amx, x, y, text)
-	outputDebugString('TextDrawCreate called with args ' .. x .. ' ' .. y .. ' ' .. text)
+	--outputDebugString('TextDrawCreate called with args ' .. x .. ' ' .. y .. ' ' .. text)
 	local textdraw = { x = x, y = y, shadow = {align = 1, text = text, font = 1, lwidth = 0.5, lheight = 0.5} }
 	textdraw.clientTDId = #g_TextDraws + 1
 	local id = table.insert(g_TextDraws, textdraw)

@@ -466,10 +466,10 @@ function EditAttachedObject(amx, player, index)
 end
 
 function CreatePlayerTextDraw(amx, player, x, y, text)
-	outputDebugString('CreatePlayerTextDraw called with args ' .. x .. ' ' .. y .. ' ' .. text)
+	--outputDebugString('CreatePlayerTextDraw called with args ' .. x .. ' ' .. y .. ' ' .. text)
 
 	if (not g_PlayerTextDraws[player]) then -- Create dimension if it doesn't exist
-		outputDebugString('Created dimension for g_PlayerTextDraws[player]')
+		--outputDebugString('Created dimension for g_PlayerTextDraws[player]')
 		g_PlayerTextDraws[player] = {}
 	end
 
@@ -508,7 +508,7 @@ function CreatePlayerTextDraw(amx, player, x, y, text)
 		}
 	)
 
-	outputDebugString('assigned id s->' .. serverTDId .. ' c->' .. clientTDId .. ' to g_PlayerTextDraws[player]')
+	--outputDebugString('assigned id s->' .. serverTDId .. ' c->' .. clientTDId .. ' to g_PlayerTextDraws[player]')
 	clientCall(player, 'TextDrawCreate', clientTDId, table.deshadowize(textdraw, true))
 	return serverTDId
 end
@@ -517,7 +517,7 @@ function PlayerTextDrawDestroy(amx, player, textdrawID)
 	if not IsPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
-	outputDebugString('Sending textdraw id s->' .. g_PlayerTextDraws[player][textdrawID].serverTDId .. ' c->' .. g_PlayerTextDraws[player][textdrawID].clientTDId .. ' for destruction')
+	--outputDebugString('Sending textdraw id s->' .. g_PlayerTextDraws[player][textdrawID].serverTDId .. ' c->' .. g_PlayerTextDraws[player][textdrawID].clientTDId .. ' for destruction')
 	clientCall(player, 'TextDrawDestroy', g_PlayerTextDraws[player][textdrawID].clientTDId)
 	g_PlayerTextDraws[player][textdrawID] = nil
 	return true

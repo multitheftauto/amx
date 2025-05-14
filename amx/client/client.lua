@@ -303,7 +303,7 @@ ca.maxZ = math.rad(89)
 ca.minZ = math.rad(-45)
 
 function removeCamAttachHandler()
-	outputConsole('removeCamAttachHandler was called')
+	--outputConsole('removeCamAttachHandler was called')
 	if (ca.active == 1) then
 		outputConsole('Destroying cam attach handler...')
 		ca.active = 0
@@ -365,7 +365,7 @@ function cursorMouseMoveHandler(curX, curY, absX, absY)
 end
 
 function AttachCameraToObject(camObj)
-	outputConsole('AttachCameraToObject was called')
+	--outputConsole('AttachCameraToObject was called')
 
 	if not isElement(camObj) then
 		return
@@ -379,7 +379,7 @@ function AttachCameraToObject(camObj)
 end
 
 function AttachCameraToPlayerObject(camobjID)
-	outputConsole('AttachCameraToPlayerObject was called')
+	--outputConsole('AttachCameraToPlayerObject was called')
 
 	if not isElement(g_PlayerObjects[camobjID]) then
 		return
@@ -399,7 +399,7 @@ sm.moov = 0
 sm.objCamPos, sm.objLookAt = nil, nil
 
 function removeInterpCamHandler()
-	outputConsole('removeInterpCamHandler was called')
+	--outputConsole('removeInterpCamHandler was called')
 	if (sm.moov == 1) then
 		outputConsole('Destroying cam handler...')
 		sm.moov = 0
