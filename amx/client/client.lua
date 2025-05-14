@@ -822,9 +822,12 @@ addEventHandler('onClientElementStreamOut', root,
 local function clientVehicleDamage(attacker, weapon, loss, x, y, z, tire)
 	if not isElement(source) then return end
 
-	local driver = getVehicleOccupant(source)
+	-- get the driver from either players or peds
+	local occupants = getVehicleOccupants(source)
+	local driver = occupants and occupants[0] -- seat 0
+
 	if not driver then
-		-- Block any damage for unoccupied vehicles like SA-MP does
+		-- block any damage for unoccupied vehicles like SA-MP does
 		return cancelEvent()
 	end
 

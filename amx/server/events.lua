@@ -519,17 +519,17 @@ end
 addEventHandler('onVehicleEnter', root,
 	function(player, seat, jacked)
 		local vehID = getElemID(source)
+
 		if isPed(player) then
 			local botID = getElemID(player)
 			g_Bots[botID].vehicle = source
 			setBotState(player, seat == 0 and PLAYER_STATE_DRIVER or PLAYER_STATE_PASSENGER)
-			return
+		else
+			local playerID = getElemID(player)
+			g_Players[playerID].vehicle = source
+			setPlayerState(player, seat == 0 and PLAYER_STATE_DRIVER or PLAYER_STATE_PASSENGER)
+			g_Players[playerID].specialaction = SPECIAL_ACTION_NONE
 		end
-
-		local playerID = getElemID(player)
-		g_Players[playerID].vehicle = source
-		setPlayerState(player, seat == 0 and PLAYER_STATE_DRIVER or PLAYER_STATE_PASSENGER)
-		g_Players[playerID].specialaction = SPECIAL_ACTION_NONE
 
 		if g_Vehicles[vehID] and g_Vehicles[vehID].respawntimer then
 			killTimer(g_Vehicles[vehID].respawntimer)
@@ -559,32 +559,26 @@ addEventHandler('onVehicleStartEnter', root,
 		if isPed(player) then
 			local botID = getElemID(player)
 			procCallOnAll('OnBotEnterVehicle', botID, vehID, seat ~= 0 and 1 or 0)
-			return
+		else
+			local playerID = getElemID(player)
+			procCallOnAll('OnPlayerEnterVehicle', playerID, vehID, seat ~= 0 and 1 or 0)
 		end
-
-		local playerID = getElemID(player)
-		procCallOnAll('OnPlayerEnterVehicle', playerID, vehID, seat ~= 0 and 1 or 0)
 	end
 )
 
 addEventHandler('onVehicleExit', root,
 	function(player, seat, jacker)
 		local vehID = getElemID(source)
+
 		if isPed(player) then
 			local botID = getElemID(player)
 			g_Bots[botID].vehicle = nil
 			setBotState(player, PLAYER_STATE_ONFOOT)
-
-			if g_RCVehicles[getElementModel(source)] then
-				setElementCollisionsEnabled(player, true)
-				setElementAlpha(player, 255)
-			end
-			return
+		else
+			local playerID = getElemID(player)
+			g_Players[playerID].vehicle = nil
+			setPlayerState(player, PLAYER_STATE_ONFOOT)
 		end
-
-		local playerID = getElemID(player)
-		g_Players[playerID].vehicle = nil
-		setPlayerState(player, PLAYER_STATE_ONFOOT)
 
 		if g_RCVehicles[getElementModel(source)] then
 			setElementCollisionsEnabled(player, true)
@@ -617,11 +611,10 @@ addEventHandler('onVehicleStartExit', root,
 		if isPed(player) then
 			local botID = getElemID(player)
 			procCallOnAll('OnBotExitVehicle', botID, vehID)
-			return
+		else
+			local playerID = getElemID(player)
+			procCallOnAll('OnPlayerExitVehicle', playerID, vehID)
 		end
-
-		local playerID = getElemID(player)
-		procCallOnAll('OnPlayerExitVehicle', playerID, vehID)
 	end
 )
 
