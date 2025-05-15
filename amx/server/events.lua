@@ -46,6 +46,7 @@ function gameModeInit(player)
 	g_Players[playerID].conntick = getTickCount()
 	g_Players[playerID].viewingintro = true
 	g_Players[playerID].state = PLAYER_STATE_NONE
+	g_Players[playerID].doingclasssel = nil
 
 	fadeCamera(player, true)
 	setTimer(
@@ -53,7 +54,12 @@ function gameModeInit(player)
 			if not isElement(player) or getElementType(player) ~= 'player' then
 				return
 			end
-			g_Players[playerID].doingclasssel = false
+
+			-- Don't draw the class selection UI if we're not initializing
+			if g_Players[playerID].state ~= PLAYER_STATE_NONE then
+				return
+			end
+
 			if procCallOnAll('OnPlayerRequestClass', playerID, 0) then
 				putPlayerInClassSelection(player)
 			else
@@ -190,6 +196,7 @@ function putPlayerInClassSelection(player)
 		return
 	end
 
+	setElementFrozen(player, true)
 	toggleAllControls(player, false, true, false)
 	g_Players[playerID].viewingintro = nil
 	g_Players[playerID].doingclasssel = true
@@ -291,9 +298,12 @@ addEventHandler('onPlayerSpawn', root,
 		if not spawninfo or playerdata.doingclasssel then
 			return
 		end
+
+		setElementFrozen(source, false)
 		toggleAllControls(source, true)
 		setElementAlpha(source, 255)
 		setElementCollisionsEnabled(source, true)
+
 		setPlayerState(source, PLAYER_STATE_SPAWNED)
 		procCallOnAll('OnPlayerSpawn', playerID)
 

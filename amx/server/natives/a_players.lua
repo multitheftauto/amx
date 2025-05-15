@@ -807,6 +807,12 @@ function RemovePlayerFromVehicle(amx, player)
 end
 
 function TogglePlayerControllable(amx, player, enable)
+	if not enable then
+		local vehicle = getPedOccupiedVehicle(player)
+		if vehicle then setElementVelocity(vehicle, 0.0, 0.0, 0.0) end
+	end
+
+	setElementFrozen(player, not enable)
 	return toggleAllControls(player, enable, true, false)
 end
 
@@ -1118,6 +1124,7 @@ function EnableStuntBonusForPlayer(amx, player, enable)
 end
 
 function TogglePlayerSpectating(amx, player, enable)
+	local playerdata = g_Players[getElemID(player)]
 	if enable then
 		fadeCamera(player, true)
 		setCameraMatrix(player, 75.461357116699, 64.600051879883, 51.685581207275, 149.75857543945, 131.53228759766, 40.597320556641)
@@ -1132,8 +1139,6 @@ function TogglePlayerSpectating(amx, player, enable)
 			setElementVisibleTo(playerdata.blip, root, false)
 		end
 	else
-		local playerdata = g_Players[getElemID(player)]
-		local spawninfo = playerdata.spawninfo or (g_PlayerClasses and g_PlayerClasses[playerdata.selectedclass])
 		if playerdata.returntoclasssel then
 			playerdata.returntoclasssel = nil
 			if procCallOnAll('OnPlayerRequestClass', getElemID(player), 0) then
