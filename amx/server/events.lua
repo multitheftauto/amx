@@ -202,6 +202,7 @@ function putPlayerInClassSelection(player)
 		killTimer(g_Players[playerID].updatetimer)
 		g_Players[playerID].updatetimer = nil
 	end
+	addPedClothes(player, 'vest', 'vest', 0)
 	setPlayerHudComponentVisible(player, 'area_name', false)
 	clientCall(player, 'startClassSelection', g_PlayerClasses)
 	bindKey(player, 'arrow_l', 'down', requestClass, -1)
