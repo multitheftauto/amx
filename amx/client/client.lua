@@ -209,7 +209,7 @@ end
 addEventHandler('onClientResourceStop', resourceRoot,
 	function()
 		destroyClassSelGUI()
-		TogglePlayerClock(false, true)
+		TogglePlayerClock(true)
 		removeEventHandler('onClientRender', root, renderTextDraws)
 		removeEventHandler('onClientRender', root, renderMenu)
 	end

@@ -28,7 +28,7 @@ function gameModeInit(player)
 	setElementData(player, 'Score', 0)
 	toggleAllControls(player, false, true, false)
 	clientCall(player, 'showIntroScene')
-	clientCall(player, 'TogglePlayerClock', false, false)
+	clientCall(player, 'TogglePlayerClock', false)
 	clientCall(player, 'updateNameTagGlobals', {
 		status = g_ShowNameTags,
 		radius = g_NameTagsRadius,
