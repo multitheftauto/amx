@@ -454,6 +454,9 @@ function GameModeExit(amx)
 		triggerEvent('onRoundFinished', getResourceRootElement(getThisResource()))
 	elseif getResourceState(votemanager) == 'running' then
 		exports.votemanager:voteMap(getThisResource())
+	else
+		local amx = getRunningGameMode(mode)
+		if amx then unloadAMX(amx) end
 	end
 	return true
 end
