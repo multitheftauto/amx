@@ -294,36 +294,45 @@ addEventHandler('onPlayerSpawn', root,
 	function()
 		local playerID = getElemID(source)
 		local playerdata = g_Players[playerID]
+
 		local spawninfo = playerdata.spawninfo or (g_PlayerClasses and g_PlayerClasses[playerdata.selectedclass])
 		if not spawninfo or playerdata.doingclasssel then
 			return
 		end
 
-		setElementFrozen(source, false)
-		toggleAllControls(source, true)
-		setElementAlpha(source, 255)
-		setElementCollisionsEnabled(source, true)
-
 		setPlayerState(source, PLAYER_STATE_SPAWNED)
-		procCallOnAll('OnPlayerSpawn', playerID)
-
-		-- wanna see CJ in a white singlet?
-		addPedClothes(source, 'vest', 'vest', 0)
-
-		if not g_UseCJWalk then
-			local skin = getElementModel(source)
-			setPedWalkingStyle(source, WalkingStyle[skin] or 0)
-		end
-
-		if g_Players[playerID].updatetimer then
-			killTimer(g_Players[playerID].updatetimer)
-		end
-		g_Players[playerID].updatetimer = setTimer(procCallOnAll, 100, 0, 'OnPlayerUpdate', playerID)
-
-		playerdata.vehicle = nil
-		playerdata.specialaction = SPECIAL_ACTION_NONE
+		handlePlayerSpawn(source)
 	end
 )
+
+function handlePlayerSpawn(player)
+	local playerID = getElemID(player)
+	local playerdata = g_Players[playerID]
+
+	setElementFrozen(player, false)
+	toggleAllControls(player, true)
+	setElementAlpha(player, 255)
+	setElementCollisionsEnabled(player, true)
+
+	procCallOnAll('OnPlayerSpawn', playerID)
+	setPlayerState(player, PLAYER_STATE_ONFOOT)
+
+	-- wanna see CJ in a white singlet?
+	addPedClothes(player, 'vest', 'vest', 0)
+
+	if not g_UseCJWalk then
+		local skin = getElementModel(player)
+		setPedWalkingStyle(player, WalkingStyle[skin] or 0)
+	end
+
+	if g_Players[playerID].updatetimer then
+		killTimer(g_Players[playerID].updatetimer)
+	end
+	g_Players[playerID].updatetimer = setTimer(procCallOnAll, 100, 0, 'OnPlayerUpdate', playerID)
+
+	playerdata.vehicle = nil
+	playerdata.specialaction = SPECIAL_ACTION_NONE
+end
 
 addEventHandler('onPlayerChat', root,
 	function(msg, type)
@@ -474,8 +483,11 @@ addEventHandler('onResourceStart', resourceRoot,
 function checkAndUpdatePlayerStates()
 	for i, data in pairs(g_Players) do
 		local state = getPlayerState(data.elem)
-		if (state == PLAYER_STATE_DRIVER or state == PLAYER_STATE_PASSENGER) or 
-			(state == PLAYER_STATE_SPAWNED or state == PLAYER_STATE_NONE) then
+		if state == PLAYER_STATE_SPAWNED or state == PLAYER_STATE_NONE then
+			if not data.doingclasssel and not data.viewingintro then
+				handlePlayerSpawn(data.elem)
+			end
+		elseif state == PLAYER_STATE_DRIVER or state == PLAYER_STATE_PASSENGER then
 			if not isPedInVehicle(data.elem) then
 				setCameraTarget(data.elem, data.elem)
 				setPlayerState(data.elem, PLAYER_STATE_ONFOOT)
