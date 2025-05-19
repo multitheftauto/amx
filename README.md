@@ -40,7 +40,7 @@ Compatibility is quite high:
 - Almost all SA-MP **scripting functions** and **callbacks** are
   implemented.
 - **Database** functions (`db_*`) are implemented.
-- SA-MP server **plugins** work unmodified.
+- SA-MP server **plugins** work unmodified, if they don't use memory hacking.
 - SA-MP style **rcon** commands are available from the server console
   and the ingame console.
 
@@ -82,6 +82,9 @@ features:
 
 - You can **load plugins dynamically**, while the server is running.
   Use the `loadplugin` console command for this.
+
+- There is no hard-coded max filterscript count, the **number of
+  running filterscripts is unlimited**.
 
 ## Installation
 
