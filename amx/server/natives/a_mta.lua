@@ -144,6 +144,14 @@ function SetPlayerBlurLevel(amx, player, level)
 	return setPlayerBlurLevel(player, level)
 end
 
+function IsPlayerMapForced(amx, player)
+	return isPlayerMapForced(player)
+end
+
+function ForcePlayerMap(amx, player, forceOn)
+	return forcePlayerMap(player, forceOn)
+end
+
 function FadePlayerCamera(amx, player, fadeIn, timeToFade, red, green, blue)
 	return fadeCamera(player, fadeIn, timeToFade, red, green, blue)
 end
@@ -224,9 +232,10 @@ function GetBotState(amx, bot)
 end
 
 function PutBotInVehicle(amx, bot, vehicle, seat)
-	if not warpPedIntoVehicle(bot, vehicle, seat) then
+	if not bot then
 		return false
 	end
+	warpPedIntoVehicle(bot, vehicle, seat)
 	if g_RCVehicles[getElementModel(vehicle)] then
 		setPedWeaponSlot(bot, 0)
 		setElementCollisionsEnabled(bot, false)
@@ -685,6 +694,19 @@ function SetGameSpeed(amx, speed)
 	return setGameSpeed(speed)
 end
 
+function GetRainLevel(amx)
+	local rainLvl = getRainLevel() or 0
+	return float2cell(rainLvl)
+end
+
+function SetRainLevel(amx, level)
+	return setRainLevel(level)
+end
+
+function ResetRainLevel(amx)
+	return resetRainLevel()
+end
+
 function GetSkyGradient(amx, refTopRed, refTopGreen, refTopBlue, refBtmRed, refBtmGreen, refBtmBlue)
 	local topRed, topGreen, topBlue, btmRed, btmGreen, btmBlue = getSkyGradient()
 
@@ -706,6 +728,19 @@ function ResetSkyGradient(amx)
 	return resetSkyGradient()
 end
 
+function GetFogDistance(amx)
+	local fogDist = getFogDistance() or 0
+	return float2cell(fogDist)
+end
+
+function SetFogDistance(amx, distance)
+	return setFogDistance(distance)
+end
+
+function ResetFogDistance(amx)
+	return resetFogDistance()
+end
+
 function GetCloudsEnabled(amx)
 	return getCloudsEnabled()
 end
@@ -714,12 +749,24 @@ function SetCloudsEnabled(amx, enable)
 	return setCloudsEnabled(enable)
 end
 
+function SetWeatherBlended(amx, weather)
+	return setWeatherBlended(weather)
+end
+
 function GetInteriorSoundsEnabled(amx)
 	return getInteriorSoundsEnabled()
 end
 
 function SetInteriorSoundsEnabled(amx, enable)
 	return setInteriorSoundsEnabled(enable)
+end
+
+function GetOcclusionsEnabled(amx)
+	return getOcclusionsEnabled()
+end
+
+function SetOcclusionsEnabled(amx, enable)
+	return setOcclusionsEnabled(enable)
 end
 
 function IsGarageOpen(amx, garage)
@@ -760,6 +807,10 @@ end
 
 function SetJetpackMaxHeight(amx, height)
 	return setJetpackMaxHeight(height)
+end
+
+function GetWeaponSlot(amx, weapon)
+	return getSlotFromWeapon(weapon) or -1
 end
 
 function GetFPSLimit(amx)
@@ -810,10 +861,10 @@ function AddScoreBoardColumn(amx, column)
 	return exports.scoreboard:scoreboardAddColumn(column)
 end
 
-function SetPlayerScoreBoardData(amx, player, column, data)
+function SetPlayerScoreBoardData(amx, player, column, value)
 	local scoreboard = getResourceFromName('scoreboard')
 	if getResourceState(scoreboard) ~= 'running' then return false end
-	return setElementData(player, column, data)
+	return setElementData(player, column, value)
 end
 
 function RemoveScoreBoardColumn(amx, column)
@@ -832,10 +883,6 @@ end
 
 function RemoveEventHandler(amx, func)
 	g_Events[func] = nil
-end
-
-function AttachElementToElement(amx, elem, toelem, posX, posY, posZ, rotX, rotY, rotZ)
-	return attachElements(elem, toelem, posX, posY, posZ, rotX, rotY, rotZ)
 end
 
 function IsPluginLoaded(amx, pluginName)

@@ -209,6 +209,7 @@ g_EventNames = {
 	OnPlayerClickWorldObject = true,
 	OnPlayerClickWorldVehicle = true,
 	OnPlayerClickPlayer = true,
+	OnPlayerClickMap = true,
 	OnObjectMoved = true,
 	OnPlayerObjectMoved = true,
 	OnBotConnect = true,
@@ -278,8 +279,19 @@ end
 local _warpPedIntoVehicle = warpPedIntoVehicle
 function warpPedIntoVehicle(player, vehicle, seat)
 	removePedFromVehicle(player)
-	g_Players[getElemID(player)].vehicle = vehicle
-	setTimer(_warpPedIntoVehicle, 500, 1, player, vehicle, seat)
+	setTimer(
+		function()
+			_warpPedIntoVehicle(player, vehicle, seat)
+			if getElementType(player) == 'player' then
+				setCameraTarget(player, player)
+				g_Players[getElemID(player)].vehicle = vehicle
+			else
+				g_Bots[getElemID(player)].vehicle = vehicle
+			end
+		end,
+		500,
+		1
+	)
 end
 
 local _bindKey = bindKey
@@ -452,6 +464,22 @@ function setBotState(bot, state)
 	g_Bots[botID].state = state
 	if state ~= oldState then
 		procCallOnAll('OnBotStateChange', botID, state, oldState)
+	end
+end
+
+function resetSpecialAction(player)
+	setPedWearingJetpack(player, false)
+
+	local playerdata = g_Players[getElemID(player)]
+	if not playerdata or not playerdata.specialaction then return end
+
+	if playerdata.specialaction == SPECIAL_ACTION_USECELLPHONE then
+		local actionID = SPECIAL_ACTION_STOPUSECELLPHONE
+		playerdata.specialaction = SPECIAL_ACTION_STOPUSECELLPHONE
+		setPedAnimation(player, unpack(g_SpecialActions[actionID]))
+	elseif playerdata.specialaction ~= SPECIAL_ACTION_STOPUSECELLPHONE then
+		playerdata.specialaction = SPECIAL_ACTION_NONE
+		setPedAnimation(player, false)
 	end
 end
 

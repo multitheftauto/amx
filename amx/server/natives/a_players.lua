@@ -466,10 +466,10 @@ function EditAttachedObject(amx, player, index)
 end
 
 function CreatePlayerTextDraw(amx, player, x, y, text)
-	outputDebugString('CreatePlayerTextDraw called with args ' .. x .. ' ' .. y .. ' ' .. text)
+	--outputDebugString('CreatePlayerTextDraw called with args ' .. x .. ' ' .. y .. ' ' .. text)
 
 	if (not g_PlayerTextDraws[player]) then -- Create dimension if it doesn't exist
-		outputDebugString('Created dimension for g_PlayerTextDraws[player]')
+		--outputDebugString('Created dimension for g_PlayerTextDraws[player]')
 		g_PlayerTextDraws[player] = {}
 	end
 
@@ -508,7 +508,7 @@ function CreatePlayerTextDraw(amx, player, x, y, text)
 		}
 	)
 
-	outputDebugString('assigned id s->' .. serverTDId .. ' c->' .. clientTDId .. ' to g_PlayerTextDraws[player]')
+	--outputDebugString('assigned id s->' .. serverTDId .. ' c->' .. clientTDId .. ' to g_PlayerTextDraws[player]')
 	clientCall(player, 'TextDrawCreate', clientTDId, table.deshadowize(textdraw, true))
 	return serverTDId
 end
@@ -517,7 +517,7 @@ function PlayerTextDrawDestroy(amx, player, textdrawID)
 	if not IsPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
-	outputDebugString('Sending textdraw id s->' .. g_PlayerTextDraws[player][textdrawID].serverTDId .. ' c->' .. g_PlayerTextDraws[player][textdrawID].clientTDId .. ' for destruction')
+	--outputDebugString('Sending textdraw id s->' .. g_PlayerTextDraws[player][textdrawID].serverTDId .. ' c->' .. g_PlayerTextDraws[player][textdrawID].clientTDId .. ' for destruction')
 	clientCall(player, 'TextDrawDestroy', g_PlayerTextDraws[player][textdrawID].clientTDId)
 	g_PlayerTextDraws[player][textdrawID] = nil
 	return true
@@ -759,9 +759,10 @@ function SetPlayerChatBubble(amx, player, text, color, dist, exptime)
 end
 
 function PutPlayerInVehicle(amx, player, vehicle, seat)
-	if not warpPedIntoVehicle(player, vehicle, seat) then
+	if not player then
 		return false
 	end
+	warpPedIntoVehicle(player, vehicle, seat)
 	if g_RCVehicles[getElementModel(vehicle)] then
 		setPedWeaponSlot(player, 0)
 		setElementCollisionsEnabled(player, false)
@@ -806,12 +807,18 @@ function RemovePlayerFromVehicle(amx, player)
 end
 
 function TogglePlayerControllable(amx, player, enable)
+	if not enable then
+		local vehicle = getPedOccupiedVehicle(player)
+		if vehicle then setElementVelocity(vehicle, 0.0, 0.0, 0.0) end
+	end
+
+	setElementFrozen(player, not enable)
 	return toggleAllControls(player, enable, true, false)
 end
 
-function PlayerPlaySound(amx, player, soundID, x, y, z)
-	notImplemented('PlayerPlaySound')
-	return false
+function PlayerPlaySound(amx, player, soundID, posX, posY, posZ)
+	clientCall(player, 'PlayerPlaySound', soundID, posX, posY, posZ)
+	return true
 end
 
 function ApplyAnimation(amx, player, animlib, animname, fDelta, loop, lockx, locky, freeze, time, forcesync)
@@ -826,6 +833,7 @@ end
 
 function ClearAnimations(amx, player, forcesync)
 	removePedFromVehicle(player)
+	setPedWearingJetpack(player, false)
 	setPedAnimation(player, false)
 	g_Players[getElemID(player)].specialaction = SPECIAL_ACTION_NONE
 	return true
@@ -856,25 +864,50 @@ end
 function GetPlayerSpecialAction(amx, player)
 	if not player then
 		return SPECIAL_ACTION_NONE
+	elseif isPedDucked(player) then
+		return SPECIAL_ACTION_DUCK
 	elseif isPedWearingJetpack(player) then
 		return SPECIAL_ACTION_USEJETPACK
-	else
-		return g_Players[getElemID(player)].specialaction or SPECIAL_ACTION_NONE
 	end
+
+	local playerdata = g_Players[getElemID(player)]
+	return playerdata.specialaction or SPECIAL_ACTION_NONE
 end
 
 function SetPlayerSpecialAction(amx, player, actionID)
-	if not player then
-		return false
-	elseif actionID == SPECIAL_ACTION_NONE then
+	if not player then return false end
+	local playerdata = g_Players[getElemID(player)]
+
+	if actionID == SPECIAL_ACTION_NONE then
+		if playerdata.specialaction == SPECIAL_ACTION_USECELLPHONE then
+			-- stop using cellphone properly
+			actionID = SPECIAL_ACTION_STOPUSECELLPHONE
+			playerdata.specialaction = SPECIAL_ACTION_STOPUSECELLPHONE
+			return setPedAnimation(player, unpack(g_SpecialActions[actionID]))
+		end
 		setPedWearingJetpack(player, false)
-		setPedAnimation(player, false)
 	elseif actionID == SPECIAL_ACTION_USEJETPACK then
-		setPedWearingJetpack(player, true)
-	elseif g_SpecialActions[actionID] then
-		setPedAnimation(player, unpack(g_SpecialActions[actionID]))
+		return setPedWearingJetpack(player, true)
+	elseif actionID >= SPECIAL_ACTION_DANCE1 and actionID <= SPECIAL_ACTION_PISSING then
+		-- special actions won't be applied in vehicle
+		if isPedInVehicle(player) then return false end
 	end
-	g_Players[getElemID(player)].specialaction = actionID
+
+	-- won't stop using cellphone if there's no cellphone
+	if actionID == SPECIAL_ACTION_STOPUSECELLPHONE then
+		if playerdata.specialaction ~= SPECIAL_ACTION_USECELLPHONE then return false end
+	end
+
+	-- player should hold a drink in hands instead of any weapon
+	if actionID >= SPECIAL_ACTION_DRINK_BEER and actionID <= SPECIAL_ACTION_DRINK_SPRUNK then
+		setPedWeaponSlot(player, 0)
+	end
+
+	-- if special action cannot be set or it's invalid
+	if not g_SpecialActions[actionID] then return false end
+
+	setPedAnimation(player, unpack(g_SpecialActions[actionID]))
+	playerdata.specialaction = actionID
 	return true
 end
 
@@ -911,7 +944,7 @@ end
 -- SetPlayerMarkerForPlayer client
 
 function ShowPlayerNameTagForPlayer(amx, player, playerToShow, show)
-	clientCall(player, 'setPlayerNametagShowing', playerToShow, show)
+	clientCall(player, 'updateNameTagShowing', playerToShow, show)
 	return true
 end
 
@@ -968,10 +1001,23 @@ function GetPlayerCameraFrontVector(amx, player, refX, refY, refZ)
 	if not player then
 		return false
 	end
+
 	local x, y, z, lx, ly, lz = getCameraMatrix(player)
-	writeMemFloat(amx, refX, lx - x)
-	writeMemFloat(amx, refY, ly - y)
-	writeMemFloat(amx, refZ, lz - z)
+	local vx, vy, vz = 0.0, 0.0, 0.0
+
+	if x and lx then
+		vx = lx - x
+	end
+	if y and ly then
+		vy = ly - y
+	end
+	if z and lz then
+		vz = lz - z
+	end
+
+	writeMemFloat(amx, refX, vx)
+	writeMemFloat(amx, refY, vy)
+	writeMemFloat(amx, refZ, vz)
 	return true
 end
 
@@ -1078,28 +1124,34 @@ function EnableStuntBonusForPlayer(amx, player, enable)
 end
 
 function TogglePlayerSpectating(amx, player, enable)
+	local playerdata = g_Players[getElemID(player)]
 	if enable then
 		fadeCamera(player, true)
 		setCameraMatrix(player, 75.461357116699, 64.600051879883, 51.685581207275, 149.75857543945, 131.53228759766, 40.597320556641)
-		toggleAllControls(player, false, true, false) -- will be re-enabled in spawn event
+		-- controls, alpha, collisions and blip will be re-enabled on spawn
+		toggleAllControls(player, false, true, false)
 		setPedWeaponSlot(player, 0)
 		setElementAlpha(player, 0)
 		setElementCollisionsEnabled(player, false)
 		setPlayerHudComponentVisible(player, 'radar', false)
 		setPlayerState(player, PLAYER_STATE_SPECTATING)
+		if playerdata.blip then
+			setElementVisibleTo(playerdata.blip, root, false)
+		end
 	else
-		local playerdata = g_Players[getElemID(player)]
-		local spawninfo = playerdata.spawninfo or (g_PlayerClasses and g_PlayerClasses[playerdata.selectedclass])
 		if playerdata.returntoclasssel then
 			playerdata.returntoclasssel = nil
-			putPlayerInClassSelection(player)
+			if procCallOnAll('OnPlayerRequestClass', getElemID(player), 0) then
+				putPlayerInClassSelection(player)
+			else
+				outputDebugString('Not allowed to select a class', 1)
+			end
 		else
 			spawnPlayerBySelectedClass(player)
 			setPlayerHudComponentVisible(player, 'radar', true)
 		end
-		setPlayerState(player, PLAYER_STATE_NONE)
-		setElementAlpha(player, 255)
 		setCameraTarget(player, player)
+		setPlayerState(player, PLAYER_STATE_SPAWNED)
 		clientCall(player, 'setCameraTarget', player) -- Clear the one on the client as well, otherwise we can't go back to normal camera after spectating vehicles
 		-- In SA-MP calling TogglePlayerSpectating also unsets camera interpolation
 		clientCall(player, 'removeCamHandlers')

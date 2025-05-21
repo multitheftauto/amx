@@ -40,7 +40,7 @@ Compatibility is quite high:
 - Almost all SA-MP **scripting functions** and **callbacks** are
   implemented.
 - **Database** functions (`db_*`) are implemented.
-- SA-MP server **plugins** work unmodified.
+- SA-MP server **plugins** work unmodified, if they don't use memory hacking.
 - SA-MP style **rcon** commands are available from the server console
   and the ingame console.
 
@@ -82,6 +82,9 @@ features:
 
 - You can **load plugins dynamically**, while the server is running.
   Use the `loadplugin` console command for this.
+
+- There is no hard-coded max filterscript count, the **number of
+  running filterscripts is unlimited**.
 
 ## Installation
 
@@ -203,7 +206,7 @@ Information about this is lined out below.
 
   The meta.xml files of gamemodes and filterscripts are slightly
   different. Two resources, amx-test and amx-fs-test, are included
-  with the *amx* download as examples. Most times you can simply
+  in the *amx* repository as examples. Most times you can simply
   copy-paste these to a new resource and adjust the names in it.
 
 - To specify what **filterscripts to autostart** when *amx* loads,
@@ -224,10 +227,10 @@ Information about this is lined out below.
   plugins to start, separated by spaces. For example:
 
   ```xml
-  <setting name="plugins" value="irc sampmysql"/>
+  <setting name="plugins" value="irc mysql"/>
   ```
 
-  This will load irc.dll and sampmysql.dll on Windows, or .so on
+  This will load irc.dll and mysql.dll on Windows, or .so on
   Linux.
 
 - jbeta's mapcycler resource (shipped with the MTA server) is used for
@@ -675,12 +678,18 @@ Even though *amx* offers a high level of compatibility, not everything
 is perfect. Below is a list of limitations that may or may not be
 addressed in later versions of *amx* and Multi Theft Auto.
 
+- The following scripting functions will require certain resources
+  installed to have effect when called: DisableInteriorEnterExits
+  (disable enex markers implemented by "interiors" resource,
+  otherwise they are always disabled), SendDeathMessage (invoke
+  graphical death messages from "killmessages" resource).
+
 - The following scripting functions are currently not implemented and
-  will have no effect when called: DisableInteriorEnterExits,
-  EnableStuntBonusForAll, EnableStuntBonusForPlayer, EnableTirePopping
-  (tire popping is always on), PlayerPlaySound, SendDeathMessage (use
-  the "killmessages" resource on your server instead for graphical
-  death messages), SetNameTagDrawDistance, TextDrawSetProportional.
+  will have no effect when called: DisableRemoteVehicleCollisions,
+  EnablePlayerCameraTarget, EnableStuntBonusForAll,
+  EnableStuntBonusForPlayer, EnableTirePopping (tire popping is
+  always on), EnableVehicleFriendlyFire, SetObjectNoCameraCol,
+  SetPlayerShopName, TextDrawSetProportional, TextDrawSetSelectable.
 
 ## Credits
 

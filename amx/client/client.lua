@@ -51,13 +51,6 @@ addEventHandler('onClientResourceStart', resourceRoot,
 	false
 )
 
-addEventHandler('onClientResourceStop', resourceRoot,
-	function()
-		TogglePlayerClock(false, true)
-	end,
-	false
-)
-
 function enableDebug()
 	local state = not isDebugViewActive()
 	setDebugViewActive(state)
@@ -139,7 +132,7 @@ function startClassSelection(classInfo)
 		g_ClassSelectionInfo.selectedclass = 0
 	end
 	g_ClassSelectionInfo.gui = {
-		img = guiCreateStaticImage(35, screenHeight - 410, 205, 236, 'client/logo_small.png', false),
+		img = guiCreateStaticImage(35, screenHeight - 410, 205, 236, 'images/logo_small.png', false),
 		btnLeft = guiCreateButton(screenWidth / 2 - 145 - 70, screenHeight - 100, 140, 20, '<<<', false),
 		btnRight = guiCreateButton(screenWidth / 2 - 70, screenHeight - 100, 140, 20, '>>>', false),
 		btnSpawn = guiCreateButton(screenWidth / 2 + 145 - 70, screenHeight - 100, 140, 20, 'Spawn', false)
@@ -216,6 +209,7 @@ end
 addEventHandler('onClientResourceStop', resourceRoot,
 	function()
 		destroyClassSelGUI()
+		TogglePlayerClock(true)
 		removeEventHandler('onClientRender', root, renderTextDraws)
 		removeEventHandler('onClientRender', root, renderMenu)
 	end
@@ -275,10 +269,9 @@ function pickupOnInteriorChangeLoop()
 end
 
 local function clientPlayerPickupHit(thePickup, matchingDimension)
-	if source ~= localPlayer then return end
 	triggerServerEvent('OnPlayerPickUpPickup_Ev', localPlayer, thePickup)
 end
-addEventHandler('onClientPlayerPickupHit', root, clientPlayerPickupHit)
+addEventHandler('onClientPlayerPickupHit', localPlayer, clientPlayerPickupHit)
 -----------------------------
 -- Interior related
 
@@ -310,7 +303,7 @@ ca.maxZ = math.rad(89)
 ca.minZ = math.rad(-45)
 
 function removeCamAttachHandler()
-	outputConsole('removeCamAttachHandler was called')
+	--outputConsole('removeCamAttachHandler was called')
 	if (ca.active == 1) then
 		outputConsole('Destroying cam attach handler...')
 		ca.active = 0
@@ -372,7 +365,7 @@ function cursorMouseMoveHandler(curX, curY, absX, absY)
 end
 
 function AttachCameraToObject(camObj)
-	outputConsole('AttachCameraToObject was called')
+	--outputConsole('AttachCameraToObject was called')
 
 	if not isElement(camObj) then
 		return
@@ -386,7 +379,7 @@ function AttachCameraToObject(camObj)
 end
 
 function AttachCameraToPlayerObject(camobjID)
-	outputConsole('AttachCameraToPlayerObject was called')
+	--outputConsole('AttachCameraToPlayerObject was called')
 
 	if not isElement(g_PlayerObjects[camobjID]) then
 		return
@@ -406,7 +399,7 @@ sm.moov = 0
 sm.objCamPos, sm.objLookAt = nil, nil
 
 function removeInterpCamHandler()
-	outputConsole('removeInterpCamHandler was called')
+	--outputConsole('removeInterpCamHandler was called')
 	if (sm.moov == 1) then
 		outputConsole('Destroying cam handler...')
 		sm.moov = 0
@@ -550,15 +543,16 @@ function StopPlayerObject(objID)
 	stopObject(obj)
 end
 -----------------------------
--- Audio
+-- Audio & SFX
 
 local pAudioStreamSound = nil -- SA-MP can only do one stream at a time anyway
 function PlayAudioStreamForPlayer(url, posX, posY, posZ, distance, usepos)
 	--outputConsole(string.format("PlayAudioStreamForPlayer called with args %s %f %f %f %f %d", url, posX, posY, posZ, distance, usepos))
-	if pAudioStreamSound ~= nil then -- If there's one already playing, stop it
+	if pAudioStreamSound and isElement(pAudioStreamSound) then -- If there's one already playing, stop it
 		--outputConsole("PlayAudioStreamForPlayer is stopping an audio stream")
-		StopAudioStreamForPlayer()
+		stopSound(pAudioStreamSound)
 	end
+
 	if not usepos then
 		--outputConsole(string.format("PlayAudioStreamForPlayer now playing non-3d sound %s", url))
 		pAudioStreamSound = playSound(url)
@@ -567,14 +561,51 @@ function PlayAudioStreamForPlayer(url, posX, posY, posZ, distance, usepos)
 		pAudioStreamSound = playSound3D(url, posX, posY, posZ)
 		setSoundMaxDistance(pAudioStreamSound, distance)
 	end
-	if pAudioStreamSound ~= nil then
+
+	if pAudioStreamSound and isElement(pAudioStreamSound) then
 		setSoundVolume(pAudioStreamSound, 1.0)
 	end
 end
 
 function StopAudioStreamForPlayer()
-	if pAudioStreamSound == nil then return end
+	if not pAudioStreamSound then return end
+	if not isElement(pAudioStreamSound) then return end
+
 	stopSound(pAudioStreamSound)
+end
+
+local sfxSound = nil
+function PlayerPlaySound(soundid, posX, posY, posZ)
+	if sfxSound and isElement(sfxSound) then
+		stopSound(sfxSound)
+	end
+
+	-- only 'script' container supported
+	if not getSFXStatus('script') then return end
+
+	for bankId = 1, #SFX_Offset do
+		local bank = SFX_Offset[bankId]
+		local first = bank.first
+		local last = bank.last or first
+
+		if soundid >= first and soundid <= last then
+			local bankIdx = bankId - 1
+			local audioEvent = soundid - first
+
+			if posX ~= 0.0 or posY ~= 0.0 or posZ ~= 0.0 then
+				--outputConsole(string.format("PlayerPlaySound now playing 3d sound %d (bank %d)", audioEvent, bankIdx))
+				sfxSound = playSFX3D('script', bankIdx, audioEvent, posX, posY, posZ)
+			else
+				--outputConsole(string.format("PlayerPlaySound now playing non-3d sound %d (bank %d)", audioEvent, bankIdx))
+				sfxSound = playSFX('script', bankIdx, audioEvent)
+			end
+			break
+		end
+	end
+
+	if sfxSound and isElement(sfxSound) then
+		setSoundVolume(sfxSound, 1.0)
+	end
 end
 -----------------------------
 -- Checkpoints
@@ -791,14 +822,17 @@ addEventHandler('onClientElementStreamOut', root,
 local function clientVehicleDamage(attacker, weapon, loss, x, y, z, tire)
 	if not isElement(source) then return end
 
-	local driver = getVehicleOccupant(source)
+	-- get the driver from either players or peds
+	local occupants = getVehicleOccupants(source)
+	local driver = occupants and occupants[0] -- seat 0
+
 	if not driver then
-		-- Block any damage for unoccupied vehicles like SA-MP does
+		-- block any damage for unoccupied vehicles like SA-MP does
 		return cancelEvent()
 	end
 
 	if driver ~= localPlayer then return end
-	triggerServerEvent('OnVehicleDamageStatusUpdate_Ev', localPlayer, source)
+	serverAMXEvent('OnVehicleDamageStatusUpdate', getElemID(source), g_PlayerID)
 end
 addEventHandler('onClientVehicleDamage', root, clientVehicleDamage)
 
@@ -1212,12 +1246,9 @@ function renderTextLabels()
 			local pX, pY, pZ, _, _, _ = getCameraMatrix() --getElementPosition(localPlayer)
 			local dist = getDistanceBetweenPoints3D(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z)
 			local vw = getElementDimension(localPlayer)
-			local LOS = isLineOfSightClear(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z, true, false, false)
 
 			if screenX and dist <= textlabel.dist and (vw == textlabel.vw or textlabel.vw == -1) then -- Because player textlabels don't have VW's, since we're processing both here
-				if not textlabel.los then
-					dxDrawText(textlabel.text, screenX, screenY, screenX, screenY, tocolor(textlabel.color.r, textlabel.color.g, textlabel.color.b, textlabel.color.a), 1.0, 'default-bold', 'center', 'top', false, false, false, true)
-				elseif LOS then
+				if not textlabel.los or isLineOfSightClear(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z, true, false, false) then
 					dxDrawText(textlabel.text, screenX, screenY, screenX, screenY, tocolor(textlabel.color.r, textlabel.color.g, textlabel.color.b, textlabel.color.a), 1.0, 'default-bold', 'center', 'top', false, false, false, true)
 				end
 			end
@@ -1422,7 +1453,7 @@ function ShowMenuForPlayer(menuID)
 	if not prevMenu then
 		g_CurrentMenu.alpha = 0
 
-		g_CurrentMenu.closebtn = guiCreateStaticImage(g_CurrentMenu.x + g_CurrentMenu.width - closebtnSide, g_CurrentMenu.y, closebtnSide, closebtnSide, 'client/closebtn.png', false, nil)
+		g_CurrentMenu.closebtn = guiCreateStaticImage(g_CurrentMenu.x + g_CurrentMenu.width - closebtnSide, g_CurrentMenu.y, closebtnSide, closebtnSide, 'images/closebtn.png', false, nil)
 		guiSetAlpha(g_CurrentMenu.closebtn, 0)
 		addEventHandler('onClientMouseEnter', g_CurrentMenu.closebtn,
 			function()
@@ -1432,7 +1463,7 @@ function ShowMenuForPlayer(menuID)
 			false
 		)
 
-		g_CurrentMenu.closebtnhover = guiCreateStaticImage(g_CurrentMenu.x + g_CurrentMenu.width - closebtnSide, g_CurrentMenu.y, closebtnSide, closebtnSide, 'client/closebtn_hover.png', false, nil)
+		g_CurrentMenu.closebtnhover = guiCreateStaticImage(g_CurrentMenu.x + g_CurrentMenu.width - closebtnSide, g_CurrentMenu.y, closebtnSide, closebtnSide, 'images/closebtn_hover.png', false, nil)
 		guiSetVisible(g_CurrentMenu.closebtnhover, false)
 		guiSetAlpha(g_CurrentMenu.closebtnhover, .75)
 		addEventHandler('onClientMouseLeave', g_CurrentMenu.closebtnhover,
@@ -1446,6 +1477,7 @@ function ShowMenuForPlayer(menuID)
 		addEventHandler('onClientGUIClick', g_CurrentMenu.closebtnhover,
 			function()
 				if not g_CurrentMenu.anim then
+					playSoundFrontEnd(2)
 					HideMenuForPlayer()
 				end
 			end,
@@ -1530,8 +1562,8 @@ function closeMenu()
 end
 
 function exitMenu()
-	closeMenu()
 	serverAMXEvent('OnPlayerExitedMenu', g_PlayerID)
+	closeMenu()
 end
 
 function renderMenu()
@@ -1606,14 +1638,18 @@ function menuClickHandler(button, state, clickX, clickY)
 
 	local selectedRow = math.floor((clickY - g_CurrentMenu.y - MENU_TOP_PADDING) / MENU_ITEM_HEIGHT)
 	if not (g_CurrentMenu.disabledrows and table.find(g_CurrentMenu.disabledrows, selectedRow)) then
+		playSoundFrontEnd(1)
 		serverAMXEvent('OnPlayerSelectedMenuRow', g_PlayerID, selectedRow)
 		closeMenu()
+	else
+		playSoundFrontEnd(4)
 	end
 end
 
 function OnKeyPress(key, keyState)
 	if (keyState == 'down') then
-		exitMenu()
+		playSoundFrontEnd(2)
+		HideMenuForPlayer()
 	end
 end
 -----------------------------
@@ -1623,9 +1659,31 @@ function SetPlayerPosFindZ(x, y, z)
 	setElementPosition(localPlayer, x, y, getGroundPosition(x, y, z) + 1)
 end
 
+local function clientPlayerDamage(attacker, weapon, bodypart, loss)
+	local issuer = attacker
+
+	if issuer then
+		if getElementType(issuer) == 'vehicle' then
+			issuer = getVehicleOccupant(issuer)
+		end
+		if issuer == source then
+			issuer = nil
+		end
+	end
+
+	if issuer == localPlayer then -- give damage
+		triggerServerEvent('OnPlayerDamage_Ev', issuer, source, true, loss, weapon, bodypart)
+	end
+
+	if source == localPlayer then -- take damage
+		if issuer and getElementType(issuer) ~= 'player' then issuer = nil end
+		triggerServerEvent('OnPlayerDamage_Ev', source, issuer, false, loss, weapon, bodypart)
+	end
+end
+addEventHandler('onClientPlayerDamage', root, clientPlayerDamage)
+
 local function clientPlayerWeaponFire(weapon, ammo, ammoInClip, hitX, hitY, hitZ, hitElement, startX, startY, startZ)
 	if weapon < 22 or (weapon > 34 and weapon ~= 38) then return end
-	if source ~= localPlayer then return end
 
 	local hitId, hitType = 65535, 0
 	local offsetX, offsetY, offsetZ = hitX, hitY, hitZ
@@ -1659,17 +1717,24 @@ local function clientPlayerWeaponFire(weapon, ammo, ammoInClip, hitX, hitY, hitZ
 
 	triggerServerEvent('OnPlayerWeaponShot_Ev', localPlayer, weapon, hitType, hitId, startX, startY, startZ, hitX, hitY, hitZ, offsetX, offsetY, offsetZ)
 end
-addEventHandler('onClientPlayerWeaponFire', root, clientPlayerWeaponFire)
+addEventHandler('onClientPlayerWeaponFire', localPlayer, clientPlayerWeaponFire)
 
 local function clientPedDamage(attacker, weapon, bodypart, loss)
 	if getElementType(source) == 'ped' and getElementData(source, 'ActorPed') then
 		local issuer = attacker
+
 		if issuer and getElementType(issuer) == 'vehicle' then
-			issuer = getVehicleOccupant(issuer)
+			local driver = getVehicleOccupant(issuer)
+
+			if driver and getElementType(driver) == 'player' then
+				issuer = driver
+			else
+				issuer = nil
+			end
 		end
 
 		if issuer == localPlayer and not getElementData(source, 'Invulnerable') then
-			triggerServerEvent('OnPlayerGiveDamageActor_Ev', localPlayer, source, loss, weapon, bodypart)
+			triggerServerEvent('OnPlayerGiveDamageActor_Ev', issuer, source, loss, weapon, bodypart)
 		end
 
 		-- Actor damage controlled by the server in any case
@@ -1680,7 +1745,7 @@ addEventHandler('onClientPedDamage', root, clientPedDamage)
 
 function enableWeaponSyncing(enable)
 	if enable and not g_WeaponSyncTimer then
-		g_WeaponSyncTimer = setTimer(sendWeapons, 1000, 0)
+		g_WeaponSyncTimer = setTimer(sendWeapons, 500, 0)
 	elseif not enable and g_WeaponSyncTimer then
 		killTimer(g_WeaponSyncTimer)
 		g_WeaponSyncTimer = nil
@@ -1930,7 +1995,7 @@ function OnListDialogButton1Click(button, state)
 	if button == 'left' then
 		local row, column = guiGridListGetSelectedItem(listGrid)
 		local text = guiGridListGetItemText(listGrid, row, column)
-		serverAMXEvent('OnDialogResponse', getElemID(localPlayer), listDialog, 1, row, text)
+		serverAMXEvent('OnDialogResponse', g_PlayerID, listDialog, 1, row, text)
 		guiSetVisible(listWindow, false)
 		showCursor(false)
 		listDialog = nil
@@ -1942,7 +2007,7 @@ function OnListDialogButton2Click(button, state)
 	if button == 'left' then
 		local row, column = guiGridListGetSelectedItem(listGrid)
 		local text = guiGridListGetItemText(listGrid, row, column)
-		serverAMXEvent('OnDialogResponse', getElemID(localPlayer), listDialog, 0, row, text)
+		serverAMXEvent('OnDialogResponse', g_PlayerID, listDialog, 0, row, text)
 		guiSetVisible(listWindow, false)
 		showCursor(false)
 		listDialog = nil
@@ -1952,7 +2017,7 @@ end
 
 function OnInputDialogButton1Click(button, state)
 	if button == 'left' then
-		serverAMXEvent('OnDialogResponse', getElemID(localPlayer), inputDialog, 1, 0, guiGetText(inputEdit))
+		serverAMXEvent('OnDialogResponse', g_PlayerID, inputDialog, 1, 0, guiGetText(inputEdit))
 		guiSetVisible(inputWindow, false)
 		showCursor(false)
 		inputDialog = nil
@@ -1961,7 +2026,7 @@ end
 
 function OnInputDialogButton2Click(button, state)
 	if button == 'left' then
-		serverAMXEvent('OnDialogResponse', getElemID(localPlayer), inputDialog, 0, 0, guiGetText(inputEdit))
+		serverAMXEvent('OnDialogResponse', g_PlayerID, inputDialog, 0, 0, guiGetText(inputEdit))
 		guiSetVisible(inputWindow, false)
 		showCursor(false)
 		inputDialog = nil
@@ -1970,7 +2035,7 @@ end
 
 function OnMessageDialogButton1Click(button, state)
 	if button == 'left' then
-		serverAMXEvent('OnDialogResponse', getElemID(localPlayer), msgDialog, 1, 0, '')
+		serverAMXEvent('OnDialogResponse', g_PlayerID, msgDialog, 1, 0, '')
 		guiSetVisible(msgWindow, false)
 		showCursor(false)
 		msgDialog = nil
@@ -1979,7 +2044,7 @@ end
 
 function OnMessageDialogButton2Click(button, state)
 	if button == 'left' then
-		serverAMXEvent('OnDialogResponse', getElemID(localPlayer), msgDialog, 0, 0, '')
+		serverAMXEvent('OnDialogResponse', g_PlayerID, msgDialog, 0, 0, '')
 		guiSetVisible(msgWindow, false)
 		showCursor(false)
 		msgDialog = nil
@@ -2146,6 +2211,6 @@ end
 -- depends on scoreboard resource
 local function clientPlayerScoreboardClick(selected, cX, cY, clickedColumn)
 	if getElementType(source) ~= 'player' then return end
-	serverAMXEvent('OnPlayerClickPlayer', getElemID(localPlayer), getElemID(source), 0)
+	serverAMXEvent('OnPlayerClickPlayer', g_PlayerID, getElemID(source), 0)
 end
 addEventHandler('onClientPlayerScoreboardClick', root, clientPlayerScoreboardClick)

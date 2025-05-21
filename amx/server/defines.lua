@@ -200,6 +200,7 @@ PLAYER_STATE_SPAWNED = 8
 PLAYER_STATE_SPECTATING = 9
 
 SPECIAL_ACTION_NONE = 0
+SPECIAL_ACTION_DUCK = 1
 SPECIAL_ACTION_USEJETPACK = 2
 SPECIAL_ACTION_DANCE1 = 5
 SPECIAL_ACTION_DANCE2 = 6
@@ -207,19 +208,29 @@ SPECIAL_ACTION_DANCE3 = 7
 SPECIAL_ACTION_DANCE4 = 8
 SPECIAL_ACTION_HANDSUP = 10
 SPECIAL_ACTION_USECELLPHONE = 11
-SPECIAL_ACTION_SITTING = 12
 SPECIAL_ACTION_STOPUSECELLPHONE = 13
+SPECIAL_ACTION_DRINK_BEER = 20
+SPECIAL_ACTION_SMOKE_CIGGY = 21
+SPECIAL_ACTION_DRINK_WINE = 22
+SPECIAL_ACTION_DRINK_SPRUNK = 23
+SPECIAL_ACTION_CARRY = 25
+SPECIAL_ACTION_PISSING = 68
 
 g_SpecialActions = {
 	[SPECIAL_ACTION_NONE] = { false },
-	[SPECIAL_ACTION_DANCE1] = { 'dancing', 'dnce_m_a' },
-	[SPECIAL_ACTION_DANCE2] = { 'dancing', 'dnce_m_b' },
-	[SPECIAL_ACTION_DANCE3] = { 'dancing', 'dnce_m_c' },
-	[SPECIAL_ACTION_DANCE4] = { 'dancing', 'dnce_m_d' },
-	[SPECIAL_ACTION_HANDSUP] = { 'ped', 'handsup', -1, false, false },
-	[SPECIAL_ACTION_USECELLPHONE] = { 'ped', 'phone_talk' },
-	[SPECIAL_ACTION_SITTING] = { 'attractors', 'stepsit_loop' },
-	[SPECIAL_ACTION_STOPUSECELLPHONE] = { 'ped', 'phone_out', -1, false, false }
+	[SPECIAL_ACTION_DANCE1] = { 'wop', 'dance_loop', -1, true, false, false, false, 250, false },
+	[SPECIAL_ACTION_DANCE2] = { 'gfunk', 'dance_loop', -1, true, false, false, false, 250, false },
+	[SPECIAL_ACTION_DANCE3] = { 'runningman', 'dance_loop', -1, true, false, false, false, 250, false },
+	[SPECIAL_ACTION_DANCE4] = { 'strip', 'str_loop_b', -1, true, false, false, false, 250, false },
+	[SPECIAL_ACTION_HANDSUP] = { 'ped', 'handsup', -1, false, false, false, true, 250, false },
+	[SPECIAL_ACTION_USECELLPHONE] = { 'ped', 'phone_in', -1, false, true, false, true, 250, true },
+	[SPECIAL_ACTION_STOPUSECELLPHONE] = { 'ped', 'phone_out', -1, false, true, false, false, 250, true },
+	[SPECIAL_ACTION_DRINK_BEER] = { 'bar', 'dnk_stndm_loop', -1, false, true, false, false, 250, true },
+	[SPECIAL_ACTION_SMOKE_CIGGY] = { 'gangs', 'smkcig_prtl', -1, false, true, false, false, 250, true },
+	[SPECIAL_ACTION_DRINK_WINE] = { 'bar', 'dnk_stndm_loop', -1, false, true, false, false, 250, true },
+	[SPECIAL_ACTION_DRINK_SPRUNK] = { 'bar', 'dnk_stndm_loop', -1, false, true, false, false, 250, true },
+	[SPECIAL_ACTION_CARRY] = { 'carry', 'crry_prtial', -1, true, true, false, false, 250, true },
+	[SPECIAL_ACTION_PISSING] = { 'paulnmac', 'piss_loop', -1, true, false, false, false, 250, false },
 }
 
 PLAYER_VARTYPE_NONE = 0

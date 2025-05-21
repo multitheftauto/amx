@@ -52,12 +52,45 @@ function SendPlayerMessageToPlayer(amx, playerTo, playerFrom, message)
 	return outputChatBox(getPlayerName(playerFrom) .. ' ' .. message, playerTo, 255, 255, 255, true)
 end
 
-function SendDeathMessage(amx, killer, victim, reason)
-	-- no implementation needed, killmessages resource shows kills already
+function SendDeathMessage(amx, killerID, victim, reason)
+	local killmessages = getResourceFromName('killmessages')
+	if not killmessages or getResourceState(killmessages) ~= 'running' then
+		return false
+	end
+
+	if isElement(victim) and getElementType(victim) == 'player' then
+		local killer = g_Players[killerID] and g_Players[killerID].elem or nil
+
+		local pR, pG, pB = getPlayerNametagColor(victim)
+		local kR, kG, kB = 255, 255, 255
+		if isElement(killer) then
+			kR, kG, kB = getPlayerNametagColor(killer)
+		end
+
+		triggerClientEvent(root, 'onClientPlayerKillMessage', victim, killer, reason, pR, pG, pB, kR, kG, kB)
+	end
+	return true
 end
 
-function SendDeathMessageToPlayer(amx, player, killer, victim, reason)
-	-- no implementation needed, killmessages resource shows kills already
+function SendDeathMessageToPlayer(amx, player, killerID, victim, reason)
+	local killmessages = getResourceFromName('killmessages')
+	if not killmessages or getResourceState(killmessages) ~= 'running' then
+		return false
+	end
+
+	if not player then return false end
+	if isElement(victim) and getElementType(victim) == 'player' then
+		local killer = g_Players[killerID] and g_Players[killerID].elem or nil
+
+		local pR, pG, pB = getPlayerNametagColor(victim)
+		local kR, kG, kB = 255, 255, 255
+		if isElement(killer) then
+			kR, kG, kB = getPlayerNametagColor(killer)
+		end
+
+		triggerClientEvent(player, 'onClientPlayerKillMessage', victim, killer, reason, pR, pG, pB, kR, kG, kB)
+	end
+	return true
 end
 
 function GameTextForAll(amx, str, time, style)
@@ -400,7 +433,8 @@ function DestroyPickup(amx, pickup)
 end
 
 function ShowNameTags(amx, show)
-	table.each(g_Players, 'elem', setPlayerNametagShowing, show)
+	g_ShowNameTags = show
+	clientCall(root, 'updateNameTagGlobals', {status = show})
 	return true
 end
 
@@ -413,10 +447,16 @@ function ShowPlayerMarkers(amx, mode)
 end
 
 function GameModeExit(amx)
-	if getResourceState(getResourceFromName('mapcycler')) == 'running' then
+	local mapcycler = getResourceFromName('mapcycler')
+	local votemanager = getResourceFromName('votemanager')
+
+	if getResourceState(mapcycler) == 'running' then
 		triggerEvent('onRoundFinished', getResourceRootElement(getThisResource()))
-	else
+	elseif getResourceState(votemanager) == 'running' then
 		exports.votemanager:voteMap(getThisResource())
+	else
+		local amx = getRunningGameMode(mode)
+		if amx then unloadAMX(amx) end
 	end
 	return true
 end
@@ -522,17 +562,25 @@ function UsePlayerPedAnims(amx)
 end
 
 function DisableInteriorEnterExits(amx)
-	notImplemented('DisableInteriorEnterExits')
+	-- interiors resource implements enex markers
+	local interiors = getResourceFromName('interiors')
+
+	-- as we want to disable it, stop this resource
+	if getResourceState(interiors) == 'running' then
+		stopResource(interiors)
+	end
 	return true
 end
 
 function DisableNameTagLOS(amx)
-	notImplemented('DisableNameTagLOS')
+	g_NameTagsLOS = false
+	clientCall(root, 'updateNameTagGlobals', {los = false})
 	return true
 end
 
 function SetNameTagDrawDistance(amx, distance)
-	notImplemented('SetNameTagDrawDistance')
+	g_NameTagsRadius = distance
+	clientCall(root, 'updateNameTagGlobals', {radius = distance})
 	return true
 end
 
@@ -780,7 +828,7 @@ function GetPlayerMenu(amx, player)
 end
 
 function TextDrawCreate(amx, x, y, text)
-	outputDebugString('TextDrawCreate called with args ' .. x .. ' ' .. y .. ' ' .. text)
+	--outputDebugString('TextDrawCreate called with args ' .. x .. ' ' .. y .. ' ' .. text)
 	local textdraw = { x = x, y = y, shadow = {align = 1, text = text, font = 1, lwidth = 0.5, lheight = 0.5} }
 	textdraw.clientTDId = #g_TextDraws + 1
 	local id = table.insert(g_TextDraws, textdraw)

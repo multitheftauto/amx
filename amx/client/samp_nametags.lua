@@ -1,3 +1,8 @@
+local showNameTags = true
+local nameTagsRadius = 70
+local nameTagsLOS = true
+local nameTagShowing = {}
+
 local font = 'arial' -- default font
 
 HealthBarBorderVertices =
@@ -24,24 +29,17 @@ HealthBarInnerVertices =
 	{ x = 0, y = 0, z = 0, c = tocolor(185, 34, 40, 255) }
 }
 
-function applyColorAlpha(color, alpha)
-	if color < 0 then
-		color = 0x100000000 + color
+function drawNameTag(position, nameText, r, g, b, health, armor, distance)
+	if not r or not g or not b then
+		r = 255
+		g = 255
+		b = 255
 	end
-	local rgb = color % 0x1000000
-	local a = (color - rgb) / 0x1000000 * alpha
-	a = a - a % 1
-	return rgb + a * 0x1000000
-end
 
-function drawNameTag(position, nameText, health, armor, distance)
 	position.z = (distance * 0.025) + position.z + 0.3
 
 	local screenCoordsX, screenCoordsY = getScreenFromWorldPosition(position.x, position.y, position.z)
-
-	if not screenCoordsX then
-		return
-	end
+	if not screenCoordsX then return end
 
 	local rect = {left = screenCoordsX, top = screenCoordsY, right = screenCoordsX + 1, bottom = screenCoordsY + 1}
 	local textSizeX, textSizeY = dxGetTextSize(nameText, 0, 1, 1, font)
@@ -87,7 +85,7 @@ function drawNameTag(position, nameText, health, armor, distance)
 
 	dxDrawText(
 		nameText, rect.left, rect.top, rect.right, rect.bottom,
-		tocolor(255, 255, 255, 255), 1, 1,
+		tocolor(r, g, b, 255), 1, 1,
 
 		font, 'left', 'top', false, false,
 		false, false, false,
@@ -195,19 +193,62 @@ end
 
 addEventHandler('onClientRender', root,
 	function()
+		if not showNameTags then return end
 		local playerPosX, playerPosY, playerPosZ = getElementPosition(localPlayer)
+
 		for k, player in pairs(getElementsByType('player')) do
 			if player ~= localPlayer and isElementOnScreen(player) then
-				--local fPosX, fPosY, fPosZ = getElementPosition(player)
-				local fPosX, fPosY, fPosZ = getPedBonePosition(player, 8)
-				local distance = getDistanceBetweenPoints3D(playerPosX, playerPosY, playerPosZ, fPosX, fPosY, fPosZ)
-				if distance < 45 then
-					local cx, cy, cz = getCameraMatrix(localPlayer)
-					if isLineOfSightClear(cx, cy, cz, fPosX, fPosY, fPosZ, true, true, false, true, true, false, false) then
-						drawNameTag({x = fPosX, y = fPosY, z = fPosZ}, getPlayerName(player) .. ' (' .. getElemID(player) .. ')', getElementHealth(player), getPedArmor(player), distance)
+				if nameTagShowing[player] ~= false then
+					--local fPosX, fPosY, fPosZ = getElementPosition(player)
+					local fPosX, fPosY, fPosZ = getPedBonePosition(player, 8)
+					local distance = getDistanceBetweenPoints3D(playerPosX, playerPosY, playerPosZ, fPosX, fPosY, fPosZ)
+
+					if distance < nameTagsRadius then
+						local cx, cy, cz = getCameraMatrix()
+
+						if not nameTagsLOS or isLineOfSightClear(cx, cy, cz, fPosX, fPosY, fPosZ, true, false, false, true, true, false, false) then
+							local r, g, b = getPlayerNametagColor(player)
+							drawNameTag({x = fPosX, y = fPosY, z = fPosZ}, getPlayerName(player) .. ' (' .. getElemID(player) .. ')', r, g, b, getElementHealth(player), getPedArmor(player), distance)
+						end
+					end
+				end
+			end
+		end
+
+		for k, bot in pairs(getElementsByType('ped')) do
+			if isElementOnScreen(bot) then
+				if getElementData(bot, 'ShowNameTag') then
+					--local fPosX, fPosY, fPosZ = getElementPosition(bot)
+					local fPosX, fPosY, fPosZ = getPedBonePosition(bot, 8)
+					local distance = getDistanceBetweenPoints3D(playerPosX, playerPosY, playerPosZ, fPosX, fPosY, fPosZ)
+
+					if distance < nameTagsRadius then
+						local cx, cy, cz = getCameraMatrix()
+
+						if not nameTagsLOS or isLineOfSightClear(cx, cy, cz, fPosX, fPosY, fPosZ, true, false, false, true, true, false, false) then
+							local botName = getElementData(bot, 'BotName') or 'Bot'
+							drawNameTag({x = fPosX, y = fPosY, z = fPosZ}, botName .. ' (' .. getElemID(bot) .. ')', 255, 255, 255, getElementHealth(bot), getPedArmor(bot), distance)
+						end
 					end
 				end
 			end
 		end
 	end
 )
+
+function updateNameTagGlobals(settings)
+	if settings.status ~= nil then
+		showNameTags = settings.status
+	end
+	if settings.radius ~= nil then
+		nameTagsRadius = settings.radius
+	end
+	if settings.los ~= nil then
+		nameTagsLOS = settings.los
+	end
+end
+
+-- ShowPlayerNameTagForPlayer
+function updateNameTagShowing(playerToShow, show)
+	nameTagShowing[playerToShow] = show
+end
