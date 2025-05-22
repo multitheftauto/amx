@@ -2,10 +2,11 @@
 
 ## Introduction
 
-*amx* is a software package that allows the execution of unmodified San
-Andreas: Multiplayer 0.3.7 gamemodes, filterscripts and plugins on Multi
-Theft Auto: San Andreas 1.6 and higher servers. It is open source, and [**a prebuilt
-binary for Windows is available for testing purposes right now**](https://github.com/multitheftauto/amx/releases).
+*amx* is a software package that allows the execution of unmodified
+San Andreas: Multiplayer 0.3.7 gamemodes, filterscripts and plugins on
+Multi Theft Auto: San Andreas 1.6 and higher servers. It is open source,
+and [**a prebuilt binary for Windows is available for testing purposes
+right now**](https://github.com/multitheftauto/amx/releases).
 
 - [License](#license)
 - [Compatibility](#compatibility)
@@ -13,6 +14,7 @@ binary for Windows is available for testing purposes right now**](https://github
 - [Installation](#installation)
 - [Running gamemodes and
   filterscripts](#running-gamemodes-and-filterscripts)
+- [New scripting features](#new-scripting-features)
 - [New Pawn scripting functions](#new-pawn-scripting-functions)
 - [New Lua scripting functions](#new-lua-scripting-functions)
 - [New MTA events](#new-mta-events)
@@ -22,8 +24,8 @@ binary for Windows is available for testing purposes right now**](https://github
 
 ## License
 
-*amx* is free and open source. You are allowed to use and modify it free
-of charge in any way you please.
+*amx* is free and open source. You are allowed to use and modify it
+free of charge in any way you please.
 
 You are allowed to redistribute (modified) versions of *amx*, provided
 that you:
@@ -40,7 +42,10 @@ Compatibility is quite high:
 - Almost all SA-MP **scripting functions** and **callbacks** are
   implemented.
 - **Database** functions (`db_*`) are implemented.
-- SA-MP server **plugins** work unmodified, if they don't use memory hacking.
+- **HTTP** function is implemented and properly works with HTTPS
+  requests.
+- SA-MP server **plugins** work unmodified, if they don't use memory
+  hacking.
 - SA-MP style **rcon** commands are available from the server console
   and the ingame console.
 
@@ -59,16 +64,19 @@ features:
   several gamemodes that use the same file names, and be assured they
   won't overwrite each other's files.
 
-- **New native scripting functions** (include a\_amx.inc to use
+- **New scripting features** (include a\_amx.inc to use
   these):
 
-  - [AddPlayerClothes](#AddPlayerClothes)
-  - [GetPlayerClothes](#GetPlayerClothes)
-  - [RemovePlayerClothes](#RemovePlayerClothes)
-  - [ShowPlayerMarker](#ShowPlayerMarker)
-  - [SetVehicleModel](#SetVehicleModel)
+  - [CJ clothes](#cj-clothes)
+  - [Walking style](#walking-style)
+  - [Player stats](#player-stats)
+  - [Vehicle variants](#vehicle-variants)
+  - [Garages](#garages)
+  - [Traffic light state](#traffic-light-state)
+  - [Control state](#control-state)
+  - [Glitches](#glitches)
 
-- In addition to these new native functions, gamemodes run in *amx*
+- In addition to the new native functions, gamemodes run in *amx*
   can also **call Lua scripts**. Lua scripts can in turn call public
   Pawn functions.
 
@@ -83,8 +91,8 @@ features:
 - You can **load plugins dynamically**, while the server is running.
   Use the `loadplugin` console command for this.
 
-- There is no hard-coded max filterscript count, the **number of
-  running filterscripts is unlimited**.
+- There is no hard-coded max filterscript count, the number of
+  running **filterscripts** is **unlimited**.
 
 ## Installation
 
@@ -227,10 +235,10 @@ Information about this is lined out below.
   plugins to start, separated by spaces. For example:
 
   ```xml
-  <setting name="plugins" value="irc mysql"/>
+  <setting name="plugins" value="crashdetect mysql"/>
   ```
 
-  This will load irc.dll and mysql.dll on Windows, or .so on
+  This will load crashdetect.dll and mysql.dll on Windows, or .so on
   Linux.
 
 - jbeta's mapcycler resource (shipped with the MTA server) is used for
@@ -289,60 +297,120 @@ time, the number of running filterscripts is unlimited.
 Go ahead and try starting the example gamemode (amx-test) and
 filterscript (amx-fs-test).
 
-## New Pawn scripting functions
+## New scripting features
 
-Here follows a quick reference for the new Pawn native functions *amx*
-introduces. To use them, `#include <a_amx>` in Pawno.
+Here follows a quick reference for the new features *amx* introduces.
+To use them, `#include <a_amx>` in Pawno.
 
-### AddPlayerClothes
+### CJ clothes
 
 [clothes page]: https://wiki.multitheftauto.com/wiki/CJ_Clothes
 
 ```pawn
 native AddPlayerClothes(playerid, type, index);
-```
-
-Applies the specified clothing to a player. See the [clothes page] for a
-list of valid type and index ID's. *Note:* this function only has a
-visible effect on players with the CJ skin.
-
-### GetPlayerClothes
-
-```pawn
 native GetPlayerClothes(playerid, type);
-```
-
-Returns the clothes index of the specified type which the player is
-currently wearing. See the [clothes page] for a
-list of valid type and index ID's. *Note:* the returned value is only
-relevant for players with the CJ skin.
-
-### RemovePlayerClothes
-
-```pawn
 native RemovePlayerClothes(playerid, type);
 ```
 
-Removes the specified clothing from a player. See the [clothes page] for a
-list of valid type ID's. *Note:* this function only has a visible effect
-on players with the CJ skin.
+Changes the specified clothing on a player. See the [clothes page]
+for a list of valid type and index ID's. **Note:** these functions
+only have a visible effect on players with the CJ skin.
 
-### ShowPlayerMarker
+### Walking style
 
-```pawn
-native ShowPlayerMarker(playerid, mode);
-```
-
-Shows or hides the blip of one specific player.
-
-### SetVehicleModel
+[walking style page]: https://wiki.multitheftauto.com/wiki/SetPedWalkingStyle
 
 ```pawn
-native SetVehicleModel(vehicleid, model);
+native GetPlayerWalkingStyle(playerid);
+native SetPlayerWalkingStyle(playerid, style);
 ```
 
-Changes the model of a vehicle; more practical than destroying and
-recreating it.
+Changes the walking style of a player. See the [walking style page]
+for a list of valid styles. **Note:** UsePlayerPedAnims may affect
+the behavior of these functions.
+
+### Player stats
+
+[stats page]: https://wiki.multitheftauto.com/wiki/SetPedStat
+
+```pawn
+native GetPlayerStat(playerid, statid);
+native SetPlayerStat(playerid, statid, Float:value);
+```
+
+Changes the value of a specific statistic for a player. See the
+[stats page] for a list of valid stat ID's. **Note:** Visual stats
+(FAT and BODY_MUSCLE) can only be used on the CJ skin.
+
+### Vehicle variants
+
+[vehicle variants page]: https://wiki.multitheftauto.com/wiki/Vehicle_variants
+
+```pawn
+native GetVehicleVariant(vehicleid, &var1, &var2);
+native SetVehicleVariant(vehicleid, var1, var2);
+```
+
+Changes the variant of a vehicle. Vehicle variants can be anything
+from different adverts to additional parts of the model. See the
+[vehicle variants page] for a list of default vehicle variants.
+
+### Garages
+
+[garages page]: https://wiki.multitheftauto.com/wiki/Garage
+
+```pawn
+native IsGarageOpen(garageid);
+native SetGarageOpen(garageid, bool:open);
+```
+
+Opens or closes the specified garage door in the world. See the
+[garages page] for a list of valid garage ID's. **Note:**
+SetGarageOpen does not work with ID 32, since this garage has been
+disabled by Rockstar Games due to floor collision issues.
+
+### Traffic light state
+
+[state page]: https://wiki.multitheftauto.com/wiki/Traffic_light_states
+
+```pawn
+native GetTrafficLightState();
+native SetTrafficLightState(lightState);
+```
+
+Sets the current traffic light state. This state controls the traffic
+light colors. See the traffic lights [state page] for a list of
+possible combinations.
+
+### Control state
+
+[control names]: https://wiki.multitheftauto.com/wiki/Control_names
+
+```pawn
+native SetPlayerControlState(playerid, const control[], bool:controlState);
+```
+
+Sets state of a specified player's control, as if they pressed or
+released it. See the [control names] for a list of possible control
+names.
+
+### Glitches
+
+[glitch names]: https://wiki.multitheftauto.com/wiki/SetGlitchEnabled
+
+```pawn
+native IsGlitchEnabled(const name[]);
+native SetGlitchEnabled(const name[], bool:enable);
+```
+
+Enables or disables glitches which were found in the original game
+and which can be used to gain an advantage in multiplayer. See the
+[glitch names] for a list of possible game glitches.
+
+## New Pawn scripting functions
+
+Here follows a quick reference for the new Pawn native functions *amx*
+introduces. To use them, `#include <a_amx>` in Pawno.
 
 ### lua
 
@@ -438,7 +506,8 @@ bool amxRegisterLuaPrototypes(table prototypes)
 ```
 
 Registers prototypes of Lua functions that can subsequently be called
-from a Pawn script with [lua](#lua). See also [Pawn-Lua interaction](#pawn-lua-interaction).
+from a Pawn script with [lua](#lua). See also [Pawn-Lua
+interaction](#pawn-lua-interaction).
 
 The following example code registers two functions - the first one takes
 a float and a string argument and returns a player element, the second
@@ -519,16 +588,17 @@ Before you can call a function with [lua](#lua) or [pawn](#pawn) you
 need to define its prototype, which consists of the types of its
 arguments and return value. Each type corresponds to a single letter:
 
-| Letter       | Type             |
-| ------------ | ---------------- |
-| <kbd>b</kbd> | `boolean`        |
-| <kbd>i</kbd> | `integer`        |
-| <kbd>f</kbd> | `floating point` |
-| <kbd>s</kbd> | `string`         |
-| <kbd>p</kbd> | `player`         |
-| <kbd>v</kbd> | `vehicle`        |
-| <kbd>o</kbd> | `object`         |
-| <kbd>u</kbd> | `pickup`         |
+| Letter       | Type             | Letter       | Type             |
+| ------------ | ---------------- | ------------ | ---------------- |
+| <kbd>b</kbd> | `boolean`        | <kbd>u</kbd> | `pickup`         |
+| <kbd>i</kbd> | `integer`        | <kbd>y</kbd> | `actor`          |
+| <kbd>f</kbd> | `floating point` | <kbd>x</kbd> | `textdraw`       |
+| <kbd>s</kbd> | `string`         | <kbd>m</kbd> | `menu`           |
+| <kbd>c</kbd> | `color`          | <kbd>g</kbd> | `gang zone`      |
+| <kbd>t</kbd> | `team`           | <kbd>a</kbd> | `3D text label`  |
+| <kbd>p</kbd> | `player`         | <kbd>k</kbd> | `native marker`  |
+| <kbd>v</kbd> | `vehicle`        | <kbd>z</kbd> | `bot`            |
+| <kbd>o</kbd> | `object`         |              |                  |
 
 Pawn functions are registered with
 [amxRegisterPawnPrototypes](#amxRegisterPawnPrototypes), Lua functions
