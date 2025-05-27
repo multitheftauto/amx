@@ -554,6 +554,11 @@ function respawnStaticVehicle(vehicle)
 	g_Vehicles[vehID].respawntimer = nil
 	g_Vehicles[vehID].vehicleIsAlive = true
 
+	setElementData(vehicle, 'WindowFrontLeft', true)
+	setElementData(vehicle, 'WindowFrontRight', true)
+	setElementData(vehicle, 'WindowRearLeft', true)
+	setElementData(vehicle, 'WindowRearRight', true)
+
 	local spawninfo = g_Vehicles[vehID].spawninfo
 	setTimer(
 		function()

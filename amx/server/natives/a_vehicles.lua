@@ -119,29 +119,41 @@ function GetVehicleParamsSirenState(amx, vehicle)
 end
 
 function GetVehicleParamsCarDoors(amx, vehicle, refDriver, refPassenger, refBackLeft, refBackRight)
-	amx.memDAT[refDriver] = getVehicleDoorOpenRatio(vehicle, 2) > 0
-	amx.memDAT[refPassenger] = getVehicleDoorOpenRatio(vehicle, 3) > 0
-	amx.memDAT[refBackLeft] = getVehicleDoorOpenRatio(vehicle, 4) > 0
-	amx.memDAT[refBackRight] = getVehicleDoorOpenRatio(vehicle, 5) > 0
+	amx.memDAT[refDriver] = getVehicleDoorOpenRatio(vehicle, 2) > 0 and 1 or 0
+	amx.memDAT[refPassenger] = getVehicleDoorOpenRatio(vehicle, 3) > 0 and 1 or 0
+	amx.memDAT[refBackLeft] = getVehicleDoorOpenRatio(vehicle, 4) > 0 and 1 or 0
+	amx.memDAT[refBackRight] = getVehicleDoorOpenRatio(vehicle, 5) > 0 and 1 or 0
 	return true
 end
 
 function SetVehicleParamsCarDoors(amx, vehicle, driver, passenger, backLeft, backRight)
-	setVehicleDoorOpenRatio(vehicle, 2, driver and 1 or 0) -- bonnet
-	setVehicleDoorOpenRatio(vehicle, 3, passenger and 1 or 0) -- bonnet
-	setVehicleDoorOpenRatio(vehicle, 4, backLeft and 1 or 0) -- bonnet
-	setVehicleDoorOpenRatio(vehicle, 5, backRight and 1 or 0) -- bonnet
+	setVehicleDoorOpenRatio(vehicle, 2, driver and 1 or 0) -- driver
+	setVehicleDoorOpenRatio(vehicle, 3, passenger and 1 or 0) -- passenger
+	setVehicleDoorOpenRatio(vehicle, 4, backLeft and 1 or 0) -- left back
+	setVehicleDoorOpenRatio(vehicle, 5, backRight and 1 or 0) -- right back
 	return true
 end
 
 function GetVehicleParamsCarWindows(amx, vehicle, frontLeft, frontRight, rearLeft, rearRight)
-	notImplemented('GetVehicleParamsCarWindows')
-	return false
+	amx.memDAT[frontLeft] = getElementData(vehicle, 'WindowFrontLeft') and 1 or 0
+	amx.memDAT[frontRight] = getElementData(vehicle, 'WindowFrontRight') and 1 or 0
+	amx.memDAT[rearLeft] = getElementData(vehicle, 'WindowRearLeft') and 1 or 0
+	amx.memDAT[rearRight] = getElementData(vehicle, 'WindowRearRight') and 1 or 0
+	return true
 end
 
 function SetVehicleParamsCarWindows(amx, vehicle, frontLeft, frontRight, rearLeft, rearRight)
-	notImplemented('SetVehicleParamsCarWindows')
-	return false
+	setElementData(vehicle, 'WindowFrontLeft', frontLeft)
+	setElementData(vehicle, 'WindowFrontRight', frontRight)
+	setElementData(vehicle, 'WindowRearLeft', rearLeft)
+	setElementData(vehicle, 'WindowRearRight', rearRight)
+
+	-- invert bool variables because of different status values
+	clientCall(root, 'setVehicleWindowOpen', vehicle, 2, not frontRight)
+	clientCall(root, 'setVehicleWindowOpen', vehicle, 3, not rearRight)
+	clientCall(root, 'setVehicleWindowOpen', vehicle, 4, not frontLeft)
+	clientCall(root, 'setVehicleWindowOpen', vehicle, 5, not rearLeft)
+	return true
 end
 
 function SetVehicleToRespawn(amx, vehicle)

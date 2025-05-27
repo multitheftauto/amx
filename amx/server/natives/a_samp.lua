@@ -339,13 +339,21 @@ function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnD
 	if not g_PoliceVehicles[model] then
 		setVehicleColorClamped(vehicle, color1, color2)
 	end
+
 	local vehID = addElem(g_Vehicles, vehicle)
 	if respawnDelay < 0 then
 		respawnDelay = 120
 	end
+
 	g_Vehicles[vehID].vehicleIsAlive = true
 	g_Vehicles[vehID].respawndelay = respawnDelay * 1000
 	g_Vehicles[vehID].spawninfo = { x = x, y = y, z = z, angle = angle }
+
+	setElementData(vehicle, 'WindowFrontLeft', true)
+	setElementData(vehicle, 'WindowFrontRight', true)
+	setElementData(vehicle, 'WindowRearLeft', true)
+	setElementData(vehicle, 'WindowRearRight', true)
+
 	if ManualVehEngineAndLights then
 		if (getVehicleType(vehicle) ~= 'Plane' and getVehicleType(vehicle) ~= 'Helicopter') then
 			setVehicleEngineState(vehicle, false)
@@ -355,9 +363,11 @@ function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnD
 			g_Vehicles[vehID].engineState = false
 		end
 	end
+
 	if getVehicleType(vehicle) == 'Train' then
 		setTrainDerailable(vehicle, false)
 	end
+
 	if addSiren then
 		addVehicleSirens(vehicle, 1, 1)
 	end

@@ -782,10 +782,17 @@ addEventHandler('onClientElementStreamIn', root,
 
 			local vehID = getElemID(source)
 			local vehInfo = vehID and g_Vehicles[vehID]
+
 			if vehInfo and not vehInfo.blip then
 				vehInfo.blip = createBlipAttachedTo(source, 0, 1, 136, 136, 136, 150, 0, 500)
 				setElementParent(vehInfo.blip, source)
 			end
+
+			setVehicleWindowOpen(source, 2, not getElementData(source, 'WindowFrontRight'))
+			setVehicleWindowOpen(source, 3, not getElementData(source, 'WindowRearRight'))
+			setVehicleWindowOpen(source, 4, not getElementData(source, 'WindowFrontLeft'))
+			setVehicleWindowOpen(source, 5, not getElementData(source, 'WindowRearLeft'))
+
 			triggerServerEvent('onAmxClientVehicleStream', localPlayer, getElemID(source), true)
 		elseif getElementType(source) == 'player' then
 			triggerServerEvent('onAmxClientPlayerStream', localPlayer, getElemID(source), true)
@@ -804,12 +811,14 @@ addEventHandler('onClientElementStreamOut', root,
 		if getElementType(source) == 'vehicle' then
 			local vehID = getElemID(source)
 			local vehInfo = vehID and g_Vehicles[vehID]
+
 			if vehInfo and vehInfo.blip and not vehInfo.blippersistent then
 				if isElement(vehInfo.blip) then
 					destroyElement(vehInfo.blip)
 				end
 				vehInfo.blip = nil
 			end
+
 			triggerServerEvent('onAmxClientVehicleStream', localPlayer, getElemID(source), false)
 		elseif getElementType(source) == 'player' then
 			triggerServerEvent('onAmxClientPlayerStream', localPlayer, getElemID(source), false)
