@@ -72,7 +72,8 @@ end
 function GetVehicleParamsEx(amx, vehicle, refEngine, refLights, refAlarm, refDoors, refBonnet, refBoot, refObjective)
 	local vehicleID = getElemID(vehicle)
 
-	amx.memDAT[refEngine] = getVehicleEngineState(vehicle) and 1 or 0 -- Lua expects this to be an int, so cast it
+	-- Lua expects every argument to be an int, so cast it
+	amx.memDAT[refEngine] = getVehicleEngineState(vehicle) and 1 or 0
 	amx.memDAT[refLights] = getVehicleOverrideLights(vehicle) == 2 and 1 or 0
 	amx.memDAT[refAlarm] = g_Vehicles[vehicleID].alarm and 1 or 0
 	amx.memDAT[refDoors] = isVehicleLocked(vehicle) and 1 or 0
@@ -101,8 +102,8 @@ function SetVehicleParamsEx(amx, vehicle, engine, lights, alarm, doors, bonnet, 
 	g_Vehicles[vehicleID].engineState = engine
 	return true
 end
--- Siren
 
+-- Siren
 function GetVehicleParamsSirenState(amx, vehicle)
 	local sirenParams = getVehicleSirenParams(vehicle)
 
@@ -372,12 +373,12 @@ function UpdateVehicleDamageStatus(amx, vehicle, panels, doors, lights, tires)
 	return true
 end
 
-function SetVehicleVirtualWorld(amx, vehicle, dimension)
-	return setElementDimension(vehicle, dimension)
-end
-
 function GetVehicleVirtualWorld(amx, vehicle)
 	return getElementDimension(vehicle)
+end
+
+function SetVehicleVirtualWorld(amx, vehicle, dimension)
+	return setElementDimension(vehicle, dimension)
 end
 
 function GetVehicleModel(amx, vehicle)

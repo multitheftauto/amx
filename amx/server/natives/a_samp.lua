@@ -390,7 +390,7 @@ local function onHousePickupUse()
 end
 
 function AddStaticPickup(amx, model, type, x, y, z, world)
-	local mtaPickupType, mtaPickupAmount, respawntime
+	local mtaPickupType, mtaPickupAmount, mtaPickupAmmo
 	if model == 1240 then		-- health
 		mtaPickupType = 0
 		mtaPickupAmount = 100
@@ -403,20 +403,27 @@ function AddStaticPickup(amx, model, type, x, y, z, world)
 	else						-- weapon
 		mtaPickupType = 2
 		mtaPickupAmount = g_WeaponIDMapping[model]
-		if not mtaPickupAmount then
+		if mtaPickupAmount then
+			mtaPickupAmmo = g_PickupAmmo[mtaPickupAmount]
+			if not mtaPickupAmmo then
+				mtaPickupAmmo = 1
+			end
+		else
 			mtaPickupType = 3
 			mtaPickupAmount = model
 		end
 	end
 
-	local pickup = createPickup(x, y, z, mtaPickupType, mtaPickupAmount)
+	local pickup = createPickup(x, y, z, mtaPickupType, mtaPickupAmount, 30000, mtaPickupAmmo)
 	if not pickup then
 		outputDebugString('Failed to create pickup of model ' .. model, 2)
 		return -1
 	end
+
 	if world and world ~= -1 then
 		setElementDimension(pickup, world)
 	end
+
 	if isCustomPickup(pickup) then
 		-- house pickups don't disappear on pickup
 		addEventHandler('onPickupUse', pickup, onHousePickupUse, false)

@@ -119,6 +119,33 @@ g_DamageTypes = {
 	[63] = 255	-- Blown
 }
 
+g_PickupAmmo = {
+	[16] = 8,	-- Grenade
+	[17] = 8,	-- Tear gas
+	[18] = 8,	-- Molotov
+	[22] = 30,	-- Pistol
+	[23] = 10,	-- Silenced
+	[24] = 10,	-- Desert eagle
+	[25] = 15,	-- Shotgun
+	[26] = 10,	-- Sawnoff
+	[27] = 10,	-- Combat shotgun
+	[28] = 60,	-- Uzi
+	[29] = 60,	-- MP5
+	[30] = 80,	-- AK47
+	[31] = 80,	-- M4
+	[32] = 60,	-- Tec9
+	[33] = 20,	-- Country sniper
+	[34] = 10,	-- Sniper rifle
+	[35] = 4,	-- Rocket launcher
+	[36] = 3,	-- Heatseaking rocket launcher
+	[37] = 100,	-- Flamethrower
+	[38] = 500,	-- Minigun
+	[39] = 5,	-- Satchel
+	[41] = 500,	-- Spray can
+	[42] = 500,	-- Fire extinguisher
+	[43] = 36	-- Camera
+}
+
 g_RCVehicles = {
 	[441] = true,
 	[464] = true,

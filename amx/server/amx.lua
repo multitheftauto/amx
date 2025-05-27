@@ -64,6 +64,7 @@ addEventHandler('onResourceStart', resourceRoot,
 
 		local scoreboard = getResourceFromName('scoreboard')
 		if getResourceState(scoreboard) == 'running' then
+			exports.scoreboard:scoreboardForceTeamsHidden(true)
 			exports.scoreboard:scoreboardAddColumn('Score')
 		end
 
@@ -244,6 +245,7 @@ addEventHandler('onResourceStop', resourceRoot,
 	function()
 		local scoreboard = getResourceFromName('scoreboard')
 		if getResourceState(scoreboard) == 'running' then
+			exports.scoreboard:scoreboardForceTeamsHidden(false)
 			exports.scoreboard:scoreboardRemoveColumn('Score')
 		end
 		table.each(g_LoadedAMXs, unloadAMX, false)
