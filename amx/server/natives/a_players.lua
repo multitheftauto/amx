@@ -793,13 +793,10 @@ function RemovePlayerFromVehicle(amx, player)
 	local vehicle = getPedOccupiedVehicle(player)
 	if vehicle then
 		if g_RCVehicles[getElementModel(vehicle)] then
-			removePedFromVehicle(player)
-			clientCall(root, 'setElementCollisionsEnabled', player, true)
-			clientCall(root, 'setElementAlpha', player, 255)
+			return removePedFromVehicle(player)
 		else
-			removePedFromVehicleEx(player)
+			return setControlState(player, 'enter_exit', true)
 		end
-		return true
 	end
 	--setPlayerState(player, PLAYER_STATE_ONFOOT)
 	-- No need to do this since the vehicle event gets called when we exit a vehicle
@@ -881,6 +878,7 @@ function SetPlayerSpecialAction(amx, player, actionID)
 	if actionID == SPECIAL_ACTION_NONE then
 		if playerdata.specialaction == SPECIAL_ACTION_USECELLPHONE then
 			-- stop using cellphone properly
+
 			actionID = SPECIAL_ACTION_STOPUSECELLPHONE
 			playerdata.specialaction = SPECIAL_ACTION_STOPUSECELLPHONE
 			return setPedAnimation(player, unpack(g_SpecialActions[actionID]))
@@ -890,6 +888,7 @@ function SetPlayerSpecialAction(amx, player, actionID)
 		return setPedWearingJetpack(player, true)
 	elseif actionID >= SPECIAL_ACTION_DANCE1 and actionID <= SPECIAL_ACTION_PISSING then
 		-- special actions won't be applied in vehicle
+
 		if isPedInVehicle(player) then return false end
 	end
 

@@ -113,6 +113,12 @@ g_UpDownMapping = setmetatable({
 	[128] = { 'backwards', 'brake_reverse' }
 }, controlMappingMT)
 
+g_DamageTypes = {
+	[19] = 51,	-- Rocket
+	[59] = 51,	-- Tank Grenade
+	[63] = 255	-- Blown
+}
+
 g_RCVehicles = {
 	[441] = true,
 	[464] = true,

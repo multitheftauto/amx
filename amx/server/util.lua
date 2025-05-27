@@ -164,12 +164,14 @@ g_EventNames = {
 	OnPlayerLeaveCheckpoint = true,
 	OnPlayerEnterRaceCheckpoint = true,
 	OnPlayerLeaveRaceCheckpoint = true,
-	OnVehicleStreamIn = true,
 	OnPlayerStreamIn = true,
+	OnVehicleStreamIn = true,
 	OnActorStreamIn = true,
-	OnVehicleStreamOut = true,
+	OnBotStreamIn = true,
 	OnPlayerStreamOut = true,
+	OnVehicleStreamOut = true,
 	OnActorStreamOut = true,
+	OnBotStreamOut = true,
 	OnPlayerExitedMenu = true,
 	OnPlayerSelectedMenuRow = true,
 	OnDialogResponse = true,
@@ -190,6 +192,7 @@ g_EventNames = {
 	OnPlayerTakeDamage = true,
 	OnPlayerGiveDamageActor = true,
 	OnPlayerWeaponSwitch = true,
+	OnPlayerWeaponReload = true,
 	OnPlayerDeath = true,
 	OnVehicleSpawn = true,
 	OnBotEnterVehicle = true,
@@ -200,19 +203,16 @@ g_EventNames = {
 	OnVehicleDeath = true,
 	OnMarkerHit = true,
 	OnMarkerLeave = true,
+	OnBotTakeDamage = true,
 	OnBotDeath = true,
-	OnBotPickUpPickup = true,
 	OnPlayerPickUpPickup = true,
 	OnPlayerCommandText = true,
 	OnPlayerClickWorld = true,
-	OnPlayerClickWorldPlayer = true,
-	OnPlayerClickWorldObject = true,
-	OnPlayerClickWorldVehicle = true,
 	OnPlayerClickPlayer = true,
 	OnPlayerClickMap = true,
 	OnObjectMoved = true,
 	OnPlayerObjectMoved = true,
-	OnBotConnect = true,
+	OnBotCreate = true,
 	OnMarkerCreate = true,
 	OnPlayerStateChange = true,
 	OnBotStateChange = true,
@@ -278,20 +278,18 @@ end
 
 local _warpPedIntoVehicle = warpPedIntoVehicle
 function warpPedIntoVehicle(player, vehicle, seat)
-	removePedFromVehicle(player)
-	setTimer(
-		function()
-			_warpPedIntoVehicle(player, vehicle, seat)
-			if getElementType(player) == 'player' then
-				setCameraTarget(player, player)
-				g_Players[getElemID(player)].vehicle = vehicle
-			else
-				g_Bots[getElemID(player)].vehicle = vehicle
-			end
-		end,
-		500,
-		1
-	)
+	if not isElement(player) then return end
+
+	if not getPedOccupiedVehicle(player) then
+		_warpPedIntoVehicle(player, vehicle, seat)
+
+		if getElementType(player) == 'player' then
+			setCameraTarget(player, player)
+		end
+	else
+		removePedFromVehicle(player)
+		setTimer(warpPedIntoVehicle, 500, 1, player, vehicle, seat)
+	end
 end
 
 local _bindKey = bindKey

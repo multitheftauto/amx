@@ -226,8 +226,13 @@ addEventHandler('onClientRender', root,
 						local cx, cy, cz = getCameraMatrix()
 
 						if not nameTagsLOS or isLineOfSightClear(cx, cy, cz, fPosX, fPosY, fPosZ, true, false, false, true, true, false, false) then
-							local botName = getElementData(bot, 'BotName') or 'Bot'
-							drawNameTag({x = fPosX, y = fPosY, z = fPosZ}, botName .. ' (' .. getElemID(bot) .. ')', 255, 255, 255, getElementHealth(bot), getPedArmor(bot), distance)
+							local botName = getElementData(bot, 'BotName')
+							if botName and botName:len() >= 1 then
+								botName = botName .. ' (' .. getElemID(bot) .. ')'
+							else
+								botName = 'Bot (' .. getElemID(bot) .. ')'
+							end
+							drawNameTag({x = fPosX, y = fPosY, z = fPosZ}, botName, 255, 255, 255, getElementHealth(bot), getPedArmor(bot), distance)
 						end
 					end
 				end

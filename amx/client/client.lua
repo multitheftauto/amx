@@ -793,15 +793,19 @@ addEventHandler('onClientElementStreamIn', root,
 			triggerServerEvent('onAmxClientVehicleStream', localPlayer, getElemID(source), true)
 		elseif getElementType(source) == 'player' then
 			triggerServerEvent('onAmxClientPlayerStream', localPlayer, getElemID(source), true)
-		elseif getElementType(source) == 'ped' and getElementData(source, 'ActorPed') then
-			triggerServerEvent('onAmxClientActorStream', localPlayer, getElemID(source), true)
+		elseif getElementType(source) == 'ped' then
+			if getElementData(source, 'ActorPed') then
+				triggerServerEvent('onAmxClientActorStream', localPlayer, getElemID(source), true)
+			else
+				triggerServerEvent('onAmxClientBotStream', localPlayer, getElemID(source), true)
+			end
 		end
 	end
 )
 
 addEventHandler('onClientElementStreamOut', root,
 	function()
-		if getElementType(source) ~= 'vehicle' then
+		if getElementType(source) == 'vehicle' then
 			local vehID = getElemID(source)
 			local vehInfo = vehID and g_Vehicles[vehID]
 			if vehInfo and vehInfo.blip and not vehInfo.blippersistent then
@@ -813,8 +817,12 @@ addEventHandler('onClientElementStreamOut', root,
 			triggerServerEvent('onAmxClientVehicleStream', localPlayer, getElemID(source), false)
 		elseif getElementType(source) == 'player' then
 			triggerServerEvent('onAmxClientPlayerStream', localPlayer, getElemID(source), false)
-		elseif getElementType(source) == 'ped' and getElementData(source, 'ActorPed') then
-			triggerServerEvent('onAmxClientActorStream', localPlayer, getElemID(source), false)
+		elseif getElementType(source) == 'ped' then
+			if getElementData(source, 'ActorPed') then
+				triggerServerEvent('onAmxClientActorStream', localPlayer, getElemID(source), false)
+			else
+				triggerServerEvent('onAmxClientBotStream', localPlayer, getElemID(source), false)
+			end
 		end
 	end
 )
@@ -1720,7 +1728,7 @@ end
 addEventHandler('onClientPlayerWeaponFire', localPlayer, clientPlayerWeaponFire)
 
 local function clientPedDamage(attacker, weapon, bodypart, loss)
-	if getElementType(source) == 'ped' and getElementData(source, 'ActorPed') then
+	if getElementType(source) == 'ped' then
 		local issuer = attacker
 
 		if issuer and getElementType(issuer) == 'vehicle' then
@@ -1733,12 +1741,16 @@ local function clientPedDamage(attacker, weapon, bodypart, loss)
 			end
 		end
 
-		if issuer == localPlayer and not getElementData(source, 'Invulnerable') then
-			triggerServerEvent('OnPlayerGiveDamageActor_Ev', issuer, source, loss, weapon, bodypart)
-		end
+		if getElementData(source, 'ActorPed') then
+			if issuer == localPlayer and not getElementData(source, 'Invulnerable') then
+				triggerServerEvent('OnPlayerGiveDamageActor_Ev', issuer, source, loss, weapon, bodypart)
+			end
 
-		-- Actor damage controlled by the server in any case
-		return cancelEvent()
+			-- Actor damage controlled by the server in any case
+			return cancelEvent()
+		elseif issuer == localPlayer then
+			triggerServerEvent('OnBotTakeDamage_Ev', source, issuer, loss, weapon, bodypart)
+		end
 	end
 end
 addEventHandler('onClientPedDamage', root, clientPedDamage)
