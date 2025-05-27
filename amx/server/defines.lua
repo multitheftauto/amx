@@ -100,7 +100,7 @@ g_KeyMapping = setmetatable({
 	[2 ^ 16] = 'conversation_yes',
 	[2 ^ 17] = 'conversation_no',
 	[2 ^ 18] = 'group_control_back',
-	[2 ^ 19] = 'enter_passenger', -- This one's undefined
+	[2 ^ 19] = 'enter_passenger' -- This one's undefined
 }, controlMappingMT)
 
 g_LeftRightMapping = setmetatable({
@@ -236,7 +236,7 @@ g_SpecialActions = {
 	[SPECIAL_ACTION_DRINK_WINE] = { 'bar', 'dnk_stndm_loop', -1, false, true, false, false, 250, true },
 	[SPECIAL_ACTION_DRINK_SPRUNK] = { 'bar', 'dnk_stndm_loop', -1, false, true, false, false, 250, true },
 	[SPECIAL_ACTION_CARRY] = { 'carry', 'crry_prtial', -1, true, true, false, false, 250, true },
-	[SPECIAL_ACTION_PISSING] = { 'paulnmac', 'piss_loop', -1, true, false, false, false, 250, false },
+	[SPECIAL_ACTION_PISSING] = { 'paulnmac', 'piss_loop', -1, true, false, false, false, 250, false }
 }
 
 PLAYER_VARTYPE_NONE = 0

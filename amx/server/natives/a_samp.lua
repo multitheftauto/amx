@@ -462,7 +462,7 @@ function GameModeExit(amx)
 end
 
 function SetWorldTime(amx, hours)
-	return setTime(hours, 0)
+	return setTime(hours % 24, 0)
 end
 
 function GetWeaponName(amx, weaponID, buf, len)
@@ -526,20 +526,21 @@ end
 function ShowPlayerMarker(amx, player, mode)
 	local playerdata = g_Players[getElemID(player)]
 	if not playerdata then return false end
-	if not mode then mode = 0 end
 
-	if mode == 0 and playerdata.blip then
-		destroyElement(playerdata.blip)
-		playerdata.blip = nil
-	elseif mode ~= 0 and not playerdata.blip then
-		local r, g, b = getPlayerNametagColor(player)
-		playerdata.blip = createBlipAttachedTo(player, 0, 2, r, g, b)
+	if mode and mode ~= 0 then
+		if not playerdata.blip then
+			local r, g, b = getPlayerNametagColor(player)
+			playerdata.blip = createBlipAttachedTo(player, 0, 2, r, g, b)
+		end
 
-		if mode == 1 and g_PlayerMarkerRadius then -- Mode global
-			setBlipVisibleDistance(playerdata.blip, g_PlayerMarkerRadius)
+		if mode == 1 then -- Mode global
+			setBlipVisibleDistance(playerdata.blip, g_PlayerMarkerRadius or 16383.0)
 		elseif mode == 2 then -- Mode streamed
 			setBlipVisibleDistance(playerdata.blip, 250.0)
 		end
+	elseif playerdata.blip then
+		destroyElement(playerdata.blip)
+		playerdata.blip = nil
 	end
 	return true
 end
@@ -1161,16 +1162,17 @@ function format(amx, outBuf, outBufSize, fmt, ...)
 	fmt = fmt:gsub('[^%%]%%$', '%%%%'):gsub('%%i', '%%d')
 	for c in fmt:gmatch('%%[%-%d%.]*(%*?%a)') do
 		i = i + 1
+		if i > #args then break end
 		if c:match('^%*') then
 			c = c:sub(2)
 			table.remove(args, i)
 		end
 		if c == 'd' then
-			args[i] = amx.memDAT[args[i]]
+			args[i] = amx.memDAT[args[i]] or 0
 		elseif c == 'f' then
-			args[i] = cell2float(amx.memDAT[args[i]])
+			args[i] = cell2float(amx.memDAT[args[i]] or 0)
 		elseif c == 's' then
-			args[i] = readMemString(amx, args[i])
+			args[i] = readMemString(amx, args[i]) or ''
 		else
 			i = i - 1
 		end

@@ -195,10 +195,12 @@ function destroyClassSelGUI()
 		g_ClassSelectionInfo.gui = nil
 		removeEventHandler('onClientRender', root, renderClassSelText)
 	end
+
 	setPlayerHudComponentVisible('radar', true)
 	setCameraTarget(localPlayer)
 	setElementCollisionsEnabled(localPlayer, true)
-	showCursor(false)
+	ShowPlayerDialog(-1, -1, '', '', '', '') -- hide any dialog and cursor
+
 	if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
 		removeEventHandler('onClientGUIClick', g_ClassSelectionInfo.gui.btnLeft, ClassSelLeft)
 		removeEventHandler('onClientGUIClick', g_ClassSelectionInfo.gui.btnRight, ClassSelRight)
@@ -315,11 +317,8 @@ function camAttachRender()
 		if isCursorShowing() then return end
 
 		local x1, y1, z1 = 0.0, 0.0, 0.0
-		if ca.objCamPos ~= nil then
+		if isElement(ca.objCamPos) then
 			x1, y1, z1 = getElementPosition(ca.objCamPos)
-			if not x1 then x1 = 0.0 end
-			if not y1 then y1 = 0.0 end
-			if not z1 then z1 = 0.0 end
 		end
 		local camDist = ca.dist
 		local cosZ = math.cos(ca.z)
@@ -409,17 +408,11 @@ end
 function camRender()
 	if (sm.moov == 1) then
 		local x1, y1, z1, x2, y2, z2 = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
-		if sm.objCamPos ~= nil then
+		if isElement(sm.objCamPos) then
 			x1, y1, z1 = getElementPosition(sm.objCamPos)
-			if not x1 then x1 = 0.0 end
-			if not y1 then y1 = 0.0 end
-			if not z1 then z1 = 0.0 end
 		end
-		if sm.objLookAt ~= nil then
+		if isElement(sm.objLookAt) then
 			x2, y2, z2 = getElementPosition(sm.objLookAt)
-			if not x2 then x2 = 0.0 end
-			if not y2 then y2 = 0.0 end
-			if not z2 then z2 = 0.0 end
 		end
 		--outputConsole(string.format("Current Camera Matrix is: CamPos: %f %f %f CamLookAt: %f %f %f", x1, y1, z1, x2, y2, z2))
 		setCameraMatrix(x1, y1, z1, x2, y2, z2)
@@ -738,6 +731,9 @@ function dropVehicle(vehicle)
 		vehicleDrops[vehicle] = nil
 	end
 	if not isElement(vehicle) or not isVehicleEmpty(vehicle) then
+		if isElement(vehicle) then
+			setElementCollisionsEnabled(vehicle, true)
+		end
 		if dropdata.tries < VEHICLE_DROP_MAX_TRIES then
 			killTimer(dropdata.timer)
 		end

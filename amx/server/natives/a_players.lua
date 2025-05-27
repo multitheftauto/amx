@@ -24,7 +24,14 @@ function GetPlayerPos(amx, player, refX, refY, refZ)
 	if not player then
 		return false
 	end
-	local x, y, z = getElementPosition(player)
+
+	local x, y, z
+	if getCameraTarget(player) ~= player then
+		x, y, z = getCameraMatrix(player)
+	else
+		x, y, z = getElementPosition(player)
+	end
+
 	writeMemFloat(amx, refX, x)
 	writeMemFloat(amx, refY, y)
 	writeMemFloat(amx, refZ, z)
@@ -58,14 +65,14 @@ function IsPlayerStreamedIn(amx, otherPlayer, player)
 end
 
 function SetPlayerInterior(amx, player, interior)
-	local playerId = getElemID(player)
-	if g_Players[playerId].viewingintro then
+	local playerID = getElemID(player)
+	if g_Players[playerID].viewingintro then
 		return false
 	end
 	local oldInt = getElementInterior(player)
 	setElementInterior(player, interior)
 	if interior ~= oldInt then
-		procCallOnAll('OnPlayerInteriorChange', playerId, interior, oldInt)
+		procCallOnAll('OnPlayerInteriorChange', playerID, interior, oldInt)
 		clientCall(player, 'AMX_OnPlayerInteriorChange', interior, oldInt)
 	end
 	return true
@@ -159,7 +166,14 @@ function SetPlayerTeam(amx, player, team)
 end
 
 function GetPlayerTeam(amx, player)
-	return table.find(g_Teams, getPlayerTeam(player))
+	local team = getPlayerTeam(player)
+	local data = g_Players[getElemID(player)]
+
+	if data.doingclasssel then
+		team = g_PlayerClasses[data.selectedclass][8]
+	end
+
+	return table.find(g_Teams, team)
 end
 
 function SetPlayerScore(amx, player, score)
@@ -294,7 +308,7 @@ function GetPlayerName(amx, player, nameBuf, bufSize)
 end
 
 function SetPlayerTime(amx, player, hours, minutes)
-	clientCall(player, 'setTime', hours, minutes)
+	clientCall(player, 'setTime', hours % 24, minutes % 60)
 	return true
 end
 
@@ -806,7 +820,10 @@ end
 function TogglePlayerControllable(amx, player, enable)
 	if not enable then
 		local vehicle = getPedOccupiedVehicle(player)
-		if vehicle then setElementVelocity(vehicle, 0.0, 0.0, 0.0) end
+		if vehicle then
+			setElementAngularVelocity(vehicle, 0, 0, 0)
+			setElementVelocity(vehicle, 0, 0, 0)
+		end
 	end
 
 	setElementFrozen(player, not enable)

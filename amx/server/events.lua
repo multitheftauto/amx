@@ -432,6 +432,8 @@ addEventHandler('onPlayerWasted', root,
 			local player = source
 			setTimer(
 				function()
+					if not isElement(player) then return end
+
 					g_Players[playerID].spawninfo = nil
 					g_Players[playerID].selectedclass = nil
 
@@ -542,8 +544,11 @@ function respawnStaticVehicle(vehicle)
 		killTimer(g_Vehicles[vehID].respawntimer)
 	end
 
-	for seat, player in pairs(getVehicleOccupants(vehicle)) do
-		removePedFromVehicle(player)
+	local occupants = getVehicleOccupants(vehicle)
+	if occupants then
+		for seat, player in pairs(occupants) do
+			removePedFromVehicle(player)
+		end
 	end
 
 	g_Vehicles[vehID].respawntimer = nil
@@ -552,6 +557,7 @@ function respawnStaticVehicle(vehicle)
 	local spawninfo = g_Vehicles[vehID].spawninfo
 	setTimer(
 		function()
+			if not isElement(vehicle) then return end
 			spawnVehicle(vehicle, spawninfo.x, spawninfo.y, spawninfo.z, 0, 0, spawninfo.angle)
 			procCallOnAll('OnVehicleSpawn', vehID)
 		end, 500, 1
@@ -628,7 +634,8 @@ addEventHandler('onVehicleExit', root,
 			setElementAlpha(player, 255)
 		end
 
-		local _, occupant = next(getVehicleOccupants(source))
+		local occupants = getVehicleOccupants(source)
+		local _, occupant = occupants and next(occupants)
 		if occupant then return end
 
 		if g_Vehicles[vehID] and g_Vehicles[vehID].respawntimer then

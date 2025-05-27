@@ -153,7 +153,7 @@ g_Keys = {
 	[101] = '/',
 	[102] = '#',
 	[103] = '\\',
-	[104] = '=',
+	[104] = '='
 }
 
 g_EventNames = {
@@ -215,7 +215,7 @@ g_EventNames = {
 	OnBotCreate = true,
 	OnMarkerCreate = true,
 	OnPlayerStateChange = true,
-	OnBotStateChange = true,
+	OnBotStateChange = true
 }
 
 local allowedRPC = {

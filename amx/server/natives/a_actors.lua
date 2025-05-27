@@ -79,4 +79,4 @@ SetActorHealth = SetPlayerHealth
 GetActorVirtualWorld = GetPlayerVirtualWorld
 SetActorVirtualWorld = SetPlayerVirtualWorld
 GetActorFacingAngle = GetPlayerFacingAngle
-GetActorPos = GetPlayerPos
+GetActorPos = GetVehiclePos

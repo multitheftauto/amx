@@ -3,7 +3,7 @@ addEventHandler('onClientResourceStart', resourceRoot,
 		for i = 0, 49 do
 			local gx, gy, gz = getGaragePosition(i)
 			local colshape = createColSphere(gx, gy, gz, 20)
-			setElementData(colshape, 'GarageID', i)
+			setElementData(colshape, 'GarageID', i, false)
 
 			-- Check initial proximity
 			if isElementWithinColShape(localPlayer, colshape) then
