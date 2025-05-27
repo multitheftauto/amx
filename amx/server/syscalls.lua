@@ -843,8 +843,6 @@ g_SAMPSyscallPrototypes = {
 	NetStats_PacketLossPercent = {'p'},
 
 	-- dummy (unimplemented)
-	ConnectNPC = {'s', 's'},
-	IsPlayerNPC = {'p'},
 	EnableStuntBonusForAll = {'b'},
 	EnableStuntBonusForPlayer = {'p', 'b'},
 	SetObjectsDefaultCameraCol = {'b'},
@@ -881,8 +879,6 @@ g_SAMPSyscallPrototypes = {
 	EditObject = {'p', 'i'},
 	EditPlayerObject = {'p', 'i'},
 	SendClientCheck = {'p', 'i', 'i', 'i', 'i'},
-	StartRecordingPlayerData = {'p', 'i', 's'},
-	StopRecordingPlayerData = {'p'},
 	GetPlayerAnimationIndex = {'p'},
 	GetPlayerDrunkLevel = {'p'},
 	SetPlayerDrunkLevel = {'p', 'i'},
@@ -902,6 +898,10 @@ g_SAMPSyscallPrototypes = {
 	GetServerTickRate = {},
 
 	-- NPCs dummy
+	ConnectNPC = {'s', 's'},
+	IsPlayerNPC = {'p'},
+	StartRecordingPlayerData = {'p', 'i', 's'},
+	StopRecordingPlayerData = {'p'},
 	SendChat = {'s'},
 	SendCommand = {'s'},
 	StartRecordingPlayback = {'i', 's'},

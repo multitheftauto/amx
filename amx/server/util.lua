@@ -276,6 +276,19 @@ function toggleSpecialProperties()
 	setWorldSpecialPropertyEnabled('snipermoon', true)
 end
 
+local _getPedOccupiedVehicle = getPedOccupiedVehicle
+function getPedOccupiedVehicle(player)
+	if not isElement(player) then return false end
+
+	if getElementType(player) == 'player' then
+		local data = g_Players[getElemID(player)]
+		return data and data.vehicle
+	end
+
+	local data = g_Bots[getElemID(player)]
+	return data and data.vehicle
+end
+
 local _warpPedIntoVehicle = warpPedIntoVehicle
 function warpPedIntoVehicle(player, vehicle, seat)
 	if not isElement(player) then return end

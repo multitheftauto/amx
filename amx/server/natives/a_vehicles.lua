@@ -388,3 +388,13 @@ end
 function IsValidVehicle(amx, vehicleID)
 	return g_Vehicles[vehicleID] ~= nil
 end
+
+function GetVehiclePoolSize(amx)
+	local highestID = 0
+	for id, v in pairs(g_Vehicles) do
+		if id > highestID then
+			highestID = id
+		end
+	end
+	return highestID
+end

@@ -203,26 +203,6 @@ function atan2(amx, x, y)
 	return float2cell(math.atan2(y, x))
 end
 
-function GetPlayerPoolSize(amx)
-	local highestId = 0
-	for id, v in pairs(g_Players) do
-		if id > highestId then
-			highestId = id
-		end
-	end
-	return highestId
-end
-
-function GetVehiclePoolSize(amx)
-	local highestId = 0
-	for id, v in pairs(g_Vehicles) do
-		if id > highestId then
-			highestId = id
-		end
-	end
-	return highestId
-end
-
 -- Security
 
 function SHA256_PassHash(amx, pass, salt, ret_hash, ret_hash_len)

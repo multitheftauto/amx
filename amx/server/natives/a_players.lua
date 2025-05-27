@@ -1099,6 +1099,16 @@ function IsPlayerConnected(amx, playerID)
 	return g_Players[playerID] ~= nil
 end
 
+function GetPlayerPoolSize(amx)
+	local highestID = 0
+	for id, v in pairs(g_Players) do
+		if id > highestID then
+			highestID = id
+		end
+	end
+	return highestID
+end
+
 function IsPlayerInAnyVehicle(amx, player)
 	return getPedOccupiedVehicle(player) and true
 end
