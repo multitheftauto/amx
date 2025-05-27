@@ -305,7 +305,7 @@ ca.minZ = math.rad(-45)
 function removeCamAttachHandler()
 	--outputConsole('removeCamAttachHandler was called')
 	if (ca.active == 1) then
-		outputConsole('Destroying cam attach handler...')
+		--outputConsole('Destroying cam attach handler...')
 		ca.active = 0
 	end
 end
@@ -332,7 +332,7 @@ function camAttachRender()
 		if getPedTask(localPlayer, 'secondary', 0) == 'TASK_SIMPLE_USE_GUN' or isPedDoingGangDriveby(localPlayer) then
 			setPedAimTarget(localPlayer, camX, camY, camZ)
 			setPlayerHudComponentVisible(localPlayer, 'crosshair', true)
-			outputConsole('ped is aiming')
+			--outputConsole('ped is aiming')
 		end
 
 		--outputConsole(string.format("camAttachRender - Camera Matrix is: CamPos: %f %f %f CamLookAt: %f %f %f", camX, camY, camZ, x1, y1, z1))
@@ -401,7 +401,7 @@ sm.objCamPos, sm.objLookAt = nil, nil
 function removeInterpCamHandler()
 	--outputConsole('removeInterpCamHandler was called')
 	if (sm.moov == 1) then
-		outputConsole('Destroying cam handler...')
+		--outputConsole('Destroying cam handler...')
 		sm.moov = 0
 	end
 end
@@ -441,13 +441,13 @@ function setupCameraObject(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 end
 
 function InterpolateCameraPos(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
-	outputConsole(string.format("InterpolateCameraPos called with args %f %f %f %f %f %f %d %d", FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut))
+	--outputConsole(string.format("InterpolateCameraPos called with args %f %f %f %f %f %f %d %d", FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut))
 	sm.objCamPos = setupCameraObject(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	addEventHandler('onClientPreRender', root, camRender)
 end
 
 function InterpolateCameraLookAt(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
-	outputConsole(string.format("InterpolateCameraLookAt called with args %f %f %f %f %f %f %d %d", FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut))
+	--outputConsole(string.format("InterpolateCameraLookAt called with args %f %f %f %f %f %f %d %d", FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut))
 	sm.objLookAt = setupCameraObject(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	addEventHandler('onClientPreRender', root, camRender)
 end
@@ -1293,7 +1293,7 @@ function Delete3DTextLabel(id)
 end
 
 function Attach3DTextLabel(textlabel)
-	outputConsole('Attaching text label with id ' .. textlabel.id)
+	--outputConsole('Attaching text label with id ' .. textlabel.id)
 	local id = textlabel.id
 	textlabel.enabled = true
 	g_TextLabels[id] = textlabel
@@ -1998,7 +1998,7 @@ function clearListItem()
 		if not guiGridListRemoveColumn(listGrid, i) then -- Always clean up all columns
 			outputConsole('[ShowPlayerDialog] Error: Couldn\'t remove column: ' .. 'idx: ' .. i)
 		end
-		outputConsole('vals: ' .. 'idx: ' .. i)
+		--outputConsole('vals: ' .. 'idx: ' .. i)
 	end
 	guiGridListClear(listGrid)
 end
