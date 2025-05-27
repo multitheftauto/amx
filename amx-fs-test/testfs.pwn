@@ -16,4 +16,3 @@ public OnFilterScriptExit()
 {
 	return 1;
 }
-
