@@ -57,15 +57,8 @@ currently missing.
 Apart from being compatible, *amx* also offers a number of extra
 features:
 
-- **Scriptfiles** of a gamemode can not only be placed in a central
-  folder like in SA-MP, they will also be detected when placed **in
-  the gamemode's folder**. This means that files of different
-  gamemodes are kept apart and can no longer conflict: you can have
-  several gamemodes that use the same file names, and be assured they
-  won't overwrite each other's files.
-
-- **New scripting features** (include a\_amx.inc to use
-  these):
+- **New scripting features** (include
+  [a\_amx.inc](amx-test/pawno/include/a_amx.inc) to use these):
 
   - [CJ clothes](#cj-clothes)
   - [Walking style](#walking-style)
@@ -208,9 +201,9 @@ Information about this is lined out below.
 
   So, to **add a new gamemode or filterscript**, you create a folder
   in server/mods/deathmatch/resources/, place one or more .amx files
-  and any external files ("scriptfiles") in it, and add an appropriate
-  meta.xml. Alternatively you can dump all scriptfiles together in
-  server/mods/deathmatch/resources/amx/scriptfiles, SA-MP style.
+  in it, and add an appropriate meta.xml. Additionally you need to
+  copy all the content from your scriptfiles folder in
+  server/mods/deathmatch/resources/amx/scriptfiles.
 
   The meta.xml files of gamemodes and filterscripts are slightly
   different. Two resources, amx-test and amx-fs-test, are included
