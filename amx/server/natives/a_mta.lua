@@ -96,21 +96,12 @@ function SetPlayerStat(amx, player, stat, value)
 	return setPedStat(player, stat, value)
 end
 
-function GetPlayerDoingDriveBy(amx, player)
+function IsPlayerDoingDriveBy(amx, player)
 	return isPedDoingGangDriveby(player)
 end
 
 function SetPlayerDoingDriveBy(amx, player, driveBy)
 	return setPedDoingGangDriveby(player, driveBy)
-end
-
-function GetPlayerCanBeKnockedOffBike(amx, player)
-	return getElementData(player, 'CanBeKnockedOffBike')
-end
-
-function SetPlayerCanBeKnockedOffBike(amx, player, knockOff)
-	clientCall(root, 'setPedCanBeKnockedOffBike', player, knockOff)
-	return setElementData(player, 'CanBeKnockedOffBike', knockOff)
 end
 
 function GetPlayerWeaponSlot(amx, player)
@@ -329,10 +320,8 @@ GetBotVehicleID = GetPlayerVehicleID
 GetBotVehicleSeat = GetPlayerVehicleSeat
 IsBotInVehicle = IsPlayerInVehicle
 IsBotInAnyVehicle = IsPlayerInAnyVehicle
-GetBotDoingDriveBy = GetPlayerDoingDriveBy
+IsBotDoingDriveBy = IsPlayerDoingDriveBy
 SetBotDoingDriveBy = SetPlayerDoingDriveBy
-GetBotCanBeKnockedOffBike = GetPlayerCanBeKnockedOffBike
-SetBotCanBeKnockedOffBike = SetPlayerCanBeKnockedOffBike
 GetBotAmmo = GetPlayerAmmo
 GetBotWeaponState = GetPlayerWeaponState
 GetBotWeapon = GetPlayerWeapon
@@ -486,6 +475,10 @@ end
 
 function RemovePlayerData(amx, player, key)
 	return setElementData(player, key, nil)
+end
+
+function HasPlayerData(amx, player, key)
+	return hasElementData(player, key)
 end
 -----------------------------------------------------
 -- Vehicles
