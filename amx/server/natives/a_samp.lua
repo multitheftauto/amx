@@ -1002,7 +1002,7 @@ function TextDrawSetPreviewVehCol(amx, textdraw, color1, color2)
 end
 
 function GangZoneCreate(amx, minX, minY, maxX, maxY)
-	local zone = createRadarArea(minX + (maxX - minX) / 2, minY + (maxY - minY) / 2, maxX - minX, maxY - minY)
+	local zone = createRadarArea(minX, minY, maxX - minX, maxY - minY)
 	local id = addElem(g_GangZones, zone)
 	setElementVisibleTo(zone, root, false)
 	return id
@@ -1015,21 +1015,13 @@ function GangZoneDestroy(amx, zone)
 end
 
 function GangZoneShowForPlayer(amx, player, zone, r, g, b, a)
-	if r < 1 then r = 1 end
-	if g < 1 then g = 1 end
-	if b < 1 then b = 1 end
-	if a < 1 then a = 1 end
-	setRadarAreaColor(zone, r, g, b, a)
+	setRadarAreaColor(zone, r % 256, g % 256, b % 256, a % 256)
 	setElementVisibleTo(zone, player, true)
 	return true
 end
 
 function GangZoneShowForAll(amx, zone, r, g, b, a)
-	if r < 1 then r = 1 end
-	if g < 1 then g = 1 end
-	if b < 1 then b = 1 end
-	if a < 1 then a = 1 end
-	setRadarAreaColor(zone, r, g, b, a)
+	setRadarAreaColor(zone, r % 256, g % 256, b % 256, a % 256)
 	setElementVisibleTo(zone, root, true)
 	return true
 end
