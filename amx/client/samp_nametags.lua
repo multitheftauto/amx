@@ -29,9 +29,9 @@ HealthBarInnerVertices =
 	{ x = 0, y = 0, z = 0, c = tocolor(180, 25, 29, 255) }
 }
 
-function drawNameTag(position, nameText, r, g, b, health, armor, distance)
-	if not r or not g or not b then
-		r, g, b = 255, 255, 255
+function drawNameTag(position, nameText, r, g, b, a, health, armor, distance)
+	if not r or not g or not b or not a then
+		r, g, b, a = 255, 255, 255, 255
 	end
 
 	position.z = (distance * 0.025) + position.z + 0.3
@@ -47,7 +47,7 @@ function drawNameTag(position, nameText, r, g, b, health, armor, distance)
 	--doOutline(nameText, 1, 1, rect.left, rect.top)
 	dxDrawText(
 		nameText, rect.left + 1, rect.top, rect.right, rect.bottom,
-		tocolor(0, 0, 0, 255), 1, 1,
+		tocolor(0, 0, 0, a), 1, 1,
 
 		font, 'left', 'top', false, false,
 		false, false, false,
@@ -56,7 +56,7 @@ function drawNameTag(position, nameText, r, g, b, health, armor, distance)
 
 	dxDrawText(
 		nameText, rect.left - 1, rect.top, rect.right, rect.bottom,
-		tocolor(0, 0, 0, 255), 1, 1,
+		tocolor(0, 0, 0, a), 1, 1,
 
 		font, 'left', 'top', false, false,
 		false, false, false,
@@ -65,7 +65,7 @@ function drawNameTag(position, nameText, r, g, b, health, armor, distance)
 
 	dxDrawText(
 		nameText, rect.left, rect.top - 1, rect.right, rect.bottom,
-		tocolor(0, 0, 0, 255), 1, 1,
+		tocolor(0, 0, 0, a), 1, 1,
 
 		font, 'left', 'top', false, false,
 		false, false, false,
@@ -74,7 +74,7 @@ function drawNameTag(position, nameText, r, g, b, health, armor, distance)
 
 	dxDrawText(
 		nameText, rect.left, rect.top + 1, rect.right, rect.bottom,
-		tocolor(0, 0, 0, 255), 1, 1,
+		tocolor(0, 0, 0, a), 1, 1,
 
 		font, 'left', 'top', false, false,
 		false, false, false,
@@ -83,7 +83,7 @@ function drawNameTag(position, nameText, r, g, b, health, armor, distance)
 
 	dxDrawText(
 		nameText, rect.left, rect.top, rect.right, rect.bottom,
-		tocolor(r, g, b, 255), 1, 1,
+		tocolor(r, g, b, a), 1, 1,
 
 		font, 'left', 'top', false, false,
 		false, false, false,
@@ -138,8 +138,11 @@ function drawNameTag(position, nameText, r, g, b, health, armor, distance)
 	local healthBarBackgroundDxVertices = {}
 	local healthBarInnerDxVertices = {}
 	for i = 1, 4 do
+		HealthBarBorderVertices[i].c = tocolor(0, 0, 0, a)
 		table.insert(healthBarBordersDxVertices, {HealthBarBorderVertices[i].x, HealthBarBorderVertices[i].y, HealthBarBorderVertices[i].c})
+		HealthBarBackgroundVertices[i].c = tocolor(90, 12, 14, a)
 		table.insert(healthBarBackgroundDxVertices, {HealthBarBackgroundVertices[i].x, HealthBarBackgroundVertices[i].y, HealthBarBackgroundVertices[i].c})
+		HealthBarInnerVertices[i].c = tocolor(180, 25, 29, a)
 		table.insert(healthBarInnerDxVertices, {HealthBarInnerVertices[i].x, HealthBarInnerVertices[i].y, HealthBarInnerVertices[i].c})
 	end
 
@@ -149,17 +152,6 @@ function drawNameTag(position, nameText, r, g, b, health, armor, distance)
 
 	-- Armor Bar
 	if armor > 0 then
-		for i = 1, 4 do
-			HealthBarBorderVertices[i].y = HealthBarBorderVertices[i].y - 8
-			HealthBarBackgroundVertices[i].y = HealthBarBackgroundVertices[i].y - 8
-			HealthBarInnerVertices[i].y = HealthBarInnerVertices[i].y - 8
-		end
-
-		for i = 1, 4 do
-			HealthBarInnerVertices[i].c = tocolor(225, 225, 225, 255)
-			HealthBarBackgroundVertices[i].c = tocolor(112, 112, 112, 255)
-		end
-
 		if armor > 100 then
 			armor = 100
 		end
@@ -173,19 +165,21 @@ function drawNameTag(position, nameText, r, g, b, health, armor, distance)
 		local armorBarBackgroundDxVertices = {}
 		local armorBarInnerDxVertices = {}
 		for i = 1, 4 do
+			HealthBarBorderVertices[i].y = HealthBarBorderVertices[i].y - 8
+			HealthBarBackgroundVertices[i].y = HealthBarBackgroundVertices[i].y - 8
+			HealthBarInnerVertices[i].y = HealthBarInnerVertices[i].y - 8
+
+			HealthBarBorderVertices[i].c = tocolor(0, 0, 0, a)
 			table.insert(armorBarBordersDxVertices, {HealthBarBorderVertices[i].x, HealthBarBorderVertices[i].y, HealthBarBorderVertices[i].c})
+			HealthBarBackgroundVertices[i].c = tocolor(112, 112, 112, a)
 			table.insert(armorBarBackgroundDxVertices, {HealthBarBackgroundVertices[i].x, HealthBarBackgroundVertices[i].y, HealthBarBackgroundVertices[i].c})
+			HealthBarInnerVertices[i].c = tocolor(225, 225, 225, a)
 			table.insert(armorBarInnerDxVertices, {HealthBarInnerVertices[i].x, HealthBarInnerVertices[i].y, HealthBarInnerVertices[i].c})
 		end
 
 		dxDrawPrimitive('trianglefan', false, unpack(armorBarBordersDxVertices))
 		dxDrawPrimitive('trianglefan', false, unpack(armorBarBackgroundDxVertices))
 		dxDrawPrimitive('trianglefan', false, unpack(armorBarInnerDxVertices))
-
-		for i = 1, 4 do
-			HealthBarInnerVertices[i].c = tocolor(180, 25, 29, 255)
-			HealthBarBackgroundVertices[i].c = tocolor(90, 12, 14, 255)
-		end
 	end
 end
 
@@ -200,13 +194,14 @@ addEventHandler('onClientRender', root,
 					--local fPosX, fPosY, fPosZ = getElementPosition(player)
 					local fPosX, fPosY, fPosZ = getPedBonePosition(player, 8)
 					local distance = getDistanceBetweenPoints3D(playerPosX, playerPosY, playerPosZ, fPosX, fPosY, fPosZ)
+					local a = getElementAlpha(player)
 
-					if distance < nameTagsRadius then
+					if distance < nameTagsRadius and a > 0 then
 						local cx, cy, cz = getCameraMatrix()
 
 						if not nameTagsLOS or isLineOfSightClear(cx, cy, cz, fPosX, fPosY, fPosZ, true, false, false, true, true, false, false) then
 							local r, g, b = getPlayerNametagColor(player)
-							drawNameTag({x = fPosX, y = fPosY, z = fPosZ}, getPlayerName(player) .. ' (' .. getElemID(player) .. ')', r, g, b, getElementHealth(player), getPedArmor(player), distance)
+							drawNameTag({x = fPosX, y = fPosY, z = fPosZ}, getPlayerName(player) .. ' (' .. getElemID(player) .. ')', r, g, b, a, getElementHealth(player), getPedArmor(player), distance)
 						end
 					end
 				end
@@ -219,8 +214,9 @@ addEventHandler('onClientRender', root,
 					--local fPosX, fPosY, fPosZ = getElementPosition(bot)
 					local fPosX, fPosY, fPosZ = getPedBonePosition(bot, 8)
 					local distance = getDistanceBetweenPoints3D(playerPosX, playerPosY, playerPosZ, fPosX, fPosY, fPosZ)
+					local a = getElementAlpha(bot)
 
-					if distance < nameTagsRadius then
+					if distance < nameTagsRadius and a > 0 then
 						local cx, cy, cz = getCameraMatrix()
 
 						if not nameTagsLOS or isLineOfSightClear(cx, cy, cz, fPosX, fPosY, fPosZ, true, false, false, true, true, false, false) then
@@ -230,7 +226,7 @@ addEventHandler('onClientRender', root,
 							else
 								botName = 'Bot (' .. getElemID(bot) .. ')'
 							end
-							drawNameTag({x = fPosX, y = fPosY, z = fPosZ}, botName, 255, 255, 255, getElementHealth(bot), getPedArmor(bot), distance)
+							drawNameTag({x = fPosX, y = fPosY, z = fPosZ}, botName, 255, 255, 255, a, getElementHealth(bot), getPedArmor(bot), distance)
 						end
 					end
 				end
