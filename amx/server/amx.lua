@@ -21,6 +21,7 @@ g_SVars = {}
 function initGameModeGlobals()
 	g_PlayerClasses = {}
 	g_Teams = setmetatable({}, { __index = function(t, k) t[k] = createTeam('Team ' .. (k + 1)) return t[k] end })
+	g_FriendlyFire = false
 	g_PlayerMarkersMode = 1
 	g_PlayerMarkerRadius = false
 	g_ShowZoneNames = false

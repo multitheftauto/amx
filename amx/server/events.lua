@@ -29,6 +29,7 @@ function gameModeInit(player)
 	toggleAllControls(player, false, true, false)
 	clientCall(player, 'showIntroScene')
 	clientCall(player, 'TogglePlayerClock', false)
+	clientCall(player, 'updateFriendlyFire', g_FriendlyFire)
 	clientCall(player, 'updateNameTagGlobals', {
 		status = g_ShowNameTags,
 		radius = g_NameTagsRadius,
@@ -333,6 +334,7 @@ function handlePlayerSpawn(player)
 
 	playerdata.vehicle = nil
 	playerdata.specialaction = SPECIAL_ACTION_NONE
+	playerdata.drunklevel = 0
 end
 
 addEventHandler('onPlayerChat', root,
@@ -455,6 +457,8 @@ addEventHandler('onPlayerWasted', root,
 
 		g_Players[playerID].vehicle = nil
 		g_Players[playerID].specialaction = SPECIAL_ACTION_NONE
+		clientCall(source, 'setCameraDrunkLevel', 0)
+		g_Players[playerID].drunklevel = 0
 	end
 )
 
@@ -487,24 +491,23 @@ addEventHandler('onPlayerQuit', root,
 		g_Players[playerID] = nil
 	end
 )
--------------------------------
--- Vehicles
 
 addEventHandler('onResourceStart', resourceRoot,
 	function()
-		setTimer(checkAndUpdatePlayerStates, 1000, 0)
+		setTimer(checkAndUpdatePlayers, 1000, 0)
 	end,
 	false
 )
 
 --[[ 
-	If the player is slapped, or the vehicle is destroyed by a command, we need to handle such
-	We also now check if the player has spawned or has a state of 'none', 
-	if so and if they're on foot, we set their state
+	If the player is slapped or the vehicle is destroyed by a command, we need to handle such
+	If the player has spawned or has a state of 'none' and they're on foot, we set their state
+	Now it's also used for updating players drunk level (decrease it over time)
 ]]
-function checkAndUpdatePlayerStates()
+function checkAndUpdatePlayers()
 	for i, data in pairs(g_Players) do
 		local state = getPlayerState(data.elem)
+
 		if state == PLAYER_STATE_SPAWNED or state == PLAYER_STATE_NONE then
 			if not data.doingclasssel and not data.viewingintro then
 				handlePlayerSpawn(data.elem)
@@ -517,9 +520,21 @@ function checkAndUpdatePlayerStates()
 				setElementAlpha(data.elem, 255)
 			end
 		end
+
+		if g_Players[i].drunklevel and g_Players[i].drunklevel > 0 then
+			g_Players[i].drunklevel = g_Players[i].drunklevel - 50
+			if g_Players[i].drunklevel < 2250 then
+				clientCall(data.elem, 'setCameraDrunkLevel', 0)
+			elseif g_Players[i].drunklevel <= 12500 then
+				local drunkMul = math.floor(g_Players[i].drunklevel * 0.02)
+				clientCall(data.elem, 'setCameraDrunkLevel', drunkMul)
+			end
+		end
 	end
+
 	for i, data in pairs(g_Bots) do
 		local state = getBotState(data.elem)
+
 		if state == PLAYER_STATE_DRIVER or state == PLAYER_STATE_PASSENGER then
 			if not isPedInVehicle(data.elem) then
 				setBotState(data.elem, PLAYER_STATE_ONFOOT)
@@ -529,6 +544,8 @@ function checkAndUpdatePlayerStates()
 		end
 	end
 end
+-------------------------------
+-- Vehicles
 
 function respawnStaticVehicle(vehicle)
 	if not isElement(vehicle) then
@@ -689,6 +706,26 @@ addEventHandler('onVehicleExplode', root,
 			g_Vehicles[vehID].vehicleIsAlive = false
 			g_Vehicles[vehID].respawntimer = setTimer(respawnStaticVehicle, 10000, 1, source)
 		end
+	end
+)
+
+addEvent('OnPlayerStuntStart_Ev', true)
+addEventHandler('OnPlayerStuntStart_Ev', root,
+	function(vehicle, stuntType)
+		local playerID, vehID = getElemID(source), getElemID(vehicle)
+		if not vehID then return end
+
+		procCallOnAll('OnPlayerStuntStart', playerID, vehID, stuntType)
+	end
+)
+
+addEvent('OnPlayerStuntFinish_Ev', true)
+addEventHandler('OnPlayerStuntFinish_Ev', root,
+	function(vehicle, stuntType, stuntTime, stuntDistance)
+		local playerID, vehID = getElemID(source), getElemID(vehicle)
+		if not vehID then return end
+
+		procCallOnAll('OnPlayerStuntFinish', playerID, vehID, stuntType, stuntTime, float2cell(stuntDistance))
 	end
 )
 -------------------------------

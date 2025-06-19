@@ -173,6 +173,10 @@ function ShowPlayerCursor(amx, player, show, controls)
 	return showCursor(player, show, controls)
 end
 
+function ShowPlayerChat(amx, player, show, input)
+	return showChat(player, show, input)
+end
+
 function RemovePlayerWeapon(amx, player, weaponID)
 	return takeWeapon(player, weaponID)
 end
@@ -899,12 +903,24 @@ function SetAircraftMaxHeight(amx, height)
 	return setAircraftMaxHeight(height)
 end
 
+function GetPlayerIDFromName(amx, name)
+	local player = getPlayerFromName(name)
+	if not player then
+		return INVALID_PLAYER_ID
+	end
+	return getElemID(player)
+end
+
 function GetWeaponSlot(amx, weapon)
 	return getSlotFromWeapon(weapon) or -1
 end
 
 function GetRandomPlayer(amx)
-	return getElemID(getRandomPlayer())
+	local player = getRandomPlayer()
+	if not player then
+		return INVALID_PLAYER_ID
+	end
+	return getElemID(player)
 end
 
 function GetPlayerCount(amx)

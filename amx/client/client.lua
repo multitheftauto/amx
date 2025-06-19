@@ -832,6 +832,24 @@ addEventHandler('onClientElementStreamOut', root,
 	end
 )
 
+local function clientPlayerStuntStart(stuntType)
+	local vehicle = getPedOccupiedVehicle(localPlayer)
+	if not vehicle then return cancelEvent() end
+
+	triggerServerEvent('OnPlayerStuntStart_Ev', localPlayer, vehicle, stuntType)
+end
+addEventHandler('onClientPlayerStuntStart', root, clientPlayerStuntStart)
+
+local function clientPlayerStuntFinish(stuntType, stuntTime, stuntDistance)
+	local vehicle = getPedOccupiedVehicle(localPlayer)
+	if not vehicle then return cancelEvent() end
+
+	triggerServerEvent('OnPlayerStuntFinish_Ev', localPlayer, vehicle, stuntType, stuntTime, stuntDistance)
+end
+addEventHandler('onClientPlayerStuntFinish', root, clientPlayerStuntFinish)
+
+local friendlyFire = false
+
 local function clientVehicleDamage(attacker, weapon, loss, x, y, z, tire)
 	if not isElement(source) then return end
 
@@ -842,6 +860,27 @@ local function clientVehicleDamage(attacker, weapon, loss, x, y, z, tire)
 	if not driver then
 		-- block any damage for unoccupied vehicles like SA-MP does
 		return cancelEvent()
+	end
+
+	if friendlyFire then
+		local issuer = attacker
+
+		if issuer then
+			if getElementType(issuer) == 'vehicle' then
+				issuer = getVehicleOccupant(issuer)
+			end
+			if issuer == driver then
+				issuer = nil
+			end
+		end
+
+		local team = getPlayerTeam(driver)
+		if issuer and team and getTeamName(team) ~= 'Team 256' then
+			if getPlayerTeam(issuer) == team then
+				-- block any damage from a teammate
+				return cancelEvent()
+			end
+		end
 	end
 
 	if driver ~= localPlayer then return end
@@ -860,6 +899,10 @@ addEventHandler('onClientVehicleStartEnter', root,
 
 function DestroyVehicle(vehID)
 	g_Vehicles[vehID] = nil
+end
+
+function updateFriendlyFire(enable)
+	friendlyFire = enable
 end
 -----------------------------
 -- Text
@@ -1691,6 +1734,11 @@ local function clientPlayerDamage(attacker, weapon, bodypart, loss)
 	if source == localPlayer then -- take damage
 		if issuer and getElementType(issuer) ~= 'player' then issuer = nil end
 		triggerServerEvent('OnPlayerDamage_Ev', source, issuer, false, loss, weapon, bodypart)
+
+		local team = getPlayerTeam(source)
+		if issuer and team and getTeamName(team) ~= 'Team 256' then
+			if getPlayerTeam(issuer) == team then cancelEvent() end
+		end
 	end
 end
 addEventHandler('onClientPlayerDamage', root, clientPlayerDamage)

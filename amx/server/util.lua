@@ -215,7 +215,9 @@ g_EventNames = {
 	OnBotCreate = true,
 	OnMarkerCreate = true,
 	OnPlayerStateChange = true,
-	OnBotStateChange = true
+	OnBotStateChange = true,
+	OnPlayerStuntStart = true,
+	OnPlayerStuntFinish = true
 }
 
 local allowedRPC = {

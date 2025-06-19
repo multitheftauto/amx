@@ -162,6 +162,7 @@ function GetPlayerTargetActor(amx, player)
 end
 
 function SetPlayerTeam(amx, player, team)
+	if not team then return false end
 	return setPlayerTeam(player, team)
 end
 
@@ -185,13 +186,34 @@ function GetPlayerScore(amx, player)
 end
 
 function GetPlayerDrunkLevel(amx, player)
-	notImplemented('GetPlayerDrunkLevel', 'SCM is not supported.')
-	return 0
+	local playerID = getElemID(player)
+	if not g_Players[playerID] then
+		return 0
+	end
+	return g_Players[playerID].drunklevel
 end
 
 function SetPlayerDrunkLevel(amx, player, level)
-	notImplemented('SetPlayerDrunkLevel', 'SCM is not supported.')
-	return false
+	local playerID = getElemID(player)
+	if not g_Players[playerID] then return false end
+
+	if level > 50000 then
+		level = 50000
+	elseif level < 0 then
+		level = 0
+	end
+
+	g_Players[playerID].drunklevel = level
+	local drunkMul = level > 2000 and math.floor(level * 0.02) or 0
+
+	if drunkMul > 250 then
+		drunkMul = 250
+	elseif drunkMul < 5 then
+		drunkMul = 0
+	end
+
+	clientCall(player, 'setCameraDrunkLevel', drunkMul)
+	return true
 end
 
 function SetPlayerColor(amx, player, r, g, b)
@@ -324,7 +346,8 @@ function SetPlayerWeather(amx, player, weatherID)
 	return true
 end
 
-function ForceClassSelection(amx, playerID)
+function ForceClassSelection(amx, player)
+	local playerID = getElemID(player)
 	if not g_Players[playerID] then
 		return false
 	end
@@ -914,9 +937,15 @@ function SetPlayerSpecialAction(amx, player, actionID)
 		if playerdata.specialaction ~= SPECIAL_ACTION_USECELLPHONE then return false end
 	end
 
-	-- player should hold a drink in hands instead of any weapon
 	if actionID >= SPECIAL_ACTION_DRINK_BEER and actionID <= SPECIAL_ACTION_DRINK_SPRUNK then
+		-- player should hold a drink in hands instead of any weapon
 		setPedWeaponSlot(player, 0)
+
+		if actionID == SPECIAL_ACTION_DRINK_BEER then
+			playerdata.drunklevel = playerdata.drunklevel + 1350
+		elseif actionID == SPECIAL_ACTION_DRINK_WINE then
+			playerdata.drunklevel = playerdata.drunklevel + 1350
+		end
 	end
 
 	-- if special action cannot be set or it's invalid

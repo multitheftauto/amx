@@ -478,7 +478,8 @@ function EnableTirePopping(amx, enable)
 end
 
 function EnableVehicleFriendlyFire(amx)
-	notImplemented('EnableVehicleFriendlyFire')
+	g_FriendlyFire = true
+	clientCall(root, 'updateFriendlyFire', true)
 	return true
 end
 

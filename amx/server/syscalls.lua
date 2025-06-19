@@ -26,7 +26,7 @@ function argsToMTA(amx, prototype, ...)
 		elseif vartype == 'z' then		-- bot/ped
 			val = g_Bots[val] and g_Bots[val].elem
 		elseif vartype == 't' then		-- team
-			val = val ~= 0 and g_Teams[val]
+			val = val > 0 and g_Teams[val % 256]
 		elseif vartype == 'v' then		-- vehicle
 			val = g_Vehicles[val] and g_Vehicles[val].elem
 		elseif vartype == 'o' then		-- object
@@ -221,9 +221,10 @@ g_SAMPSyscallPrototypes = {
 	DisablePlayerRaceCheckpoint = {'p'},
 
 	EnableTirePopping = {'b'},
+	EnableVehicleFriendlyFire = {},
 	EnableZoneNames = {'b'},
 
-	ForceClassSelection = {'i'},
+	ForceClassSelection = {'p'},
 
 	GameModeExit = {},
 	GameTextForAll = {'s', 'i', 'i'},
@@ -255,6 +256,7 @@ g_SAMPSyscallPrototypes = {
 	GetPlayerCameraFrontVector = {'p', 'r', 'r', 'r'},
 	GetPlayerColor = {'p'},
 	GetPlayerDistanceFromPoint = {'p', 'f', 'f', 'f'},
+	GetPlayerDrunkLevel = {'p'},
 	GetPlayerFacingAngle = {'p', 'r'},
 	GetPlayerFightingStyle = {'p'},
 	GetPlayerHealth = {'p', 'r'},
@@ -403,6 +405,7 @@ g_SAMPSyscallPrototypes = {
 	SetPlayerCheckpoint = {'p', 'f', 'f', 'f', 'f'},
 	SetPlayerColor = {'p', 'c'},
 	SetPlayerDisabledWeapons = {'p'},
+	SetPlayerDrunkLevel = {'p', 'i'},
 	SetPlayerFacingAngle = {'p', 'f'},
 	SetPlayerFightingStyle = {'p', 'i'},
 	SetPlayerHealth = {'p', 'f'},
@@ -605,6 +608,7 @@ g_SAMPSyscallPrototypes = {
 	SetPlayerControlState = {'p', 's', 'b'},
 	IsPlayerCursorShowing = {'p'},
 	ShowPlayerCursor = {'p', 'b', 'b'},
+	ShowPlayerChat = {'p', 'b', 'b'},
 	GetPlayerAlpha = {'p'},
 	SetPlayerAlpha = {'p', 'i'},
 	RemovePlayerWeapon = {'p', 'i'},
@@ -724,6 +728,7 @@ g_SAMPSyscallPrototypes = {
 	SetAircraftMaxVelocity = {'f'},
 	GetAircraftMaxHeight = {},
 	SetAircraftMaxHeight = {'f'},
+	GetPlayerIDFromName = {'s'},
 	GetWeaponSlot = {'i'},
 	GetRandomPlayer = {},
 	GetPlayerCount = {},
@@ -862,14 +867,13 @@ g_SAMPSyscallPrototypes = {
 	PlayerTextDrawSetPreviewRot = {'p', 'i', 'f', 'f', 'f', 'f'},
 	PlayerTextDrawSetSelectable = {'p', 'i', 'b'},
 	PlayerTextDrawSetProportional = {'p', 'i', 'b'},
+	DisableRemoteVehicleCollisions = {'p', 'b'},
 	GetVehicleRotationQuat = {'v', 'r', 'r', 'r', 'r'},
 	PlayCrimeReportForPlayer = {'p', 'i', 'i'},
 	SetPlayerShopName = {'p', 's'},
 	GetPlayerCameraMode = {'p'},
 	GetPlayerCameraAspectRatio = {'p'},
 	GetPlayerCameraZoom = {'p'},
-	EnableVehicleFriendlyFire = {},
-	DisableRemoteVehicleCollisions = {'p', 'b'},
 	SelectObject = {'p'},
 	CancelEdit = {'p'},
 	EditAttachedObject = {'p', 'i'},
@@ -877,8 +881,6 @@ g_SAMPSyscallPrototypes = {
 	EditPlayerObject = {'p', 'i'},
 	SendClientCheck = {'p', 'i', 'i', 'i', 'i'},
 	GetPlayerAnimationIndex = {'p'},
-	GetPlayerDrunkLevel = {'p'},
-	SetPlayerDrunkLevel = {'p', 'i'},
 	SelectTextDraw = {'p', 'c'},
 	CancelSelectTextDraw = {'p'},
 	EnablePlayerCameraTarget = {'p', 'b'},
