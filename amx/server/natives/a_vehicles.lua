@@ -301,7 +301,7 @@ function GetVehicleComponentType(amx, componentid)
 	local componentName = getVehicleUpgradeSlotName(componentid)
 
 	local componentId = components[componentName]
-	if tonumber(componentId) ~= nil then
+	if tonumber(componentId) then
 		return componentId
 	else
 		return -1

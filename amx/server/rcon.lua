@@ -300,7 +300,7 @@ local function cmdPlayers()
 		result = result .. ('\n%d\t%s\t%d\t%s'):format(id, getPlayerName(data.elem), getPlayerPing(data.elem), getPlayerIP(data.elem))
 		counter = counter + 1
 	end
-	if counter < 1 then return '' end
+	if counter < 1 then return end
 	return result
 end
 

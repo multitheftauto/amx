@@ -483,6 +483,7 @@ addEventHandler('onPlayerQuit', root,
 		procCallOnAll('OnPlayerDisconnect', playerID, quitReasons[reason])
 		if g_Players[playerID].blip then
 			destroyElement(g_Players[playerID].blip)
+			g_Players[playerID].blip = nil
 		end
 		if g_Players[playerID].updatetimer then
 			killTimer(g_Players[playerID].updatetimer)

@@ -43,7 +43,7 @@ fndebug(
 
 function clientCall(player, fnName, ...)
 	local called = triggerClientEvent(player, 'onClientCall', resourceRoot, fnName, ...)
-	if called == nil or called == false then
+	if called == nil then
 		called = false -- if it's null set it to false to prevent stuff like 'concatenating nil values'
 	end
 	return called
@@ -1015,7 +1015,7 @@ function color2cell(r, g, b, a)
 	r = math.min(math.max(r, 0), 255)
 	g = math.min(math.max(g, 0), 255)
 	b = math.min(math.max(b, 0), 255)
-	a = a and math.min(math.max(a, 0), 255) or 255
+	a = math.min(math.max(a, 0), 255)
 	return bitLShift(r, 24) + bitLShift(g, 16) + bitLShift(b, 8) + a
 end
 
@@ -1035,29 +1035,21 @@ function isCustomPickup(elem)
 end
 
 function deprecated(native, version, additional)
-	if native ~= nil then
-		if version ~= '' or version ~= nil then
-			outputDebugString(native .. ' has been deprecated since ' .. version .. ' and will no longer be available.')
-			return
-		end
-		if additional ~= '' or additional ~= nil then
-			outputDebugString(native .. ' has been deprecated since ' .. version .. ' and will no longer be available. More info: ' .. additional .. '.')
-			return
-		end
+	if not native then return end
+	if not version or version == '' then
 		outputDebugString(native .. ' is deprecated and will no longer be available.')
+	elseif not additional or additional == '' then
+		outputDebugString(native .. ' has been deprecated since ' .. version .. ' and will no longer be available.')
+	else
+		outputDebugString(native .. ' has been deprecated since ' .. version .. ' and will no longer be available. More info: ' .. additional .. '.')
 	end
 end
 
 function notImplemented(native, additional)
-	if ShowUnimplementedErrors then
-		if native ~= nil then
-			if additional == '' or additional == nil then
-				outputDebugString('Sorry, but ' .. native .. ' is not implemented.')
-				return
-			else
-				outputDebugString('Sorry, but ' .. native .. ' is not implemented. More info: ' .. additional .. '.')
-				return
-			end
-		end
+	if not ShowUnimplementedErrors or not native then return end
+	if not additional or additional == '' then
+		outputDebugString('Sorry, but ' .. native .. ' is not implemented.')
+	else
+		outputDebugString('Sorry, but ' .. native .. ' is not implemented. More info: ' .. additional .. '.')
 	end
 end

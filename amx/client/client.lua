@@ -34,10 +34,10 @@ g_Vehicles = {}
 setmetatable(g_Vehicles, defaultEmptyTableMt)
 
 g_Menus = {}
+g_PlayerObjects = {}
 g_TextDraws = {}
 g_TextLabels = {}
 g_Blips = {}
-g_PlayerObjects = {}
 
 local screenWidth, screenHeight = guiGetScreenSize()
 
@@ -314,8 +314,6 @@ end
 
 function camAttachRender()
 	if (ca.active == 1) then
-		if isCursorShowing() then return end
-
 		local x1, y1, z1 = 0.0, 0.0, 0.0
 		if isElement(ca.objCamPos) then
 			x1, y1, z1 = getElementPosition(ca.objCamPos)
@@ -342,7 +340,8 @@ end
 
 function cursorMouseMoveHandler(curX, curY, absX, absY)
 	if (ca.active == 1) then
-		if isCursorShowing() then return end
+		if isCursorShowing() or isMainMenuActive() then return end
+		if isChatBoxInputActive() or isConsoleActive() then return end
 
 		local diffX = curX - 0.5
 		local diffY = curY - 0.5
@@ -784,7 +783,7 @@ addEventHandler('onClientElementStreamIn', root,
 			local vehInfo = vehID and g_Vehicles[vehID]
 
 			if vehInfo and not vehInfo.blip then
-				vehInfo.blip = createBlipAttachedTo(source, 0, 1, 136, 136, 136, 150, 0, 500)
+				vehInfo.blip = createBlipAttachedTo(source, 0, 1, 136, 136, 136, 150, 0, 500.0)
 				setElementParent(vehInfo.blip, source)
 			end
 
@@ -1123,7 +1122,7 @@ end
 
 function renderTextDraws()
 	for id, textdraw in pairs(g_TextDraws) do
-		if textdraw.visible and textdraw.parts and not (textdraw.text:match('^%s*$')) then-- and not textdraw.usebox) then
+		if textdraw.visible and textdraw.parts and not (textdraw.text:match('^%s*$')) then --and not textdraw.usebox then
 			local font = textDrawFonts[textdraw.font and textdraw.font >= 0 and textdraw.font <= #textDrawFonts and textdraw.font or 0]
 
 			textdraw.upscalex = textdraw.upscalex or 1.0
@@ -1146,7 +1145,7 @@ function renderTextDraws()
 
 			font = font.font
 			-- Process box alignments
-			if textdraw.usebox ~= nil and textdraw.usebox ~= 0 then
+			if textdraw.usebox and textdraw.usebox ~= 0 then
 				--outputConsole('textdraw uses box: ' .. textdraw.text)
 				local boxcolor = textdraw.boxcolor or tocolor(0, 0, 0, 120 * (textdraw.alpha or 1))
 				local x, y, w, h
@@ -1213,8 +1212,8 @@ function destroyTextDraw(textdraw)
 		return
 	end
 	hideTextDraw(textdraw)
-	g_TextDraws[textdraw.clientTDId] = nil
 	--table.removevalue(g_TextDraws, textdraw)
+	g_TextDraws[textdraw.clientTDId] = nil
 end
 
 local gameText = {}
@@ -1222,7 +1221,7 @@ local gIndex = 1
 
 function destroyAllGameTextsWithStyle(stylePassed)
 	for i = 1, gIndex do
-		if gameText[i] ~= nil and gameText[i].style == stylePassed then
+		if gameText[i] and gameText[i].style == stylePassed then
 			destroyGameText(i)
 		end
 	end
@@ -1274,7 +1273,7 @@ function GameTextForPlayer(text, time, style)
 end
 
 function destroyGameText(index)
-	if gameText[index] == nil then
+	if not gameText[index] then
 		return
 	end
 	destroyTextDraw(gameText[index])
@@ -1330,9 +1329,9 @@ end
 
 function Create3DTextLabel(id, textlabel)
 	textlabel.id = id
+	--outputConsole('Created text label with id ' .. textlabel.id)
 	textlabel.enabled = false
 	g_TextLabels[id] = textlabel
-	--outputConsole('Created text label with id ' .. textlabel.id)
 end
 
 function Delete3DTextLabel(id)
@@ -1341,8 +1340,8 @@ function Delete3DTextLabel(id)
 end
 
 function Attach3DTextLabel(textlabel)
-	--outputConsole('Attaching text label with id ' .. textlabel.id)
 	local id = textlabel.id
+	--outputConsole('Attaching text label with id ' .. textlabel.id)
 	textlabel.enabled = true
 	g_TextLabels[id] = textlabel
 end
@@ -1421,9 +1420,9 @@ end
 
 function TextDrawShowForPlayer(id)
 	--outputConsole(string.format("TextDrawShowForPlayer trying to show textdraw with id %d", id))
-	--outputConsole(string.format("TextDrawShowForPlayer trying to show textdraw with text %s", g_TextDraws[id].text))
 	local clientTDIdx = findTextDrawHandleByID(id)
 	if clientTDIdx ~= -1 then
+		--outputConsole(string.format("TextDrawShowForPlayer trying to show textdraw with text %s", g_TextDraws[id].text))
 		showTextDraw(g_TextDraws[clientTDIdx])
 	end
 end
@@ -1613,8 +1612,12 @@ function closeMenu()
 	destroyElement(g_CurrentMenu.closebtnhover)
 	g_CurrentMenu.closebtnhover = nil
 	g_CurrentMenu = nil
-	showCursor(false)
 	unbindKey('enter', 'down', OnKeyPress)
+	if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
+		showCursor(true)
+	else
+		showCursor(false)
+	end
 end
 
 function exitMenu()
@@ -1941,7 +1944,7 @@ function TogglePlayerClock(toggle)
 end
 
 function createListDialog(titleText, message, button1txt, button2txt)
-	if listWindow ~= nil then
+	if listWindow then
 		removeEventHandler('onClientGUIClick', getRootElement(), OnListDialogButton1Click) -- Remove handlers so they are not registered more than once
 		removeEventHandler('onClientGUIClick', getRootElement(), OnListDialogButton2Click)
 		destroyElement(listWindow) -- Assuming inputWindow is the parent of everything, it should remove the whole hierarchy
@@ -1979,69 +1982,70 @@ function createListDialog(titleText, message, button1txt, button2txt)
 end
 
 function createInputDialog(titleText, message, button1txt, button2txt)
-		if inputWindow ~= nil then
-			removeEventHandler('onClientGUIClick', getRootElement(), OnInputDialogButton1Click) -- Remove handlers so they are not registered more than once
-			removeEventHandler('onClientGUIClick', getRootElement(), OnInputDialogButton2Click)
-			destroyElement(inputWindow) -- Assuming inputWindow is the parent of everything, it should remove the whole hierarchy
-		end
-		inputDialog = nil
-		inputWindow = guiCreateWindow(screenWidth / 2 - 541 / 2, screenHeight / 2 - 352 / 2, 541, 352, titleText, false)
-		guiWindowSetMovable(inputWindow, false)
-		guiWindowSetSizable(inputWindow, false)
-		inputLabel = guiCreateColoredLabel(0.1, 0.1, 1.0, 0.8, message, inputWindow, true)
-		inputEdit = guiCreateEdit(0.0, 0.7, 1.0, 0.1, '', true, inputWindow)
+	if inputWindow then
+		removeEventHandler('onClientGUIClick', getRootElement(), OnInputDialogButton1Click) -- Remove handlers so they are not registered more than once
+		removeEventHandler('onClientGUIClick', getRootElement(), OnInputDialogButton2Click)
+		destroyElement(inputWindow) -- Assuming inputWindow is the parent of everything, it should remove the whole hierarchy
+	end
 
-		local xpos = 0.0
-		if #button1txt == 0 or #button2txt == 0 then
-			xpos = 0.40 -- Center
-		end
+	inputDialog = nil
+	inputWindow = guiCreateWindow(screenWidth / 2 - 541 / 2, screenHeight / 2 - 352 / 2, 541, 352, titleText, false)
+	guiWindowSetMovable(inputWindow, false)
+	guiWindowSetSizable(inputWindow, false)
+	inputLabel = guiCreateColoredLabel(0.1, 0.1, 1.0, 0.8, message, inputWindow, true)
+	inputEdit = guiCreateEdit(0.0, 0.7, 1.0, 0.1, '', true, inputWindow)
 
-		inputButton1 = guiCreateButton(xpos ~= 0.0 and xpos or 0.3, 0.9, 0.15, 0.1, button1txt, true, inputWindow) -- x, y, width, height
-		inputButton2 = guiCreateButton(xpos ~= 0.0 and xpos or 0.5, 0.9, 0.15, 0.1, button2txt, true, inputWindow)
+	local xpos = 0.0
+	if #button1txt == 0 or #button2txt == 0 then
+		xpos = 0.40 -- Center
+	end
 
-		if #button1txt == 0 then
-			guiSetVisible(inputButton1, false)
-		end
-		if #button2txt == 0 then
-			guiSetVisible(inputButton2, false)
-		end
+	inputButton1 = guiCreateButton(xpos ~= 0.0 and xpos or 0.3, 0.9, 0.15, 0.1, button1txt, true, inputWindow) -- x, y, width, height
+	inputButton2 = guiCreateButton(xpos ~= 0.0 and xpos or 0.5, 0.9, 0.15, 0.1, button2txt, true, inputWindow)
 
-		guiSetVisible(inputWindow, false)
-		addEventHandler('onClientGUIClick', inputButton1, OnInputDialogButton1Click, false)
-		addEventHandler('onClientGUIClick', inputButton2, OnInputDialogButton2Click, false)
+	if #button1txt == 0 then
+		guiSetVisible(inputButton1, false)
+	end
+	if #button2txt == 0 then
+		guiSetVisible(inputButton2, false)
+	end
+
+	guiSetVisible(inputWindow, false)
+	addEventHandler('onClientGUIClick', inputButton1, OnInputDialogButton1Click, false)
+	addEventHandler('onClientGUIClick', inputButton2, OnInputDialogButton2Click, false)
 end
 
 function createMessageDialog(titleText, message, button1txt, button2txt)
-		if msgWindow ~= nil then
-			removeEventHandler('onClientGUIClick', getRootElement(), OnMessageDialogButton1Click) -- Remove handlers so they are not registered more than once
-			removeEventHandler('onClientGUIClick', getRootElement(), OnMessageDialogButton2Click)
-			destroyElement(msgWindow) -- Assuming msgWindow is the parent of everything, it should remove the whole hierarchy
-		end
+	if msgWindow then
+		removeEventHandler('onClientGUIClick', getRootElement(), OnMessageDialogButton1Click) -- Remove handlers so they are not registered more than once
+		removeEventHandler('onClientGUIClick', getRootElement(), OnMessageDialogButton2Click)
+		destroyElement(msgWindow) -- Assuming msgWindow is the parent of everything, it should remove the whole hierarchy
+	end
 
-		msgDialog = nil
-		msgWindow = guiCreateWindow(screenWidth / 2 - 541 / 2, screenHeight / 2 - 352 / 2, 541, 352, titleText, false)
-		guiWindowSetMovable(msgWindow, false)
-		guiWindowSetSizable(msgWindow, false)
-		msgLabel = guiCreateColoredLabel(0.1, 0.1, 1.0, 0.7, message, msgWindow, true)
+	msgDialog = nil
+	msgWindow = guiCreateWindow(screenWidth / 2 - 541 / 2, screenHeight / 2 - 352 / 2, 541, 352, titleText, false)
+	guiWindowSetMovable(msgWindow, false)
+	guiWindowSetSizable(msgWindow, false)
+	msgLabel = guiCreateColoredLabel(0.1, 0.1, 1.0, 0.7, message, msgWindow, true)
 
-		local xpos = 0.0
-		if #button1txt == 0 or #button2txt == 0 then
-			xpos = 0.40 -- Center
-		end
+	local xpos = 0.0
+	if #button1txt == 0 or #button2txt == 0 then
+		xpos = 0.40 -- Center
+	end
 
-		msgButton1 = guiCreateButton(xpos ~= 0.0 and xpos or 0.3, 0.9, 0.15, 0.1, button1txt, true, msgWindow) -- x, y, width, height
-		msgButton2 = guiCreateButton(xpos ~= 0.0 and xpos or 0.5, 0.9, 0.15, 0.1, button2txt, true, msgWindow)
+	msgButton1 = guiCreateButton(xpos ~= 0.0 and xpos or 0.3, 0.9, 0.15, 0.1, button1txt, true, msgWindow) -- x, y, width, height
+	msgButton2 = guiCreateButton(xpos ~= 0.0 and xpos or 0.5, 0.9, 0.15, 0.1, button2txt, true, msgWindow)
 
-		if #button1txt == 0 then
-			guiSetVisible(msgButton1, false)
-		end
-		if #button2txt == 0 then
-			guiSetVisible(msgButton2, false)
-		end
+	if #button1txt == 0 then
+		guiSetVisible(msgButton1, false)
+	end
+	if #button2txt == 0 then
+		guiSetVisible(msgButton2, false)
+	end
 
-		guiSetVisible(msgWindow, false)
-		addEventHandler('onClientGUIClick', msgButton1, OnMessageDialogButton1Click, false)
-		addEventHandler('onClientGUIClick', msgButton2, OnMessageDialogButton2Click, false)
+	guiSetVisible(msgWindow, false)
+	addEventHandler('onClientGUIClick', msgButton1, OnMessageDialogButton1Click, false)
+	addEventHandler('onClientGUIClick', msgButton2, OnMessageDialogButton2Click, false)
 end
 
 function clearListItem()
@@ -2062,7 +2066,11 @@ function OnListDialogButton1Click(button, state)
 		local text = guiGridListGetItemText(listGrid, row, column)
 		serverAMXEvent('OnDialogResponse', g_PlayerID, listDialog, 1, row, text)
 		guiSetVisible(listWindow, false)
-		showCursor(false)
+		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
+			showCursor(true)
+		else
+			showCursor(false)
+		end
 		listDialog = nil
 		clearListItem()
 	end
@@ -2074,7 +2082,11 @@ function OnListDialogButton2Click(button, state)
 		local text = guiGridListGetItemText(listGrid, row, column)
 		serverAMXEvent('OnDialogResponse', g_PlayerID, listDialog, 0, row, text)
 		guiSetVisible(listWindow, false)
-		showCursor(false)
+		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
+			showCursor(true)
+		else
+			showCursor(false)
+		end
 		listDialog = nil
 		clearListItem()
 	end
@@ -2084,7 +2096,11 @@ function OnInputDialogButton1Click(button, state)
 	if button == 'left' then
 		serverAMXEvent('OnDialogResponse', g_PlayerID, inputDialog, 1, 0, guiGetText(inputEdit))
 		guiSetVisible(inputWindow, false)
-		showCursor(false)
+		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
+			showCursor(true)
+		else
+			showCursor(false)
+		end
 		inputDialog = nil
 	end
 end
@@ -2093,7 +2109,11 @@ function OnInputDialogButton2Click(button, state)
 	if button == 'left' then
 		serverAMXEvent('OnDialogResponse', g_PlayerID, inputDialog, 0, 0, guiGetText(inputEdit))
 		guiSetVisible(inputWindow, false)
-		showCursor(false)
+		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
+			showCursor(true)
+		else
+			showCursor(false)
+		end
 		inputDialog = nil
 	end
 end
@@ -2102,7 +2122,11 @@ function OnMessageDialogButton1Click(button, state)
 	if button == 'left' then
 		serverAMXEvent('OnDialogResponse', g_PlayerID, msgDialog, 1, 0, '')
 		guiSetVisible(msgWindow, false)
-		showCursor(false)
+		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
+			showCursor(true)
+		else
+			showCursor(false)
+		end
 		msgDialog = nil
 	end
 end
@@ -2111,7 +2135,11 @@ function OnMessageDialogButton2Click(button, state)
 	if button == 'left' then
 		serverAMXEvent('OnDialogResponse', g_PlayerID, msgDialog, 0, 0, '')
 		guiSetVisible(msgWindow, false)
-		showCursor(false)
+		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
+			showCursor(true)
+		else
+			showCursor(false)
+		end
 		msgDialog = nil
 	end
 end
@@ -2141,14 +2169,14 @@ function guiCreateColoredLabel(ax, ay, bx, by,str, parent, relative) -- x, y, wi
 			lbl = guiCreateLabel(ax + incx, ay + incy, 1.0, by, cap, relative, scrollpane)
 			guiLabelSetHorizontalAlign(lbl, 'left')
 			table.insert(labels, lbl)
-			if (r == nil) then r = 255 end
-			if (g == nil) then g = 255 end
-			if (b == nil) then b = 255 end
+			if not r then r = 255 end
+			if not g then g = 255 end
+			if not b then b = 255 end
 			guiLabelSetColor(lbl, r, g, b)
 			r, g, b = tonumber('0x' .. col:sub(1, 2)), tonumber('0x' .. col:sub(3, 4)), tonumber('0x' .. col:sub(5, 6))
 
 			local match = cap:find('\n')
-			if match ~= nil then
+			if match then
 				local xtxtsize, ytxtsize = guiGetSize(lbl, true) -- not relative
 				incy = incy + (ytxtsize / 8) -- We found a /n so send it further down on the next line
 				incx = 0 -- Don't add spaces on new lines
@@ -2172,9 +2200,9 @@ function guiCreateColoredLabel(ax, ay, bx, by,str, parent, relative) -- x, y, wi
 		cap = str:sub(last)
 		lbl2 = guiCreateLabel(ax + incx, ay + incy, 1.0, by, cap, relative, scrollpane)
 		table.insert(labels, lbl2)
-		if (r == nil) then r = 255 end
-		if (g == nil) then g = 255 end
-		if (b == nil) then b = 255 end
+		if not r then r = 255 end
+		if not g then g = 255 end
+		if not b then b = 255 end
 		guiLabelSetColor(lbl2, r, g, b)
 	end
 	return labels
@@ -2207,7 +2235,11 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 			listDialog = nil
 			clearListItem()
 		end
-		showCursor(false)
+		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
+			showCursor(true)
+		else
+			showCursor(false)
+		end
 		return true
 	end
 	showCursor(true)

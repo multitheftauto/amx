@@ -828,6 +828,7 @@ end
 
 function TextDrawCreate(amx, x, y, text)
 	--outputDebugString('TextDrawCreate called with args ' .. x .. ' ' .. y .. ' ' .. text)
+
 	local textdraw = { x = x, y = y, shadow = {align = 1, text = text, font = 1, lwidth = 0.5, lheight = 0.5} }
 	textdraw.clientTDId = #g_TextDraws + 1
 	local id = table.insert(g_TextDraws, textdraw)
@@ -1084,8 +1085,7 @@ function CreatePlayer3DTextLabel(amx, player, text, r, g, b, a, x, y, z, dist, a
 	textlabel.offY = 0.0
 	textlabel.offZ = 0.0
 
-	clientCall(root, 'Create3DTextLabel', id, textlabel)
-
+	clientCall(player, 'Create3DTextLabel', id, textlabel)
 	return id
 end
 
@@ -1104,7 +1104,7 @@ function DeletePlayer3DTextLabel(amx, player, textlabel)
 	if not g_TextLabels[id] then
 		return
 	end
-	clientCall(root, 'Delete3DTextLabel', id)
+	clientCall(player, 'Delete3DTextLabel', id)
 	g_TextLabels[id] = nil
 	return true
 end

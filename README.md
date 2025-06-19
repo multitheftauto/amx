@@ -590,8 +590,10 @@ Below is a list of limitations that may or may not be addressed in later version
 
 The following functions will require certain resources installed to have effect when called:
 
-- DisableInteriorEnterExits (disable enex markers implemented by "interiors" resource, otherwise they are always disabled)
-- SendDeathMessage (invoke graphical death messages from "killmessages" resource)
+- DisableInteriorEnterExits
+  - disable enex markers implemented by "interiors" resource, otherwise they are always disabled
+- SendDeathMessage
+  - invoke graphical death messages from "killmessages" resource
 
 The following features are currently not implemented and will have no effect when used:
 

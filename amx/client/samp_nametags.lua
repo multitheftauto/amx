@@ -31,9 +31,7 @@ HealthBarInnerVertices =
 
 function drawNameTag(position, nameText, r, g, b, health, armor, distance)
 	if not r or not g or not b then
-		r = 255
-		g = 255
-		b = 255
+		r, g, b = 255, 255, 255
 	end
 
 	position.z = (distance * 0.025) + position.z + 0.3

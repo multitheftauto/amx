@@ -26,7 +26,9 @@ function GetPlayerPos(amx, player, refX, refY, refZ)
 	end
 
 	local x, y, z
-	if getCameraTarget(player) ~= player then
+
+	-- initializing or spectating
+	if getPlayerState(player) == 0 or getPlayerState(player) == 9 then
 		x, y, z = getCameraMatrix(player)
 	else
 		x, y, z = getElementPosition(player)
@@ -53,11 +55,29 @@ function GetPlayerFacingAngle(amx, player, refAng)
 end
 
 function IsPlayerInRangeOfPoint(amx, player, range, pX, pY, pZ)
-	return getDistanceBetweenPoints3D(pX, pY, pZ, getElementPosition(player)) <= range
+	local cX, cY, cZ
+
+	-- initializing or spectating
+	if getPlayerState(player) == 0 or getPlayerState(player) == 9 then
+		cX, cY, cZ = getCameraMatrix(player)
+	else
+		cX, cY, cZ = getElementPosition(player)
+	end
+
+	return getDistanceBetweenPoints3D(pX, pY, pZ, cX, cY, cZ) <= range
 end
 
 function GetPlayerDistanceFromPoint(amx, player, pX, pY, pZ)
-	return float2cell(getDistanceBetweenPoints3D(pX, pY, pZ, getElementPosition(player)))
+	local cX, cY, cZ
+
+	-- initializing or spectating
+	if getPlayerState(player) == 0 or getPlayerState(player) == 9 then
+		cX, cY, cZ = getCameraMatrix(player)
+	else
+		cX, cY, cZ = getElementPosition(player)
+	end
+
+	return float2cell(getDistanceBetweenPoints3D(pX, pY, pZ, cX, cY, cZ))
 end
 
 function IsPlayerStreamedIn(amx, otherPlayer, player)
@@ -123,7 +143,7 @@ function GetPlayerWeaponState(amx, player)
 	-- 3 WEAPONSTATE_RELOADING
 
 	local vehicle = getPedOccupiedVehicle(player)
-	if vehicle ~= nil then return -1 end
+	if vehicle then return -1 end
 
 	if isPedReloadingWeapon(player) then
 		return 3
@@ -228,18 +248,19 @@ end
 
 function GetPlayerColor(amx, player)
 	local r, g, b = getPlayerNametagColor(player)
-	return color2cell(r, g, b)
+	return color2cell(r, g, b, 255)
 end
 
 function SetPlayerSkin(amx, player, skin)
-	local skinset = setElementModel(player, g_SkinReplace[skin] or skin)
+	local model = g_SkinReplace[skin] or skin
+	local skinset = setElementModel(player, model)
 	if skinset then
 		-- wanna see CJ in a white singlet?
 		addPedClothes(player, 'vest', 'vest', 0)
 
 		if not g_UseCJWalk then
 			-- update walking style for a new skin
-			setPedWalkingStyle(player, WalkingStyle[skin] or 0)
+			setPedWalkingStyle(player, WalkingStyle[model] or 0)
 		end
 	end
 	return skinset
@@ -516,7 +537,7 @@ function CreatePlayerTextDraw(amx, player, x, y, text)
 	local textdraw = { x = x, y = y, lwidth = 0.5, lheight = 0.5, shadow = { visible = 0, align = 1, text = text, font = 1, lwidth = 0.5, lheight = 0.5 } }
 	textdraw.clientTDId = clientTDId
 	textdraw.serverTDId = serverTDId
-	textdraw.visible = 0
+	textdraw.visible = false
 
 	g_PlayerTextDraws[player][serverTDId] = textdraw
 
@@ -657,7 +678,7 @@ function PlayerTextDrawShow(amx, player, textdrawID)
 		outputDebugString('PlayerTextDrawShow: not showing anything, not valid')
 		return false
 	end
-	--if g_PlayerTextDraws[player][textdrawID].visible == 1 then
+	--if g_PlayerTextDraws[player][textdrawID].visible then
 	--	return false
 	--end
 	g_PlayerTextDraws[player][textdrawID].visible = true
@@ -670,7 +691,7 @@ function PlayerTextDrawHide(amx, player, textdrawID)
 	if not IsPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
-	--if g_PlayerTextDraws[player][textdrawID].visible == 0 then
+	--if not g_PlayerTextDraws[player][textdrawID].visible then
 	--	return false
 	--end
 	g_PlayerTextDraws[player][textdrawID].visible = false
