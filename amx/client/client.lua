@@ -703,7 +703,7 @@ function SetVehicleParamsForPlayer(vehicle, isObjective, doorsLocked)
 			destroyElement(vehInfo.blip)
 			vehInfo.blip = nil
 		end
-		vehInfo.blip = createBlipAttachedTo(vehicle, 0, 2, 222, 188, 97)
+		vehInfo.blip = createBlipAttachedTo(vehicle, 0, 2, 226, 192, 99)
 		setBlipOrdering(vehInfo.blip, 1)
 		vehInfo.blippersistent = true
 		setElementParent(vehInfo.blip, vehicle)

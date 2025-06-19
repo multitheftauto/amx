@@ -15,18 +15,18 @@ HealthBarBorderVertices =
 
 HealthBarBackgroundVertices =
 {
-	{ x = 0, y = 0, z = 0, c = tocolor(75, 11, 20, 255) },
-	{ x = 0, y = 0, z = 0, c = tocolor(75, 11, 20, 255) },
-	{ x = 0, y = 0, z = 0, c = tocolor(75, 11, 20, 255) },
-	{ x = 0, y = 0, z = 0, c = tocolor(75, 11, 20, 255) }
+	{ x = 0, y = 0, z = 0, c = tocolor(90, 12, 14, 255) },
+	{ x = 0, y = 0, z = 0, c = tocolor(90, 12, 14, 255) },
+	{ x = 0, y = 0, z = 0, c = tocolor(90, 12, 14, 255) },
+	{ x = 0, y = 0, z = 0, c = tocolor(90, 12, 14, 255) }
 }
 
 HealthBarInnerVertices =
 {
-	{ x = 0, y = 0, z = 0, c = tocolor(185, 34, 40, 255) },
-	{ x = 0, y = 0, z = 0, c = tocolor(185, 34, 40, 255) },
-	{ x = 0, y = 0, z = 0, c = tocolor(185, 34, 40, 255) },
-	{ x = 0, y = 0, z = 0, c = tocolor(185, 34, 40, 255) }
+	{ x = 0, y = 0, z = 0, c = tocolor(180, 25, 29, 255) },
+	{ x = 0, y = 0, z = 0, c = tocolor(180, 25, 29, 255) },
+	{ x = 0, y = 0, z = 0, c = tocolor(180, 25, 29, 255) },
+	{ x = 0, y = 0, z = 0, c = tocolor(180, 25, 29, 255) }
 }
 
 function drawNameTag(position, nameText, r, g, b, health, armor, distance)
@@ -156,8 +156,8 @@ function drawNameTag(position, nameText, r, g, b, health, armor, distance)
 		end
 
 		for i = 1, 4 do
-			HealthBarInnerVertices[i].c = tocolor(200, 200, 200, 255)
-			HealthBarBackgroundVertices[i].c = tocolor(40, 40, 40, 255)
+			HealthBarInnerVertices[i].c = tocolor(225, 225, 225, 255)
+			HealthBarBackgroundVertices[i].c = tocolor(112, 112, 112, 255)
 		end
 
 		if armor > 100 then
@@ -183,8 +183,8 @@ function drawNameTag(position, nameText, r, g, b, health, armor, distance)
 		dxDrawPrimitive('trianglefan', false, unpack(armorBarInnerDxVertices))
 
 		for i = 1, 4 do
-			HealthBarInnerVertices[i].c = tocolor(185, 34, 40, 255)
-			HealthBarBackgroundVertices[i].c = tocolor(75, 11, 20, 255)
+			HealthBarInnerVertices[i].c = tocolor(180, 25, 29, 255)
+			HealthBarBackgroundVertices[i].c = tocolor(90, 12, 14, 255)
 		end
 	end
 end
