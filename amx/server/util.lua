@@ -342,16 +342,6 @@ function isPedDead(player)
 	return x == 0 and y == 0 and z == 0
 end
 
-local _spawnPlayer = spawnPlayer
-function spawnPlayer(player, x, y, z, r, skin, interior, ...)
-	local result = _spawnPlayer(player, x, y, z, r, skin, interior, ...)
-	return result
-end
-
-function destroyBlipsAttachedTo(elem)
-	table.each(table.filter(getAttachedElements(elem) or {}, getElementType, 'blip'), destroyElement)
-end
-
 function giveWeapons(player, weapons, currentslot)
 	for slot, weapon in pairs(weapons) do
 		giveWeapon(player, weapon.id, weapon.ammo)
@@ -832,15 +822,6 @@ function readDWORDAt(hFile, offset)
 	return readDWORD(hFile)
 end
 
-function readDWORDs(hFile, offset, length)
-	local result = {}
-	fileSetPos(hFile, offset)
-	for i = 0, length - 4, 4 do
-		result[i] = readDWORD(amx)
-	end
-	return result
-end
-
 function readString(hFile, offset)
 	local result = ''
 	fileSetPos(hFile, offset)
@@ -850,20 +831,6 @@ function readString(hFile, offset)
 		curByte = readBYTE(hFile)
 	end
 	return result
-end
-
-function dumpAMXTable(amx, tableName, chunk)
-	if not chunk then
-		chunk = Chunk.create(amx.name .. '.amx', 1, 2)
-		chunk.rAMX = 0
-		chunk.rTemp = 1
-	end
-	chunk:newtable(chunk.rTemp, 0, 0)
-	for k, v in pairs(amx[tableName]) do
-		chunk:settable(chunk.rTemp, chunk:K(k), chunk:K(v))
-	end
-	chunk:settable(chunk.rAMX, chunk:K(tableName), chunk.rTemp)
-	return chunk
 end
 
 -- MEMORY reading/writing functions
@@ -934,58 +901,6 @@ function float2cell(float)
 	return sign + ldexp(exp + 127, 23) + ldexp(mantissa, 23 - (exp + numFPartBits))
 end
 --]]
-
-function string.dword(num)
-	local floor = math.floor
-	return string.char(num % 256, floor(num / 256) % 256, floor(num / 65536) % 256, floor(num / 16777216) % 256)
-end
-
-function string.double(dbl)
-	if dbl == 0 then
-		return ('\0'):rep(8)
-	end
-
-	local floor, ldexp = math.floor, math.ldexp
-
-	-- sign bit
-	local sign = 0
-	if dbl < 0 then
-		sign = 2 ^ 63
-		dbl = -dbl
-	end
-	local ipart, fpart = math.modf(dbl)
-	-- exponent
-	local exp = 0
-	while ipart > 2 ^ exp do
-		exp = exp + 1
-	end
-	if 2 ^ exp > ipart then
-		exp = exp - 1
-	end
-	-- mantissa
-	local numFPartBits = 0
-	local fpartBits = 0
-	while fpart ~= 0 and numFPartBits < 52 do
-		fpart = 2 * fpart
-		if fpart >= 1 then
-			fpart = fpart - 1
-			fpartBits = fpartBits * 2 + 1
-		else
-			fpartBits = fpartBits * 2
-		end
-		numFPartBits = numFPartBits + 1
-	end
-	ipart = ipart - 2 ^ exp
-	local mantissa = ldexp(ipart, numFPartBits) + fpartBits
-
-	-- build
-	local num = sign + ldexp(exp + 1023, 52) + ldexp(mantissa, 52 - (exp + numFPartBits))
-	local result = ''
-	for i = 0, 7 do
-		result = result .. string.char(floor(num / (2 ^ (i * 8))) % 256)
-	end
-	return result
-end
 
 function string:split(sep)
 	if #self == 0 then

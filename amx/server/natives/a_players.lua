@@ -488,7 +488,7 @@ function SetPlayerAttachedObject(amx, player, index, modelid, bone, fOffsetX, fO
 		g_Players[playerID].attachedObjects[index] = obj
 		setElementCollisionsEnabled(obj, false)
 		setObjectScale(obj, fScaleX, fScaleY, fScaleZ)
-		attachElementToBone(obj, player, mtaBone, fOffsetX, fOffsetY, fOffsetZ, fRotX, fRotY, fRotZ)
+		attachElementToBone(obj, player, mtaBone, fOffsetX, fOffsetY, fOffsetZ, fRotY, fRotX, fRotZ)
 		-- TODO: Implement material colors
 	else
 		outputDebugString('SetPlayerAttachedObject: Cannot attach object since the model is invalid. Model id was ' .. modelid)

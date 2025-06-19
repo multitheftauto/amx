@@ -105,15 +105,6 @@ function bindKey(key, ...)
 	end
 end
 
-local _isPedDead = isPedDead
-function isPedDead(player)
-	if _isPedDead(player) then
-		return true
-	end
-	local x, y, z = getElementPosition(player)
-	return x == 0 and y == 0 and z == 0
-end
-
 function isVehicleEmpty(vehicle)
 	local numPassengers = getVehicleMaxPassengers(vehicle)
 	if not numPassengers then
@@ -129,10 +120,6 @@ end
 
 function getElemID(elem)
 	return elem and isElement(elem) and getElementData(elem, 'amx.id')
-end
-
-function getElemAMX(elem)
-	return elem and isElement(elem) and g_AMXs[getElementData(elem, 'amx.amxfile')]
 end
 
 function atNextFrame(callback, ...)
@@ -271,12 +258,8 @@ function string:split(sep, plain)
 end
 
 function setcoloralpha(color, alpha)
-	local r, g, b = fromcolor(color)
-	return tocolor(r, g, b, alpha)
-end
-
-function fromcolor(color)
-	return math.floor(color / 65536) % 255, math.floor(color / 255) % 255, color % 255, math.floor(color / 16777216)
+	local a = bitExtract(color, 24, 8)
+	return bitReplace(color, alpha, 24, 8)
 end
 
 -- From: https://github.com/halpz/re3/blob/408f47fc9d85e930f2dc1a4cc9f50b3c0d4c60b8/src/core/common.h

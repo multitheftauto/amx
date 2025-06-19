@@ -1,6 +1,6 @@
 <meta>
     <info name="AMX" author="adamix" type="gamemode" />
-    <min_mta_version server="1.6.0-9.22457"></min_mta_version>
+    <min_mta_version server="1.6.0-9.22457" client="1.6.0-9.22420"></min_mta_version>
 
     <script src="server/defines.lua" type="server" />
     <script src="shared/anim_define.lua" type="shared" />
@@ -8,7 +8,7 @@
     <script src="shared/sound_offset.lua" type="shared" />
     <script src="shared/vehicle_info.lua" type="shared" />
     <script src="server/util.lua" type="server" />
-    <script src="server/_triggerqueue.lua" type="server" />
+    <script src="server/triggerqueue.lua" type="server" />
     <script src="server/rcon.lua" type="server" />
 
     <script src="server/natives/a_samp.lua" type="server" />
@@ -28,22 +28,17 @@
     <script src="client/util.lua" type="client" />
     <script src="client/anim.lua" type="client" />
     <script src="client/arrowmarkers.lua" type="client" />
-    <script src="client/mouselook.lua" type="client" />
     <script src="client/client.lua" type="client" />
     <script src="client/samp_nametags.lua" type="client" />
     <script src="client/map_waypoint.lua" type="client" />
     <script src="client/garages.lua" type="client" />
 
     <!-- 
-        Bone_attach: Credit to  Devan_LT (also known as CrystalMV)
-        https://forum.mtasa.com/profile/1985-crystalmv/
-        https://wiki.multitheftauto.com/wiki/Resource:Bone_attach 
+        attachToBones: Credit to Tekken (also known as mihayy5)
+        https://forum.multitheftauto.com/profile/45462-tekken/
     -->
-    <script src="shared/bone_attach.lua" />
-    <script src="client/bone_attach_c.lua" type="client" />
-    <script src="shared/attach_func.lua" />
-    <script src="shared/attach_func.lua" type="client" />
-    <script src="client/bone_pos_rot.lua" type="client" />
+    <script src="server/attachtobones.lua" type="server" />
+    <script src="client/attachtobones.lua" type="client" />
 
     <file src="images/logo_small.png" />
     <file src="images/closebtn.png" />

@@ -198,25 +198,27 @@ g_SkinReplace = {
 
 -- Left is SA-MP, right is MTA
 g_BoneMapping = setmetatable({
-	[2] = 1,	-- Head
-	[17] = 2,	-- Neck
 	[1] = 3,	-- Spine
-	[15] = 5,	-- Left Clavicle (Shoulder)
-	[16] = 6,	-- Right Clavicle (Shoulder)
-	[3] = 9,	-- Left Upper Arm
-	[4] = 10,	-- Right Upper Arm
-	[5] = 11,	-- Left Hand
-	[6] = 12,	-- Right Hand
-	[7] = 13,	-- Left thigh (SA-MP doesn't really have hips)
-	[8] = 14,	-- Right thigh
-	[12] = 15,	-- Left calf
-	[11] = 16,	-- Right Calf
-	[9] = 19,	-- Left Foot
-	[10] = 20	-- Right Foot
+	[2] = 8,	-- Head
+	[3] = 32,	-- Left upper arm
+	[4] = 22,	-- Right upper arm
+	[5] = 34,	-- Left hand
+	[6] = 24,	-- Right hand
+	[7] = 41,	-- Left thigh (SA-MP doesn't really have hips)
+	[8] = 51,	-- Right thigh
+	[9] = 43,	-- Left foot
+	[10] = 53,	-- Right foot
+	[11] = 52,	-- Right calf
+	[12] = 42,	-- Left calf
+	[13] = 33,	-- Left forearm
+	[14] = 23,	-- Right forearm
+	[15] = 31,	-- Left clavicle
+	[16] = 21,	-- Right clavicle
+	[17] = 4	-- Neck
 }, {
 	__index = function(t, k)
 		if k == 18 then -- Since 18 is jaw in SA-MP
-			k = 2 -- Default to head
+			k = 8 -- Default to head
 		end
 		if k >= 1 and k <= 17 then
 			return k

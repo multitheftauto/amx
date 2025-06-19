@@ -31,7 +31,7 @@
 	  paramater that linearly goes from a given starting value to a
 	  given ending value, over the specified amount of time, and is
 	  applied to one certain element. While a phase is running, its
-	  callback function will be called onClientPreRender with the following
+	  callback function will be called onClientRender with the following
 	  arguments:
 
 	    phase.fn(element elem, float param, table phase)
@@ -212,7 +212,7 @@ function Animation:play()
 		table.insert(Animation.collection, self)
 	end
 	if not Animation.playingAnimationsExist() then
-		addEventHandler('onClientPreRender', root, updateAnim)
+		addEventHandler('onClientRender', root, updateAnim)
 	end
 	self.playing = true
 end
@@ -220,14 +220,14 @@ end
 function Animation:pause()
 	self.playing = false
 	if not Animation.playingAnimationsExist() then
-		removeEventHandler('onClientPreRender', root, updateAnim)
+		removeEventHandler('onClientRender', root, updateAnim)
 	end
 end
 
 function Animation:remove()
 	table.removevalue(Animation.collection, self)
 	if not Animation.playingAnimationsExist() then
-		removeEventHandler('onClientPreRender', root, updateAnim)
+		removeEventHandler('onClientRender', root, updateAnim)
 	end
 	self.playing = false
 end
@@ -288,7 +288,7 @@ function updateAnim()
 				anim:remove()
 				phaseEnded = true
 			elseif not phase.time then
-				phase.fn(elem)
+				phase.fn(elem, phase)
 				phaseEnded = true
 			else
 				if not phase.starttick then
@@ -396,7 +396,7 @@ function Animation.presets.guiPulse(time, value, phase)
 	-- guiPulse(time)
 	-- Pulses an image (scale down/up). time = ms for a complete pulsation cycle
 	if type(time) ~= 'userdata' then
-		return { from = 0, to = 2 * math.pi, transform = math.sin, time = time, repeats = 0, fn = Animation.presets.pulse }
+		return { from = 0, to = 2 * math.pi, transform = math.sin, time = time, repeats = 0, fn = Animation.presets.guiPulse }
 	else
 		local elem = time
 		if not phase.width then
@@ -443,7 +443,7 @@ end
 
 function Animation.presets.guiMoveResize(endX, endY, endWidth, endHeight, time, loop, startX, startY, startWidth, startHeight, speedUpSlowDown)
 	-- guiMoveResize(endX, endY, endWidth, endHeight, [ time = 1000, loop = false, startX = current X, startY = current Y,
-	--   startWidth = current width, startHeiht = current height, speedUpSlowDown = false ])
+	--   startWidth = current width, startHeight = current height, speedUpSlowDown = false ])
 	if type(endX) ~= 'userdata' then
 		return { from = speedUpSlowDown and -math.pi / 2 or 0, to = speedUpSlowDown and math.pi / 2 or 1,
 		         time = time or 1000, repeats = loop and 0 or 1, transform = math.sin, fn = Animation.presets.guiMoveResize,
