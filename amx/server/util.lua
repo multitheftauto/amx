@@ -941,14 +941,6 @@ function isPed(elem)
 	return false
 end
 
-function isCustomPickup(elem)
-	local model = getElementModel(elem)
-	if model == 1272 or model == 1273 or model == 1239 then
-		return true
-	end
-	return false
-end
-
 function deprecated(native, version, additional)
 	if not native then return end
 	if not version or version == '' then

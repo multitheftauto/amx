@@ -374,11 +374,6 @@ function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnD
 	return vehID
 end
 
-local function onHousePickupUse()
-	procCallOnAll('OnPlayerPickUpPickup', getElemID(player), getElemID(source))
-	cancelEvent()
-end
-
 function AddStaticPickup(amx, model, type, x, y, z, world)
 	local mtaPickupType, mtaPickupAmount, mtaPickupAmmo
 	if model == 1240 then		-- health
@@ -387,9 +382,6 @@ function AddStaticPickup(amx, model, type, x, y, z, world)
 	elseif model == 1242 then	-- armor
 		mtaPickupType = 1
 		mtaPickupAmount = 100
-	elseif model == 1272 or model == 1273 then
-		mtaPickupType = 3
-		mtaPickupAmount = model
 	else						-- weapon
 		mtaPickupType = 2
 		mtaPickupAmount = g_WeaponIDMapping[model]
@@ -414,10 +406,6 @@ function AddStaticPickup(amx, model, type, x, y, z, world)
 		setElementDimension(pickup, world)
 	end
 
-	if isCustomPickup(pickup) then
-		-- house pickups don't disappear on pickup
-		addEventHandler('onPickupUse', pickup, onHousePickupUse, false)
-	end
 	return addElem(g_Pickups, pickup)
 end
 
