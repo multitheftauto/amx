@@ -571,8 +571,20 @@ function CreatePlayerTextDraw(amx, player, x, y, text)
 	return serverTDId
 end
 
+local function isPlayerTextDrawValid(player, textdrawID)
+	local tableType = type(g_PlayerTextDraws[player])
+	if not g_PlayerTextDraws[player] or tableType ~= 'table' then
+		return false
+	end
+	local textdraw = g_PlayerTextDraws[player][textdrawID]
+	if not textdraw then
+		return false
+	end
+	return true
+end
+
 function PlayerTextDrawDestroy(amx, player, textdrawID)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	--outputDebugString('Sending textdraw id s->' .. g_PlayerTextDraws[player][textdrawID].serverTDId .. ' c->' .. g_PlayerTextDraws[player][textdrawID].clientTDId .. ' for destruction')
@@ -582,7 +594,7 @@ function PlayerTextDrawDestroy(amx, player, textdrawID)
 end
 
 function PlayerTextDrawLetterSize(amx, player, textdrawID, width, height)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].lwidth = width
@@ -591,7 +603,7 @@ function PlayerTextDrawLetterSize(amx, player, textdrawID, width, height)
 end
 
 function PlayerTextDrawTextSize(amx, player, textdrawID, x, y)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].boxsize = { x, y }
@@ -599,7 +611,7 @@ function PlayerTextDrawTextSize(amx, player, textdrawID, x, y)
 end
 
 function PlayerTextDrawAlignment(amx, player, textdrawID, align)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].align = (align == 0 and 1 or align)
@@ -607,7 +619,7 @@ function PlayerTextDrawAlignment(amx, player, textdrawID, align)
 end
 
 function PlayerTextDrawColor(amx, player, textdrawID, r, g, b, a)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].color = { r, g, b }
@@ -615,8 +627,7 @@ function PlayerTextDrawColor(amx, player, textdrawID, r, g, b, a)
 end
 
 function PlayerTextDrawUseBox(amx, player, textdrawID, usebox)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
-		outputDebugString('textdraw is invalid, not setting usebox ' .. textdrawID)
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].usebox = usebox
@@ -624,7 +635,7 @@ function PlayerTextDrawUseBox(amx, player, textdrawID, usebox)
 end
 
 function PlayerTextDrawBoxColor(amx, player, textdrawID, r, g, b, a)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].boxcolor = { r, g, b, a }
@@ -632,7 +643,7 @@ function PlayerTextDrawBoxColor(amx, player, textdrawID, r, g, b, a)
 end
 
 function PlayerTextDrawSetShadow(amx, player, textdrawID, size)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].shade = size
@@ -640,7 +651,7 @@ function PlayerTextDrawSetShadow(amx, player, textdrawID, size)
 end
 
 function PlayerTextDrawSetOutline(amx, player, textdrawID, size)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].outlinesize = size
@@ -653,7 +664,7 @@ function PlayerTextDrawSetProportional(amx, player, textdrawID, proportional)
 end
 
 function PlayerTextDrawBackgroundColor(amx, player, textdrawID, r, g, b, a)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].outlinecolor = { r, g, b, a }
@@ -661,7 +672,7 @@ function PlayerTextDrawBackgroundColor(amx, player, textdrawID, r, g, b, a)
 end
 
 function PlayerTextDrawFont(amx, player, textdrawID, font)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].font = font
@@ -674,8 +685,7 @@ function PlayerTextDrawSetSelectable(amx, player, textdrawID, selectable)
 end
 
 function PlayerTextDrawShow(amx, player, textdrawID)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
-		outputDebugString('PlayerTextDrawShow: not showing anything, not valid')
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	--if g_PlayerTextDraws[player][textdrawID].visible then
@@ -688,7 +698,7 @@ function PlayerTextDrawShow(amx, player, textdrawID)
 end
 
 function PlayerTextDrawHide(amx, player, textdrawID)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	--if not g_PlayerTextDraws[player][textdrawID].visible then
@@ -701,7 +711,7 @@ function PlayerTextDrawHide(amx, player, textdrawID)
 end
 
 function PlayerTextDrawSetString(amx, player, textdrawID, str)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].text = str

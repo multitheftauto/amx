@@ -860,32 +860,6 @@ function TextDrawCreate(amx, x, y, text)
 	return id
 end
 
--- Mainly just wrappers to the other non-player functions
-
-function IsPlayerTextDrawValid(player, textdrawID)
-	local tableType = type(g_PlayerTextDraws[player])
-	if tableType ~= 'table' then
-		outputDebugString("[ERROR_NOT_A_TABLE] IsPlayerTextDrawValid: g_PlayerTextDraws[player] is not a table yet for textdrawID: " .. textdrawID .. " it's actually a " .. tableType)
-		return false
-	end
-	if not g_PlayerTextDraws[player] then
-		outputDebugString("[ERROR_NIL_TABLE] IsPlayerTextDrawValid: g_PlayerTextDraws[player] is nil! for textdrawID: " .. textdrawID)
-		return false
-	end
-	local textdraw = g_PlayerTextDraws[player][textdrawID]
-	if not textdraw then
-		outputDebugString("[ERROR_NOTD_PROPERTIES] IsPlayerTextDrawValid: no textdraw properties for player with textdrawID: " .. textdrawID)
-		return false
-	end
-	return true
-end
-
-function TextDrawUseBox(amx, textdraw, usebox)
-	textdraw.usebox = usebox
-	return true
-end
-
--- End of player textdraws
 function TextDrawDestroy(amx, textdrawID)
 	if not g_TextDraws[textdrawID] then
 		return false
@@ -916,6 +890,11 @@ function TextDrawColor(amx, textdraw, r, g, b, a)
 	return true
 end
 
+function TextDrawUseBox(amx, textdraw, usebox)
+	textdraw.usebox = usebox
+	return true
+end
+
 function TextDrawBoxColor(amx, textdraw, r, g, b, a)
 	textdraw.boxcolor = { r, g, b, a }
 	return true
@@ -931,6 +910,11 @@ function TextDrawSetOutline(amx, textdraw, size)
 	return true
 end
 
+function TextDrawSetProportional(amx, textdraw, proportional)
+	notImplemented('TextDrawSetProportional')
+	return false
+end
+
 function TextDrawBackgroundColor(amx, textdraw, r, g, b, a)
 	textdraw.outlinecolor = { r, g, b, a }
 	return true
@@ -939,11 +923,6 @@ end
 function TextDrawFont(amx, textdraw, font)
 	textdraw.font = font
 	return true
-end
-
-function TextDrawSetProportional(amx, textdraw, proportional)
-	notImplemented('TextDrawSetProportional')
-	return false
 end
 
 function TextDrawSetSelectable(amx, textdraw, selectable)

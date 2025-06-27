@@ -975,7 +975,7 @@ local textDrawFonts = {
 	[0] = { font = 'beckett', lsizemul = 1.25 },			-- TextDraw letter size -> dxDrawText scale multiplier
 	[1] = { font = 'default-bold', lsizemul = 1.25 },
 	[2] = { font = 'bankgothic',   lsizemul = 1.5 },
-	[3] = { font = 'default-bold', lsizemul = 1.25 }
+	[3] = { font = 'pricedown', lsizemul = 1.25 }
 }
 
 function visibleTextDrawsExist()
@@ -1008,6 +1008,7 @@ function hudGetHorizontalScale()
 end
 
 function initTextDraw(textdraw)
+	if not textdraw then return end
 	textdraw.clientTDId = textdraw.clientTDId or (#g_TextDraws + 1)
 	g_TextDraws[textdraw.clientTDId] = textdraw
 
@@ -1232,7 +1233,12 @@ function GameTextForPlayer(text, time, style)
 		destroyGameText(gIndex)
 	end
 
-	destroyAllGameTextsWithStyle(style) -- So same styles don't overlap
+	if style >= 0 and style <= 6 then
+		-- So same styles don't overlap
+		destroyAllGameTextsWithStyle(style)
+	else
+		return
+	end
 
 	--[[
 		alignments
@@ -1240,30 +1246,62 @@ function GameTextForPlayer(text, time, style)
 			2 = center
 			3 = right
 	]]
-	gameText[gIndex] = { text = text, font = 2 }
-	if style == 1 then
-		gameText[gIndex].x = 0.9 * 640
-		gameText[gIndex].y = 0.8 * 448
+	gameText[gIndex] = { text = text, outlinesize = 2 }
+	if (style >= 0 and style <= 1) or style == 6 then
+		if style == 0 then
+			gameText[gIndex].x = 0.5 * 640
+			gameText[gIndex].y = 0.45 * 448
+			gameText[gIndex].color = tocolor(144, 98, 16)
+			gameText[gIndex].align = 2
+			time = 9000 -- Displays for 9 seconds regardless of time set
+		elseif style == 1 then
+			gameText[gIndex].x = 0.9 * 640
+			gameText[gIndex].y = 0.75 * 448
+			gameText[gIndex].color = tocolor(144, 98, 16)
+			gameText[gIndex].align = 3
+			time = 8000 -- Displays for 8 seconds regardless of time set
+		else
+			gameText[gIndex].x = 0.5 * 640
+			gameText[gIndex].y = 0.2 * 448
+			gameText[gIndex].color = tocolor(169, 196, 228)
+			gameText[gIndex].align = 2
+		end
 		gameText[gIndex].lheight = 0.5
 		gameText[gIndex].lwidth = 1.0
-		gameText[gIndex].align = 3
 		gameText[gIndex].upscaley = 3.0
 		gameText[gIndex].upscalex = 1.0
-		time = 8000 -- Fades out after 8 seconds regardless of time set according to the wiki
+		gameText[gIndex].font = 3
 	elseif style == 2 then
-		gameText[gIndex].x = 0.9 * 640
-		gameText[gIndex].y = 0.7 * 448
-		gameText[gIndex].align = 3
-	elseif style >= 3 then
+		gameText[gIndex].x = 0.5 * 640
+		gameText[gIndex].y = 0.4 * 448
+		gameText[gIndex].lheight = 1.0
+		gameText[gIndex].lwidth = 2.0
+		gameText[gIndex].color = tocolor(225, 225, 225)
+		gameText[gIndex].align = 2
+		gameText[gIndex].upscaley = 3.0
+		gameText[gIndex].upscalex = 1.0
+		gameText[gIndex].font = 0
+	elseif style >= 3 and style <= 5 then
 		-- ★
 		-- GTA replaces these with stars
 		gameText[gIndex].text = text:gsub("]", "★")
 		gameText[gIndex].x = 0.5 * 640
-		gameText[gIndex].y = 0.2 * 448
+		if style == 3 then
+			gameText[gIndex].y = 0.35 * 448
+			gameText[gIndex].color = tocolor(144, 98, 16)
+		elseif style == 4 then
+			gameText[gIndex].y = 0.2 * 448
+			gameText[gIndex].color = tocolor(144, 98, 16)
+		elseif style == 5 then
+			gameText[gIndex].y = 0.5 * 448
+			gameText[gIndex].color = tocolor(225, 225, 225)
+			time = 3000 -- Displays for 3 seconds regardless of time set
+		end
 		gameText[gIndex].lheight = 0.5
 		gameText[gIndex].lwidth = 1.0
 		gameText[gIndex].align = 2
 		gameText[gIndex].upscaley = 2.5
+		gameText[gIndex].font = 2
 	end
 	gameText[gIndex].style = style
 	initTextDraw(gameText[gIndex])
@@ -1386,7 +1424,7 @@ function TextDrawHideForPlayer(id)
 end
 
 function TextDrawPropertyChanged(id, prop, newval, skipInit)
-	if g_TextDraws == nil then
+	if not g_TextDraws then
 		outputConsole('[TextDrawPropertyChanged] Error: g_TextDraws is nil')
 		return
 	end
@@ -1397,7 +1435,7 @@ function TextDrawPropertyChanged(id, prop, newval, skipInit)
 		return
 	end
 
-	if g_TextDraws[clientTDIdx] == nil then
+	if not g_TextDraws[clientTDIdx] then
 		outputConsole('[TextDrawPropertyChanged] Error: g_TextDraws is nil at index: ' .. clientTDIdx)
 		return
 	end
