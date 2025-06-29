@@ -43,7 +43,7 @@ fndebug(
 
 function clientCall(player, fnName, ...)
 	local called = triggerClientEvent(player, 'onClientCall', resourceRoot, fnName, ...)
-	if called == nil or called == false then
+	if called == nil then
 		called = false -- if it's null set it to false to prevent stuff like 'concatenating nil values'
 	end
 	return called
@@ -153,7 +153,7 @@ g_Keys = {
 	[101] = '/',
 	[102] = '#',
 	[103] = '\\',
-	[104] = '=',
+	[104] = '='
 }
 
 g_EventNames = {
@@ -164,12 +164,14 @@ g_EventNames = {
 	OnPlayerLeaveCheckpoint = true,
 	OnPlayerEnterRaceCheckpoint = true,
 	OnPlayerLeaveRaceCheckpoint = true,
-	OnVehicleStreamIn = true,
 	OnPlayerStreamIn = true,
+	OnVehicleStreamIn = true,
 	OnActorStreamIn = true,
-	OnVehicleStreamOut = true,
+	OnBotStreamIn = true,
 	OnPlayerStreamOut = true,
+	OnVehicleStreamOut = true,
 	OnActorStreamOut = true,
+	OnBotStreamOut = true,
 	OnPlayerExitedMenu = true,
 	OnPlayerSelectedMenuRow = true,
 	OnDialogResponse = true,
@@ -190,6 +192,7 @@ g_EventNames = {
 	OnPlayerTakeDamage = true,
 	OnPlayerGiveDamageActor = true,
 	OnPlayerWeaponSwitch = true,
+	OnPlayerWeaponReload = true,
 	OnPlayerDeath = true,
 	OnVehicleSpawn = true,
 	OnBotEnterVehicle = true,
@@ -200,22 +203,21 @@ g_EventNames = {
 	OnVehicleDeath = true,
 	OnMarkerHit = true,
 	OnMarkerLeave = true,
+	OnBotTakeDamage = true,
 	OnBotDeath = true,
-	OnBotPickUpPickup = true,
 	OnPlayerPickUpPickup = true,
 	OnPlayerCommandText = true,
 	OnPlayerClickWorld = true,
-	OnPlayerClickWorldPlayer = true,
-	OnPlayerClickWorldObject = true,
-	OnPlayerClickWorldVehicle = true,
 	OnPlayerClickPlayer = true,
 	OnPlayerClickMap = true,
 	OnObjectMoved = true,
 	OnPlayerObjectMoved = true,
-	OnBotConnect = true,
+	OnBotCreate = true,
 	OnMarkerCreate = true,
 	OnPlayerStateChange = true,
 	OnBotStateChange = true,
+	OnPlayerStuntStart = true,
+	OnPlayerStuntFinish = true
 }
 
 local allowedRPC = {
@@ -276,22 +278,33 @@ function toggleSpecialProperties()
 	setWorldSpecialPropertyEnabled('snipermoon', true)
 end
 
+local _getPedOccupiedVehicle = getPedOccupiedVehicle
+function getPedOccupiedVehicle(player)
+	if not isElement(player) then return false end
+
+	if getElementType(player) == 'player' then
+		local data = g_Players[getElemID(player)]
+		return data and data.vehicle
+	end
+
+	local data = g_Bots[getElemID(player)]
+	return data and data.vehicle
+end
+
 local _warpPedIntoVehicle = warpPedIntoVehicle
 function warpPedIntoVehicle(player, vehicle, seat)
-	removePedFromVehicle(player)
-	setTimer(
-		function()
-			_warpPedIntoVehicle(player, vehicle, seat)
-			if getElementType(player) == 'player' then
-				setCameraTarget(player, player)
-				g_Players[getElemID(player)].vehicle = vehicle
-			else
-				g_Bots[getElemID(player)].vehicle = vehicle
-			end
-		end,
-		500,
-		1
-	)
+	if not isElement(player) then return end
+
+	if not getPedOccupiedVehicle(player) then
+		_warpPedIntoVehicle(player, vehicle, seat)
+
+		if getElementType(player) == 'player' then
+			setCameraTarget(player, player)
+		end
+	else
+		removePedFromVehicle(player)
+		setTimer(warpPedIntoVehicle, 500, 1, player, vehicle, seat)
+	end
 end
 
 local _bindKey = bindKey
@@ -327,16 +340,6 @@ function isPedDead(player)
 	end
 	local x, y, z = getElementPosition(player)
 	return x == 0 and y == 0 and z == 0
-end
-
-local _spawnPlayer = spawnPlayer
-function spawnPlayer(player, x, y, z, r, skin, interior, ...)
-	local result = _spawnPlayer(player, x, y, z, r, skin, interior, ...)
-	return result
-end
-
-function destroyBlipsAttachedTo(elem)
-	table.each(table.filter(getAttachedElements(elem) or {}, getElementType, 'blip'), destroyElement)
 end
 
 function giveWeapons(player, weapons, currentslot)
@@ -819,15 +822,6 @@ function readDWORDAt(hFile, offset)
 	return readDWORD(hFile)
 end
 
-function readDWORDs(hFile, offset, length)
-	local result = {}
-	fileSetPos(hFile, offset)
-	for i = 0, length - 4, 4 do
-		result[i] = readDWORD(amx)
-	end
-	return result
-end
-
 function readString(hFile, offset)
 	local result = ''
 	fileSetPos(hFile, offset)
@@ -837,20 +831,6 @@ function readString(hFile, offset)
 		curByte = readBYTE(hFile)
 	end
 	return result
-end
-
-function dumpAMXTable(amx, tableName, chunk)
-	if not chunk then
-		chunk = Chunk.create(amx.name .. '.amx', 1, 2)
-		chunk.rAMX = 0
-		chunk.rTemp = 1
-	end
-	chunk:newtable(chunk.rTemp, 0, 0)
-	for k, v in pairs(amx[tableName]) do
-		chunk:settable(chunk.rTemp, chunk:K(k), chunk:K(v))
-	end
-	chunk:settable(chunk.rAMX, chunk:K(tableName), chunk.rTemp)
-	return chunk
 end
 
 -- MEMORY reading/writing functions
@@ -922,58 +902,6 @@ function float2cell(float)
 end
 --]]
 
-function string.dword(num)
-	local floor = math.floor
-	return string.char(num % 256, floor(num / 256) % 256, floor(num / 65536) % 256, floor(num / 16777216) % 256)
-end
-
-function string.double(dbl)
-	if dbl == 0 then
-		return ('\0'):rep(8)
-	end
-
-	local floor, ldexp = math.floor, math.ldexp
-
-	-- sign bit
-	local sign = 0
-	if dbl < 0 then
-		sign = 2 ^ 63
-		dbl = -dbl
-	end
-	local ipart, fpart = math.modf(dbl)
-	-- exponent
-	local exp = 0
-	while ipart > 2 ^ exp do
-		exp = exp + 1
-	end
-	if 2 ^ exp > ipart then
-		exp = exp - 1
-	end
-	-- mantissa
-	local numFPartBits = 0
-	local fpartBits = 0
-	while fpart ~= 0 and numFPartBits < 52 do
-		fpart = 2 * fpart
-		if fpart >= 1 then
-			fpart = fpart - 1
-			fpartBits = fpartBits * 2 + 1
-		else
-			fpartBits = fpartBits * 2
-		end
-		numFPartBits = numFPartBits + 1
-	end
-	ipart = ipart - 2 ^ exp
-	local mantissa = ldexp(ipart, numFPartBits) + fpartBits
-
-	-- build
-	local num = sign + ldexp(exp + 1023, 52) + ldexp(mantissa, 52 - (exp + numFPartBits))
-	local result = ''
-	for i = 0, 7 do
-		result = result .. string.char(floor(num / (2 ^ (i * 8))) % 256)
-	end
-	return result
-end
-
 function string:split(sep)
 	if #self == 0 then
 		return {}
@@ -1002,7 +930,7 @@ function color2cell(r, g, b, a)
 	r = math.min(math.max(r, 0), 255)
 	g = math.min(math.max(g, 0), 255)
 	b = math.min(math.max(b, 0), 255)
-	a = a and math.min(math.max(a, 0), 255) or 255
+	a = math.min(math.max(a, 0), 255)
 	return bitLShift(r, 24) + bitLShift(g, 16) + bitLShift(b, 8) + a
 end
 
@@ -1013,38 +941,22 @@ function isPed(elem)
 	return false
 end
 
-function isCustomPickup(elem)
-	local model = getElementModel(elem)
-	if model == 1272 or model == 1273 or model == 1239 then
-		return true
-	end
-	return false
-end
-
 function deprecated(native, version, additional)
-	if native ~= nil then
-		if version ~= '' or version ~= nil then
-			outputDebugString(native .. ' has been deprecated since ' .. version .. ' and will no longer be available.')
-			return
-		end
-		if additional ~= '' or additional ~= nil then
-			outputDebugString(native .. ' has been deprecated since ' .. version .. ' and will no longer be available. More info: ' .. additional .. '.')
-			return
-		end
+	if not native then return end
+	if not version or version == '' then
 		outputDebugString(native .. ' is deprecated and will no longer be available.')
+	elseif not additional or additional == '' then
+		outputDebugString(native .. ' has been deprecated since ' .. version .. ' and will no longer be available.')
+	else
+		outputDebugString(native .. ' has been deprecated since ' .. version .. ' and will no longer be available. More info: ' .. additional .. '.')
 	end
 end
 
 function notImplemented(native, additional)
-	if ShowUnimplementedErrors then
-		if native ~= nil then
-			if additional == '' or additional == nil then
-				outputDebugString('Sorry, but ' .. native .. ' is not implemented.')
-				return
-			else
-				outputDebugString('Sorry, but ' .. native .. ' is not implemented. More info: ' .. additional .. '.')
-				return
-			end
-		end
+	if not ShowUnimplementedErrors or not native then return end
+	if not additional or additional == '' then
+		outputDebugString('Sorry, but ' .. native .. ' is not implemented.')
+	else
+		outputDebugString('Sorry, but ' .. native .. ' is not implemented. More info: ' .. additional .. '.')
 	end
 end

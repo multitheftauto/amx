@@ -34,10 +34,10 @@ g_Vehicles = {}
 setmetatable(g_Vehicles, defaultEmptyTableMt)
 
 g_Menus = {}
+g_PlayerObjects = {}
 g_TextDraws = {}
 g_TextLabels = {}
 g_Blips = {}
-g_PlayerObjects = {}
 
 local screenWidth, screenHeight = guiGetScreenSize()
 
@@ -195,10 +195,12 @@ function destroyClassSelGUI()
 		g_ClassSelectionInfo.gui = nil
 		removeEventHandler('onClientRender', root, renderClassSelText)
 	end
+
 	setPlayerHudComponentVisible('radar', true)
 	setCameraTarget(localPlayer)
 	setElementCollisionsEnabled(localPlayer, true)
-	showCursor(false)
+	ShowPlayerDialog(-1, -1, '', '', '', '') -- hide any dialog and cursor
+
 	if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
 		removeEventHandler('onClientGUIClick', g_ClassSelectionInfo.gui.btnLeft, ClassSelLeft)
 		removeEventHandler('onClientGUIClick', g_ClassSelectionInfo.gui.btnRight, ClassSelRight)
@@ -305,21 +307,16 @@ ca.minZ = math.rad(-45)
 function removeCamAttachHandler()
 	--outputConsole('removeCamAttachHandler was called')
 	if (ca.active == 1) then
-		outputConsole('Destroying cam attach handler...')
+		--outputConsole('Destroying cam attach handler...')
 		ca.active = 0
 	end
 end
 
 function camAttachRender()
 	if (ca.active == 1) then
-		if isCursorShowing() then return end
-
 		local x1, y1, z1 = 0.0, 0.0, 0.0
-		if ca.objCamPos ~= nil then
+		if isElement(ca.objCamPos) then
 			x1, y1, z1 = getElementPosition(ca.objCamPos)
-			if not x1 then x1 = 0.0 end
-			if not y1 then y1 = 0.0 end
-			if not z1 then z1 = 0.0 end
 		end
 		local camDist = ca.dist
 		local cosZ = math.cos(ca.z)
@@ -332,7 +329,7 @@ function camAttachRender()
 		if getPedTask(localPlayer, 'secondary', 0) == 'TASK_SIMPLE_USE_GUN' or isPedDoingGangDriveby(localPlayer) then
 			setPedAimTarget(localPlayer, camX, camY, camZ)
 			setPlayerHudComponentVisible(localPlayer, 'crosshair', true)
-			outputConsole('ped is aiming')
+			--outputConsole('ped is aiming')
 		end
 
 		--outputConsole(string.format("camAttachRender - Camera Matrix is: CamPos: %f %f %f CamLookAt: %f %f %f", camX, camY, camZ, x1, y1, z1))
@@ -343,7 +340,8 @@ end
 
 function cursorMouseMoveHandler(curX, curY, absX, absY)
 	if (ca.active == 1) then
-		if isCursorShowing() then return end
+		if isCursorShowing() or isMainMenuActive() then return end
+		if isChatBoxInputActive() or isConsoleActive() then return end
 
 		local diffX = curX - 0.5
 		local diffY = curY - 0.5
@@ -401,7 +399,7 @@ sm.objCamPos, sm.objLookAt = nil, nil
 function removeInterpCamHandler()
 	--outputConsole('removeInterpCamHandler was called')
 	if (sm.moov == 1) then
-		outputConsole('Destroying cam handler...')
+		--outputConsole('Destroying cam handler...')
 		sm.moov = 0
 	end
 end
@@ -409,17 +407,11 @@ end
 function camRender()
 	if (sm.moov == 1) then
 		local x1, y1, z1, x2, y2, z2 = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
-		if sm.objCamPos ~= nil then
+		if isElement(sm.objCamPos) then
 			x1, y1, z1 = getElementPosition(sm.objCamPos)
-			if not x1 then x1 = 0.0 end
-			if not y1 then y1 = 0.0 end
-			if not z1 then z1 = 0.0 end
 		end
-		if sm.objLookAt ~= nil then
+		if isElement(sm.objLookAt) then
 			x2, y2, z2 = getElementPosition(sm.objLookAt)
-			if not x2 then x2 = 0.0 end
-			if not y2 then y2 = 0.0 end
-			if not z2 then z2 = 0.0 end
 		end
 		--outputConsole(string.format("Current Camera Matrix is: CamPos: %f %f %f CamLookAt: %f %f %f", x1, y1, z1, x2, y2, z2))
 		setCameraMatrix(x1, y1, z1, x2, y2, z2)
@@ -441,13 +433,13 @@ function setupCameraObject(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 end
 
 function InterpolateCameraPos(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
-	outputConsole(string.format("InterpolateCameraPos called with args %f %f %f %f %f %f %d %d", FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut))
+	--outputConsole(string.format("InterpolateCameraPos called with args %f %f %f %f %f %f %d %d", FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut))
 	sm.objCamPos = setupCameraObject(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	addEventHandler('onClientPreRender', root, camRender)
 end
 
 function InterpolateCameraLookAt(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
-	outputConsole(string.format("InterpolateCameraLookAt called with args %f %f %f %f %f %f %d %d", FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut))
+	--outputConsole(string.format("InterpolateCameraLookAt called with args %f %f %f %f %f %f %d %d", FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut))
 	sm.objLookAt = setupCameraObject(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	addEventHandler('onClientPreRender', root, camRender)
 end
@@ -711,7 +703,7 @@ function SetVehicleParamsForPlayer(vehicle, isObjective, doorsLocked)
 			destroyElement(vehInfo.blip)
 			vehInfo.blip = nil
 		end
-		vehInfo.blip = createBlipAttachedTo(vehicle, 0, 2, 222, 188, 97)
+		vehInfo.blip = createBlipAttachedTo(vehicle, 0, 2, 226, 192, 99)
 		setBlipOrdering(vehInfo.blip, 1)
 		vehInfo.blippersistent = true
 		setElementParent(vehInfo.blip, vehicle)
@@ -738,6 +730,9 @@ function dropVehicle(vehicle)
 		vehicleDrops[vehicle] = nil
 	end
 	if not isElement(vehicle) or not isVehicleEmpty(vehicle) then
+		if isElement(vehicle) then
+			setElementCollisionsEnabled(vehicle, true)
+		end
 		if dropdata.tries < VEHICLE_DROP_MAX_TRIES then
 			killTimer(dropdata.timer)
 		end
@@ -786,38 +781,73 @@ addEventHandler('onClientElementStreamIn', root,
 
 			local vehID = getElemID(source)
 			local vehInfo = vehID and g_Vehicles[vehID]
+
 			if vehInfo and not vehInfo.blip then
-				vehInfo.blip = createBlipAttachedTo(source, 0, 1, 136, 136, 136, 150, 0, 500)
+				vehInfo.blip = createBlipAttachedTo(source, 0, 1, 136, 136, 136, 150, 0, 500.0)
 				setElementParent(vehInfo.blip, source)
 			end
+
+			setVehicleWindowOpen(source, 2, not getElementData(source, 'WindowFrontRight'))
+			setVehicleWindowOpen(source, 3, not getElementData(source, 'WindowRearRight'))
+			setVehicleWindowOpen(source, 4, not getElementData(source, 'WindowFrontLeft'))
+			setVehicleWindowOpen(source, 5, not getElementData(source, 'WindowRearLeft'))
+
 			triggerServerEvent('onAmxClientVehicleStream', localPlayer, getElemID(source), true)
 		elseif getElementType(source) == 'player' then
 			triggerServerEvent('onAmxClientPlayerStream', localPlayer, getElemID(source), true)
-		elseif getElementType(source) == 'ped' and getElementData(source, 'ActorPed') then
-			triggerServerEvent('onAmxClientActorStream', localPlayer, getElemID(source), true)
+		elseif getElementType(source) == 'ped' then
+			if getElementData(source, 'ActorPed') then
+				triggerServerEvent('onAmxClientActorStream', localPlayer, getElemID(source), true)
+			else
+				triggerServerEvent('onAmxClientBotStream', localPlayer, getElemID(source), true)
+			end
 		end
 	end
 )
 
 addEventHandler('onClientElementStreamOut', root,
 	function()
-		if getElementType(source) ~= 'vehicle' then
+		if getElementType(source) == 'vehicle' then
 			local vehID = getElemID(source)
 			local vehInfo = vehID and g_Vehicles[vehID]
+
 			if vehInfo and vehInfo.blip and not vehInfo.blippersistent then
 				if isElement(vehInfo.blip) then
 					destroyElement(vehInfo.blip)
 				end
 				vehInfo.blip = nil
 			end
+
 			triggerServerEvent('onAmxClientVehicleStream', localPlayer, getElemID(source), false)
 		elseif getElementType(source) == 'player' then
 			triggerServerEvent('onAmxClientPlayerStream', localPlayer, getElemID(source), false)
-		elseif getElementType(source) == 'ped' and getElementData(source, 'ActorPed') then
-			triggerServerEvent('onAmxClientActorStream', localPlayer, getElemID(source), false)
+		elseif getElementType(source) == 'ped' then
+			if getElementData(source, 'ActorPed') then
+				triggerServerEvent('onAmxClientActorStream', localPlayer, getElemID(source), false)
+			else
+				triggerServerEvent('onAmxClientBotStream', localPlayer, getElemID(source), false)
+			end
 		end
 	end
 )
+
+local function clientPlayerStuntStart(stuntType)
+	local vehicle = getPedOccupiedVehicle(localPlayer)
+	if not vehicle then return cancelEvent() end
+
+	triggerServerEvent('OnPlayerStuntStart_Ev', localPlayer, vehicle, stuntType)
+end
+addEventHandler('onClientPlayerStuntStart', root, clientPlayerStuntStart)
+
+local function clientPlayerStuntFinish(stuntType, stuntTime, stuntDistance)
+	local vehicle = getPedOccupiedVehicle(localPlayer)
+	if not vehicle then return cancelEvent() end
+
+	triggerServerEvent('OnPlayerStuntFinish_Ev', localPlayer, vehicle, stuntType, stuntTime, stuntDistance)
+end
+addEventHandler('onClientPlayerStuntFinish', root, clientPlayerStuntFinish)
+
+local friendlyFire = false
 
 local function clientVehicleDamage(attacker, weapon, loss, x, y, z, tire)
 	if not isElement(source) then return end
@@ -829,6 +859,27 @@ local function clientVehicleDamage(attacker, weapon, loss, x, y, z, tire)
 	if not driver then
 		-- block any damage for unoccupied vehicles like SA-MP does
 		return cancelEvent()
+	end
+
+	if friendlyFire then
+		local issuer = attacker
+
+		if issuer then
+			if getElementType(issuer) == 'vehicle' then
+				issuer = getVehicleOccupant(issuer)
+			end
+			if issuer == driver then
+				issuer = nil
+			end
+		end
+
+		local team = getPlayerTeam(driver)
+		if issuer and team and getTeamName(team) ~= 'Team 256' then
+			if getPlayerTeam(issuer) == team then
+				-- block any damage from a teammate
+				return cancelEvent()
+			end
+		end
 	end
 
 	if driver ~= localPlayer then return end
@@ -847,6 +898,10 @@ addEventHandler('onClientVehicleStartEnter', root,
 
 function DestroyVehicle(vehID)
 	g_Vehicles[vehID] = nil
+end
+
+function updateFriendlyFire(enable)
+	friendlyFire = enable
 end
 -----------------------------
 -- Text
@@ -920,7 +975,7 @@ local textDrawFonts = {
 	[0] = { font = 'beckett', lsizemul = 1.25 },			-- TextDraw letter size -> dxDrawText scale multiplier
 	[1] = { font = 'default-bold', lsizemul = 1.25 },
 	[2] = { font = 'bankgothic',   lsizemul = 1.5 },
-	[3] = { font = 'default-bold', lsizemul = 1.25 }
+	[3] = { font = 'pricedown', lsizemul = 1.25 }
 }
 
 function visibleTextDrawsExist()
@@ -953,6 +1008,7 @@ function hudGetHorizontalScale()
 end
 
 function initTextDraw(textdraw)
+	if not textdraw then return end
 	textdraw.clientTDId = textdraw.clientTDId or (#g_TextDraws + 1)
 	g_TextDraws[textdraw.clientTDId] = textdraw
 
@@ -1067,7 +1123,7 @@ end
 
 function renderTextDraws()
 	for id, textdraw in pairs(g_TextDraws) do
-		if textdraw.visible and textdraw.parts and not (textdraw.text:match('^%s*$')) then-- and not textdraw.usebox) then
+		if textdraw.visible and textdraw.parts and not (textdraw.text:match('^%s*$')) then --and not textdraw.usebox then
 			local font = textDrawFonts[textdraw.font and textdraw.font >= 0 and textdraw.font <= #textDrawFonts and textdraw.font or 0]
 
 			textdraw.upscalex = textdraw.upscalex or 1.0
@@ -1090,7 +1146,7 @@ function renderTextDraws()
 
 			font = font.font
 			-- Process box alignments
-			if textdraw.usebox ~= nil and textdraw.usebox ~= 0 then
+			if textdraw.usebox and textdraw.usebox ~= 0 then
 				--outputConsole('textdraw uses box: ' .. textdraw.text)
 				local boxcolor = textdraw.boxcolor or tocolor(0, 0, 0, 120 * (textdraw.alpha or 1))
 				local x, y, w, h
@@ -1157,8 +1213,8 @@ function destroyTextDraw(textdraw)
 		return
 	end
 	hideTextDraw(textdraw)
-	g_TextDraws[textdraw.clientTDId] = nil
 	--table.removevalue(g_TextDraws, textdraw)
+	g_TextDraws[textdraw.clientTDId] = nil
 end
 
 local gameText = {}
@@ -1166,7 +1222,7 @@ local gIndex = 1
 
 function destroyAllGameTextsWithStyle(stylePassed)
 	for i = 1, gIndex do
-		if gameText[i] ~= nil and gameText[i].style == stylePassed then
+		if gameText[i] and gameText[i].style == stylePassed then
 			destroyGameText(i)
 		end
 	end
@@ -1177,7 +1233,12 @@ function GameTextForPlayer(text, time, style)
 		destroyGameText(gIndex)
 	end
 
-	destroyAllGameTextsWithStyle(style) -- So same styles don't overlap
+	if style >= 0 and style <= 6 then
+		-- So same styles don't overlap
+		destroyAllGameTextsWithStyle(style)
+	else
+		return
+	end
 
 	--[[
 		alignments
@@ -1185,30 +1246,62 @@ function GameTextForPlayer(text, time, style)
 			2 = center
 			3 = right
 	]]
-	gameText[gIndex] = { text = text, font = 2 }
-	if style == 1 then
-		gameText[gIndex].x = 0.9 * 640
-		gameText[gIndex].y = 0.8 * 448
+	gameText[gIndex] = { text = text, outlinesize = 2 }
+	if (style >= 0 and style <= 1) or style == 6 then
+		if style == 0 then
+			gameText[gIndex].x = 0.5 * 640
+			gameText[gIndex].y = 0.45 * 448
+			gameText[gIndex].color = tocolor(144, 98, 16)
+			gameText[gIndex].align = 2
+			time = 9000 -- Displays for 9 seconds regardless of time set
+		elseif style == 1 then
+			gameText[gIndex].x = 0.9 * 640
+			gameText[gIndex].y = 0.75 * 448
+			gameText[gIndex].color = tocolor(144, 98, 16)
+			gameText[gIndex].align = 3
+			time = 8000 -- Displays for 8 seconds regardless of time set
+		else
+			gameText[gIndex].x = 0.5 * 640
+			gameText[gIndex].y = 0.2 * 448
+			gameText[gIndex].color = tocolor(169, 196, 228)
+			gameText[gIndex].align = 2
+		end
 		gameText[gIndex].lheight = 0.5
 		gameText[gIndex].lwidth = 1.0
-		gameText[gIndex].align = 3
 		gameText[gIndex].upscaley = 3.0
 		gameText[gIndex].upscalex = 1.0
-		time = 8000 -- Fades out after 8 seconds regardless of time set according to the wiki
+		gameText[gIndex].font = 3
 	elseif style == 2 then
-		gameText[gIndex].x = 0.9 * 640
-		gameText[gIndex].y = 0.7 * 448
-		gameText[gIndex].align = 3
-	elseif style >= 3 then
+		gameText[gIndex].x = 0.5 * 640
+		gameText[gIndex].y = 0.4 * 448
+		gameText[gIndex].lheight = 1.0
+		gameText[gIndex].lwidth = 2.0
+		gameText[gIndex].color = tocolor(225, 225, 225)
+		gameText[gIndex].align = 2
+		gameText[gIndex].upscaley = 3.0
+		gameText[gIndex].upscalex = 1.0
+		gameText[gIndex].font = 0
+	elseif style >= 3 and style <= 5 then
 		-- ★
 		-- GTA replaces these with stars
 		gameText[gIndex].text = text:gsub("]", "★")
 		gameText[gIndex].x = 0.5 * 640
-		gameText[gIndex].y = 0.2 * 448
+		if style == 3 then
+			gameText[gIndex].y = 0.35 * 448
+			gameText[gIndex].color = tocolor(144, 98, 16)
+		elseif style == 4 then
+			gameText[gIndex].y = 0.2 * 448
+			gameText[gIndex].color = tocolor(144, 98, 16)
+		elseif style == 5 then
+			gameText[gIndex].y = 0.5 * 448
+			gameText[gIndex].color = tocolor(225, 225, 225)
+			time = 3000 -- Displays for 3 seconds regardless of time set
+		end
 		gameText[gIndex].lheight = 0.5
 		gameText[gIndex].lwidth = 1.0
 		gameText[gIndex].align = 2
 		gameText[gIndex].upscaley = 2.5
+		gameText[gIndex].font = 2
 	end
 	gameText[gIndex].style = style
 	initTextDraw(gameText[gIndex])
@@ -1218,7 +1311,7 @@ function GameTextForPlayer(text, time, style)
 end
 
 function destroyGameText(index)
-	if gameText[index] == nil then
+	if not gameText[index] then
 		return
 	end
 	destroyTextDraw(gameText[index])
@@ -1274,9 +1367,9 @@ end
 
 function Create3DTextLabel(id, textlabel)
 	textlabel.id = id
+	--outputConsole('Created text label with id ' .. textlabel.id)
 	textlabel.enabled = false
 	g_TextLabels[id] = textlabel
-	--outputConsole('Created text label with id ' .. textlabel.id)
 end
 
 function Delete3DTextLabel(id)
@@ -1285,8 +1378,8 @@ function Delete3DTextLabel(id)
 end
 
 function Attach3DTextLabel(textlabel)
-	outputConsole('Attaching text label with id ' .. textlabel.id)
 	local id = textlabel.id
+	--outputConsole('Attaching text label with id ' .. textlabel.id)
 	textlabel.enabled = true
 	g_TextLabels[id] = textlabel
 end
@@ -1331,7 +1424,7 @@ function TextDrawHideForPlayer(id)
 end
 
 function TextDrawPropertyChanged(id, prop, newval, skipInit)
-	if g_TextDraws == nil then
+	if not g_TextDraws then
 		outputConsole('[TextDrawPropertyChanged] Error: g_TextDraws is nil')
 		return
 	end
@@ -1342,7 +1435,7 @@ function TextDrawPropertyChanged(id, prop, newval, skipInit)
 		return
 	end
 
-	if g_TextDraws[clientTDIdx] == nil then
+	if not g_TextDraws[clientTDIdx] then
 		outputConsole('[TextDrawPropertyChanged] Error: g_TextDraws is nil at index: ' .. clientTDIdx)
 		return
 	end
@@ -1365,9 +1458,9 @@ end
 
 function TextDrawShowForPlayer(id)
 	--outputConsole(string.format("TextDrawShowForPlayer trying to show textdraw with id %d", id))
-	--outputConsole(string.format("TextDrawShowForPlayer trying to show textdraw with text %s", g_TextDraws[id].text))
 	local clientTDIdx = findTextDrawHandleByID(id)
 	if clientTDIdx ~= -1 then
+		--outputConsole(string.format("TextDrawShowForPlayer trying to show textdraw with text %s", g_TextDraws[id].text))
 		showTextDraw(g_TextDraws[clientTDIdx])
 	end
 end
@@ -1557,8 +1650,12 @@ function closeMenu()
 	destroyElement(g_CurrentMenu.closebtnhover)
 	g_CurrentMenu.closebtnhover = nil
 	g_CurrentMenu = nil
-	showCursor(false)
 	unbindKey('enter', 'down', OnKeyPress)
+	if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
+		showCursor(true)
+	else
+		showCursor(false)
+	end
 end
 
 function exitMenu()
@@ -1678,6 +1775,11 @@ local function clientPlayerDamage(attacker, weapon, bodypart, loss)
 	if source == localPlayer then -- take damage
 		if issuer and getElementType(issuer) ~= 'player' then issuer = nil end
 		triggerServerEvent('OnPlayerDamage_Ev', source, issuer, false, loss, weapon, bodypart)
+
+		local team = getPlayerTeam(source)
+		if issuer and team and getTeamName(team) ~= 'Team 256' then
+			if getPlayerTeam(issuer) == team then cancelEvent() end
+		end
 	end
 end
 addEventHandler('onClientPlayerDamage', root, clientPlayerDamage)
@@ -1720,7 +1822,7 @@ end
 addEventHandler('onClientPlayerWeaponFire', localPlayer, clientPlayerWeaponFire)
 
 local function clientPedDamage(attacker, weapon, bodypart, loss)
-	if getElementType(source) == 'ped' and getElementData(source, 'ActorPed') then
+	if getElementType(source) == 'ped' then
 		local issuer = attacker
 
 		if issuer and getElementType(issuer) == 'vehicle' then
@@ -1733,12 +1835,16 @@ local function clientPedDamage(attacker, weapon, bodypart, loss)
 			end
 		end
 
-		if issuer == localPlayer and not getElementData(source, 'Invulnerable') then
-			triggerServerEvent('OnPlayerGiveDamageActor_Ev', issuer, source, loss, weapon, bodypart)
-		end
+		if getElementData(source, 'ActorPed') then
+			if issuer == localPlayer and not getElementData(source, 'Invulnerable') then
+				triggerServerEvent('OnPlayerGiveDamageActor_Ev', issuer, source, loss, weapon, bodypart)
+			end
 
-		-- Actor damage controlled by the server in any case
-		return cancelEvent()
+			-- Actor damage controlled by the server in any case
+			return cancelEvent()
+		elseif issuer == localPlayer then
+			triggerServerEvent('OnBotTakeDamage_Ev', source, issuer, loss, weapon, bodypart)
+		end
 	end
 end
 addEventHandler('onClientPedDamage', root, clientPedDamage)
@@ -1876,7 +1982,7 @@ function TogglePlayerClock(toggle)
 end
 
 function createListDialog(titleText, message, button1txt, button2txt)
-	if listWindow ~= nil then
+	if listWindow then
 		removeEventHandler('onClientGUIClick', getRootElement(), OnListDialogButton1Click) -- Remove handlers so they are not registered more than once
 		removeEventHandler('onClientGUIClick', getRootElement(), OnListDialogButton2Click)
 		destroyElement(listWindow) -- Assuming inputWindow is the parent of everything, it should remove the whole hierarchy
@@ -1914,69 +2020,70 @@ function createListDialog(titleText, message, button1txt, button2txt)
 end
 
 function createInputDialog(titleText, message, button1txt, button2txt)
-		if inputWindow ~= nil then
-			removeEventHandler('onClientGUIClick', getRootElement(), OnInputDialogButton1Click) -- Remove handlers so they are not registered more than once
-			removeEventHandler('onClientGUIClick', getRootElement(), OnInputDialogButton2Click)
-			destroyElement(inputWindow) -- Assuming inputWindow is the parent of everything, it should remove the whole hierarchy
-		end
-		inputDialog = nil
-		inputWindow = guiCreateWindow(screenWidth / 2 - 541 / 2, screenHeight / 2 - 352 / 2, 541, 352, titleText, false)
-		guiWindowSetMovable(inputWindow, false)
-		guiWindowSetSizable(inputWindow, false)
-		inputLabel = guiCreateColoredLabel(0.1, 0.1, 1.0, 0.8, message, inputWindow, true)
-		inputEdit = guiCreateEdit(0.0, 0.7, 1.0, 0.1, '', true, inputWindow)
+	if inputWindow then
+		removeEventHandler('onClientGUIClick', getRootElement(), OnInputDialogButton1Click) -- Remove handlers so they are not registered more than once
+		removeEventHandler('onClientGUIClick', getRootElement(), OnInputDialogButton2Click)
+		destroyElement(inputWindow) -- Assuming inputWindow is the parent of everything, it should remove the whole hierarchy
+	end
 
-		local xpos = 0.0
-		if #button1txt == 0 or #button2txt == 0 then
-			xpos = 0.40 -- Center
-		end
+	inputDialog = nil
+	inputWindow = guiCreateWindow(screenWidth / 2 - 541 / 2, screenHeight / 2 - 352 / 2, 541, 352, titleText, false)
+	guiWindowSetMovable(inputWindow, false)
+	guiWindowSetSizable(inputWindow, false)
+	inputLabel = guiCreateColoredLabel(0.1, 0.1, 1.0, 0.8, message, inputWindow, true)
+	inputEdit = guiCreateEdit(0.0, 0.7, 1.0, 0.1, '', true, inputWindow)
 
-		inputButton1 = guiCreateButton(xpos ~= 0.0 and xpos or 0.3, 0.9, 0.15, 0.1, button1txt, true, inputWindow) -- x, y, width, height
-		inputButton2 = guiCreateButton(xpos ~= 0.0 and xpos or 0.5, 0.9, 0.15, 0.1, button2txt, true, inputWindow)
+	local xpos = 0.0
+	if #button1txt == 0 or #button2txt == 0 then
+		xpos = 0.40 -- Center
+	end
 
-		if #button1txt == 0 then
-			guiSetVisible(inputButton1, false)
-		end
-		if #button2txt == 0 then
-			guiSetVisible(inputButton2, false)
-		end
+	inputButton1 = guiCreateButton(xpos ~= 0.0 and xpos or 0.3, 0.9, 0.15, 0.1, button1txt, true, inputWindow) -- x, y, width, height
+	inputButton2 = guiCreateButton(xpos ~= 0.0 and xpos or 0.5, 0.9, 0.15, 0.1, button2txt, true, inputWindow)
 
-		guiSetVisible(inputWindow, false)
-		addEventHandler('onClientGUIClick', inputButton1, OnInputDialogButton1Click, false)
-		addEventHandler('onClientGUIClick', inputButton2, OnInputDialogButton2Click, false)
+	if #button1txt == 0 then
+		guiSetVisible(inputButton1, false)
+	end
+	if #button2txt == 0 then
+		guiSetVisible(inputButton2, false)
+	end
+
+	guiSetVisible(inputWindow, false)
+	addEventHandler('onClientGUIClick', inputButton1, OnInputDialogButton1Click, false)
+	addEventHandler('onClientGUIClick', inputButton2, OnInputDialogButton2Click, false)
 end
 
 function createMessageDialog(titleText, message, button1txt, button2txt)
-		if msgWindow ~= nil then
-			removeEventHandler('onClientGUIClick', getRootElement(), OnMessageDialogButton1Click) -- Remove handlers so they are not registered more than once
-			removeEventHandler('onClientGUIClick', getRootElement(), OnMessageDialogButton2Click)
-			destroyElement(msgWindow) -- Assuming msgWindow is the parent of everything, it should remove the whole hierarchy
-		end
+	if msgWindow then
+		removeEventHandler('onClientGUIClick', getRootElement(), OnMessageDialogButton1Click) -- Remove handlers so they are not registered more than once
+		removeEventHandler('onClientGUIClick', getRootElement(), OnMessageDialogButton2Click)
+		destroyElement(msgWindow) -- Assuming msgWindow is the parent of everything, it should remove the whole hierarchy
+	end
 
-		msgDialog = nil
-		msgWindow = guiCreateWindow(screenWidth / 2 - 541 / 2, screenHeight / 2 - 352 / 2, 541, 352, titleText, false)
-		guiWindowSetMovable(msgWindow, false)
-		guiWindowSetSizable(msgWindow, false)
-		msgLabel = guiCreateColoredLabel(0.1, 0.1, 1.0, 0.7, message, msgWindow, true)
+	msgDialog = nil
+	msgWindow = guiCreateWindow(screenWidth / 2 - 541 / 2, screenHeight / 2 - 352 / 2, 541, 352, titleText, false)
+	guiWindowSetMovable(msgWindow, false)
+	guiWindowSetSizable(msgWindow, false)
+	msgLabel = guiCreateColoredLabel(0.1, 0.1, 1.0, 0.7, message, msgWindow, true)
 
-		local xpos = 0.0
-		if #button1txt == 0 or #button2txt == 0 then
-			xpos = 0.40 -- Center
-		end
+	local xpos = 0.0
+	if #button1txt == 0 or #button2txt == 0 then
+		xpos = 0.40 -- Center
+	end
 
-		msgButton1 = guiCreateButton(xpos ~= 0.0 and xpos or 0.3, 0.9, 0.15, 0.1, button1txt, true, msgWindow) -- x, y, width, height
-		msgButton2 = guiCreateButton(xpos ~= 0.0 and xpos or 0.5, 0.9, 0.15, 0.1, button2txt, true, msgWindow)
+	msgButton1 = guiCreateButton(xpos ~= 0.0 and xpos or 0.3, 0.9, 0.15, 0.1, button1txt, true, msgWindow) -- x, y, width, height
+	msgButton2 = guiCreateButton(xpos ~= 0.0 and xpos or 0.5, 0.9, 0.15, 0.1, button2txt, true, msgWindow)
 
-		if #button1txt == 0 then
-			guiSetVisible(msgButton1, false)
-		end
-		if #button2txt == 0 then
-			guiSetVisible(msgButton2, false)
-		end
+	if #button1txt == 0 then
+		guiSetVisible(msgButton1, false)
+	end
+	if #button2txt == 0 then
+		guiSetVisible(msgButton2, false)
+	end
 
-		guiSetVisible(msgWindow, false)
-		addEventHandler('onClientGUIClick', msgButton1, OnMessageDialogButton1Click, false)
-		addEventHandler('onClientGUIClick', msgButton2, OnMessageDialogButton2Click, false)
+	guiSetVisible(msgWindow, false)
+	addEventHandler('onClientGUIClick', msgButton1, OnMessageDialogButton1Click, false)
+	addEventHandler('onClientGUIClick', msgButton2, OnMessageDialogButton2Click, false)
 end
 
 function clearListItem()
@@ -1986,7 +2093,7 @@ function clearListItem()
 		if not guiGridListRemoveColumn(listGrid, i) then -- Always clean up all columns
 			outputConsole('[ShowPlayerDialog] Error: Couldn\'t remove column: ' .. 'idx: ' .. i)
 		end
-		outputConsole('vals: ' .. 'idx: ' .. i)
+		--outputConsole('vals: ' .. 'idx: ' .. i)
 	end
 	guiGridListClear(listGrid)
 end
@@ -1997,7 +2104,11 @@ function OnListDialogButton1Click(button, state)
 		local text = guiGridListGetItemText(listGrid, row, column)
 		serverAMXEvent('OnDialogResponse', g_PlayerID, listDialog, 1, row, text)
 		guiSetVisible(listWindow, false)
-		showCursor(false)
+		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
+			showCursor(true)
+		else
+			showCursor(false)
+		end
 		listDialog = nil
 		clearListItem()
 	end
@@ -2009,7 +2120,11 @@ function OnListDialogButton2Click(button, state)
 		local text = guiGridListGetItemText(listGrid, row, column)
 		serverAMXEvent('OnDialogResponse', g_PlayerID, listDialog, 0, row, text)
 		guiSetVisible(listWindow, false)
-		showCursor(false)
+		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
+			showCursor(true)
+		else
+			showCursor(false)
+		end
 		listDialog = nil
 		clearListItem()
 	end
@@ -2019,7 +2134,11 @@ function OnInputDialogButton1Click(button, state)
 	if button == 'left' then
 		serverAMXEvent('OnDialogResponse', g_PlayerID, inputDialog, 1, 0, guiGetText(inputEdit))
 		guiSetVisible(inputWindow, false)
-		showCursor(false)
+		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
+			showCursor(true)
+		else
+			showCursor(false)
+		end
 		inputDialog = nil
 	end
 end
@@ -2028,7 +2147,11 @@ function OnInputDialogButton2Click(button, state)
 	if button == 'left' then
 		serverAMXEvent('OnDialogResponse', g_PlayerID, inputDialog, 0, 0, guiGetText(inputEdit))
 		guiSetVisible(inputWindow, false)
-		showCursor(false)
+		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
+			showCursor(true)
+		else
+			showCursor(false)
+		end
 		inputDialog = nil
 	end
 end
@@ -2037,7 +2160,11 @@ function OnMessageDialogButton1Click(button, state)
 	if button == 'left' then
 		serverAMXEvent('OnDialogResponse', g_PlayerID, msgDialog, 1, 0, '')
 		guiSetVisible(msgWindow, false)
-		showCursor(false)
+		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
+			showCursor(true)
+		else
+			showCursor(false)
+		end
 		msgDialog = nil
 	end
 end
@@ -2046,7 +2173,11 @@ function OnMessageDialogButton2Click(button, state)
 	if button == 'left' then
 		serverAMXEvent('OnDialogResponse', g_PlayerID, msgDialog, 0, 0, '')
 		guiSetVisible(msgWindow, false)
-		showCursor(false)
+		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
+			showCursor(true)
+		else
+			showCursor(false)
+		end
 		msgDialog = nil
 	end
 end
@@ -2076,14 +2207,14 @@ function guiCreateColoredLabel(ax, ay, bx, by,str, parent, relative) -- x, y, wi
 			lbl = guiCreateLabel(ax + incx, ay + incy, 1.0, by, cap, relative, scrollpane)
 			guiLabelSetHorizontalAlign(lbl, 'left')
 			table.insert(labels, lbl)
-			if (r == nil) then r = 255 end
-			if (g == nil) then g = 255 end
-			if (b == nil) then b = 255 end
+			if not r then r = 255 end
+			if not g then g = 255 end
+			if not b then b = 255 end
 			guiLabelSetColor(lbl, r, g, b)
 			r, g, b = tonumber('0x' .. col:sub(1, 2)), tonumber('0x' .. col:sub(3, 4)), tonumber('0x' .. col:sub(5, 6))
 
 			local match = cap:find('\n')
-			if match ~= nil then
+			if match then
 				local xtxtsize, ytxtsize = guiGetSize(lbl, true) -- not relative
 				incy = incy + (ytxtsize / 8) -- We found a /n so send it further down on the next line
 				incx = 0 -- Don't add spaces on new lines
@@ -2107,9 +2238,9 @@ function guiCreateColoredLabel(ax, ay, bx, by,str, parent, relative) -- x, y, wi
 		cap = str:sub(last)
 		lbl2 = guiCreateLabel(ax + incx, ay + incy, 1.0, by, cap, relative, scrollpane)
 		table.insert(labels, lbl2)
-		if (r == nil) then r = 255 end
-		if (g == nil) then g = 255 end
-		if (b == nil) then b = 255 end
+		if not r then r = 255 end
+		if not g then g = 255 end
+		if not b then b = 255 end
 		guiLabelSetColor(lbl2, r, g, b)
 	end
 	return labels
@@ -2142,7 +2273,11 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 			listDialog = nil
 			clearListItem()
 		end
-		showCursor(false)
+		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
+			showCursor(true)
+		else
+			showCursor(false)
+		end
 		return true
 	end
 	showCursor(true)

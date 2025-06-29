@@ -100,7 +100,7 @@ g_KeyMapping = setmetatable({
 	[2 ^ 16] = 'conversation_yes',
 	[2 ^ 17] = 'conversation_no',
 	[2 ^ 18] = 'group_control_back',
-	[2 ^ 19] = 'enter_passenger', -- This one's undefined
+	[2 ^ 19] = 'enter_passenger' -- This one's undefined
 }, controlMappingMT)
 
 g_LeftRightMapping = setmetatable({
@@ -112,6 +112,39 @@ g_UpDownMapping = setmetatable({
 	[-128] = { 'forwards', 'accelerate' },
 	[128] = { 'backwards', 'brake_reverse' }
 }, controlMappingMT)
+
+g_DamageTypes = {
+	[19] = 51,	-- Rocket
+	[59] = 51,	-- Tank Grenade
+	[63] = 255	-- Blown
+}
+
+g_PickupAmmo = {
+	[16] = 8,	-- Grenade
+	[17] = 8,	-- Tear gas
+	[18] = 8,	-- Molotov
+	[22] = 30,	-- Pistol
+	[23] = 10,	-- Silenced
+	[24] = 10,	-- Desert eagle
+	[25] = 15,	-- Shotgun
+	[26] = 10,	-- Sawnoff
+	[27] = 10,	-- Combat shotgun
+	[28] = 60,	-- Uzi
+	[29] = 60,	-- MP5
+	[30] = 80,	-- AK47
+	[31] = 80,	-- M4
+	[32] = 60,	-- Tec9
+	[33] = 20,	-- Country sniper
+	[34] = 10,	-- Sniper rifle
+	[35] = 4,	-- Rocket launcher
+	[36] = 3,	-- Heatseaking rocket launcher
+	[37] = 100,	-- Flamethrower
+	[38] = 500,	-- Minigun
+	[39] = 5,	-- Satchel
+	[41] = 500,	-- Spray can
+	[42] = 500,	-- Fire extinguisher
+	[43] = 36	-- Camera
+}
 
 g_RCVehicles = {
 	[441] = true,
@@ -165,25 +198,27 @@ g_SkinReplace = {
 
 -- Left is SA-MP, right is MTA
 g_BoneMapping = setmetatable({
-	[2] = 1,	-- Head
-	[17] = 2,	-- Neck
 	[1] = 3,	-- Spine
-	[15] = 5,	-- Left Clavicle (Shoulder)
-	[16] = 6,	-- Right Clavicle (Shoulder)
-	[3] = 9,	-- Left Upper Arm
-	[4] = 10,	-- Right Upper Arm
-	[5] = 11,	-- Left Hand
-	[6] = 12,	-- Right Hand
-	[7] = 13,	-- Left thigh (SA-MP doesn't really have hips)
-	[8] = 14,	-- Right thigh
-	[12] = 15,	-- Left calf
-	[11] = 16,	-- Right Calf
-	[9] = 19,	-- Left Foot
-	[10] = 20	-- Right Foot
+	[2] = 8,	-- Head
+	[3] = 32,	-- Left upper arm
+	[4] = 22,	-- Right upper arm
+	[5] = 34,	-- Left hand
+	[6] = 24,	-- Right hand
+	[7] = 41,	-- Left thigh (SA-MP doesn't really have hips)
+	[8] = 51,	-- Right thigh
+	[9] = 43,	-- Left foot
+	[10] = 53,	-- Right foot
+	[11] = 52,	-- Right calf
+	[12] = 42,	-- Left calf
+	[13] = 33,	-- Left forearm
+	[14] = 23,	-- Right forearm
+	[15] = 31,	-- Left clavicle
+	[16] = 21,	-- Right clavicle
+	[17] = 4	-- Neck
 }, {
 	__index = function(t, k)
 		if k == 18 then -- Since 18 is jaw in SA-MP
-			k = 2 -- Default to head
+			k = 8 -- Default to head
 		end
 		if k >= 1 and k <= 17 then
 			return k
@@ -230,7 +265,7 @@ g_SpecialActions = {
 	[SPECIAL_ACTION_DRINK_WINE] = { 'bar', 'dnk_stndm_loop', -1, false, true, false, false, 250, true },
 	[SPECIAL_ACTION_DRINK_SPRUNK] = { 'bar', 'dnk_stndm_loop', -1, false, true, false, false, 250, true },
 	[SPECIAL_ACTION_CARRY] = { 'carry', 'crry_prtial', -1, true, true, false, false, 250, true },
-	[SPECIAL_ACTION_PISSING] = { 'paulnmac', 'piss_loop', -1, true, false, false, false, 250, false },
+	[SPECIAL_ACTION_PISSING] = { 'paulnmac', 'piss_loop', -1, true, false, false, false, 250, false }
 }
 
 PLAYER_VARTYPE_NONE = 0

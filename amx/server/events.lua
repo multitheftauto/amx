@@ -29,6 +29,7 @@ function gameModeInit(player)
 	toggleAllControls(player, false, true, false)
 	clientCall(player, 'showIntroScene')
 	clientCall(player, 'TogglePlayerClock', false)
+	clientCall(player, 'updateFriendlyFire', g_FriendlyFire)
 	clientCall(player, 'updateNameTagGlobals', {
 		status = g_ShowNameTags,
 		radius = g_NameTagsRadius,
@@ -39,6 +40,7 @@ function gameModeInit(player)
 	g_Players[playerID].streamedVehicles = {}
 	g_Players[playerID].streamedPlayers = {}
 	g_Players[playerID].attachedObjects = {}
+	g_Players[playerID].streamedBots = {}
 	g_Players[playerID].shotVect = {
 		oX = 0.0, oY = 0.0, oZ = 0.0,
 		hX = 0.0, hY = 0.0, hZ = 0.0
@@ -242,7 +244,7 @@ function requestClass(player, btn, state, dir)
 		skin = g_PlayerClasses[data.selectedclass][5]
 	end
 	if isPedDead(player) then
-		spawnPlayer(player, x, y, z, getPedRotation(player), skin, getElementInterior(player), playerID)
+		spawnPlayer(player, x, y, z, getElementRotation(player), skin, getElementInterior(player), playerID)
 	else
 		setElementModel(player, skin)
 	end
@@ -332,6 +334,7 @@ function handlePlayerSpawn(player)
 
 	playerdata.vehicle = nil
 	playerdata.specialaction = SPECIAL_ACTION_NONE
+	playerdata.drunklevel = 0
 end
 
 addEventHandler('onPlayerChat', root,
@@ -362,24 +365,36 @@ addEventHandler('onPlayerChat', root,
 
 addEvent('OnPlayerDamage_Ev', true)
 addEventHandler('OnPlayerDamage_Ev', root,
-	function(opponent, givetake, loss, weapon, body)
+	function(opponent, givetake, loss, weapon, bodypart)
 		local playerId, attackerId = getElemID(source), getElemID(opponent)
 
+		local reason
+		if g_DamageTypes[weapon] then
+			reason = g_DamageTypes[weapon]
+		else
+			reason = weapon
+		end
+
 		if givetake then
-			if not opponent then return end
-			setTimer(procCallOnAll, 1, 1, 'OnPlayerGiveDamage', playerId, attackerId, float2cell(loss), weapon, body)
+			if not opponent or reason > 46 then return end
+			setTimer(procCallOnAll, 1, 1, 'OnPlayerGiveDamage', playerId, attackerId, float2cell(loss), reason, bodypart)
 			-- This needs to be just a bit delayed to arrive after OnPlayerWeaponShot
 		else
 			if not opponent then attackerId = INVALID_PLAYER_ID end
-			setTimer(procCallOnAll, 1, 1, 'OnPlayerTakeDamage', playerId, attackerId, float2cell(loss), weapon, body)
-			-- This needs to be just a bit delayed to arrive after OnPlayerWeaponShot
+			procCallOnAll('OnPlayerTakeDamage', playerId, attackerId, float2cell(loss), reason, bodypart)
 		end
 	end
 )
 
 addEventHandler('onPlayerWeaponSwitch', root,
 	function(prev, current)
-		procCallOnAll('OnPlayerWeaponSwitch', getElemID(source), prev, current)
+		procCallOnAll('OnPlayerWeaponSwitch', getElemID(source), current, prev)
+	end
+)
+
+addEventHandler('onPlayerWeaponReload', root,
+	function(weapon, clip, ammo)
+		procCallOnAll('OnPlayerWeaponReload', getElemID(source), weapon, clip, ammo)
 	end
 )
 
@@ -403,8 +418,15 @@ addEventHandler('onPlayerWasted', root,
 			end
 		end
 
+		local reason
+		if g_DamageTypes[weapon] then
+			reason = g_DamageTypes[weapon]
+		else
+			reason = weapon
+		end
+
 		setPlayerState(source, PLAYER_STATE_WASTED)
-		procCallOnAll('OnPlayerDeath', playerID, killerID, weapon)
+		procCallOnAll('OnPlayerDeath', playerID, killerID, reason)
 
 		if g_Players[playerID].returntoclasssel then
 			g_Players[playerID].returntoclasssel = nil
@@ -412,6 +434,8 @@ addEventHandler('onPlayerWasted', root,
 			local player = source
 			setTimer(
 				function()
+					if not isElement(player) then return end
+
 					g_Players[playerID].spawninfo = nil
 					g_Players[playerID].selectedclass = nil
 
@@ -433,6 +457,8 @@ addEventHandler('onPlayerWasted', root,
 
 		g_Players[playerID].vehicle = nil
 		g_Players[playerID].specialaction = SPECIAL_ACTION_NONE
+		clientCall(source, 'setCameraDrunkLevel', 0)
+		g_Players[playerID].drunklevel = 0
 	end
 )
 
@@ -457,6 +483,7 @@ addEventHandler('onPlayerQuit', root,
 		procCallOnAll('OnPlayerDisconnect', playerID, quitReasons[reason])
 		if g_Players[playerID].blip then
 			destroyElement(g_Players[playerID].blip)
+			g_Players[playerID].blip = nil
 		end
 		if g_Players[playerID].updatetimer then
 			killTimer(g_Players[playerID].updatetimer)
@@ -465,24 +492,23 @@ addEventHandler('onPlayerQuit', root,
 		g_Players[playerID] = nil
 	end
 )
--------------------------------
--- Vehicles
 
 addEventHandler('onResourceStart', resourceRoot,
 	function()
-		setTimer(checkAndUpdatePlayerStates, 1000, 0)
+		setTimer(checkAndUpdatePlayers, 1000, 0)
 	end,
 	false
 )
 
 --[[ 
-	If the player is slapped, or the vehicle is destroyed by a command, we need to handle such
-	We also now check if the player has spawned or has a state of 'none', 
-	if so and if they're on foot, we set their state
+	If the player is slapped or the vehicle is destroyed by a command, we need to handle such
+	If the player has spawned or has a state of 'none' and they're on foot, we set their state
+	Now it's also used for updating players drunk level (decrease it over time)
 ]]
-function checkAndUpdatePlayerStates()
+function checkAndUpdatePlayers()
 	for i, data in pairs(g_Players) do
 		local state = getPlayerState(data.elem)
+
 		if state == PLAYER_STATE_SPAWNED or state == PLAYER_STATE_NONE then
 			if not data.doingclasssel and not data.viewingintro then
 				handlePlayerSpawn(data.elem)
@@ -495,9 +521,21 @@ function checkAndUpdatePlayerStates()
 				setElementAlpha(data.elem, 255)
 			end
 		end
+
+		if g_Players[i].drunklevel and g_Players[i].drunklevel > 0 then
+			g_Players[i].drunklevel = g_Players[i].drunklevel - 50
+			if g_Players[i].drunklevel < 2250 then
+				clientCall(data.elem, 'setCameraDrunkLevel', 0)
+			elseif g_Players[i].drunklevel <= 12500 then
+				local drunkMul = math.floor(g_Players[i].drunklevel * 0.02)
+				clientCall(data.elem, 'setCameraDrunkLevel', drunkMul)
+			end
+		end
 	end
+
 	for i, data in pairs(g_Bots) do
 		local state = getBotState(data.elem)
+
 		if state == PLAYER_STATE_DRIVER or state == PLAYER_STATE_PASSENGER then
 			if not isPedInVehicle(data.elem) then
 				setBotState(data.elem, PLAYER_STATE_ONFOOT)
@@ -507,6 +545,8 @@ function checkAndUpdatePlayerStates()
 		end
 	end
 end
+-------------------------------
+-- Vehicles
 
 function respawnStaticVehicle(vehicle)
 	if not isElement(vehicle) then
@@ -522,16 +562,25 @@ function respawnStaticVehicle(vehicle)
 		killTimer(g_Vehicles[vehID].respawntimer)
 	end
 
-	for seat, player in pairs(getVehicleOccupants(vehicle)) do
-		removePedFromVehicle(player)
+	local occupants = getVehicleOccupants(vehicle)
+	if occupants then
+		for seat, player in pairs(occupants) do
+			removePedFromVehicle(player)
+		end
 	end
 
 	g_Vehicles[vehID].respawntimer = nil
 	g_Vehicles[vehID].vehicleIsAlive = true
 
+	setElementData(vehicle, 'WindowFrontLeft', true)
+	setElementData(vehicle, 'WindowFrontRight', true)
+	setElementData(vehicle, 'WindowRearLeft', true)
+	setElementData(vehicle, 'WindowRearRight', true)
+
 	local spawninfo = g_Vehicles[vehID].spawninfo
 	setTimer(
 		function()
+			if not isElement(vehicle) then return end
 			spawnVehicle(vehicle, spawninfo.x, spawninfo.y, spawninfo.z, 0, 0, spawninfo.angle)
 			procCallOnAll('OnVehicleSpawn', vehID)
 		end, 500, 1
@@ -608,7 +657,8 @@ addEventHandler('onVehicleExit', root,
 			setElementAlpha(player, 255)
 		end
 
-		local _, occupant = next(getVehicleOccupants(source))
+		local occupants = getVehicleOccupants(source)
+		local _, occupant = occupants and next(occupants)
 		if occupant then return end
 
 		if g_Vehicles[vehID] and g_Vehicles[vehID].respawntimer then
@@ -660,68 +710,87 @@ addEventHandler('onVehicleExplode', root,
 	end
 )
 
-local _getPedOccupiedVehicle = getPedOccupiedVehicle
-function getPedOccupiedVehicle(player)
-	if not player then
-		return false
-	end
-	if getElementType(player) ~= 'player' then
-		return _getPedOccupiedVehicle(player)
-	end
-	local data = g_Players[getElemID(player)]
-	return data and data.vehicle
-end
+addEvent('OnPlayerStuntStart_Ev', true)
+addEventHandler('OnPlayerStuntStart_Ev', root,
+	function(vehicle, stuntType)
+		local playerID, vehID = getElemID(source), getElemID(vehicle)
+		if not vehID then return end
 
-local _removePedFromVehicle = removePedFromVehicle
-function removePedFromVehicle(player)
-	if not player then
-		return false
+		procCallOnAll('OnPlayerStuntStart', playerID, vehID, stuntType)
 	end
-	local playerdata = g_Players[getElemID(player)]
-	if getElementType(player) ~= 'player' or not playerdata.vehicle then
-		return _removePedFromVehicle(player)
-	end
-	playerdata.vehicle = nil
-	setTimer(_removePedFromVehicle, 500, 1, player)
-	return true
-end
+)
 
-function removePedFromVehicleEx(player)
-	local playerdata = g_Players[getElemID(player)]
-	if not playerdata.vehicle then
-		return false
+addEvent('OnPlayerStuntFinish_Ev', true)
+addEventHandler('OnPlayerStuntFinish_Ev', root,
+	function(vehicle, stuntType, stuntTime, stuntDistance)
+		local playerID, vehID = getElemID(source), getElemID(vehicle)
+		if not vehID then return end
+
+		procCallOnAll('OnPlayerStuntFinish', playerID, vehID, stuntType, stuntTime, float2cell(stuntDistance))
 	end
-	playerdata.vehicle = nil
-	setControlState(player, 'enter_exit', true)
-	return true
-end
+)
 -------------------------------
 -- Markers
 
 addEventHandler('onMarkerHit', root,
 	function(elem, dimension)
-		if getElementType(elem) == 'player' or getElementType(elem) == 'vehicle' or getElementType(elem) == 'ped' then
-			local elemtype = getElementType(elem)
-			local elemid = getElemID(elem)
-			procCallOnAll('OnMarkerHit', getElemID(source), elemtype, elemid, dimension)
+		local elemType = getElementType(elem)
+		if elemType == 'player' or elemType == 'vehicle' or elemType == 'ped' then
+			local elemID = getElemID(elem)
+
+			if elemType == 'ped' then
+				if getElementData(elem, 'ActorPed') then
+					elemType = 'actor'
+				else
+					elemType = 'bot'
+				end
+			end
+
+			procCallOnAll('OnMarkerHit', getElemID(source), elemType, elemID, dimension)
 		end
 	end
 )
 
 addEventHandler('onMarkerLeave', root,
 	function(elem, dimension)
-		if getElementType(elem) == 'player' or getElementType(elem) == 'vehicle' or getElementType(elem) == 'ped' then
-			local elemtype = getElementType(elem)
-			local elemid = getElemID(elem)
-			procCallOnAll('OnMarkerLeave', getElemID(source), elemtype, elemid, dimension)
+		local elemType = getElementType(elem)
+		if elemType == 'player' or elemType == 'vehicle' or elemType == 'ped' then
+			local elemID = getElemID(elem)
+
+			if elemType == 'ped' then
+				if getElementData(elem, 'ActorPed') then
+					elemType = 'actor'
+				else
+					elemType = 'bot'
+				end
+			end
+
+			procCallOnAll('OnMarkerLeave', getElemID(source), elemType, elemID, dimension)
 		end
 	end
 )
 -------------------------------
 -- Peds
 
+addEvent('OnBotTakeDamage_Ev', true)
+addEventHandler('OnBotTakeDamage_Ev', root,
+	function(issuer, loss, weapon, bodypart)
+		local botID, issuerID = getElemID(source), getElemID(issuer)
+		if not issuerID then return end
+
+		local reason
+		if g_DamageTypes[weapon] then
+			reason = g_DamageTypes[weapon]
+		else
+			reason = weapon
+		end
+
+		procCallOnAll('OnBotTakeDamage', botID, issuerID, float2cell(loss), reason, bodypart)
+	end
+)
+
 addEventHandler('onPedWasted', root,
-	function(totalAmmo, killer, killerWeapon, bodypart)
+	function(ammo, killer, weapon, bodypart)
 		if isPed(source) ~= true then return end
 		if getElementData(source, 'ActorPed') then return end
 
@@ -738,8 +807,15 @@ addEventHandler('onPedWasted', root,
 			end
 		end
 
+		local reason
+		if g_DamageTypes[weapon] then
+			reason = g_DamageTypes[weapon]
+		else
+			reason = weapon
+		end
+
 		setBotState(source, PLAYER_STATE_WASTED)
-		procCallOnAll('OnBotDeath', getElemID(source), killerID, killerWeapon, bodypart)
+		procCallOnAll('OnBotDeath', getElemID(source), killerID, reason, bodypart)
 	end
 )
 -------------------------------
@@ -769,7 +845,14 @@ addEventHandler('OnPlayerGiveDamageActor_Ev', root,
 		local playerID, actorID = getElemID(source), getElemID(actor)
 		if not actorID then return end
 
-		setTimer(procCallOnAll, 1, 1, 'OnPlayerGiveDamageActor', playerID, actorID, float2cell(loss), weapon, bodypart)
+		local reason
+		if g_DamageTypes[weapon] then
+			reason = g_DamageTypes[weapon]
+		else
+			reason = weapon
+		end
+
+		setTimer(procCallOnAll, 1, 1, 'OnPlayerGiveDamageActor', playerID, actorID, float2cell(loss), reason, bodypart)
 		-- This needs to be just a bit delayed to arrive after OnPlayerWeaponShot
 	end
 )
@@ -809,9 +892,8 @@ addEventHandler('onConsole', root,
 
 addEventHandler('onPlayerClick', root,
 	function(mouseButton, buttonState, elem, worldPosX, worldPosY, worldPosZ, screenPosX, screenPosY)
-		local iButton, iState, elemID = nil, nil, nil
+		local iButton, iState = nil, nil
 		local playerID = getElemID(source)
-		if elem ~= nil then elemID = getElemID(elem) end
 
 		if mouseButton == 'left' then iButton = 0 end
 		if mouseButton == 'middle' then iButton = 1 end
@@ -819,16 +901,24 @@ addEventHandler('onPlayerClick', root,
 		if buttonState == 'up' then iState = 0 end
 		if buttonState == 'down' then iState = 1 end
 
-		procCallOnAll('OnPlayerClickWorld', playerID, iButton, iState, float2cell(worldPosX), float2cell(worldPosY), float2cell(worldPosZ))
-		if elem == nil then return end
-		if getElementType(elem) == 'player' then
-			procCallOnAll('OnPlayerClickWorldPlayer', playerID, iButton, iState, elemID, float2cell(worldPosX), float2cell(worldPosY), float2cell(worldPosZ))
+		if not elem then
+			procCallOnAll('OnPlayerClickWorld', playerID, iButton, iState, 'none', 65535, float2cell(worldPosX), float2cell(worldPosY), float2cell(worldPosZ))
+			return
 		end
-		if getElementType(elem) == 'object' then
-			procCallOnAll('OnPlayerClickWorldObject', playerID, iButton, iState, elemID, float2cell(worldPosX), float2cell(worldPosY), float2cell(worldPosZ))
-		end
-		if getElementType(elem) == 'vehicle' then
-			procCallOnAll('OnPlayerClickWorldVehicle', playerID, iButton, iState, elemID, float2cell(worldPosX), float2cell(worldPosY), float2cell(worldPosZ))
+
+		local elemType = getElementType(elem)
+		if elemType == 'player' or elemType == 'vehicle' or elemType == 'object' or elemType == 'ped' then
+			local elemID = getElemID(elem)
+
+			if elemType == 'ped' then
+				if getElementData(elem, 'ActorPed') then
+					elemType = 'actor'
+				else
+					elemType = 'bot'
+				end
+			end
+
+			procCallOnAll('OnPlayerClickWorld', playerID, iButton, iState, elemType, elemID, float2cell(worldPosX), float2cell(worldPosY), float2cell(worldPosZ))
 		end
 
 	end
@@ -843,14 +933,16 @@ addEventHandler('onPlayerChangeNick', root,
 -- Actors
 addEvent('onAmxClientActorStream', true)
 addEventHandler('onAmxClientActorStream', root,
-	function(actorId, streamed)
+	function(actorID, streamed)
+		if not g_Actors[actorID] then return end
 		local playerID = getElemID(source)
+
 		if streamed then
-			g_Players[playerID].streamedActors[actorId] = true
-			procCallOnAll('OnActorStreamIn', actorId, playerID)
+			g_Players[playerID].streamedActors[actorID] = true
+			procCallOnAll('OnActorStreamIn', actorID, playerID)
 		else
-			g_Players[playerID].streamedActors[actorId] = nil
-			procCallOnAll('OnActorStreamOut', actorId, playerID)
+			g_Players[playerID].streamedActors[actorID] = nil
+			procCallOnAll('OnActorStreamOut', actorID, playerID)
 		end
 	end
 )
@@ -858,14 +950,16 @@ addEventHandler('onAmxClientActorStream', root,
 -- Players
 addEvent('onAmxClientPlayerStream', true)
 addEventHandler('onAmxClientPlayerStream', root,
-	function(otherId, streamed)
+	function(otherID, streamed)
+		if not g_Players[otherID] then return end
 		local playerID = getElemID(source)
+
 		if streamed then
-			g_Players[playerID].streamedPlayers[otherId] = true
-			procCallOnAll('OnPlayerStreamIn', otherId, playerID)
+			g_Players[playerID].streamedPlayers[otherID] = true
+			procCallOnAll('OnPlayerStreamIn', otherID, playerID)
 		else
-			g_Players[playerID].streamedPlayers[otherId] = nil
-			procCallOnAll('OnPlayerStreamOut', otherId, playerID)
+			g_Players[playerID].streamedPlayers[otherID] = nil
+			procCallOnAll('OnPlayerStreamOut', otherID, playerID)
 		end
 	end
 )
@@ -874,13 +968,32 @@ addEventHandler('onAmxClientPlayerStream', root,
 addEvent('onAmxClientVehicleStream', true)
 addEventHandler('onAmxClientVehicleStream', root,
 	function(vehicleID, streamed)
+		if not g_Vehicles[vehicleID] then return end
 		local playerID = getElemID(source)
+
 		if streamed then
 			g_Players[playerID].streamedVehicles[vehicleID] = true
 			procCallOnAll('OnVehicleStreamIn', vehicleID, playerID)
 		else
 			g_Players[playerID].streamedVehicles[vehicleID] = nil
 			procCallOnAll('OnVehicleStreamOut', vehicleID, playerID)
+		end
+	end
+)
+
+-- Bots
+addEvent('onAmxClientBotStream', true)
+addEventHandler('onAmxClientBotStream', root,
+	function(botID, streamed)
+		if not g_Bots[botID] then return end
+		local playerID = getElemID(source)
+
+		if streamed then
+			g_Players[playerID].streamedBots[botID] = true
+			procCallOnAll('OnBotStreamIn', botID, playerID)
+		else
+			g_Players[playerID].streamedBots[botID] = nil
+			procCallOnAll('OnBotStreamOut', botID, playerID)
 		end
 	end
 )

@@ -28,6 +28,8 @@ function SendCommand(amx, commandtext)
 	return false
 end
 
+GetPlayerArmedWeapon = GetPlayerWeapon
+
 function GetMyPos(amx, refX, refY, refZ)
 	notImplemented('GetMyPos')
 	return false
@@ -52,5 +54,3 @@ function GetDistanceFromMeToPoint(amx, pX, pY, pZ, refDist)
 	notImplemented('GetDistanceFromMeToPoint')
 	return false
 end
-
-GetPlayerArmedWeapon = GetPlayerWeapon

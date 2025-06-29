@@ -16,8 +16,8 @@ function DestroyActor(amx, actor)
 	return true
 end
 
-function IsActorStreamedIn(amx, actorId, player)
-	return g_Players[getElemID(player)].streamedActors[actorId] ~= nil
+function IsActorStreamedIn(amx, actor, player)
+	return g_Players[getElemID(player)].streamedActors[getElemID(actor)] == true
 end
 
 function ApplyActorAnimation(amx, actor, animlib, animname, fDelta, loop, lockx, locky, freeze, time)
@@ -34,13 +34,14 @@ function ClearActorAnimations(amx, actor)
 	return setPedAnimation(actor, false)
 end
 
+function SetActorPos(amx, actor, x, y, z)
+	return setElementPosition(actor, x, y, z)
+end
+
 function SetActorFacingAngle(amx, actor, angle)
 	local rotX, rotY, rotZ = getElementRotation(actor)
 	return setElementRotation(actor, rotX, rotY, angle, 'default', true)
 end
-
-GetActorFacingAngle = GetPlayerFacingAngle
-GetActorPos = GetPlayerPos
 
 function SetActorInvulnerable(amx, actor, invulnerable)
 	if not actor then
@@ -54,31 +55,28 @@ function IsActorInvulnerable(amx, actor)
 	return getElementData(actor, 'Invulnerable')
 end
 
-function IsValidActor(amx, actorId)
-	return g_Actors[actorId] ~= nil
+function IsValidActor(amx, actorID)
+	return g_Actors[actorID] ~= nil
 end
-
-GetActorHealth = GetPlayerHealth
-GetActorVirtualWorld = GetPlayerVirtualWorld
 
 function GetActorPoolSize(amx)
-	local highestId = 0
+	local highestID = 0
 	for id, v in pairs(g_Actors) do
-		if id > highestId then
-			highestId = id
+		if id > highestID then
+			highestID = id
 		end
 	end
-	return highestId
-end
-
-SetActorHealth = SetPlayerHealth
-SetActorVirtualWorld = SetPlayerVirtualWorld
-
-function SetActorPos(amx, actor, x, y, z)
-	return setElementPosition(actor, x, y, z)
+	return highestID
 end
 
 function GetPlayerCameraTargetActor(amx, player)
 	notImplemented('GetPlayerCameraTargetActor')
 	return INVALID_ACTOR_ID
 end
+
+GetActorHealth = GetPlayerHealth
+SetActorHealth = SetPlayerHealth
+GetActorVirtualWorld = GetPlayerVirtualWorld
+SetActorVirtualWorld = SetPlayerVirtualWorld
+GetActorFacingAngle = GetPlayerFacingAngle
+GetActorPos = GetVehiclePos

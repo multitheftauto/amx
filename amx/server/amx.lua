@@ -21,6 +21,7 @@ g_SVars = {}
 function initGameModeGlobals()
 	g_PlayerClasses = {}
 	g_Teams = setmetatable({}, { __index = function(t, k) t[k] = createTeam('Team ' .. (k + 1)) return t[k] end })
+	g_FriendlyFire = false
 	g_PlayerMarkersMode = 1
 	g_PlayerMarkerRadius = false
 	g_ShowZoneNames = false
@@ -64,6 +65,7 @@ addEventHandler('onResourceStart', resourceRoot,
 
 		local scoreboard = getResourceFromName('scoreboard')
 		if getResourceState(scoreboard) == 'running' then
+			exports.scoreboard:scoreboardForceTeamsHidden(true)
 			exports.scoreboard:scoreboardAddColumn('Score')
 		end
 
@@ -244,6 +246,7 @@ addEventHandler('onResourceStop', resourceRoot,
 	function()
 		local scoreboard = getResourceFromName('scoreboard')
 		if getResourceState(scoreboard) == 'running' then
+			exports.scoreboard:scoreboardForceTeamsHidden(false)
 			exports.scoreboard:scoreboardRemoveColumn('Score')
 		end
 		table.each(g_LoadedAMXs, unloadAMX, false)

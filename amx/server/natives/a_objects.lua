@@ -154,17 +154,21 @@ local function getPlayerObjectPos(amx, player, objID)
 		if curtick >= obj.moving.starttick + obj.moving.duration then
 			obj.x, obj.y, obj.z = obj.moving.x, obj.moving.y, obj.moving.z
 			obj.moving = nil
-			x, y, z = obj.x, obj.y, obj.z
+
+			return obj.x, obj.y, obj.z
 		else
 			local factor = (curtick - obj.moving.starttick) / obj.moving.duration
-			x = obj.x + (obj.moving.x - obj.x) * factor
-			y = obj.y + (obj.moving.y - obj.y) * factor
-			z = obj.z + (obj.moving.z - obj.z) * factor
+			factor = math.max(0, math.min(1, factor))
+
+			local x = obj.x + (obj.moving.x - obj.x) * factor
+			local y = obj.y + (obj.moving.y - obj.y) * factor
+			local z = obj.z + (obj.moving.z - obj.z) * factor
+
+			return x, y, z
 		end
 	else
-		x, y, z = obj.x, obj.y, obj.z
+		return obj.x, obj.y, obj.z
 	end
-	return x, y, z
 end
 
 function GetPlayerObjectPos(amx, player, objID, refX, refY, refZ)
@@ -220,7 +224,8 @@ function MovePlayerObject(amx, player, objID, x, y, z, speed, rX, rY, rZ)
 	if not obj then
 		return 0
 	end
-	local distance = getDistanceBetweenPoints3D(x, y, z, getPlayerObjectPos(amx, player, objID))
+	local curX, curY, curZ = getPlayerObjectPos(amx, player, objID)
+	local distance = getDistanceBetweenPoints3D(x, y, z, curX, curY, curZ)
 	local duration = distance / speed * 1000
 	if obj.moving and isTimer(obj.moving.timer) then
 		killTimer(obj.moving.timer)

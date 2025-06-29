@@ -26,7 +26,7 @@ function argsToMTA(amx, prototype, ...)
 		elseif vartype == 'z' then		-- bot/ped
 			val = g_Bots[val] and g_Bots[val].elem
 		elseif vartype == 't' then		-- team
-			val = val ~= 0 and g_Teams[val]
+			val = val > 0 and g_Teams[val % 256]
 		elseif vartype == 'v' then		-- vehicle
 			val = g_Vehicles[val] and g_Vehicles[val].elem
 		elseif vartype == 'o' then		-- object
@@ -43,7 +43,7 @@ function argsToMTA(amx, prototype, ...)
 			val = g_Markers[val] and g_Markers[val].elem
 		elseif vartype == 'a' then		-- 3D text label
 			val = g_TextLabels[val]
-		elseif vartype == 'y' then		-- Actor
+		elseif vartype == 'y' then		-- actor
 			val = g_Actors[val] and g_Actors[val].elem
 		end
 		if val == nil then
@@ -221,9 +221,10 @@ g_SAMPSyscallPrototypes = {
 	DisablePlayerRaceCheckpoint = {'p'},
 
 	EnableTirePopping = {'b'},
+	EnableVehicleFriendlyFire = {},
 	EnableZoneNames = {'b'},
 
-	ForceClassSelection = {'i'},
+	ForceClassSelection = {'p'},
 
 	GameModeExit = {},
 	GameTextForAll = {'s', 'i', 'i'},
@@ -255,6 +256,7 @@ g_SAMPSyscallPrototypes = {
 	GetPlayerCameraFrontVector = {'p', 'r', 'r', 'r'},
 	GetPlayerColor = {'p'},
 	GetPlayerDistanceFromPoint = {'p', 'f', 'f', 'f'},
+	GetPlayerDrunkLevel = {'p'},
 	GetPlayerFacingAngle = {'p', 'r'},
 	GetPlayerFightingStyle = {'p'},
 	GetPlayerHealth = {'p', 'r'},
@@ -302,6 +304,7 @@ g_SAMPSyscallPrototypes = {
 	GetVehicleModel = {'v'},
 	GetVehicleModelInfo = {'i', 'i', 'r', 'r', 'r'},
 	GetVehicleParamsCarDoors = {'v', 'r', 'r', 'r', 'r'},
+	GetVehicleParamsCarWindows = {'v', 'r', 'r', 'r', 'r'},
 	GetVehicleParamsEx = {'v', 'r', 'r', 'r', 'r', 'r', 'r', 'r'},
 	GetVehicleParamsSirenState = {'v'},
 	GetVehiclePoolSize = {},
@@ -402,6 +405,7 @@ g_SAMPSyscallPrototypes = {
 	SetPlayerCheckpoint = {'p', 'f', 'f', 'f', 'f'},
 	SetPlayerColor = {'p', 'c'},
 	SetPlayerDisabledWeapons = {'p'},
+	SetPlayerDrunkLevel = {'p', 'i'},
 	SetPlayerFacingAngle = {'p', 'f'},
 	SetPlayerFightingStyle = {'p', 'i'},
 	SetPlayerHealth = {'p', 'f'},
@@ -433,6 +437,7 @@ g_SAMPSyscallPrototypes = {
 	SetVehicleHealth = {'v', 'f'},
 	SetVehicleNumberPlate = {'v', 's'},
 	SetVehicleParamsCarDoors = {'v', 'b', 'b', 'b', 'b'},
+	SetVehicleParamsCarWindows = {'v', 'b', 'b', 'b', 'b'},
 	SetVehicleParamsEx = {'v', 'b', 'b', 'b', 'b', 'b', 'b', 'b'},
 	SetVehicleParamsForPlayer = {'v', 'p', 'b', 'b'},
 	SetVehiclePos = {'v', 'f', 'f', 'f'},
@@ -499,7 +504,9 @@ g_SAMPSyscallPrototypes = {
 	gpci = {'p', 'r', 'i'},
 
 	-- bots
-	CreateBot = { 'i', 'f', 'f', 'f', 's'},
+	CreateBot = {'i', 'f', 'f', 'f', 's'},
+	IsValidBot = {'i'},
+	IsBotStreamedIn = {'z', 'p'},
 	DestroyBot = {'z'},
 	AddBotClothes = {'z', 'i', 'i'},
 	GetBotClothes = {'z', 'i'},
@@ -517,6 +524,8 @@ g_SAMPSyscallPrototypes = {
 	SetBotArmour = {'z', 'f'},
 	GetBotPos = {'z', 'r', 'r', 'r'},
 	SetBotPos = {'z', 'f', 'f', 'f'},
+	GetBotFacingAngle = {'z', 'r'},
+	SetBotFacingAngle = {'z', 'f'},
 	GetBotRot = {'z', 'r', 'r', 'r'},
 	SetBotRot = {'z', 'f', 'f', 'f'},
 	GetBotVelocity = {'z', 'r', 'r', 'r'},
@@ -544,21 +553,23 @@ g_SAMPSyscallPrototypes = {
 	IsBotInAnyVehicle = {'z'},
 	SetBotControlState = {'z', 's', 'b'},
 	SetBotAimTarget = {'z', 'f', 'f', 'f'},
-	GetBotDoingDriveBy = {'z'},
+	IsBotDoingDriveBy = {'z'},
 	SetBotDoingDriveBy = {'z', 'b'},
-	GetBotCanBeKnockedOffBike = {'z'},
-	SetBotCanBeKnockedOffBike = {'z', 'b'},
 	GetBotAmmo = {'z'},
 	GetBotWeaponState = {'z'},
 	GetBotWeapon = {'z'},
+	SetBotArmedWeapon = {'z', 'i'},
 	GetBotWeaponSlot = {'z'},
 	SetBotWeaponSlot = {'z', 'i'},
 	GetBotAmmoInClip = {'z'},
+	ReloadBotWeapon = {'z'},
 	IsBotHeadless = {'z'},
 	SetBotHeadless = {'z', 'b'},
 	IsBotDead = {'z'},
-	KillBot = {'z'},
+	KillBot = {'z', 'i', 'i', 'i'},
+	ShowBotNameTag = {'z', 'b'},
 	GetBotName = {'z', 'r', 'i'},
+	SetBotName = {'z', 's'},
 	GetBotAlpha = {'z'},
 	SetBotAlpha = {'z', 'i'},
 
@@ -578,16 +589,17 @@ g_SAMPSyscallPrototypes = {
 	SetPlayerWalkingStyle = {'p', 'i'},
 	GetPlayerStat = {'p', 'i'},
 	SetPlayerStat = {'p', 'i', 'f'},
-	GetPlayerDoingDriveBy = {'p'},
+	IsPlayerDoingDriveBy = {'p'},
 	SetPlayerDoingDriveBy = {'p', 'b'},
-	GetPlayerCanBeKnockedOffBike = {'p'},
-	SetPlayerCanBeKnockedOffBike = {'p', 'b'},
 	GetPlayerWeaponSlot = {'p'},
 	SetPlayerWeaponSlot = {'p', 'i'},
 	GetPlayerAmmoInClip = {'p'},
+	ReloadPlayerWeapon = {'p'},
 	GetPlayerIdleTime = {'p'},
 	IsPlayerHeadless = {'p'},
 	SetPlayerHeadless = {'p', 'b'},
+	IsPlayerDead = {'p'},
+	KillPlayer = {'p', 'i', 'i', 'i'},
 	GetPlayerBlurLevel = {'p'},
 	SetPlayerBlurLevel = {'p', 'i'},
 	IsPlayerMapForced = {'p'},
@@ -596,6 +608,7 @@ g_SAMPSyscallPrototypes = {
 	SetPlayerControlState = {'p', 's', 'b'},
 	IsPlayerCursorShowing = {'p'},
 	ShowPlayerCursor = {'p', 'b', 'b'},
+	ShowPlayerChat = {'p', 'b', 'b'},
 	GetPlayerAlpha = {'p'},
 	SetPlayerAlpha = {'p', 'i'},
 	RemovePlayerWeapon = {'p', 'i'},
@@ -624,6 +637,8 @@ g_SAMPSyscallPrototypes = {
 	SetVehiclePanelState = {'v', 'i', 'i'},
 	GetVehicleVariant = {'v', 'r', 'r'},
 	SetVehicleVariant = {'v', 'i', 'i'},
+	IsVehicleBlown = {'v'},
+	BlowVehicle = {'v', 'b'},
 	GetVehicleAlpha = {'v'},
 	SetVehicleAlpha = {'v', 'i'},
 	IsTrainDerailable = {'v'},
@@ -634,6 +649,7 @@ g_SAMPSyscallPrototypes = {
 	SetTrainDirection = {'v', 'b'},
 	GetTrainSpeed = {'v', 'r'},
 	SetTrainSpeed = {'v', 'f'},
+	GetVehicleCab = {'v'},
 	GetVehicleOccupant = {'v', 'i'},
 	GetVehicleNumberPlate = {'v', 'r', 'i'},
 	GetVehicleColor = {'v', 'r', 'r'},
@@ -641,8 +657,12 @@ g_SAMPSyscallPrototypes = {
 	GetVehicleInterior = {'v'},
 
 	-- objects
-	IsObjectBreakable = {'o'},
+	BreakObject = {'o'},
+	RespawnObject = {'o'},
 	SetObjectBreakable = {'o', 'b'},
+	ToggleObjectRespawn = {'o', 'b'},
+	IsObjectBreakable = {'o'},
+	IsObjectRespawnable = {'o'},
 	GetObjectScale = {'o', 'r', 'r', 'r'},
 	SetObjectScale = {'o', 'f', 'f', 'f'},
 	GetObjectAlpha = {'o'},
@@ -669,10 +689,13 @@ g_SAMPSyscallPrototypes = {
 	SetMarkerTarget = {'k', 'f', 'f', 'f'},
 	SetMarkerType = {'k', 'i'},
 	IsPlayerInMarker = {'k', 'p'},
-	IsBotInMarker = {'k', 'z'},
 	IsVehicleInMarker = {'k', 'v'},
+	IsActorInMarker = {'k', 'y'},
+	IsBotInMarker = {'k', 'z'},
 
 	-- world
+	GetFPSLimit = {},
+	SetFPSLimit = {'i'},
 	GetGameSpeed = {},
 	SetGameSpeed = {'f'},
 	GetRainLevel = {},
@@ -684,9 +707,11 @@ g_SAMPSyscallPrototypes = {
 	GetFogDistance = {},
 	SetFogDistance = {'f'},
 	ResetFogDistance = {},
+	SetWeatherBlended = {'i'},
+	GetMinuteDuration = {},
+	SetMinuteDuration = {'i'},
 	GetCloudsEnabled = {},
 	SetCloudsEnabled = {'b'},
-	SetWeatherBlended = {'i'},
 	GetInteriorSoundsEnabled = {},
 	SetInteriorSoundsEnabled = {'b'},
 	GetOcclusionsEnabled = {},
@@ -695,15 +720,16 @@ g_SAMPSyscallPrototypes = {
 	SetGarageOpen = {'i', 'b'},
 	IsGlitchEnabled = {'s'},
 	SetGlitchEnabled = {'s', 'b'},
+	IsJetpackWeaponEnabled = {'i'},
+	SetJetpackWeaponEnabled = {'i', 'b'},
+	GetJetpackMaxHeight = {},
+	SetJetpackMaxHeight = {'f'},
 	GetAircraftMaxVelocity = {},
 	SetAircraftMaxVelocity = {'f'},
 	GetAircraftMaxHeight = {},
 	SetAircraftMaxHeight = {'f'},
-	GetJetpackMaxHeight = {},
-	SetJetpackMaxHeight = {'f'},
+	GetPlayerIDFromName = {'s'},
 	GetWeaponSlot = {'i'},
-	GetFPSLimit = {},
-	SetFPSLimit = {'i'},
 	GetRandomPlayer = {},
 	GetPlayerCount = {},
 
@@ -711,6 +737,12 @@ g_SAMPSyscallPrototypes = {
 	GetWaveHeight = {},
 	SetWaveHeight = {'f'},
 	SetWaterLevel = {'f'},
+
+	-- traffic lights
+	GetTrafficLightsLocked = {},
+	SetTrafficLightsLocked = {'b'},
+	GetTrafficLightState = {},
+	SetTrafficLightState = {'i'},
 
 	-- rules
 	IsValidServerRule = {'s'},
@@ -720,6 +752,7 @@ g_SAMPSyscallPrototypes = {
 
 	-- scoreboard
 	AddScoreBoardColumn = {'s'},
+	GetPlayerScoreBoardData = {'p', 's', 'r', 'i'},
 	SetPlayerScoreBoardData = {'p', 's', 's'},
 	RemoveScoreBoardColumn = {'s'},
 
@@ -727,12 +760,13 @@ g_SAMPSyscallPrototypes = {
 	SetPlayerIntData = {'p', 's', 'i'},
 	GetPlayerIntData = {'p', 's'},
 	SetPlayerFloatData = {'p', 's', 'f'},
-	GetPlayerFloatData = {'p', 's'},
+	GetPlayerFloatData = {'p', 's', 'r'},
 	SetPlayerBoolData = {'p', 's', 'b'},
 	GetPlayerBoolData = {'p', 's'},
 	SetPlayerStringData = {'p', 's', 's'},
 	GetPlayerStringData = {'p', 's', 'r', 'i'},
-	ResetPlayerData = {'p', 's'},
+	RemovePlayerData = {'p', 's'},
+	HasPlayerData = {'p', 's'},
 
 	-- misc
 	AddEventHandler = {'s', 's'},
@@ -742,7 +776,7 @@ g_SAMPSyscallPrototypes = {
 	-- actors
 	CreateActor = {'i', 'f', 'f', 'f', 'f'},
 	IsValidActor = {'i'},
-	IsActorStreamedIn = {'i'},
+	IsActorStreamedIn = {'y', 'p'},
 	DestroyActor = {'y'},
 	ApplyActorAnimation = {'y', 's', 's', 'f', 'b', 'b', 'b', 'b', 'i'},
 	ClearActorAnimations = {'y'},
@@ -813,8 +847,6 @@ g_SAMPSyscallPrototypes = {
 	NetStats_PacketLossPercent = {'p'},
 
 	-- dummy (unimplemented)
-	ConnectNPC = {'s', 's'},
-	IsPlayerNPC = {'p'},
 	EnableStuntBonusForAll = {'b'},
 	EnableStuntBonusForPlayer = {'p', 'b'},
 	SetObjectsDefaultCameraCol = {'b'},
@@ -835,27 +867,20 @@ g_SAMPSyscallPrototypes = {
 	PlayerTextDrawSetPreviewRot = {'p', 'i', 'f', 'f', 'f', 'f'},
 	PlayerTextDrawSetSelectable = {'p', 'i', 'b'},
 	PlayerTextDrawSetProportional = {'p', 'i', 'b'},
+	DisableRemoteVehicleCollisions = {'p', 'b'},
 	GetVehicleRotationQuat = {'v', 'r', 'r', 'r', 'r'},
-	GetVehicleParamsCarWindows = {'v', 'r', 'r', 'r', 'r'},
-	SetVehicleParamsCarWindows = {'v', 'b', 'b', 'b', 'b'},
 	PlayCrimeReportForPlayer = {'p', 'i', 'i'},
 	SetPlayerShopName = {'p', 's'},
 	GetPlayerCameraMode = {'p'},
 	GetPlayerCameraAspectRatio = {'p'},
 	GetPlayerCameraZoom = {'p'},
-	EnableVehicleFriendlyFire = {},
-	DisableRemoteVehicleCollisions = {'p', 'b'},
 	SelectObject = {'p'},
 	CancelEdit = {'p'},
 	EditAttachedObject = {'p', 'i'},
 	EditObject = {'p', 'i'},
 	EditPlayerObject = {'p', 'i'},
 	SendClientCheck = {'p', 'i', 'i', 'i', 'i'},
-	StartRecordingPlayerData = {'p', 'i', 's'},
-	StopRecordingPlayerData = {'p'},
 	GetPlayerAnimationIndex = {'p'},
-	GetPlayerDrunkLevel = {'p'},
-	SetPlayerDrunkLevel = {'p', 'i'},
 	SelectTextDraw = {'p', 'c'},
 	CancelSelectTextDraw = {'p'},
 	EnablePlayerCameraTarget = {'p', 'b'},
@@ -872,6 +897,10 @@ g_SAMPSyscallPrototypes = {
 	GetServerTickRate = {},
 
 	-- NPCs dummy
+	ConnectNPC = {'s', 's'},
+	IsPlayerNPC = {'p'},
+	StartRecordingPlayerData = {'p', 'i', 's'},
+	StopRecordingPlayerData = {'p'},
 	SendChat = {'s'},
 	SendCommand = {'s'},
 	StartRecordingPlayback = {'i', 's'},

@@ -203,26 +203,6 @@ function atan2(amx, x, y)
 	return float2cell(math.atan2(y, x))
 end
 
-function GetPlayerPoolSize(amx)
-	local highestId = 0
-	for id, v in pairs(g_Players) do
-		if id > highestId then
-			highestId = id
-		end
-	end
-	return highestId
-end
-
-function GetVehiclePoolSize(amx)
-	local highestId = 0
-	for id, v in pairs(g_Vehicles) do
-		if id > highestId then
-			highestId = id
-		end
-	end
-	return highestId
-end
-
 -- Security
 
 function SHA256_PassHash(amx, pass, salt, ret_hash, ret_hash_len)
@@ -359,13 +339,21 @@ function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnD
 	if not g_PoliceVehicles[model] then
 		setVehicleColorClamped(vehicle, color1, color2)
 	end
+
 	local vehID = addElem(g_Vehicles, vehicle)
 	if respawnDelay < 0 then
 		respawnDelay = 120
 	end
+
 	g_Vehicles[vehID].vehicleIsAlive = true
 	g_Vehicles[vehID].respawndelay = respawnDelay * 1000
 	g_Vehicles[vehID].spawninfo = { x = x, y = y, z = z, angle = angle }
+
+	setElementData(vehicle, 'WindowFrontLeft', true)
+	setElementData(vehicle, 'WindowFrontRight', true)
+	setElementData(vehicle, 'WindowRearLeft', true)
+	setElementData(vehicle, 'WindowRearRight', true)
+
 	if ManualVehEngineAndLights then
 		if (getVehicleType(vehicle) ~= 'Plane' and getVehicleType(vehicle) ~= 'Helicopter') then
 			setVehicleEngineState(vehicle, false)
@@ -375,52 +363,49 @@ function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnD
 			g_Vehicles[vehID].engineState = false
 		end
 	end
+
 	if getVehicleType(vehicle) == 'Train' then
 		setTrainDerailable(vehicle, false)
 	end
+
 	if addSiren then
 		addVehicleSirens(vehicle, 1, 1)
 	end
 	return vehID
 end
 
-local function onHousePickupUse()
-	procCallOnAll('OnPlayerPickUpPickup', getElemID(player), getElemID(source))
-	cancelEvent()
-end
-
 function AddStaticPickup(amx, model, type, x, y, z, world)
-	local mtaPickupType, mtaPickupAmount, respawntime
+	local mtaPickupType, mtaPickupAmount, mtaPickupAmmo
 	if model == 1240 then		-- health
 		mtaPickupType = 0
 		mtaPickupAmount = 100
 	elseif model == 1242 then	-- armor
 		mtaPickupType = 1
 		mtaPickupAmount = 100
-	elseif model == 1272 or model == 1273 then
-		mtaPickupType = 3
-		mtaPickupAmount = model
 	else						-- weapon
 		mtaPickupType = 2
 		mtaPickupAmount = g_WeaponIDMapping[model]
-		if not mtaPickupAmount then
+		if mtaPickupAmount then
+			mtaPickupAmmo = g_PickupAmmo[mtaPickupAmount]
+			if not mtaPickupAmmo then
+				mtaPickupAmmo = 1
+			end
+		else
 			mtaPickupType = 3
 			mtaPickupAmount = model
 		end
 	end
 
-	local pickup = createPickup(x, y, z, mtaPickupType, mtaPickupAmount)
+	local pickup = createPickup(x, y, z, mtaPickupType, mtaPickupAmount, 30000, mtaPickupAmmo)
 	if not pickup then
 		outputDebugString('Failed to create pickup of model ' .. model, 2)
 		return -1
 	end
+
 	if world and world ~= -1 then
 		setElementDimension(pickup, world)
 	end
-	if isCustomPickup(pickup) then
-		-- house pickups don't disappear on pickup
-		addEventHandler('onPickupUse', pickup, onHousePickupUse, false)
-	end
+
 	return addElem(g_Pickups, pickup)
 end
 
@@ -462,7 +447,7 @@ function GameModeExit(amx)
 end
 
 function SetWorldTime(amx, hours)
-	return setTime(hours, 0)
+	return setTime(hours % 24, 0)
 end
 
 function GetWeaponName(amx, weaponID, buf, len)
@@ -481,7 +466,8 @@ function EnableTirePopping(amx, enable)
 end
 
 function EnableVehicleFriendlyFire(amx)
-	notImplemented('EnableVehicleFriendlyFire')
+	g_FriendlyFire = true
+	clientCall(root, 'updateFriendlyFire', true)
 	return true
 end
 
@@ -526,20 +512,21 @@ end
 function ShowPlayerMarker(amx, player, mode)
 	local playerdata = g_Players[getElemID(player)]
 	if not playerdata then return false end
-	if not mode then mode = 0 end
 
-	if mode == 0 and playerdata.blip then
-		destroyElement(playerdata.blip)
-		playerdata.blip = nil
-	elseif mode ~= 0 and not playerdata.blip then
-		local r, g, b = getPlayerNametagColor(player)
-		playerdata.blip = createBlipAttachedTo(player, 0, 2, r, g, b)
+	if mode and mode ~= 0 then
+		if not playerdata.blip then
+			local r, g, b = getPlayerNametagColor(player)
+			playerdata.blip = createBlipAttachedTo(player, 0, 2, r, g, b)
+		end
 
-		if mode == 1 and g_PlayerMarkerRadius then -- Mode global
-			setBlipVisibleDistance(playerdata.blip, g_PlayerMarkerRadius)
+		if mode == 1 then -- Mode global
+			setBlipVisibleDistance(playerdata.blip, g_PlayerMarkerRadius or 16383.0)
 		elseif mode == 2 then -- Mode streamed
 			setBlipVisibleDistance(playerdata.blip, 250.0)
 		end
+	elseif playerdata.blip then
+		destroyElement(playerdata.blip)
+		playerdata.blip = nil
 	end
 	return true
 end
@@ -829,6 +816,7 @@ end
 
 function TextDrawCreate(amx, x, y, text)
 	--outputDebugString('TextDrawCreate called with args ' .. x .. ' ' .. y .. ' ' .. text)
+
 	local textdraw = { x = x, y = y, shadow = {align = 1, text = text, font = 1, lwidth = 0.5, lheight = 0.5} }
 	textdraw.clientTDId = #g_TextDraws + 1
 	local id = table.insert(g_TextDraws, textdraw)
@@ -860,32 +848,6 @@ function TextDrawCreate(amx, x, y, text)
 	return id
 end
 
--- Mainly just wrappers to the other non-player functions
-
-function IsPlayerTextDrawValid(player, textdrawID)
-	local tableType = type(g_PlayerTextDraws[player])
-	if tableType ~= 'table' then
-		outputDebugString("[ERROR_NOT_A_TABLE] IsPlayerTextDrawValid: g_PlayerTextDraws[player] is not a table yet for textdrawID: " .. textdrawID .. " it's actually a " .. tableType)
-		return false
-	end
-	if not g_PlayerTextDraws[player] then
-		outputDebugString("[ERROR_NIL_TABLE] IsPlayerTextDrawValid: g_PlayerTextDraws[player] is nil! for textdrawID: " .. textdrawID)
-		return false
-	end
-	local textdraw = g_PlayerTextDraws[player][textdrawID]
-	if not textdraw then
-		outputDebugString("[ERROR_NOTD_PROPERTIES] IsPlayerTextDrawValid: no textdraw properties for player with textdrawID: " .. textdrawID)
-		return false
-	end
-	return true
-end
-
-function TextDrawUseBox(amx, textdraw, usebox)
-	textdraw.usebox = usebox
-	return true
-end
-
--- End of player textdraws
 function TextDrawDestroy(amx, textdrawID)
 	if not g_TextDraws[textdrawID] then
 		return false
@@ -916,6 +878,11 @@ function TextDrawColor(amx, textdraw, r, g, b, a)
 	return true
 end
 
+function TextDrawUseBox(amx, textdraw, usebox)
+	textdraw.usebox = usebox
+	return true
+end
+
 function TextDrawBoxColor(amx, textdraw, r, g, b, a)
 	textdraw.boxcolor = { r, g, b, a }
 	return true
@@ -931,6 +898,11 @@ function TextDrawSetOutline(amx, textdraw, size)
 	return true
 end
 
+function TextDrawSetProportional(amx, textdraw, proportional)
+	notImplemented('TextDrawSetProportional')
+	return false
+end
+
 function TextDrawBackgroundColor(amx, textdraw, r, g, b, a)
 	textdraw.outlinecolor = { r, g, b, a }
 	return true
@@ -939,11 +911,6 @@ end
 function TextDrawFont(amx, textdraw, font)
 	textdraw.font = font
 	return true
-end
-
-function TextDrawSetProportional(amx, textdraw, proportional)
-	notImplemented('TextDrawSetProportional')
-	return false
 end
 
 function TextDrawSetSelectable(amx, textdraw, selectable)
@@ -1004,7 +971,7 @@ function TextDrawSetPreviewVehCol(amx, textdraw, color1, color2)
 end
 
 function GangZoneCreate(amx, minX, minY, maxX, maxY)
-	local zone = createRadarArea(minX + (maxX - minX) / 2, minY + (maxY - minY) / 2, maxX - minX, maxY - minY)
+	local zone = createRadarArea(minX, minY, maxX - minX, maxY - minY)
 	local id = addElem(g_GangZones, zone)
 	setElementVisibleTo(zone, root, false)
 	return id
@@ -1017,21 +984,13 @@ function GangZoneDestroy(amx, zone)
 end
 
 function GangZoneShowForPlayer(amx, player, zone, r, g, b, a)
-	if r < 1 then r = 1 end
-	if g < 1 then g = 1 end
-	if b < 1 then b = 1 end
-	if a < 1 then a = 1 end
-	setRadarAreaColor(zone, r, g, b, a)
+	setRadarAreaColor(zone, r % 256, g % 256, b % 256, a % 256)
 	setElementVisibleTo(zone, player, true)
 	return true
 end
 
 function GangZoneShowForAll(amx, zone, r, g, b, a)
-	if r < 1 then r = 1 end
-	if g < 1 then g = 1 end
-	if b < 1 then b = 1 end
-	if a < 1 then a = 1 end
-	setRadarAreaColor(zone, r, g, b, a)
+	setRadarAreaColor(zone, r % 256, g % 256, b % 256, a % 256)
 	setElementVisibleTo(zone, root, true)
 	return true
 end
@@ -1093,8 +1052,7 @@ function CreatePlayer3DTextLabel(amx, player, text, r, g, b, a, x, y, z, dist, a
 	textlabel.offY = 0.0
 	textlabel.offZ = 0.0
 
-	clientCall(root, 'Create3DTextLabel', id, textlabel)
-
+	clientCall(player, 'Create3DTextLabel', id, textlabel)
 	return id
 end
 
@@ -1113,7 +1071,7 @@ function DeletePlayer3DTextLabel(amx, player, textlabel)
 	if not g_TextLabels[id] then
 		return
 	end
-	clientCall(root, 'Delete3DTextLabel', id)
+	clientCall(player, 'Delete3DTextLabel', id)
 	g_TextLabels[id] = nil
 	return true
 end
@@ -1161,16 +1119,17 @@ function format(amx, outBuf, outBufSize, fmt, ...)
 	fmt = fmt:gsub('[^%%]%%$', '%%%%'):gsub('%%i', '%%d')
 	for c in fmt:gmatch('%%[%-%d%.]*(%*?%a)') do
 		i = i + 1
+		if i > #args then break end
 		if c:match('^%*') then
 			c = c:sub(2)
 			table.remove(args, i)
 		end
 		if c == 'd' then
-			args[i] = amx.memDAT[args[i]]
+			args[i] = amx.memDAT[args[i]] or 0
 		elseif c == 'f' then
-			args[i] = cell2float(amx.memDAT[args[i]])
+			args[i] = cell2float(amx.memDAT[args[i]] or 0)
 		elseif c == 's' then
-			args[i] = readMemString(amx, args[i])
+			args[i] = readMemString(amx, args[i]) or ''
 		else
 			i = i - 1
 		end

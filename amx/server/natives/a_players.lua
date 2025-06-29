@@ -24,7 +24,16 @@ function GetPlayerPos(amx, player, refX, refY, refZ)
 	if not player then
 		return false
 	end
-	local x, y, z = getElementPosition(player)
+
+	local x, y, z
+
+	-- initializing or spectating
+	if getPlayerState(player) == 0 or getPlayerState(player) == 9 then
+		x, y, z = getCameraMatrix(player)
+	else
+		x, y, z = getElementPosition(player)
+	end
+
 	writeMemFloat(amx, refX, x)
 	writeMemFloat(amx, refY, y)
 	writeMemFloat(amx, refZ, z)
@@ -46,11 +55,29 @@ function GetPlayerFacingAngle(amx, player, refAng)
 end
 
 function IsPlayerInRangeOfPoint(amx, player, range, pX, pY, pZ)
-	return getDistanceBetweenPoints3D(pX, pY, pZ, getElementPosition(player)) <= range
+	local cX, cY, cZ
+
+	-- initializing or spectating
+	if getPlayerState(player) == 0 or getPlayerState(player) == 9 then
+		cX, cY, cZ = getCameraMatrix(player)
+	else
+		cX, cY, cZ = getElementPosition(player)
+	end
+
+	return getDistanceBetweenPoints3D(pX, pY, pZ, cX, cY, cZ) <= range
 end
 
 function GetPlayerDistanceFromPoint(amx, player, pX, pY, pZ)
-	return float2cell(getDistanceBetweenPoints3D(pX, pY, pZ, getElementPosition(player)))
+	local cX, cY, cZ
+
+	-- initializing or spectating
+	if getPlayerState(player) == 0 or getPlayerState(player) == 9 then
+		cX, cY, cZ = getCameraMatrix(player)
+	else
+		cX, cY, cZ = getElementPosition(player)
+	end
+
+	return float2cell(getDistanceBetweenPoints3D(pX, pY, pZ, cX, cY, cZ))
 end
 
 function IsPlayerStreamedIn(amx, otherPlayer, player)
@@ -58,14 +85,14 @@ function IsPlayerStreamedIn(amx, otherPlayer, player)
 end
 
 function SetPlayerInterior(amx, player, interior)
-	local playerId = getElemID(player)
-	if g_Players[playerId].viewingintro then
+	local playerID = getElemID(player)
+	if g_Players[playerID].viewingintro then
 		return false
 	end
 	local oldInt = getElementInterior(player)
 	setElementInterior(player, interior)
 	if interior ~= oldInt then
-		procCallOnAll('OnPlayerInteriorChange', playerId, interior, oldInt)
+		procCallOnAll('OnPlayerInteriorChange', playerID, interior, oldInt)
 		clientCall(player, 'AMX_OnPlayerInteriorChange', interior, oldInt)
 	end
 	return true
@@ -116,7 +143,7 @@ function GetPlayerWeaponState(amx, player)
 	-- 3 WEAPONSTATE_RELOADING
 
 	local vehicle = getPedOccupiedVehicle(player)
-	if vehicle ~= nil then return -1 end
+	if vehicle then return -1 end
 
 	if isPedReloadingWeapon(player) then
 		return 3
@@ -155,11 +182,19 @@ function GetPlayerTargetActor(amx, player)
 end
 
 function SetPlayerTeam(amx, player, team)
+	if not team then return false end
 	return setPlayerTeam(player, team)
 end
 
 function GetPlayerTeam(amx, player)
-	return table.find(g_Teams, getPlayerTeam(player))
+	local team = getPlayerTeam(player)
+	local data = g_Players[getElemID(player)]
+
+	if data.doingclasssel then
+		team = g_PlayerClasses[data.selectedclass][8]
+	end
+
+	return table.find(g_Teams, team)
 end
 
 function SetPlayerScore(amx, player, score)
@@ -171,13 +206,34 @@ function GetPlayerScore(amx, player)
 end
 
 function GetPlayerDrunkLevel(amx, player)
-	notImplemented('GetPlayerDrunkLevel', 'SCM is not supported.')
-	return 0
+	local playerID = getElemID(player)
+	if not g_Players[playerID] then
+		return 0
+	end
+	return g_Players[playerID].drunklevel
 end
 
 function SetPlayerDrunkLevel(amx, player, level)
-	notImplemented('SetPlayerDrunkLevel', 'SCM is not supported.')
-	return false
+	local playerID = getElemID(player)
+	if not g_Players[playerID] then return false end
+
+	if level > 50000 then
+		level = 50000
+	elseif level < 0 then
+		level = 0
+	end
+
+	g_Players[playerID].drunklevel = level
+	local drunkMul = level > 2000 and math.floor(level * 0.02) or 0
+
+	if drunkMul > 250 then
+		drunkMul = 250
+	elseif drunkMul < 5 then
+		drunkMul = 0
+	end
+
+	clientCall(player, 'setCameraDrunkLevel', drunkMul)
+	return true
 end
 
 function SetPlayerColor(amx, player, r, g, b)
@@ -192,18 +248,19 @@ end
 
 function GetPlayerColor(amx, player)
 	local r, g, b = getPlayerNametagColor(player)
-	return color2cell(r, g, b)
+	return color2cell(r, g, b, 255)
 end
 
 function SetPlayerSkin(amx, player, skin)
-	local skinset = setElementModel(player, g_SkinReplace[skin] or skin)
+	local model = g_SkinReplace[skin] or skin
+	local skinset = setElementModel(player, model)
 	if skinset then
 		-- wanna see CJ in a white singlet?
 		addPedClothes(player, 'vest', 'vest', 0)
 
 		if not g_UseCJWalk then
 			-- update walking style for a new skin
-			setPedWalkingStyle(player, WalkingStyle[skin] or 0)
+			setPedWalkingStyle(player, WalkingStyle[model] or 0)
 		end
 	end
 	return skinset
@@ -294,7 +351,7 @@ function GetPlayerName(amx, player, nameBuf, bufSize)
 end
 
 function SetPlayerTime(amx, player, hours, minutes)
-	clientCall(player, 'setTime', hours, minutes)
+	clientCall(player, 'setTime', hours % 24, minutes % 60)
 	return true
 end
 
@@ -310,7 +367,8 @@ function SetPlayerWeather(amx, player, weatherID)
 	return true
 end
 
-function ForceClassSelection(amx, playerID)
+function ForceClassSelection(amx, player)
+	local playerID = getElemID(player)
 	if not g_Players[playerID] then
 		return false
 	end
@@ -430,7 +488,7 @@ function SetPlayerAttachedObject(amx, player, index, modelid, bone, fOffsetX, fO
 		g_Players[playerID].attachedObjects[index] = obj
 		setElementCollisionsEnabled(obj, false)
 		setObjectScale(obj, fScaleX, fScaleY, fScaleZ)
-		attachElementToBone(obj, player, mtaBone, fOffsetX, fOffsetY, fOffsetZ, fRotX, fRotY, fRotZ)
+		attachElementToBone(obj, player, mtaBone, fOffsetX, fOffsetY, fOffsetZ, fRotY, fRotX, fRotZ)
 		-- TODO: Implement material colors
 	else
 		outputDebugString('SetPlayerAttachedObject: Cannot attach object since the model is invalid. Model id was ' .. modelid)
@@ -479,7 +537,7 @@ function CreatePlayerTextDraw(amx, player, x, y, text)
 	local textdraw = { x = x, y = y, lwidth = 0.5, lheight = 0.5, shadow = { visible = 0, align = 1, text = text, font = 1, lwidth = 0.5, lheight = 0.5 } }
 	textdraw.clientTDId = clientTDId
 	textdraw.serverTDId = serverTDId
-	textdraw.visible = 0
+	textdraw.visible = false
 
 	g_PlayerTextDraws[player][serverTDId] = textdraw
 
@@ -513,8 +571,20 @@ function CreatePlayerTextDraw(amx, player, x, y, text)
 	return serverTDId
 end
 
+local function isPlayerTextDrawValid(player, textdrawID)
+	local tableType = type(g_PlayerTextDraws[player])
+	if not g_PlayerTextDraws[player] or tableType ~= 'table' then
+		return false
+	end
+	local textdraw = g_PlayerTextDraws[player][textdrawID]
+	if not textdraw then
+		return false
+	end
+	return true
+end
+
 function PlayerTextDrawDestroy(amx, player, textdrawID)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	--outputDebugString('Sending textdraw id s->' .. g_PlayerTextDraws[player][textdrawID].serverTDId .. ' c->' .. g_PlayerTextDraws[player][textdrawID].clientTDId .. ' for destruction')
@@ -524,7 +594,7 @@ function PlayerTextDrawDestroy(amx, player, textdrawID)
 end
 
 function PlayerTextDrawLetterSize(amx, player, textdrawID, width, height)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].lwidth = width
@@ -533,7 +603,7 @@ function PlayerTextDrawLetterSize(amx, player, textdrawID, width, height)
 end
 
 function PlayerTextDrawTextSize(amx, player, textdrawID, x, y)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].boxsize = { x, y }
@@ -541,7 +611,7 @@ function PlayerTextDrawTextSize(amx, player, textdrawID, x, y)
 end
 
 function PlayerTextDrawAlignment(amx, player, textdrawID, align)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].align = (align == 0 and 1 or align)
@@ -549,7 +619,7 @@ function PlayerTextDrawAlignment(amx, player, textdrawID, align)
 end
 
 function PlayerTextDrawColor(amx, player, textdrawID, r, g, b, a)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].color = { r, g, b }
@@ -557,8 +627,7 @@ function PlayerTextDrawColor(amx, player, textdrawID, r, g, b, a)
 end
 
 function PlayerTextDrawUseBox(amx, player, textdrawID, usebox)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
-		outputDebugString('textdraw is invalid, not setting usebox ' .. textdrawID)
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].usebox = usebox
@@ -566,7 +635,7 @@ function PlayerTextDrawUseBox(amx, player, textdrawID, usebox)
 end
 
 function PlayerTextDrawBoxColor(amx, player, textdrawID, r, g, b, a)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].boxcolor = { r, g, b, a }
@@ -574,7 +643,7 @@ function PlayerTextDrawBoxColor(amx, player, textdrawID, r, g, b, a)
 end
 
 function PlayerTextDrawSetShadow(amx, player, textdrawID, size)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].shade = size
@@ -582,7 +651,7 @@ function PlayerTextDrawSetShadow(amx, player, textdrawID, size)
 end
 
 function PlayerTextDrawSetOutline(amx, player, textdrawID, size)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].outlinesize = size
@@ -595,7 +664,7 @@ function PlayerTextDrawSetProportional(amx, player, textdrawID, proportional)
 end
 
 function PlayerTextDrawBackgroundColor(amx, player, textdrawID, r, g, b, a)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].outlinecolor = { r, g, b, a }
@@ -603,7 +672,7 @@ function PlayerTextDrawBackgroundColor(amx, player, textdrawID, r, g, b, a)
 end
 
 function PlayerTextDrawFont(amx, player, textdrawID, font)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].font = font
@@ -616,11 +685,10 @@ function PlayerTextDrawSetSelectable(amx, player, textdrawID, selectable)
 end
 
 function PlayerTextDrawShow(amx, player, textdrawID)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
-		outputDebugString('PlayerTextDrawShow: not showing anything, not valid')
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
-	--if g_PlayerTextDraws[player][textdrawID].visible == 1 then
+	--if g_PlayerTextDraws[player][textdrawID].visible then
 	--	return false
 	--end
 	g_PlayerTextDraws[player][textdrawID].visible = true
@@ -630,10 +698,10 @@ function PlayerTextDrawShow(amx, player, textdrawID)
 end
 
 function PlayerTextDrawHide(amx, player, textdrawID)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
-	--if g_PlayerTextDraws[player][textdrawID].visible == 0 then
+	--if not g_PlayerTextDraws[player][textdrawID].visible then
 	--	return false
 	--end
 	g_PlayerTextDraws[player][textdrawID].visible = false
@@ -643,7 +711,7 @@ function PlayerTextDrawHide(amx, player, textdrawID)
 end
 
 function PlayerTextDrawSetString(amx, player, textdrawID, str)
-	if not IsPlayerTextDrawValid(player, textdrawID) then
+	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
 	g_PlayerTextDraws[player][textdrawID].text = str
@@ -793,13 +861,10 @@ function RemovePlayerFromVehicle(amx, player)
 	local vehicle = getPedOccupiedVehicle(player)
 	if vehicle then
 		if g_RCVehicles[getElementModel(vehicle)] then
-			removePedFromVehicle(player)
-			clientCall(root, 'setElementCollisionsEnabled', player, true)
-			clientCall(root, 'setElementAlpha', player, 255)
+			return removePedFromVehicle(player)
 		else
-			removePedFromVehicleEx(player)
+			return setControlState(player, 'enter_exit', true)
 		end
-		return true
 	end
 	--setPlayerState(player, PLAYER_STATE_ONFOOT)
 	-- No need to do this since the vehicle event gets called when we exit a vehicle
@@ -809,7 +874,10 @@ end
 function TogglePlayerControllable(amx, player, enable)
 	if not enable then
 		local vehicle = getPedOccupiedVehicle(player)
-		if vehicle then setElementVelocity(vehicle, 0.0, 0.0, 0.0) end
+		if vehicle then
+			setElementAngularVelocity(vehicle, 0, 0, 0)
+			setElementVelocity(vehicle, 0, 0, 0)
+		end
 	end
 
 	setElementFrozen(player, not enable)
@@ -881,6 +949,7 @@ function SetPlayerSpecialAction(amx, player, actionID)
 	if actionID == SPECIAL_ACTION_NONE then
 		if playerdata.specialaction == SPECIAL_ACTION_USECELLPHONE then
 			-- stop using cellphone properly
+
 			actionID = SPECIAL_ACTION_STOPUSECELLPHONE
 			playerdata.specialaction = SPECIAL_ACTION_STOPUSECELLPHONE
 			return setPedAnimation(player, unpack(g_SpecialActions[actionID]))
@@ -890,6 +959,7 @@ function SetPlayerSpecialAction(amx, player, actionID)
 		return setPedWearingJetpack(player, true)
 	elseif actionID >= SPECIAL_ACTION_DANCE1 and actionID <= SPECIAL_ACTION_PISSING then
 		-- special actions won't be applied in vehicle
+
 		if isPedInVehicle(player) then return false end
 	end
 
@@ -898,9 +968,15 @@ function SetPlayerSpecialAction(amx, player, actionID)
 		if playerdata.specialaction ~= SPECIAL_ACTION_USECELLPHONE then return false end
 	end
 
-	-- player should hold a drink in hands instead of any weapon
 	if actionID >= SPECIAL_ACTION_DRINK_BEER and actionID <= SPECIAL_ACTION_DRINK_SPRUNK then
+		-- player should hold a drink in hands instead of any weapon
 		setPedWeaponSlot(player, 0)
+
+		if actionID == SPECIAL_ACTION_DRINK_BEER then
+			playerdata.drunklevel = playerdata.drunklevel + 1350
+		elseif actionID == SPECIAL_ACTION_DRINK_WINE then
+			playerdata.drunklevel = playerdata.drunklevel + 1350
+		end
 	end
 
 	-- if special action cannot be set or it's invalid
@@ -1081,6 +1157,16 @@ end
 
 function IsPlayerConnected(amx, playerID)
 	return g_Players[playerID] ~= nil
+end
+
+function GetPlayerPoolSize(amx)
+	local highestID = 0
+	for id, v in pairs(g_Players) do
+		if id > highestID then
+			highestID = id
+		end
+	end
+	return highestID
 end
 
 function IsPlayerInAnyVehicle(amx, player)
