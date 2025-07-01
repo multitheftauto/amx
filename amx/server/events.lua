@@ -133,9 +133,12 @@ end
 addEventHandler('onPlayerJoin', root, joinHandler)
 
 function classSelKey(player)
+	local playerID = getElemID(player)
+	if g_Players[playerID].returntoclasssel then return end
+
 	clientCall(player, 'displayFadingMessage', 'Returning to class selection after next death', 136, 140, 68)
 	outputChatBox('* Returning to class selection after next death', player, 136, 170, 98)
-	g_Players[getElemID(player)].returntoclasssel = true
+	g_Players[playerID].returntoclasssel = true
 end
 addCommandHandler('changeclass', classSelKey)
 
@@ -474,6 +477,8 @@ addEventHandler('onPlayerQuit', root,
 			triggerEvent('onVehicleExit', vehicle, source)
 		end
 		g_PlayerObjects[source] = nil
+		g_PlayerTextDraws[source] = nil
+
 		local playerID = getElemID(source)
 
 		for i, playerdata in pairs(g_Players) do

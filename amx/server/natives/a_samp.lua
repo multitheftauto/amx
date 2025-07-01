@@ -23,7 +23,7 @@ function SendClientMessage(amx, player, r, g, b, a, message)
 		for mta, samp in pairs(g_CommandMapping) do
 			message = message:gsub('/' .. samp, '/' .. mta)
 		end
-	]] -- Why is command mapping stuff here? This replaces any part of a string, causing commands such as '/quitfaction' to display as '/outfaction'
+	]] -- This replaces any part of a string, causing commands such as '/quitfaction' to display as '/outfaction'
 	end
 
 	-- replace colors
@@ -95,9 +95,11 @@ end
 
 function GameTextForAll(amx, str, time, style)
 	str = str:lower()
+	--[[
 	for mta, samp in pairs(g_CommandMapping) do
 		str = str:gsub('/' .. samp, '/' .. mta)
 	end
+	]] -- This replaces any part of a string, causing commands such as '/quitfaction' to display as '/outfaction'
 	for i, player in pairs(g_Players) do
 		GameTextForPlayer(amx, player.elem, str, time, style)
 	end
@@ -106,9 +108,11 @@ end
 
 function GameTextForPlayer(amx, player, str, time, style)
 	str = str:lower()
+	--[[
 	for mta, samp in pairs(g_CommandMapping) do
 		str = str:gsub('/' .. samp, '/' .. mta)
 	end
+	]] -- This replaces any part of a string, causing commands such as '/quitfaction' to display as '/outfaction'
 	clientCall(player, 'GameTextForPlayer', str, time, style)
 	return true
 end
@@ -759,12 +763,18 @@ function DestroyMenu(amx, menu)
 end
 
 function AddMenuItem(amx, menu, column, caption)
+	if not menu or not menu.items[column] then
+		return
+	end
 	table.insert(menu.items[column], caption)
 	clientCall(root, 'AddMenuItem', menu.id, column, caption)
 	return true
 end
 
 function SetMenuColumnHeader(amx, menu, column, text)
+	if not menu or not menu.items[column] then
+		return
+	end
 	menu.items[column][13] = text
 	clientCall(root, 'SetMenuColumnHeader', menu.id, column, text)
 	return true
@@ -817,8 +827,10 @@ end
 function TextDrawCreate(amx, x, y, text)
 	--outputDebugString('TextDrawCreate called with args ' .. x .. ' ' .. y .. ' ' .. text)
 
-	local textdraw = { x = x, y = y, shadow = {align = 1, text = text, font = 1, lwidth = 0.5, lheight = 0.5} }
+	local textdraw = { x = x, y = y, shadow = { align = 1, outlinesize = 0, shade = 2, text = text, font = 1, lwidth = 0.5, lheight = 0.5 } }
 	textdraw.clientTDId = #g_TextDraws + 1
+	textdraw.visible = false
+
 	local id = table.insert(g_TextDraws, textdraw)
 
 	setmetatable(
@@ -869,7 +881,7 @@ function TextDrawTextSize(amx, textdraw, x, y)
 end
 
 function TextDrawAlignment(amx, textdraw, align)
-	textdraw.align = (align == 0 and 1 or align)
+	textdraw.align = align
 	return true
 end
 

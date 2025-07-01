@@ -8,7 +8,11 @@ local wasMapOpened = false
 local function handleMapTargetBlip()
 	if not isPlayerMapVisible() then
 		if wasMapOpened then
-			showCursor(false, false)
+			if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
+				showCursor(true)
+			else
+				showCursor(false, false)
+			end
 			wasLMBPressed, wasRMBPressed = false, false
 			wasMapOpened = false
 		end

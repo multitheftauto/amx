@@ -2,7 +2,7 @@ local dxDrawText = dxDrawText
 local tocolor = tocolor
 
 local VEHICLE_DROP_TRY_INTERVAL = 100
-local VEHICLE_DROP_MAX_TRIES = 50
+local VEHICLE_DROP_MAX_TRIES = 30
 
 local MENU_ITEM_HEIGHT = 25
 local MENU_TOP_PADDING = MENU_ITEM_HEIGHT * 2
@@ -38,8 +38,6 @@ g_PlayerObjects = {}
 g_TextDraws = {}
 g_TextLabels = {}
 g_Blips = {}
-
-local screenWidth, screenHeight = guiGetScreenSize()
 
 addEventHandler('onClientResourceStart', resourceRoot,
 	function()
@@ -1000,11 +998,11 @@ function hideTextDraw(textdraw)
 end
 
 function hudGetVerticalScale()
-	return 1.0 / 448.0
+	return 1.0 / DEFAULT_SCREEN_HEIGHT
 end
 
 function hudGetHorizontalScale()
-	return 1.0 / 640.0
+	return 1.0 / DEFAULT_SCREEN_WIDTH
 end
 
 function initTextDraw(textdraw)
@@ -1015,14 +1013,15 @@ function initTextDraw(textdraw)
 	-- GTA replaces underscores with spaces
 	textdraw.text = textdraw.text:gsub("_", " ")
 
+	-- and also such brackets with stars on these fonts
+	if textdraw.font and (textdraw.font == 0 or textdraw.font == 2) then
+		textdraw.text = textdraw.text:gsub("]", "★")
+	end
+
 	local scale = (textdraw.lwidth or 0.5)
 	local tWidth, tHeight = dxGetTextSize(textdraw.text, scale)
 	local lineHeight = (tHeight or 0.25) / 2 -- space between lines (vertical) also used to calculate size of the box if any
 	local lineWidth = (textdraw.lwidth or 0.25) -- space between words (horizontal)
-
-	-- Set the height based on the text size
-	textdraw.theight = tHeight
-	textdraw.twidth = tWidth
 
 	local text = textdraw.text:gsub('~k~~(.-)~', getSAMPBoundKey)
 	local lines = {}
@@ -1044,12 +1043,11 @@ function initTextDraw(textdraw)
 	end
 
 	textdraw.parts = {}
-	textdraw.width = 0
 	local font = textDrawFonts[textdraw.font and textdraw.font >= 0 and textdraw.font <= #textDrawFonts and textdraw.font or 0]
 	font = font.font
 
-	local TDXPos = textdraw.x or 640 - #lines * lineWidth
-	local TDYPos = textdraw.y or 448 - #lines * lineHeight
+	local TDXPos = textdraw.x or DEFAULT_SCREEN_WIDTH - #lines * lineWidth
+	local TDYPos = textdraw.y or DEFAULT_SCREEN_HEIGHT - #lines * lineHeight
 
 	-- Process the lines we previously found
 	for _, line in ipairs(lines) do
@@ -1089,15 +1087,14 @@ function initTextDraw(textdraw)
 		end
 
 		local textWidth = dxGetTextWidth(line:gsub('#%x%x%x%x%x%x', ''), scale, font)
+		textdraw.width = math.max(textdraw.width or 0, textWidth)
 
-		if textdraw.align == 1 then
-			-- left
-			TDXPos = textdraw.x-- - textWidth
-		elseif textdraw.align == 2 or not textdraw.align then
-			-- center
+		-- left by default
+		TDXPos = textdraw.x-- - textWidth
+
+		if textdraw.align == 2 then -- center
 			TDXPos = textdraw.x - textWidth / 2
-		elseif textdraw.align == 3 then
-			-- right
+		elseif textdraw.align == 3 then -- right
 			TDXPos = textdraw.x - textWidth
 		end
 
@@ -1118,19 +1115,19 @@ function initTextDraw(textdraw)
 		end
 		TDYPos = TDYPos + lineHeight
 	end
-	textdraw.absheight = tHeight * #lines
+	textdraw.absheight = tHeight
 end
 
 function renderTextDraws()
+	if isPlayerMapVisible() then return end
+
 	for id, textdraw in pairs(g_TextDraws) do
 		if textdraw.visible and textdraw.parts and not (textdraw.text:match('^%s*$')) then --and not textdraw.usebox then
 			local font = textDrawFonts[textdraw.font and textdraw.font >= 0 and textdraw.font <= #textDrawFonts and textdraw.font or 0]
+			font = font.font
 
 			textdraw.upscalex = textdraw.upscalex or 1.0
 			textdraw.upscaley = textdraw.upscaley or 1.0
-
-			textdraw.lheight = textdraw.lheight or 0.5
-			textdraw.lwidth = textdraw.lwidth or 0.5
 
 			local letterHeight = (textdraw.lheight * textdraw.upscaley or 0.25)
 			local letterWidth = (textdraw.lwidth * textdraw.upscalex or 0.5)
@@ -1141,15 +1138,14 @@ function renderTextDraws()
 			local scalex = screenWidth * horHudScale * letterWidth
 			local scaley = screenHeight * vertHudScale * letterHeight * 0.5
 
-			local sourceY = screenHeight - ((DEFAULT_SCREEN_HEIGHT - textdraw.y) * (screenHeight * vertHudScale))
 			local sourceX = screenWidth - ((DEFAULT_SCREEN_WIDTH - textdraw.x) * (screenWidth * horHudScale))
+			local sourceY = screenHeight - ((DEFAULT_SCREEN_HEIGHT - textdraw.y) * (screenHeight * vertHudScale))
 
-			font = font.font
 			-- Process box alignments
 			if textdraw.usebox and textdraw.usebox ~= 0 then
 				--outputConsole('textdraw uses box: ' .. textdraw.text)
 				local boxcolor = textdraw.boxcolor or tocolor(0, 0, 0, 120 * (textdraw.alpha or 1))
-				local x, y, w, h
+				local x, w, h
 				w = textdraw.width
 				if textdraw.align == 1 then -- left
 					x = sourceX
@@ -1158,7 +1154,7 @@ function renderTextDraws()
 					else
 						w = textdraw.width
 					end
-				elseif textdraw.align == 2 then -- centered
+				elseif textdraw.align == 2 then -- center
 					x = sourceX-- / 2
 					if textdraw.boxsize then
 						w = textdraw.boxsize[1]
@@ -1173,29 +1169,32 @@ function renderTextDraws()
 						w = textdraw.width
 					end
 				end
-				y = sourceY
 
-				-- Calculates box height
+				-- Calculates box size
 				if textdraw.boxsize and textdraw.text:match('^%s*$') then
 					h = textdraw.boxsize[2]
 				else
 					h = textdraw.absheight
 				end
 
-				dxDrawRectangle(x, y, w * getAspectRatio(), h * getAspectRatio(), boxcolor)
+				dxDrawRectangle(x, sourceY, w * getAspectRatio(), h * getAspectRatio(), boxcolor)
 				--outputConsole(string.format("Drawing textdraw box: sourceX: %f, sourceY: %f %s", sourceX, sourceY, textdraw.text))
 			end
 
 			for i, part in pairs(textdraw.parts) do
 
-				sourceY = screenHeight - ((DEFAULT_SCREEN_HEIGHT - part.y) * (screenHeight * vertHudScale))
 				sourceX = screenWidth - ((DEFAULT_SCREEN_WIDTH - part.x) * (screenWidth * horHudScale))
+				sourceY = screenHeight - ((DEFAULT_SCREEN_HEIGHT - part.y) * (screenHeight * vertHudScale))
 
 				--outputConsole(string.format("text: %s partx: %f, party: %f sourceX: %f, sourceY: %f", part.text, part.x, part.y, sourceX, sourceY))
 
-				if textdraw.shade and textdraw.shade > 0 then -- Draw the shadow
-					dxDrawText(part.text, sourceX + 5, sourceY + 5, sourceX + 5, sourceY + 5, tocolor(0, 0, 0, 100 * (textdraw.alpha or 1)), scalex, scaley, font)
+				if textdraw.shade > 0 then -- Draw the shadow
+					dxDrawText(
+						part.text, sourceX + 5, sourceY + 5, sourceX + 5, sourceY + 5,
+						tocolor(0, 0, 0, 100 * (textdraw.alpha or 1)), scalex, scaley, font
+					)
 				end
+
 				-- Draw the actual text
 				drawBorderText(
 					part.text, sourceX, sourceY,
@@ -1246,23 +1245,23 @@ function GameTextForPlayer(text, time, style)
 			2 = center
 			3 = right
 	]]
-	gameText[gIndex] = { text = text, outlinesize = 2 }
+	gameText[gIndex] = { text = text, outlinesize = 2, shade = 0 }
 	if (style >= 0 and style <= 1) or style == 6 then
 		if style == 0 then
-			gameText[gIndex].x = 0.5 * 640
-			gameText[gIndex].y = 0.45 * 448
+			gameText[gIndex].x = 0.5 * DEFAULT_SCREEN_WIDTH
+			gameText[gIndex].y = 0.45 * DEFAULT_SCREEN_HEIGHT
 			gameText[gIndex].color = tocolor(144, 98, 16)
 			gameText[gIndex].align = 2
 			time = 9000 -- Displays for 9 seconds regardless of time set
 		elseif style == 1 then
-			gameText[gIndex].x = 0.9 * 640
-			gameText[gIndex].y = 0.75 * 448
+			gameText[gIndex].x = 0.9 * DEFAULT_SCREEN_WIDTH
+			gameText[gIndex].y = 0.75 * DEFAULT_SCREEN_HEIGHT
 			gameText[gIndex].color = tocolor(144, 98, 16)
 			gameText[gIndex].align = 3
 			time = 8000 -- Displays for 8 seconds regardless of time set
 		else
-			gameText[gIndex].x = 0.5 * 640
-			gameText[gIndex].y = 0.2 * 448
+			gameText[gIndex].x = 0.5 * DEFAULT_SCREEN_WIDTH
+			gameText[gIndex].y = 0.2 * DEFAULT_SCREEN_HEIGHT
 			gameText[gIndex].color = tocolor(169, 196, 228)
 			gameText[gIndex].align = 2
 		end
@@ -1272,8 +1271,8 @@ function GameTextForPlayer(text, time, style)
 		gameText[gIndex].upscalex = 1.0
 		gameText[gIndex].font = 3
 	elseif style == 2 then
-		gameText[gIndex].x = 0.5 * 640
-		gameText[gIndex].y = 0.4 * 448
+		gameText[gIndex].x = 0.5 * DEFAULT_SCREEN_WIDTH
+		gameText[gIndex].y = 0.4 * DEFAULT_SCREEN_HEIGHT
 		gameText[gIndex].lheight = 1.0
 		gameText[gIndex].lwidth = 2.0
 		gameText[gIndex].color = tocolor(225, 225, 225)
@@ -1282,18 +1281,15 @@ function GameTextForPlayer(text, time, style)
 		gameText[gIndex].upscalex = 1.0
 		gameText[gIndex].font = 0
 	elseif style >= 3 and style <= 5 then
-		-- ★
-		-- GTA replaces these with stars
-		gameText[gIndex].text = text:gsub("]", "★")
-		gameText[gIndex].x = 0.5 * 640
+		gameText[gIndex].x = 0.5 * DEFAULT_SCREEN_WIDTH
 		if style == 3 then
-			gameText[gIndex].y = 0.35 * 448
+			gameText[gIndex].y = 0.35 * DEFAULT_SCREEN_HEIGHT
 			gameText[gIndex].color = tocolor(144, 98, 16)
 		elseif style == 4 then
-			gameText[gIndex].y = 0.2 * 448
+			gameText[gIndex].y = 0.2 * DEFAULT_SCREEN_HEIGHT
 			gameText[gIndex].color = tocolor(144, 98, 16)
 		elseif style == 5 then
-			gameText[gIndex].y = 0.5 * 448
+			gameText[gIndex].y = 0.5 * DEFAULT_SCREEN_HEIGHT
 			gameText[gIndex].color = tocolor(225, 225, 225)
 			time = 3000 -- Displays for 3 seconds regardless of time set
 		end
@@ -1665,7 +1661,7 @@ end
 
 function renderMenu()
 	local menu = g_CurrentMenu
-	if not menu then
+	if not menu or isPlayerMapVisible() then
 		return
 	end
 
@@ -1985,7 +1981,7 @@ function createListDialog(titleText, message, button1txt, button2txt)
 	if listWindow then
 		removeEventHandler('onClientGUIClick', getRootElement(), OnListDialogButton1Click) -- Remove handlers so they are not registered more than once
 		removeEventHandler('onClientGUIClick', getRootElement(), OnListDialogButton2Click)
-		destroyElement(listWindow) -- Assuming inputWindow is the parent of everything, it should remove the whole hierarchy
+		destroyElement(listWindow) -- Assuming listWindow is the parent of everything, it should remove the whole hierarchy
 	end
 
 	listDialog = nil

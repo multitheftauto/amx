@@ -7,12 +7,14 @@ function CreateActor(amx, model, x, y, z, rotation)
 end
 
 function DestroyActor(amx, actor)
-	for i, playerdata in pairs(g_Players) do
-		playerdata.streamedActors[getElemID(actor)] = nil
-	end
+	if actor then
+		for i, playerdata in pairs(g_Players) do
+			playerdata.streamedActors[getElemID(actor)] = nil
+		end
 
-	removeElem(g_Actors, actor)
-	destroyElement(actor)
+		removeElem(g_Actors, actor)
+		destroyElement(actor)
+	end
 	return true
 end
 

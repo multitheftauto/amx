@@ -534,7 +534,7 @@ function CreatePlayerTextDraw(amx, player, x, y, text)
 	local serverTDId = #g_PlayerTextDraws[player] + 1
 	local clientTDId = #g_TextDraws + serverTDId
 
-	local textdraw = { x = x, y = y, lwidth = 0.5, lheight = 0.5, shadow = { visible = 0, align = 1, text = text, font = 1, lwidth = 0.5, lheight = 0.5 } }
+	local textdraw = { x = x, y = y, shadow = { align = 1, outlinesize = 0, shade = 2, text = text, font = 1, lwidth = 0.5, lheight = 0.5 } }
 	textdraw.clientTDId = clientTDId
 	textdraw.serverTDId = serverTDId
 	textdraw.visible = false
@@ -557,7 +557,6 @@ function CreatePlayerTextDraw(amx, player, x, y, text)
 					end
 				end
 				if different then
-					--table.dump(v, 1, nil) -- Dump the data
 					--outputDebugString(string.format('A property changed for %d string: %s', textdraw.clientTDId, textdraw.text))
 					clientCall(player, 'TextDrawPropertyChanged', textdraw.clientTDId, k, v)
 					t.shadow[k] = v
@@ -614,7 +613,7 @@ function PlayerTextDrawAlignment(amx, player, textdrawID, align)
 	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
-	g_PlayerTextDraws[player][textdrawID].align = (align == 0 and 1 or align)
+	g_PlayerTextDraws[player][textdrawID].align = align
 	return true
 end
 

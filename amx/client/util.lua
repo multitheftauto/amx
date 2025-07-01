@@ -68,12 +68,8 @@ end
 
 function drawBorderText(text, x, y, color, scalex, scaley, font, outlinesize, outlinecolor)
 	local alpha = math.floor(color / 16777216)
-	if outlinesize then
-		outlinesize = outlinesize * 2
-	else
-		outlinesize = 0
-	end
 	if outlinesize > 0 then
+		outlinesize = outlinesize * 2
 		for offsetX = -outlinesize, outlinesize, outlinesize do
 			for offsetY = -outlinesize, outlinesize, outlinesize do
 				if not (offsetX == 0 and offsetY == 0) then
@@ -270,29 +266,24 @@ end
 DEFAULT_SCREEN_WIDTH = 640.0
 DEFAULT_SCREEN_HEIGHT = 448.0
 DEFAULT_ASPECT_RATIO = 4.0 / 3.0
-DEFAULT_VIEWWINDOW = 0.7
 
-local USCREEN_WIDTH, USCREEN_HEIGHT = guiGetScreenSize()
-
-function SCREEN_ASPECT_RATIO(a)
-	return ((a) * USCREEN_WIDTH / DEFAULT_SCREEN_WIDTH)
-end
+screenWidth, screenHeight = guiGetScreenSize()
 
 -- This scales from PS2 pixel coordinates to the real resolution
 function SCREEN_STRETCH_X(a)
-	return ((a) * USCREEN_WIDTH / DEFAULT_SCREEN_WIDTH)
+	return ((a) * screenWidth / DEFAULT_SCREEN_WIDTH)
 end
 
 function SCREEN_STRETCH_Y(a)
-	return ((a) * USCREEN_HEIGHT / DEFAULT_SCREEN_HEIGHT)
+	return ((a) * screenHeight / DEFAULT_SCREEN_HEIGHT)
 end
 
-function SCREEN_STRETCH_FROM_RIGHT(a)
-	return (USCREEN_WIDTH - SCREEN_STRETCH_X(a))
+function getAspectRatio()
+	return screenWidth / screenHeight
 end
 
-function SCREEN_STRETCH_FROM_BOTTOM(a)
-	return (USCREEN_HEIGHT - SCREEN_STRETCH_Y(a))
+function SCREEN_SCALE_AR(a)
+	return ((a) * DEFAULT_ASPECT_RATIO / getAspectRatio())
 end
 
 -- This scales from PS2 pixel coordinates while optionally maintaining the aspect ratio
@@ -302,20 +293,4 @@ end
 
 function SCREEN_SCALE_Y(a)
 	return SCREEN_STRETCH_Y(a)
-end
-
-function SCREEN_SCALE_FROM_RIGHT(a)
-	return USCREEN_WIDTH - SCREEN_SCALE_X(a)
-end
-
-function SCREEN_SCALE_FROM_BOTTOM(a)
-	return USCREEN_HEIGHT - SCREEN_SCALE_Y(a)
-end
-
-function getAspectRatio()
-	return USCREEN_WIDTH / USCREEN_HEIGHT
-end
-
-function SCREEN_SCALE_AR(a)
-	return ((a) * DEFAULT_ASPECT_RATIO / getAspectRatio())
 end

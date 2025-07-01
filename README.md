@@ -71,10 +71,10 @@ Apart from being compatible, *amx* also offers a number of extra features:
 
 ### Extracting
 
-- All needed binary files are in the archive provided on Releases page. Unpack amx.zip and extract the `mods` folder into your MTA `server` directory.
+- All needed binary files are in the archive provided on [releases](https://github.com/multitheftauto/amx/releases) page. Unpack amx.zip and extract the `mods` folder into your MTA `server` directory.
 
 - `amx` folder located in mods/deathmatch/resources is a place for the mentioned Lua resources.
-  It will be empty at this point, so you need to copy all the latest files of `amx` folder from this repository into your `amx` folder.
+  It will be empty at this moment, so you need to copy all the latest files of [`amx` folder from this repository](amx) into your `amx` folder.
 
 ### Configuration
 
