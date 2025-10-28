@@ -1254,8 +1254,8 @@ function GameTextForPlayer(text, time, style)
 			gameText[gIndex].align = 2
 			time = 9000 -- Displays for 9 seconds regardless of time set
 		elseif style == 1 then
-			gameText[gIndex].x = 0.9 * DEFAULT_SCREEN_WIDTH
-			gameText[gIndex].y = 0.95 * DEFAULT_SCREEN_HEIGHT
+			gameText[gIndex].x = 0.95 * DEFAULT_SCREEN_WIDTH
+			gameText[gIndex].y = 0.7 * DEFAULT_SCREEN_HEIGHT
 			gameText[gIndex].color = tocolor(144, 98, 16)
 			gameText[gIndex].align = 3
 			time = 8000 -- Displays for 8 seconds regardless of time set
