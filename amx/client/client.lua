@@ -1098,7 +1098,7 @@ function initTextDraw(textdraw)
 			TDXPos = textdraw.x - textWidth
 		end
 
-		color = textdraw.color or tocolor(255, 255, 255)
+		color = textdraw.color or tocolor(225, 225, 225)
 		colorpos = 1
 		local nextcolorpos
 		while colorpos < line:len() + 1 do
@@ -1255,7 +1255,7 @@ function GameTextForPlayer(text, time, style)
 			time = 9000 -- Displays for 9 seconds regardless of time set
 		elseif style == 1 then
 			gameText[gIndex].x = 0.9 * DEFAULT_SCREEN_WIDTH
-			gameText[gIndex].y = 0.75 * DEFAULT_SCREEN_HEIGHT
+			gameText[gIndex].y = 0.95 * DEFAULT_SCREEN_HEIGHT
 			gameText[gIndex].color = tocolor(144, 98, 16)
 			gameText[gIndex].align = 3
 			time = 8000 -- Displays for 8 seconds regardless of time set
@@ -1265,20 +1265,16 @@ function GameTextForPlayer(text, time, style)
 			gameText[gIndex].color = tocolor(169, 196, 228)
 			gameText[gIndex].align = 2
 		end
-		gameText[gIndex].lheight = 0.5
+		gameText[gIndex].lheight = 2.0
 		gameText[gIndex].lwidth = 1.0
-		gameText[gIndex].upscaley = 3.0
-		gameText[gIndex].upscalex = 1.0
 		gameText[gIndex].font = 3
 	elseif style == 2 then
 		gameText[gIndex].x = 0.5 * DEFAULT_SCREEN_WIDTH
 		gameText[gIndex].y = 0.4 * DEFAULT_SCREEN_HEIGHT
-		gameText[gIndex].lheight = 1.0
+		gameText[gIndex].lheight = 3.0
 		gameText[gIndex].lwidth = 2.0
 		gameText[gIndex].color = tocolor(225, 225, 225)
 		gameText[gIndex].align = 2
-		gameText[gIndex].upscaley = 3.0
-		gameText[gIndex].upscalex = 1.0
 		gameText[gIndex].font = 0
 	elseif style >= 3 and style <= 5 then
 		gameText[gIndex].x = 0.5 * DEFAULT_SCREEN_WIDTH
@@ -1293,10 +1289,9 @@ function GameTextForPlayer(text, time, style)
 			gameText[gIndex].color = tocolor(225, 225, 225)
 			time = 3000 -- Displays for 3 seconds regardless of time set
 		end
-		gameText[gIndex].lheight = 0.5
+		gameText[gIndex].lheight = 2.0
 		gameText[gIndex].lwidth = 1.0
 		gameText[gIndex].align = 2
-		gameText[gIndex].upscaley = 2.5
 		gameText[gIndex].font = 2
 	end
 	gameText[gIndex].style = style
