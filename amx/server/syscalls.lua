@@ -26,7 +26,7 @@ function argsToMTA(amx, prototype, ...)
 		elseif vartype == 'z' then		-- bot/ped
 			val = g_Bots[val] and g_Bots[val].elem
 		elseif vartype == 't' then		-- team
-			val = val > 0 and g_Teams[val % 256]
+			val = val >= 0 and g_Teams[val % 256]
 		elseif vartype == 'v' then		-- vehicle
 			val = g_Vehicles[val] and g_Vehicles[val].elem
 		elseif vartype == 'o' then		-- object
