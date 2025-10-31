@@ -283,6 +283,7 @@ function spawnPlayerBySelectedClass(player, x, y, z, r)
 		spawninfo[1], spawninfo[2], spawninfo[3], spawninfo[4] = x, y, z, r or spawninfo[4]
 	end
 	spawnPlayer(player, unpack(spawninfo))
+	setPlayerTeam(player, spawninfo[8] or nil)
 	for i, weapon in ipairs(spawninfo.weapons) do
 		if weapon[1] ~= -1 then
 			giveWeapon(player, weapon[1], weapon[2], true)

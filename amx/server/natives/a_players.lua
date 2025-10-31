@@ -194,6 +194,7 @@ function GetPlayerTeam(amx, player)
 		team = g_PlayerClasses[data.selectedclass][8]
 	end
 
+	if not team then return 255 end
 	return table.find(g_Teams, team)
 end
 
