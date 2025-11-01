@@ -266,6 +266,11 @@ function SetBotControlState(amx, bot, control, controlState)
 	return true
 end
 
+function SetBotLookAt(amx, bot, x, y, z, time, blend)
+	clientCall(root, 'setPedLookAt', bot, x, y, z, time, blend)
+	return true
+end
+
 function SetBotAimTarget(amx, bot, x, y, z)
 	clientCall(root, 'setPedAimTarget', bot, x, y, z)
 	return true
@@ -327,13 +332,17 @@ IsBotInAnyVehicle = IsPlayerInAnyVehicle
 IsBotDoingDriveBy = IsPlayerDoingDriveBy
 SetBotDoingDriveBy = SetPlayerDoingDriveBy
 GetBotAmmo = GetPlayerAmmo
+SetBotAmmo = SetPlayerAmmo
 GetBotWeaponState = GetPlayerWeaponState
 GetBotWeapon = GetPlayerWeapon
+GiveBotWeapon = GivePlayerWeapon
+ResetBotWeapons = ResetPlayerWeapons
 SetBotArmedWeapon = SetPlayerArmedWeapon
 GetBotWeaponSlot = GetPlayerWeaponSlot
 SetBotWeaponSlot = SetPlayerWeaponSlot
 GetBotAmmoInClip = GetPlayerAmmoInClip
 ReloadBotWeapon = ReloadPlayerWeapon
+RemoveBotWeapon = RemovePlayerWeapon
 IsBotHeadless = IsPlayerHeadless
 SetBotHeadless = SetPlayerHeadless
 IsBotDead = IsPlayerDead
