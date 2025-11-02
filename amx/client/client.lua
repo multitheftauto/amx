@@ -1189,8 +1189,9 @@ function renderTextDraws()
 				--outputConsole(string.format("text: %s partx: %f, party: %f sourceX: %f, sourceY: %f", part.text, part.x, part.y, sourceX, sourceY))
 
 				if textdraw.shade > 0 then -- Draw the shadow
+					local shade = textdraw.outlinesize > 0 and 0 or textdraw.shade * 2
 					dxDrawText(
-						part.text, sourceX + 5, sourceY + 5, sourceX + 5, sourceY + 5,
+						part.text, sourceX + shade, sourceY + shade, sourceX + shade, sourceY + shade,
 						tocolor(0, 0, 0, 100 * (textdraw.alpha or 1)), scalex, scaley, font
 					)
 				end

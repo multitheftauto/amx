@@ -82,7 +82,7 @@ function drawBorderText(text, x, y, color, scalex, scaley, font, outlinesize, ou
 end
 
 function drawShadowText(text, x, y, color, scale, font, shadowDist, width, align)
-	shadowDist = shadowDist or 2
+	shadowDist = shadowDist or 1
 	local alpha = math.floor(color / 16777216)
 	dxDrawText(text, x + shadowDist, y + shadowDist, x + shadowDist + (width or 0), 0, tocolor(0, 0, 0, alpha), scale or 1, font or 'default', width and (align or 'center') or 'left')
 	dxDrawText(text, x, y, x + (width or 0), 0, color, scale or 1, font or 'default', width and (align or 'center') or 'left')
