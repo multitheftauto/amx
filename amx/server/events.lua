@@ -276,7 +276,14 @@ function spawnPlayerBySelectedClass(player, x, y, z, r)
 	playerdata.doingclasssel = nil
 	local spawninfo = playerdata.spawninfo or (g_PlayerClasses and g_PlayerClasses[playerdata.selectedclass])
 	if not spawninfo then
-		return
+		if not g_PlayerClasses[0] then
+			spawninfo = {
+				0, 0, 3, 0, 0, 0, 0, false,
+				weapons = { { -1, 0 }, { -1, 0 }, { -1, 0 } }
+			}
+		else
+			spawninfo = g_PlayerClasses[0]
+		end
 	end
 	if x then
 		spawninfo = table.shallowcopy(spawninfo)
@@ -299,10 +306,8 @@ end
 addEventHandler('onPlayerSpawn', root,
 	function()
 		local playerID = getElemID(source)
-		local playerdata = g_Players[playerID]
 
-		local spawninfo = playerdata.spawninfo or (g_PlayerClasses and g_PlayerClasses[playerdata.selectedclass])
-		if not spawninfo or playerdata.doingclasssel then
+		if g_Players[playerID].doingclasssel then
 			return
 		end
 
