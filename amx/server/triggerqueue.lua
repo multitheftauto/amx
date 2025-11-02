@@ -36,6 +36,10 @@ addEventHandler('onPlayerQuit', root,
 )
 
 local function addToQueue(player, name, source, args)
+	if not playerData[player] or not playerData[player].pending then
+		return
+	end
+
 	for i, a in pairs(args) do
 		if type(a) == 'table' then
 			args[i] = table.deepcopy(a)
