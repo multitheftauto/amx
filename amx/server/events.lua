@@ -782,11 +782,10 @@ addEventHandler('onMarkerLeave', root,
 -------------------------------
 -- Peds
 
-addEvent('OnBotTakeDamage_Ev', true)
-addEventHandler('OnBotTakeDamage_Ev', root,
-	function(issuer, loss, weapon, bodypart)
-		local botID, issuerID = getElemID(source), getElemID(issuer)
-		if not issuerID then return end
+addEvent('OnBotDamage_Ev', true)
+addEventHandler('OnBotDamage_Ev', root,
+	function(opponent, givetake, loss, weapon, bodypart)
+		local botID, attackerID = getElemID(source), getElemID(opponent)
 
 		local reason
 		if g_DamageTypes[weapon] then
@@ -795,7 +794,14 @@ addEventHandler('OnBotTakeDamage_Ev', root,
 			reason = weapon
 		end
 
-		procCallOnAll('OnBotTakeDamage', botID, issuerID, float2cell(loss), reason, bodypart)
+		if givetake then
+			if not opponent then return end
+			procCallOnAll('OnBotGiveDamage', botID, attackerID, float2cell(loss), reason, bodypart)
+		else
+			if not opponent then attackerID = INVALID_PLAYER_ID end
+			setTimer(procCallOnAll, 1, 1, 'OnBotTakeDamage', botID, attackerID, float2cell(loss), reason, bodypart)
+			-- This needs to be just a bit delayed to arrive after OnPlayerWeaponShot
+		end
 	end
 )
 

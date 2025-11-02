@@ -1765,7 +1765,14 @@ local function clientPlayerDamage(attacker, weapon, bodypart, loss)
 	end
 
 	if source == localPlayer then -- take damage
-		if issuer and getElementType(issuer) ~= 'player' then issuer = nil end
+		if issuer and getElementType(issuer) ~= 'player' then
+			if getElementType(issuer) == 'ped' and not getElementData(issuer, 'ActorPed') then
+				triggerServerEvent('OnBotDamage_Ev', issuer, source, true, loss, weapon, bodypart)
+			end
+
+			issuer = nil
+		end
+
 		triggerServerEvent('OnPlayerDamage_Ev', source, issuer, false, loss, weapon, bodypart)
 
 		local team = getPlayerTeam(source)
@@ -1835,7 +1842,7 @@ local function clientPedDamage(attacker, weapon, bodypart, loss)
 			-- Actor damage controlled by the server in any case
 			return cancelEvent()
 		elseif issuer == localPlayer then
-			triggerServerEvent('OnBotTakeDamage_Ev', source, issuer, loss, weapon, bodypart)
+			triggerServerEvent('OnBotDamage_Ev', source, issuer, false, loss, weapon, bodypart)
 		end
 	end
 end

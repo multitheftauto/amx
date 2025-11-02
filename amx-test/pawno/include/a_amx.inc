@@ -21,6 +21,7 @@ forward OnBotStreamOut(botid, forplayerid);
 forward OnBotEnterVehicle(botid, vehicleid, ispassenger);
 forward OnBotExitVehicle(botid, vehicleid);
 forward OnBotTakeDamage(botid, issuerid, Float:amount, weaponid, bodypart);
+forward OnBotGiveDamage(botid, damagedid, Float:amount, weaponid, bodypart);
 forward OnBotDeath(botid, killerid, reason, bodypart);
 forward OnBotStateChange(botid, newstate, oldstate);
 forward OnMarkerCreate(markerid);
@@ -308,4 +309,3 @@ native HasPlayerData(playerid, const key[]);
 native AddEventHandler(const event[], const func[]);
 native RemoveEventHandler(const func[]);
 native IsPluginLoaded(const plugin[]);
-

@@ -204,6 +204,7 @@ g_EventNames = {
 	OnMarkerHit = true,
 	OnMarkerLeave = true,
 	OnBotTakeDamage = true,
+	OnBotGiveDamage = true,
 	OnBotDeath = true,
 	OnPlayerPickUpPickup = true,
 	OnPlayerCommandText = true,
