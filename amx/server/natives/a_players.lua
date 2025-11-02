@@ -1227,6 +1227,7 @@ function TogglePlayerSpectating(amx, player, enable)
 	else
 		if playerdata.returntoclasssel then
 			playerdata.returntoclasssel = nil
+			playerdata.spawninfo = nil
 			if procCallOnAll('OnPlayerRequestClass', getElemID(player), 0) then
 				putPlayerInClassSelection(player)
 			else

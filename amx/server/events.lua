@@ -446,7 +446,6 @@ addEventHandler('onPlayerWasted', root,
 					if not isElement(player) then return end
 
 					g_Players[playerID].spawninfo = nil
-					g_Players[playerID].selectedclass = nil
 
 					if procCallOnAll('OnPlayerRequestClass', playerID, 0) then
 						putPlayerInClassSelection(player)
