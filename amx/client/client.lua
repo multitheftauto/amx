@@ -1018,10 +1018,10 @@ function initTextDraw(textdraw)
 		textdraw.text = textdraw.text:gsub("]", "★")
 	end
 
-	local scale = (textdraw.lwidth or 0.5)
-	local tWidth, tHeight = dxGetTextSize(textdraw.text, scale)
+	local scale = (textdraw.lwidth or 0.48)
+	local tWidth, tHeight = dxGetTextSize(textdraw.text, scale, (textdraw.lheight or 1.12))
 	local lineHeight = (tHeight or 0.25) / 2 -- space between lines (vertical) also used to calculate size of the box if any
-	local lineWidth = (textdraw.lwidth or 0.25) -- space between words (horizontal)
+	local lineWidth = (tWidth or 0.25) -- space between words (horizontal)
 
 	local text = textdraw.text:gsub('~k~~(.-)~', getSAMPBoundKey)
 	local lines = {}

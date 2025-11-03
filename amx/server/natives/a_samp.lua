@@ -827,7 +827,7 @@ end
 function TextDrawCreate(amx, x, y, text)
 	--outputDebugString('TextDrawCreate called with args ' .. x .. ' ' .. y .. ' ' .. text)
 
-	local textdraw = { x = x, y = y, shadow = { align = 1, outlinesize = 0, shade = 2, text = text, font = 1, lwidth = 0.5, lheight = 0.5 } }
+	local textdraw = { x = x, y = y, shadow = { align = 1, outlinesize = 0, shade = 2, text = text, font = 1, lwidth = 0.48, lheight = 1.12 } }
 	textdraw.clientTDId = #g_TextDraws + 1
 	textdraw.visible = false
 

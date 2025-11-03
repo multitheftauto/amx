@@ -535,7 +535,7 @@ function CreatePlayerTextDraw(amx, player, x, y, text)
 	local serverTDId = #g_PlayerTextDraws[player] + 1
 	local clientTDId = #g_TextDraws + serverTDId
 
-	local textdraw = { x = x, y = y, shadow = { align = 1, outlinesize = 0, shade = 2, text = text, font = 1, lwidth = 0.5, lheight = 0.5 } }
+	local textdraw = { x = x, y = y, shadow = { align = 1, outlinesize = 0, shade = 2, text = text, font = 1, lwidth = 0.48, lheight = 1.12 } }
 	textdraw.clientTDId = clientTDId
 	textdraw.serverTDId = serverTDId
 	textdraw.visible = false
