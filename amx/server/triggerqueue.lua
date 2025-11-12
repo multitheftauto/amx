@@ -15,6 +15,13 @@ addEventHandler('onResourceStart', resourceRoot,
 	false
 )
 
+addEventHandler('onResourceStop', resourceRoot,
+	function()
+		playerData = nil
+	end,
+	false
+)
+
 addEventHandler('onPlayerJoin', root, joinHandler)
 
 addEvent('onLoadedAtClient', true)
@@ -36,16 +43,14 @@ addEventHandler('onPlayerQuit', root,
 )
 
 local function addToQueue(player, name, source, args)
-	if not playerData[player] or not playerData[player].pending then
-		return
-	end
-
 	for i, a in pairs(args) do
 		if type(a) == 'table' then
 			args[i] = table.deepcopy(a)
 		end
 	end
-	table.insert(playerData[player].pending, { name = name, source = source, args = args })
+	if playerData[player] and playerData[player].pending then
+		table.insert(playerData[player].pending, { name = name, source = source, args = args })
+	end
 end
 
 
@@ -59,6 +64,8 @@ function triggerClientEvent(...)
 	end
 	name = table.remove(args, 1)
 	source = table.remove(args, 1)
+
+	if not playerData then return end
 
 	if triggerFor == root then
 		-- trigger for everyone
