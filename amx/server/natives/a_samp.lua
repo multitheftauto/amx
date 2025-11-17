@@ -336,7 +336,7 @@ end
 
 function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnDelay, addSiren)
 	local vehicle = createVehicle(model, x, y, z, 0, 0, angle)
-	if (vehicle == false) then
+	if not vehicle then
 		return INVALID_VEHICLE_ID
 	end
 

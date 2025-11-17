@@ -1,6 +1,6 @@
 function CreateObject(amx, model, x, y, z, rX, rY, rZ, drawDistance)
 	local obj = createObject(model, x, y, z, rX, rY, rZ)
-	if obj == false then
+	if not obj then
 		obj = createObject(1337, x, y, z, rX, rY, rZ) -- Create a dummy object anyway since createobject can also be used to make camera attachments
 		setElementAlpha(obj, 0)
 		setElementCollisionsEnabled(obj, false)

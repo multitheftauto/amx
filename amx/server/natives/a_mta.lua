@@ -374,10 +374,11 @@ end
 
 function GetMarkerIcon(amx, marker)
 	local icon = getMarkerIcon(marker)
-	if icon == false then return -1 end
-	if icon == 'none' then return 0 end
-	if icon == 'arrow' then return 1 end
-	if icon == 'finish' then return 2 end
+	if icon then
+		if icon == 'none' then return 0 end
+		if icon == 'arrow' then return 1 end
+		if icon == 'finish' then return 2 end
+	end
 	return -1
 end
 
@@ -395,7 +396,7 @@ function GetMarkerTarget(amx, marker, refX, refY, refZ)
 		return false
 	end
 	local x, y, z = getMarkerTarget(marker)
-	if x == false then return false end
+	if not x then return false end
 	writeMemFloat(amx, refX, x)
 	writeMemFloat(amx, refY, y)
 	writeMemFloat(amx, refZ, z)
@@ -404,12 +405,13 @@ end
 
 function GetMarkerType(amx, marker)
 	local mtype = getMarkerType(marker)
-	if mtype == false then return -1 end
-	if mtype == 'checkpoint' then return 0 end
-	if mtype == 'ring' then return 1 end
-	if mtype == 'cylinder' then return 2 end
-	if mtype == 'arrow' then return 3 end
-	if mtype == 'corona' then return 4 end
+	if mtype then
+		if mtype == 'checkpoint' then return 0 end
+		if mtype == 'ring' then return 1 end
+		if mtype == 'cylinder' then return 2 end
+		if mtype == 'arrow' then return 3 end
+		if mtype == 'corona' then return 4 end
+	end
 	return -1
 end
 

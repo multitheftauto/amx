@@ -72,12 +72,12 @@ function destroyGlobalElements()
 		DestroyMenu(id)
 	end
 
-	for id, textdraw in pairs(g_TextDraws) do
-		destroyTextDraw(textdraw)
+	for id, textlabel in pairs(g_TextLabels) do
+		Delete3DTextLabel(textlabel)
 	end
 
-	for id, textlabel in pairs(g_TextLabels) do
-		destroyTextLabel(textlabel)
+	for id, textdraw in pairs(g_TextDraws) do
+		destroyTextDraw(textdraw)
 	end
 
 	table.each(g_Blips, destroyElement)
@@ -473,7 +473,7 @@ end
 
 function CreatePlayerObject(objID, model, x, y, z, rX, rY, rZ)
 	g_PlayerObjects[objID] = createObject(model, x, y, z, rX, rY, rZ)
-	if g_PlayerObjects[objID] == false then
+	if not g_PlayerObjects[objID] then
 		g_PlayerObjects[objID] = createObject(1337, x, y, z, rX, rY, rZ) -- Create a dummy object anyway since createobject can also be used to make camera attachments
 		setElementAlpha(g_PlayerObjects[objID], 0)
 		setElementCollisionsEnabled(g_PlayerObjects[objID], false)
@@ -491,6 +491,8 @@ end
 
 function MovePlayerObject(objID, x, y, z, speed, rX, rY, rZ)
 	local obj = g_PlayerObjects[objID]
+	if not obj then return 0 end
+
 	local distance = getDistanceBetweenPoints3D(x, y, z, getElementPosition(obj))
 	local time = distance / speed * 1000
 
@@ -697,7 +699,7 @@ function SetVehicleParamsForPlayer(vehicle, isObjective, doorsLocked)
 	end
 	local vehInfo = g_Vehicles[vehID]
 	if isObjective then
-		if vehInfo.blip then
+		if isElement(vehInfo.blip) then
 			destroyElement(vehInfo.blip)
 			vehInfo.blip = nil
 		end
@@ -1874,7 +1876,7 @@ function sendWeapons()
 end
 
 function RemovePlayerMapIcon(blipID)
-	if g_Blips[blipID] then
+	if isElement(g_Blips[blipID]) then
 		destroyElement(g_Blips[blipID])
 		g_Blips[blipID] = nil
 		return true
@@ -1883,7 +1885,7 @@ function RemovePlayerMapIcon(blipID)
 end
 
 function SetPlayerMapIcon(blipID, x, y, z, type, r, g, b, a, style)
-	if g_Blips[blipID] then
+	if isElement(g_Blips[blipID]) then
 		destroyElement(g_Blips[blipID])
 		g_Blips[blipID] = nil
 	end
@@ -1981,7 +1983,7 @@ function TogglePlayerClock(toggle)
 end
 
 function createListDialog(titleText, message, button1txt, button2txt)
-	if listWindow then
+	if isElement(listWindow) then
 		removeEventHandler('onClientGUIClick', getRootElement(), OnListDialogButton1Click) -- Remove handlers so they are not registered more than once
 		removeEventHandler('onClientGUIClick', getRootElement(), OnListDialogButton2Click)
 		destroyElement(listWindow) -- Assuming listWindow is the parent of everything, it should remove the whole hierarchy
@@ -2019,7 +2021,7 @@ function createListDialog(titleText, message, button1txt, button2txt)
 end
 
 function createInputDialog(titleText, message, button1txt, button2txt)
-	if inputWindow then
+	if isElement(inputWindow) then
 		removeEventHandler('onClientGUIClick', getRootElement(), OnInputDialogButton1Click) -- Remove handlers so they are not registered more than once
 		removeEventHandler('onClientGUIClick', getRootElement(), OnInputDialogButton2Click)
 		destroyElement(inputWindow) -- Assuming inputWindow is the parent of everything, it should remove the whole hierarchy
@@ -2053,7 +2055,7 @@ function createInputDialog(titleText, message, button1txt, button2txt)
 end
 
 function createMessageDialog(titleText, message, button1txt, button2txt)
-	if msgWindow then
+	if isElement(msgWindow) then
 		removeEventHandler('onClientGUIClick', getRootElement(), OnMessageDialogButton1Click) -- Remove handlers so they are not registered more than once
 		removeEventHandler('onClientGUIClick', getRootElement(), OnMessageDialogButton2Click)
 		destroyElement(msgWindow) -- Assuming msgWindow is the parent of everything, it should remove the whole hierarchy
