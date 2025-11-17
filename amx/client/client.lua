@@ -139,6 +139,7 @@ function startClassSelection(classInfo)
 	addEventHandler('onClientGUIClick', g_ClassSelectionInfo.gui.btnRight, ClassSelRight)
 	addEventHandler('onClientGUIClick', g_ClassSelectionInfo.gui.btnSpawn, ClassSelSpawn)
 	showCursor(true)
+	removeEventHandler('onClientRender', root, renderClassSelText)
 	addEventHandler('onClientRender', root, renderClassSelText)
 end
 
@@ -155,6 +156,10 @@ function ClassSelSpawn()
 end
 
 function renderClassSelText()
+	if not g_ClassSelectionInfo then
+		return
+	end
+
 	drawShadowText(g_AMXVersion, 20, screenHeight - 170, tocolor(39, 171, 250), 1, 'default-bold', 1, 230)
 	drawShadowText('Use left and right arrow keys to select class.', 20, screenHeight - 150, tocolor(240, 240, 240))
 	drawShadowText('Press SHIFT when ready to spawn.', 20, screenHeight - 136, tocolor(240, 240, 240))
@@ -162,6 +167,7 @@ function renderClassSelText()
 	if not g_ClassSelectionInfo[0] or not g_ClassSelectionInfo.selectedclass then
 		return
 	end
+
 	drawShadowText('Class ' .. g_ClassSelectionInfo.selectedclass .. ' weapons:', 20, screenHeight - 110, tocolor(240, 240, 240))
 	local weapon, ammo, linenum, line
 	linenum = 0

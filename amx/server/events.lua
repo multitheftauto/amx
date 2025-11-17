@@ -24,6 +24,7 @@ function gameModeInit(player)
 	ShowPlayerMarker(false, player, g_PlayerMarkersMode)
 	setPlayerHudComponentVisible(player, 'area_name', g_ShowZoneNames)
 	setPlayerHudComponentVisible(player, 'vehicle_name', false) -- SA-MP doesn't show vehicle names when entering vehicles
+	setPlayerNametagShowing(player, false)
 	SetPlayerColor(false, player, r, g, b)
 	setElementData(player, 'Score', 0)
 	toggleAllControls(player, false, true, false)
@@ -128,7 +129,6 @@ function joinHandler(player)
 
 		procCallOnAll('OnPlayerConnect', playerID)
 	end
-	setPlayerNametagShowing(player, false)
 end
 addEventHandler('onPlayerJoin', root, joinHandler)
 
