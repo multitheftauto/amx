@@ -343,15 +343,6 @@ function isPedDead(player)
 	return x == 0 and y == 0 and z == 0
 end
 
-function giveWeapons(player, weapons, currentslot)
-	for slot, weapon in pairs(weapons) do
-		giveWeapon(player, weapon.id, weapon.ammo)
-	end
-	if currentslot then
-		setPedWeaponSlot(player, currentslot)
-	end
-end
-
 function isTimer(timer)
 	return timer and table.find(getTimers(), timer) and true
 end

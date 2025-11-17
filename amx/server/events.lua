@@ -296,6 +296,7 @@ function spawnPlayerBySelectedClass(player, x, y, z, r)
 			giveWeapon(player, weapon[1], weapon[2], true)
 		end
 	end
+	setPedWeaponSlot(player, 0)
 	clientCall(player, 'destroyClassSelGUI')
 	setPlayerHudComponentVisible(player, 'area_name', g_ShowZoneNames)
 	if playerdata.blip then
