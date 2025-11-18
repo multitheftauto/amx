@@ -43,8 +43,6 @@ addEventHandler('onClientResourceStart', resourceRoot,
 	function()
 		triggerServerEvent('onLoadedAtClient', resourceRoot, localPlayer)
 		setTimer(checkTextLabels, 500, 0)
-		setAmbientSoundEnabled('gunfire', false)
-		setDebugViewActive(true)
 	end,
 	false
 )
@@ -61,6 +59,8 @@ end
 
 function gamemodeLoad()
 	setTime(12, 0)
+	setAmbientSoundEnabled('gunfire', false)
+	setDebugViewActive(true)
 end
 
 function destroyGlobalElements()
@@ -135,9 +135,11 @@ function startClassSelection(classInfo)
 		btnRight = guiCreateButton(screenWidth / 2 - 70, screenHeight - 100, 140, 20, '>>>', false),
 		btnSpawn = guiCreateButton(screenWidth / 2 + 145 - 70, screenHeight - 100, 140, 20, 'Spawn', false)
 	}
+
 	addEventHandler('onClientGUIClick', g_ClassSelectionInfo.gui.btnLeft, ClassSelLeft)
 	addEventHandler('onClientGUIClick', g_ClassSelectionInfo.gui.btnRight, ClassSelRight)
 	addEventHandler('onClientGUIClick', g_ClassSelectionInfo.gui.btnSpawn, ClassSelSpawn)
+
 	showCursor(true)
 	removeEventHandler('onClientRender', root, renderClassSelText)
 	addEventHandler('onClientRender', root, renderClassSelText)
@@ -173,7 +175,7 @@ function renderClassSelText()
 	linenum = 0
 	for i, weapondata in ipairs(g_ClassSelectionInfo[g_ClassSelectionInfo.selectedclass].weapons) do
 		weapon, ammo = weapondata[1], weapondata[2]
-		if weapon ~= 0 and weapon ~= -1 and ammo ~= -1 then
+		if weapon > 0 and ammo ~= -1 then
 			linenum = linenum + 1
 			if ammo ~= 0 then
 				line = ammo .. 'x '
