@@ -64,6 +64,7 @@ function IsPlayerInRangeOfPoint(amx, player, range, pX, pY, pZ)
 		cX, cY, cZ = getElementPosition(player)
 	end
 
+	if not cX then return false end
 	return getDistanceBetweenPoints3D(pX, pY, pZ, cX, cY, cZ) <= range
 end
 
@@ -77,6 +78,7 @@ function GetPlayerDistanceFromPoint(amx, player, pX, pY, pZ)
 		cX, cY, cZ = getElementPosition(player)
 	end
 
+	if not cX then return float2cell(0) end
 	return float2cell(getDistanceBetweenPoints3D(pX, pY, pZ, cX, cY, cZ))
 end
 
@@ -1050,8 +1052,11 @@ function SetPlayerCameraLookAt(amx, player, lx, ly, lz, cut)
 	if not player then
 		return false
 	end
-	fadeCamera(player, true)
 	local x, y, z = getCameraMatrix(player)
+	if not x then
+		return false
+	end
+	fadeCamera(player, true)
 	setCameraMatrix(player, x, y, z, lx, ly, lz)
 	return true
 end
