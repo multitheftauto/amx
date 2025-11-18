@@ -378,7 +378,10 @@ function AttachCameraToObject(camObj)
 	ca.active = 1
 	ca.objCamPos = camObj
 
+	removeEventHandler('onClientPreRender', root, camAttachRender)
 	addEventHandler('onClientPreRender', root, camAttachRender)
+
+	removeEventHandler('onClientCursorMove', root, cursorMouseMoveHandler)
 	addEventHandler('onClientCursorMove', root, cursorMouseMoveHandler)
 end
 
@@ -392,7 +395,10 @@ function AttachCameraToPlayerObject(camobjID)
 	ca.active = 1
 	ca.objCamPos = g_PlayerObjects[camobjID]
 
+	removeEventHandler('onClientPreRender', root, camAttachRender)
 	addEventHandler('onClientPreRender', root, camAttachRender)
+
+	removeEventHandler('onClientCursorMove', root, cursorMouseMoveHandler)
 	addEventHandler('onClientCursorMove', root, cursorMouseMoveHandler)
 end
 
