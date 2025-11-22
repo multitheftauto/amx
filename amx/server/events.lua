@@ -210,10 +210,10 @@ function putPlayerInClassSelection(player)
 	if g_Players[playerID].blip then
 		setElementVisibleTo(g_Players[playerID].blip, root, false)
 	end
-	if g_Players[playerID].updatetimer then
+	if isTimer(g_Players[playerID].updatetimer) then
 		killTimer(g_Players[playerID].updatetimer)
-		g_Players[playerID].updatetimer = nil
 	end
+	g_Players[playerID].updatetimer = nil
 	addPedClothes(player, 'vest', 'vest', 0)
 	setPlayerHudComponentVisible(player, 'area_name', false)
 	clientCall(player, 'startClassSelection', g_PlayerClasses)
@@ -337,7 +337,7 @@ function handlePlayerSpawn(player)
 		setPedWalkingStyle(player, WalkingStyle[skin] or 0)
 	end
 
-	if g_Players[playerID].updatetimer then
+	if isTimer(g_Players[playerID].updatetimer) then
 		killTimer(g_Players[playerID].updatetimer)
 	end
 	g_Players[playerID].updatetimer = setTimer(procCallOnAll, 100, 0, 'OnPlayerUpdate', playerID)
@@ -459,10 +459,10 @@ addEventHandler('onPlayerWasted', root,
 			setTimer(spawnPlayerBySelectedClass, 3000, 1, source, false)
 		end
 
-		if g_Players[playerID].updatetimer then
+		if isTimer(g_Players[playerID].updatetimer) then
 			killTimer(g_Players[playerID].updatetimer)
-			g_Players[playerID].updatetimer = nil
 		end
+		g_Players[playerID].updatetimer = nil
 
 		g_Players[playerID].vehicle = nil
 		g_Players[playerID].specialaction = SPECIAL_ACTION_NONE
@@ -496,9 +496,8 @@ addEventHandler('onPlayerQuit', root,
 			destroyElement(g_Players[playerID].blip)
 			g_Players[playerID].blip = nil
 		end
-		if g_Players[playerID].updatetimer then
+		if isTimer(g_Players[playerID].updatetimer) then
 			killTimer(g_Players[playerID].updatetimer)
-			g_Players[playerID].updatetimer = nil
 		end
 		g_Players[playerID] = nil
 	end
@@ -614,14 +613,16 @@ addEventHandler('onVehicleEnter', root,
 			g_Players[playerID].specialaction = SPECIAL_ACTION_NONE
 		end
 
-		if g_Vehicles[vehID] and g_Vehicles[vehID].respawntimer then
-			killTimer(g_Vehicles[vehID].respawntimer)
+		if g_Vehicles[vehID] then
+			if isTimer(g_Vehicles[vehID].respawntimer) then
+				killTimer(g_Vehicles[vehID].respawntimer)
+			end
 			g_Vehicles[vehID].respawntimer = nil
-		end
 
-		if ManualVehEngineAndLights then
-			if (g_Vehicles[vehID] and getVehicleType(source) ~= 'Plane' and getVehicleType(source) ~= 'Helicopter') then
-				setVehicleEngineState(source, g_Vehicles[vehID].engineState)
+			if ManualVehEngineAndLights then
+				if getVehicleType(source) ~= 'Plane' and getVehicleType(source) ~= 'Helicopter' then
+					setVehicleEngineState(source, g_Vehicles[vehID].engineState)
+				end
 			end
 		end
 	end
@@ -672,11 +673,12 @@ addEventHandler('onVehicleExit', root,
 		local _, occupant = occupants and next(occupants)
 		if occupant then return end
 
-		if g_Vehicles[vehID] and g_Vehicles[vehID].respawntimer then
-			killTimer(g_Vehicles[vehID].respawntimer)
-			g_Vehicles[vehID].respawntimer = nil
+		if g_Vehicles[vehID] then
+			if isTimer(g_Vehicles[vehID].respawntimer) then
+				killTimer(g_Vehicles[vehID].respawntimer)
+			end
+			g_Vehicles[vehID].respawntimer = setTimer(respawnStaticVehicle, g_Vehicles[vehID].respawndelay, 1, source)
 		end
-		g_Vehicles[vehID].respawntimer = setTimer(respawnStaticVehicle, g_Vehicles[vehID].respawndelay, 1, source)
 	end
 )
 
@@ -710,13 +712,12 @@ addEventHandler('onVehicleExplode', root,
 		if g_Vehicles[vehID] and g_Vehicles[vehID].vehicleIsAlive then
 			procCallOnAll('OnVehicleDeath', vehID, getElemID(player))
 
-			if g_Vehicles[vehID].respawntimer then
+			if isTimer(g_Vehicles[vehID].respawntimer) then
 				killTimer(g_Vehicles[vehID].respawntimer)
-				g_Vehicles[vehID].respawntimer = nil
 			end
+			g_Vehicles[vehID].respawntimer = setTimer(respawnStaticVehicle, 10000, 1, source)
 
 			g_Vehicles[vehID].vehicleIsAlive = false
-			g_Vehicles[vehID].respawntimer = setTimer(respawnStaticVehicle, 10000, 1, source)
 		end
 	end
 )

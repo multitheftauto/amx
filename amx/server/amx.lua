@@ -168,11 +168,18 @@ end
 addEvent('onAMXStart')
 
 function destroyGlobalElements()
-	for i, vehinfo in pairs(g_Vehicles) do
-		if vehinfo.respawntimer then
-			killTimer(vehinfo.respawntimer)
-			vehinfo.respawntimer = nil
+	for i, playerdata in pairs(g_Players) do
+		if isTimer(playerdata.updatetimer) then
+			killTimer(playerdata.updatetimer)
 		end
+		playerdata.updatetimer = nil
+	end
+
+	for i, vehinfo in pairs(g_Vehicles) do
+		if isTimer(vehinfo.respawntimer) then
+			killTimer(vehinfo.respawntimer)
+		end
+		vehinfo.respawntimer = nil
 	end
 
 	for i, elemtype in ipairs({ g_TextDraws, g_TextLabels }) do
@@ -198,7 +205,7 @@ function unloadAMX(amx, notifyClient)
 		ShowPlayerMarkers(amx, 0)
 		destroyGlobalElements()
 
-		if notifyClient == nil or notifyClient == true then
+		if notifyClient ~= false then
 			clientCall(root, 'gamemodeUnload')
 		end
 
