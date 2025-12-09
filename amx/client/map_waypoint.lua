@@ -51,12 +51,10 @@ local function handleMapTargetBlip()
 	end
 
 	local isRMBPressed = getKeyState('mouse2')
-	if targetBlip then
-		if isRMBPressed and isRMBPressed ~= wasRMBPressed then
-			playSoundFrontEnd(2)
-			destroyElement(targetBlip)
-			targetBlip = nil
-		end
+	if targetBlip and isRMBPressed and isRMBPressed ~= wasRMBPressed then
+		playSoundFrontEnd(2)
+		destroyElement(targetBlip)
+		targetBlip = nil
 	end
 
 	wasLMBPressed, wasRMBPressed = isLMBPressed, isRMBPressed

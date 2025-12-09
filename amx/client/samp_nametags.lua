@@ -40,7 +40,7 @@ function drawNameTag(position, nameText, r, g, b, a, health, armor, distance)
 	if not screenCoordsX then return end
 
 	local rect = {left = screenCoordsX, top = screenCoordsY, right = screenCoordsX + 1, bottom = screenCoordsY + 1}
-	local textSizeX, textSizeY = dxGetTextSize(nameText, 0, 1, 1, font)
+	local textSizeX = dxGetTextSize(nameText, 0, 1, 1, font)
 
 	rect.left = rect.left - (textSizeX / 2)
 
@@ -117,11 +117,7 @@ function drawNameTag(position, nameText, r, g, b, a, health, armor, distance)
 	HealthBarBackgroundVertices[4].x = HealthBarInnerVertices[4].x
 	HealthBarBackgroundVertices[4].y = HealthBarInnerVertices[4].y
 
-	if health > 100 then
-		health = 100
-	end
-	health = health / 2.6
-	health = health - 19
+	health = math.min(health, 100) / 2.6 - 19
 
 	HealthBarInnerVertices[3].x = screenCoordsX + health -- Bottom right
 	HealthBarInnerVertices[4].x = screenCoordsX + health -- Top Right
@@ -152,11 +148,7 @@ function drawNameTag(position, nameText, r, g, b, a, health, armor, distance)
 
 	-- Armor Bar
 	if armor > 0 then
-		if armor > 100 then
-			armor = 100
-		end
-		armor = armor / 2.6
-		armor = armor - 19
+		armor = math.min(armor, 100) / 2.6 - 19
 
 		HealthBarInnerVertices[3].x = screenCoordsX + armor -- Bottom right
 		HealthBarInnerVertices[4].x = screenCoordsX + armor -- Top Right
@@ -189,45 +181,39 @@ addEventHandler('onClientRender', root,
 		local playerPosX, playerPosY, playerPosZ = getElementPosition(localPlayer)
 
 		for k, player in pairs(getElementsByType('player')) do
-			if player ~= localPlayer and isElementOnScreen(player) then
-				if nameTagShowing[player] ~= false then
-					--local fPosX, fPosY, fPosZ = getElementPosition(player)
-					local fPosX, fPosY, fPosZ = getPedBonePosition(player, 8)
-					local distance = getDistanceBetweenPoints3D(playerPosX, playerPosY, playerPosZ, fPosX, fPosY, fPosZ)
-					local a = getElementAlpha(player)
+			if player ~= localPlayer and isElementOnScreen(player) and nameTagShowing[player] ~= false then
+				local fPosX, fPosY, fPosZ = getPedBonePosition(player, 8)
+				local distance = getDistanceBetweenPoints3D(playerPosX, playerPosY, playerPosZ, fPosX, fPosY, fPosZ)
+				local a = getElementAlpha(player)
 
-					if distance < nameTagsRadius and a > 0 then
-						local cx, cy, cz = getCameraMatrix()
+				if distance < nameTagsRadius and a > 0 then
+					local cx, cy, cz = getCameraMatrix()
 
-						if not nameTagsLOS or isLineOfSightClear(cx, cy, cz, fPosX, fPosY, fPosZ, true, false, false, true, true, false, false) then
-							local r, g, b = getPlayerNametagColor(player)
-							drawNameTag({x = fPosX, y = fPosY, z = fPosZ}, getPlayerName(player) .. ' (' .. getElemID(player) .. ')', r, g, b, a, getElementHealth(player), getPedArmor(player), distance)
-						end
+					if not nameTagsLOS or isLineOfSightClear(cx, cy, cz, fPosX, fPosY, fPosZ, true, false, false, true, true, false, false) then
+						local r, g, b = getPlayerNametagColor(player)
+						drawNameTag({x = fPosX, y = fPosY, z = fPosZ}, getPlayerName(player) .. ' (' .. getElemID(player) .. ')', r, g, b, a, getElementHealth(player), getPedArmor(player), distance)
 					end
 				end
 			end
 		end
 
 		for k, bot in pairs(getElementsByType('ped')) do
-			if isElementOnScreen(bot) then
-				if getElementData(bot, 'ShowNameTag') then
-					--local fPosX, fPosY, fPosZ = getElementPosition(bot)
-					local fPosX, fPosY, fPosZ = getPedBonePosition(bot, 8)
-					local distance = getDistanceBetweenPoints3D(playerPosX, playerPosY, playerPosZ, fPosX, fPosY, fPosZ)
-					local a = getElementAlpha(bot)
+			if isElementOnScreen(bot) and getElementData(bot, 'ShowNameTag') then
+				local fPosX, fPosY, fPosZ = getPedBonePosition(bot, 8)
+				local distance = getDistanceBetweenPoints3D(playerPosX, playerPosY, playerPosZ, fPosX, fPosY, fPosZ)
+				local a = getElementAlpha(bot)
 
-					if distance < nameTagsRadius and a > 0 then
-						local cx, cy, cz = getCameraMatrix()
+				if distance < nameTagsRadius and a > 0 then
+					local cx, cy, cz = getCameraMatrix()
 
-						if not nameTagsLOS or isLineOfSightClear(cx, cy, cz, fPosX, fPosY, fPosZ, true, false, false, true, true, false, false) then
-							local botName = getElementData(bot, 'BotName')
-							if botName and botName:len() >= 1 then
-								botName = botName .. ' (' .. getElemID(bot) .. ')'
-							else
-								botName = 'Bot (' .. getElemID(bot) .. ')'
-							end
-							drawNameTag({x = fPosX, y = fPosY, z = fPosZ}, botName, 255, 255, 255, a, getElementHealth(bot), getPedArmor(bot), distance)
+					if not nameTagsLOS or isLineOfSightClear(cx, cy, cz, fPosX, fPosY, fPosZ, true, false, false, true, true, false, false) then
+						local botName = getElementData(bot, 'BotName')
+						if botName and botName:len() >= 1 then
+							botName = botName .. ' (' .. getElemID(bot) .. ')'
+						else
+							botName = 'Bot (' .. getElemID(bot) .. ')'
 						end
+						drawNameTag({x = fPosX, y = fPosY, z = fPosZ}, botName, 255, 255, 255, a, getElementHealth(bot), getPedArmor(bot), distance)
 					end
 				end
 			end
