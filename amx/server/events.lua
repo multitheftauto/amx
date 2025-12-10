@@ -373,8 +373,8 @@ addEventHandler('onPlayerChat', root,
 	end
 )
 
-addEvent('OnPlayerDamage_Ev', true)
-addEventHandler('OnPlayerDamage_Ev', root,
+addEvent('onPlayerDamage_Ev', true)
+addEventHandler('onPlayerDamage_Ev', root,
 	function(opponent, givetake, loss, weapon, bodypart)
 		local playerID, otherID = getElemID(client), getElemID(opponent)
 		if not playerID then return end
@@ -723,8 +723,8 @@ addEventHandler('onVehicleExplode', root,
 	end
 )
 
-addEvent('OnPlayerStuntStart_Ev', true)
-addEventHandler('OnPlayerStuntStart_Ev', root,
+addEvent('onPlayerStuntStart_Ev', true)
+addEventHandler('onPlayerStuntStart_Ev', root,
 	function(vehicle, stuntType)
 		local playerID, vehID = getElemID(client), getElemID(vehicle)
 		if not playerID or not g_Vehicles[vehID] then return end
@@ -733,8 +733,8 @@ addEventHandler('OnPlayerStuntStart_Ev', root,
 	end
 )
 
-addEvent('OnPlayerStuntFinish_Ev', true)
-addEventHandler('OnPlayerStuntFinish_Ev', root,
+addEvent('onPlayerStuntFinish_Ev', true)
+addEventHandler('onPlayerStuntFinish_Ev', root,
 	function(vehicle, stuntType, stuntTime, stuntDistance)
 		local playerID, vehID = getElemID(client), getElemID(vehicle)
 		if not playerID or not g_Vehicles[vehID] then return end
@@ -785,8 +785,8 @@ addEventHandler('onMarkerLeave', root,
 -------------------------------
 -- Peds
 
-addEvent('OnBotDamage_Ev', true)
-addEventHandler('OnBotDamage_Ev', root,
+addEvent('onBotDamage_Ev', true)
+addEventHandler('onBotDamage_Ev', root,
 	function(bot, givetake, loss, weapon, bodypart)
 		local playerID, botID = getElemID(client), getElemID(bot)
 		if not playerID or not g_Bots[botID] then return end
@@ -839,8 +839,8 @@ addEventHandler('onPedWasted', root,
 -------------------------------
 -- Misc
 
-addEvent('OnPlayerWeaponShot_Ev', true)
-addEventHandler('OnPlayerWeaponShot_Ev', root,
+addEvent('onPlayerWeaponShot_Ev', true)
+addEventHandler('onPlayerWeaponShot_Ev', root,
 	function(weapon, hitType, hitID, startX, startY, startZ, hitX, hitY, hitZ, offsetX, offsetY, offsetZ)
 		local playerID = getElemID(client)
 		local playerData = g_Players[playerID]
@@ -858,8 +858,8 @@ addEventHandler('OnPlayerWeaponShot_Ev', root,
 	end
 )
 
-addEvent('OnPlayerGiveDamageActor_Ev', true)
-addEventHandler('OnPlayerGiveDamageActor_Ev', root,
+addEvent('onPlayerGiveDamageActor_Ev', true)
+addEventHandler('onPlayerGiveDamageActor_Ev', root,
 	function(actor, loss, weapon, bodypart)
 		local playerID, actorID = getElemID(client), getElemID(actor)
 		if not playerID or not g_Actors[actorID] then return end
@@ -876,8 +876,8 @@ addEventHandler('OnPlayerGiveDamageActor_Ev', root,
 	end
 )
 
-addEvent('OnPlayerPickUpPickup_Ev', true)
-addEventHandler('OnPlayerPickUpPickup_Ev', root,
+addEvent('onPlayerPickUpPickup_Ev', true)
+addEventHandler('onPlayerPickUpPickup_Ev', root,
 	function(pickup)
 		local playerID, pickupID = getElemID(client), getElemID(pickup)
 		if not playerID or not g_Pickups[pickupID] then return end
@@ -892,8 +892,8 @@ addEventHandler('OnPlayerPickUpPickup_Ev', root,
 	end
 )
 
-addEvent('OnPlayerClickMap_Ev', true)
-addEventHandler('OnPlayerClickMap_Ev', root,
+addEvent('onPlayerClickMap_Ev', true)
+addEventHandler('onPlayerClickMap_Ev', root,
 	function(clickX, clickY, clickZ)
 		local playerID = getElemID(client)
 		if not playerID then return end
@@ -951,8 +951,8 @@ addEventHandler('onPlayerChangeNick', root,
 )
 
 -- Actors
-addEvent('onAmxClientActorStream', true)
-addEventHandler('onAmxClientActorStream', root,
+addEvent('onActorStream_Ev', true)
+addEventHandler('onActorStream_Ev', root,
 	function(actorID, streamed)
 		local playerID = getElemID(client)
 		if not playerID or not g_Actors[actorID] then return end
@@ -968,8 +968,8 @@ addEventHandler('onAmxClientActorStream', root,
 )
 
 -- Players
-addEvent('onAmxClientPlayerStream', true)
-addEventHandler('onAmxClientPlayerStream', root,
+addEvent('onPlayerStream_Ev', true)
+addEventHandler('onPlayerStream_Ev', root,
 	function(otherID, streamed)
 		local playerID = getElemID(client)
 		if not playerID or not g_Players[otherID] then return end
@@ -985,8 +985,8 @@ addEventHandler('onAmxClientPlayerStream', root,
 )
 
 -- Vehicles
-addEvent('onAmxClientVehicleStream', true)
-addEventHandler('onAmxClientVehicleStream', root,
+addEvent('onVehicleStream_Ev', true)
+addEventHandler('onVehicleStream_Ev', root,
 	function(vehicleID, streamed)
 		local playerID = getElemID(client)
 		if not playerID or not g_Vehicles[vehicleID] then return end
@@ -1002,8 +1002,8 @@ addEventHandler('onAmxClientVehicleStream', root,
 )
 
 -- Bots
-addEvent('onAmxClientBotStream', true)
-addEventHandler('onAmxClientBotStream', root,
+addEvent('onBotStream_Ev', true)
+addEventHandler('onBotStream_Ev', root,
 	function(botID, streamed)
 		local playerID = getElemID(client)
 		if not playerID or not g_Bots[botID] then return end

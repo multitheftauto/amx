@@ -264,7 +264,9 @@ end
 function pickupOnInteriorChangeLoop()
 	local vw = getElementDimension(localPlayer)
 	local interior = getElementInterior(localPlayer)
-	for i, v in ipairs(getElementsByType('pickup', root)) do -- Only for those that are streamed in
+
+	-- Only for those that are streamed in
+	for i, v in ipairs(getElementsByType('pickup', root)) do
 		if isElement(v) then
 			setElementInterior(v, interior)
 			setElementDimension(v, vw)
@@ -273,18 +275,18 @@ function pickupOnInteriorChangeLoop()
 end
 
 local function clientPlayerPickupHit(thePickup, matchingDimension)
-	triggerServerEvent('OnPlayerPickUpPickup_Ev', localPlayer, thePickup)
+	triggerServerEvent('onPlayerPickUpPickup_Ev', localPlayer, thePickup)
 end
 addEventHandler('onClientPlayerPickupHit', localPlayer, clientPlayerPickupHit)
------------------------------
--- Interior related
 
 local interiorTimerPtr = false
-function AMX_OnPlayerInteriorChange(interior, oldInt)
-	if not interiorTimerPtr then
-		interiorTimerPtr = setTimer(pickupOnInteriorChangeLoop, 1000, 0) -- Every second check for pickups
-	end
+local function clientInteriorChange(oldInt, interior)
+	if interiorTimerPtr then return end
+
+	-- Every second check for pickups
+	interiorTimerPtr = setTimer(pickupOnInteriorChangeLoop, 1000, 0)
 end
+addEventHandler('onClientElementInteriorChange', localPlayer, clientInteriorChange)
 -----------------------------
 -- Camera related
 
@@ -802,14 +804,14 @@ addEventHandler('onClientElementStreamIn', root,
 			setVehicleWindowOpen(source, 4, not getElementData(source, 'WindowFrontLeft'))
 			setVehicleWindowOpen(source, 5, not getElementData(source, 'WindowRearLeft'))
 
-			triggerServerEvent('onAmxClientVehicleStream', localPlayer, getElemID(source), true)
+			triggerServerEvent('onVehicleStream_Ev', localPlayer, getElemID(source), true)
 		elseif getElementType(source) == 'player' then
-			triggerServerEvent('onAmxClientPlayerStream', localPlayer, getElemID(source), true)
+			triggerServerEvent('onPlayerStream_Ev', localPlayer, getElemID(source), true)
 		elseif getElementType(source) == 'ped' then
 			if getElementData(source, 'ActorPed') then
-				triggerServerEvent('onAmxClientActorStream', localPlayer, getElemID(source), true)
+				triggerServerEvent('onActorStream_Ev', localPlayer, getElemID(source), true)
 			else
-				triggerServerEvent('onAmxClientBotStream', localPlayer, getElemID(source), true)
+				triggerServerEvent('onBotStream_Ev', localPlayer, getElemID(source), true)
 			end
 		end
 	end
@@ -828,14 +830,14 @@ addEventHandler('onClientElementStreamOut', root,
 				vehInfo.blip = nil
 			end
 
-			triggerServerEvent('onAmxClientVehicleStream', localPlayer, getElemID(source), false)
+			triggerServerEvent('onVehicleStream_Ev', localPlayer, getElemID(source), false)
 		elseif getElementType(source) == 'player' then
-			triggerServerEvent('onAmxClientPlayerStream', localPlayer, getElemID(source), false)
+			triggerServerEvent('onPlayerStream_Ev', localPlayer, getElemID(source), false)
 		elseif getElementType(source) == 'ped' then
 			if getElementData(source, 'ActorPed') then
-				triggerServerEvent('onAmxClientActorStream', localPlayer, getElemID(source), false)
+				triggerServerEvent('onActorStream_Ev', localPlayer, getElemID(source), false)
 			else
-				triggerServerEvent('onAmxClientBotStream', localPlayer, getElemID(source), false)
+				triggerServerEvent('onBotStream_Ev', localPlayer, getElemID(source), false)
 			end
 		end
 	end
@@ -845,7 +847,7 @@ local function clientPlayerStuntStart(stuntType)
 	local vehicle = getPedOccupiedVehicle(localPlayer)
 	if not vehicle then return cancelEvent() end
 
-	triggerServerEvent('OnPlayerStuntStart_Ev', localPlayer, vehicle, stuntType)
+	triggerServerEvent('onPlayerStuntStart_Ev', localPlayer, vehicle, stuntType)
 end
 addEventHandler('onClientPlayerStuntStart', root, clientPlayerStuntStart)
 
@@ -853,7 +855,7 @@ local function clientPlayerStuntFinish(stuntType, stuntTime, stuntDistance)
 	local vehicle = getPedOccupiedVehicle(localPlayer)
 	if not vehicle then return cancelEvent() end
 
-	triggerServerEvent('OnPlayerStuntFinish_Ev', localPlayer, vehicle, stuntType, stuntTime, stuntDistance)
+	triggerServerEvent('onPlayerStuntFinish_Ev', localPlayer, vehicle, stuntType, stuntTime, stuntDistance)
 end
 addEventHandler('onClientPlayerStuntFinish', root, clientPlayerStuntFinish)
 
@@ -1773,17 +1775,17 @@ local function clientPlayerDamage(attacker, weapon, bodypart, loss)
 	end
 
 	if issuer == localPlayer then -- give damage
-		triggerServerEvent('OnPlayerDamage_Ev', issuer, source, true, loss, weapon, bodypart)
+		triggerServerEvent('onPlayerDamage_Ev', issuer, source, true, loss, weapon, bodypart)
 	elseif source == localPlayer then -- take damage
 		if issuer and getElementType(issuer) ~= 'player' then
 			if getElementType(issuer) == 'ped' and not getElementData(issuer, 'ActorPed') then
-				triggerServerEvent('OnBotDamage_Ev', source, issuer, true, loss, weapon, bodypart)
+				triggerServerEvent('onBotDamage_Ev', source, issuer, true, loss, weapon, bodypart)
 			end
 
 			issuer = nil
 		end
 
-		triggerServerEvent('OnPlayerDamage_Ev', source, issuer, false, loss, weapon, bodypart)
+		triggerServerEvent('onPlayerDamage_Ev', source, issuer, false, loss, weapon, bodypart)
 
 		local team = getPlayerTeam(source)
 		if issuer and team and getTeamName(team) ~= 'Team 256' then
@@ -1826,7 +1828,7 @@ local function clientPlayerWeaponFire(weapon, ammo, ammoInClip, hitX, hitY, hitZ
 		end
 	end
 
-	triggerServerEvent('OnPlayerWeaponShot_Ev', localPlayer, weapon, hitType, hitId, startX, startY, startZ, hitX, hitY, hitZ, offsetX, offsetY, offsetZ)
+	triggerServerEvent('onPlayerWeaponShot_Ev', localPlayer, weapon, hitType, hitId, startX, startY, startZ, hitX, hitY, hitZ, offsetX, offsetY, offsetZ)
 end
 addEventHandler('onClientPlayerWeaponFire', localPlayer, clientPlayerWeaponFire)
 
@@ -1846,13 +1848,13 @@ local function clientPedDamage(attacker, weapon, bodypart, loss)
 
 		if getElementData(source, 'ActorPed') then
 			if issuer == localPlayer and not getElementData(source, 'Invulnerable') then
-				triggerServerEvent('OnPlayerGiveDamageActor_Ev', issuer, source, loss, weapon, bodypart)
+				triggerServerEvent('onPlayerGiveDamageActor_Ev', issuer, source, loss, weapon, bodypart)
 			end
 
 			-- Actor damage controlled by the server in any case
 			return cancelEvent()
 		elseif issuer == localPlayer then
-			triggerServerEvent('OnBotDamage_Ev', issuer, source, false, loss, weapon, bodypart)
+			triggerServerEvent('onBotDamage_Ev', issuer, source, false, loss, weapon, bodypart)
 		end
 	end
 end

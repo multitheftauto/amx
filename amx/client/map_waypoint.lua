@@ -39,7 +39,7 @@ local function handleMapTargetBlip()
 			local worldPlanePos = Vector2(6000 * (relPos.x - 0.5), 3000 - (relPos.y * 6000))
 			local worldPos = Vector3(worldPlanePos.x, worldPlanePos.y, getGroundPosition(worldPlanePos.x, worldPlanePos.y, 3000))
 
-			triggerServerEvent('OnPlayerClickMap_Ev', localPlayer, worldPos.x, worldPos.y, worldPos.z)
+			triggerServerEvent('onPlayerClickMap_Ev', localPlayer, worldPos.x, worldPos.y, worldPos.z)
 			playSoundFrontEnd(1)
 
 			if not targetBlip then
