@@ -1120,6 +1120,8 @@ function UpdatePlayer3DTextLabelText(amx, textlabel, r, g, b, a, text)
 	return true
 end
 
+-- ShowPlayerDialog client
+
 function floatstr(amx, str)
 	return float2cell(tonumber(str) or 0)
 end

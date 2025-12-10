@@ -139,6 +139,7 @@ function syscall(amx, svc, prototype, ...)		-- svc = service number (= index in 
 	if prototype.client then
 		local player = table.remove(args, 1)
 		clientCall(player, fnName, unpack(args))
+		result = 1
 	else
 		result = fn(amx, unpack(args))
 		if type(result) == 'boolean' then
@@ -333,8 +334,8 @@ g_SAMPSyscallPrototypes = {
 	HTTP = {'i', 'i', 's', 's', 's'},
 	HideMenuForPlayer = {'m', 'p'},
 
-	InterpolateCameraLookAt = {'p', 'f', 'f', 'f', 'f', 'f', 'f', 'i', 'i'},
-	InterpolateCameraPos = {'p', 'f', 'f', 'f', 'f', 'f', 'f', 'i', 'i'},
+	InterpolateCameraLookAt = {'p', 'f', 'f', 'f', 'f', 'f', 'f', 'i', 'i', client = true},
+	InterpolateCameraPos = {'p', 'f', 'f', 'f', 'f', 'f', 'f', 'i', 'i', client = true},
 
 	IsObjectMoving = {'o'},
 	IsPlayerAdmin = {'p'},
@@ -365,13 +366,13 @@ g_SAMPSyscallPrototypes = {
 	MoveObject = {'o', 'f', 'f', 'f', 'f', 'f', 'f', 'f'},
 	MovePlayerObject = {'p', 'i', 'f', 'f', 'f', 'f', 'f', 'f', 'f'},
 
-	PlayAudioStreamForPlayer = {'p', 's', 'f', 'f', 'f', 'f', 'b'},
-	PlayerPlaySound = {'p', 'i', 'f', 'f', 'f'},
+	PlayAudioStreamForPlayer = {'p', 's', 'f', 'f', 'f', 'f', 'b', client = true},
+	PlayerPlaySound = {'p', 'i', 'f', 'f', 'f', client = true},
 	PlayerSpectatePlayer = {'p', 'p', 'i'},
 	PlayerSpectateVehicle = {'p', 'v', 'i'},
 	PutPlayerInVehicle = {'p', 'v', 'i'},
 
-	RemoveBuildingForPlayer = {'p', 'i', 'f', 'f', 'f', 'f'},
+	RemoveBuildingForPlayer = {'p', 'i', 'f', 'f', 'f', 'f', client = true},
 	RemovePlayerAttachedObject = {'p', 'i'},
 	RemovePlayerFromVehicle = {'p'},
 	RemovePlayerMapIcon = {'p', 'i', client = true},
@@ -439,7 +440,7 @@ g_SAMPSyscallPrototypes = {
 	SetVehicleParamsCarDoors = {'v', 'b', 'b', 'b', 'b'},
 	SetVehicleParamsCarWindows = {'v', 'b', 'b', 'b', 'b'},
 	SetVehicleParamsEx = {'v', 'b', 'b', 'b', 'b', 'b', 'b', 'b'},
-	SetVehicleParamsForPlayer = {'v', 'p', 'b', 'b'},
+	SetVehicleParamsForPlayer = {'v', 'p', 'b', 'b', client = true},
 	SetVehiclePos = {'v', 'f', 'f', 'f'},
 	SetVehicleToRespawn = {'v'},
 	SetVehicleVelocity = {'v', 'f', 'f', 'f'},
@@ -454,7 +455,7 @@ g_SAMPSyscallPrototypes = {
 	ShowPlayerMarkers = {'i'},
 	ShowPlayerNameTagForPlayer = {'p', 'p', 'b'},
 	SpawnPlayer = {'p'},
-	StopAudioStreamForPlayer = {'p'},
+	StopAudioStreamForPlayer = {'p', client = true},
 	StopObject = {'o'},
 	StopPlayerObject = {'p', 'i'},
 

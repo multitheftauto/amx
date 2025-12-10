@@ -414,15 +414,8 @@ function PlayCrimeReportForPlayer(amx, player, suspectid, crimeid)
 	return false
 end
 
-function PlayAudioStreamForPlayer(amx, player, url, posX, posY, posZ, distance, usepos)
-	clientCall(player, 'PlayAudioStreamForPlayer', url, posX, posY, posZ, distance, usepos)
-	return true
-end
-
-function StopAudioStreamForPlayer(amx, player)
-	clientCall(player, 'StopAudioStreamForPlayer')
-	return true
-end
+-- PlayAudioStreamForPlayer client
+-- StopAudioStreamForPlayer client
 
 function SetPlayerShopName(amx, player, shopname)
 	notImplemented('SetPlayerShopName')
@@ -460,10 +453,7 @@ function CreateExplosionForPlayer(amx, player, x, y, z, type, radius)
 	return true
 end
 
-function RemoveBuildingForPlayer(amx, player, model, x, y, z, radius)
-	clientCall(player, 'RemoveBuildingForPlayer', model, x, y, z, radius)
-	return true
-end
+-- RemoveBuildingForPlayer client
 
 function GetPlayerLastShotVectors(amx, player, refOrigX, refOrigY, refOrigZ, refHitX, refHitY, refHitZ)
 	local playerID = getElemID(player)
@@ -885,10 +875,7 @@ function TogglePlayerControllable(amx, player, enable)
 	return toggleAllControls(player, enable, true, false)
 end
 
-function PlayerPlaySound(amx, player, soundID, posX, posY, posZ)
-	clientCall(player, 'PlayerPlaySound', soundID, posX, posY, posZ)
-	return true
-end
+-- PlayerPlaySound client
 
 function ApplyAnimation(amx, player, animlib, animname, fDelta, loop, lockx, locky, freeze, time, forcesync)
 	-- time = Timer in ms. For a never-ending loop it should be 0.
@@ -1143,17 +1130,8 @@ end
 
 -- AttachCameraToObject client
 -- AttachCameraToPlayerObject client
-
---playerid, Float:FromX, Float:FromY, Float:FromZ, Float:ToX, Float:ToY, Float:ToZ, time, cut = CAMERA_CUT
-function InterpolateCameraPos(amx, player, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
-	clientCall(player, 'InterpolateCameraPos', FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
-	return true
-end
-
-function InterpolateCameraLookAt(amx, player, FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
-	clientCall(player, 'InterpolateCameraLookAt', FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
-	return true
-end
+-- InterpolateCameraPos client
+-- InterpolateCameraLookAt client
 
 function IsPlayerAdmin(amx, player)
 	return isPlayerInACLGroup(player, 'Admin') or isPlayerInACLGroup(player, 'Console')
