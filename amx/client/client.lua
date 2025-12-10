@@ -41,7 +41,7 @@ g_Blips = {}
 
 addEventHandler('onClientResourceStart', resourceRoot,
 	function()
-		triggerServerEvent('onLoadedAtClient', resourceRoot, localPlayer)
+		triggerServerEvent('onLoadedAtClient', resourceRoot)
 		setTimer(checkTextLabels, 500, 0)
 	end,
 	false
@@ -222,10 +222,6 @@ addEventHandler('onClientResourceStop', resourceRoot,
 		removeEventHandler('onClientRender', root, renderMenu)
 	end
 )
-
-function requestSpawn()
-	triggerServerEvent('onRequestSpawn', localPlayer, g_ClassSelectionInfo.selectedclass)
-end
 -----------------------------
 -- Camera
 
@@ -1778,12 +1774,10 @@ local function clientPlayerDamage(attacker, weapon, bodypart, loss)
 
 	if issuer == localPlayer then -- give damage
 		triggerServerEvent('OnPlayerDamage_Ev', issuer, source, true, loss, weapon, bodypart)
-	end
-
-	if source == localPlayer then -- take damage
+	elseif source == localPlayer then -- take damage
 		if issuer and getElementType(issuer) ~= 'player' then
 			if getElementType(issuer) == 'ped' and not getElementData(issuer, 'ActorPed') then
-				triggerServerEvent('OnBotDamage_Ev', issuer, source, true, loss, weapon, bodypart)
+				triggerServerEvent('OnBotDamage_Ev', source, issuer, true, loss, weapon, bodypart)
 			end
 
 			issuer = nil
@@ -1858,7 +1852,7 @@ local function clientPedDamage(attacker, weapon, bodypart, loss)
 			-- Actor damage controlled by the server in any case
 			return cancelEvent()
 		elseif issuer == localPlayer then
-			triggerServerEvent('OnBotDamage_Ev', source, issuer, false, loss, weapon, bodypart)
+			triggerServerEvent('OnBotDamage_Ev', issuer, source, false, loss, weapon, bodypart)
 		end
 	end
 end

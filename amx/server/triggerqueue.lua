@@ -26,12 +26,12 @@ addEventHandler('onPlayerJoin', root, joinHandler)
 
 addEvent('onLoadedAtClient', true)
 addEventHandler('onLoadedAtClient', resourceRoot,
-	function(player)
-		playerData[player].loaded = true
-		for i, event in ipairs(playerData[player].pending) do
-			_triggerClientEvent(player, event.name, event.source, unpack(event.args))
+	function()
+		playerData[client].loaded = true
+		for i, event in ipairs(playerData[client].pending) do
+			_triggerClientEvent(client, event.name, event.source, unpack(event.args))
 		end
-		playerData[player].pending = nil
+		playerData[client].pending = nil
 	end,
 	false
 )
@@ -43,14 +43,16 @@ addEventHandler('onPlayerQuit', root,
 )
 
 local function addToQueue(player, name, source, args)
+	if not playerData[player] or not playerData[player].pending then
+		return
+	end
+
 	for i, a in pairs(args) do
 		if type(a) == 'table' then
 			args[i] = table.deepcopy(a)
 		end
 	end
-	if playerData[player] and playerData[player].pending then
-		table.insert(playerData[player].pending, { name = name, source = source, args = args })
-	end
+	table.insert(playerData[player].pending, { name = name, source = source, args = args })
 end
 
 
