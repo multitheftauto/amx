@@ -20,11 +20,13 @@ function gameModeInit(player)
 	setPedStat(player, 160, 999) -- driving skill
 	setPedStat(player, 229, 999) -- bike skill
 	setPedStat(player, 230, 999) -- cycle skill
-	local r, g, b = math.random(50, 255), math.random(50, 255), math.random(50, 255)
-	ShowPlayerMarker(false, player, g_PlayerMarkersMode)
+	addPedClothes(player, 'vest', 'vest', 0)
 	setPlayerHudComponentVisible(player, 'area_name', g_ShowZoneNames)
 	setPlayerHudComponentVisible(player, 'vehicle_name', false) -- SA-MP doesn't show vehicle names when entering vehicles
+	setPlayerHudComponentVisible(player, 'radar', false)
 	setPlayerNametagShowing(player, false)
+	local r, g, b = math.random(50, 255), math.random(50, 255), math.random(50, 255)
+	ShowPlayerMarker(false, player, g_PlayerMarkersMode)
 	SetPlayerColor(false, player, r, g, b)
 	setElementData(player, 'Score', 0)
 	toggleAllControls(player, false, true, false)
@@ -68,7 +70,6 @@ function gameModeInit(player)
 			else
 				outputDebugString('Not allowed to select a class', 1)
 				g_Players[playerID].doingclasssel = true
-				killPed(player)
 			end
 		end,
 		5000,
@@ -216,6 +217,7 @@ function putPlayerInClassSelection(player)
 	g_Players[playerID].updatetimer = nil
 	addPedClothes(player, 'vest', 'vest', 0)
 	setPlayerHudComponentVisible(player, 'area_name', false)
+	setPlayerHudComponentVisible(player, 'radar', false)
 	clientCall(player, 'startClassSelection', g_PlayerClasses)
 	bindKey(player, 'arrow_l', 'down', requestClass, -1)
 	bindKey(player, 'arrow_r', 'down', requestClass, 1)
@@ -298,7 +300,6 @@ function spawnPlayerBySelectedClass(player, x, y, z, r)
 	end
 	setPedWeaponSlot(player, 0)
 	clientCall(player, 'destroyClassSelGUI')
-	setPlayerHudComponentVisible(player, 'area_name', g_ShowZoneNames)
 	if playerdata.blip then
 		setElementVisibleTo(playerdata.blip, root, true)
 	end
@@ -325,6 +326,8 @@ function handlePlayerSpawn(player)
 	toggleAllControls(player, true)
 	setElementAlpha(player, 255)
 	setElementCollisionsEnabled(player, true)
+	setPlayerHudComponentVisible(player, 'area_name', g_ShowZoneNames)
+	setPlayerHudComponentVisible(player, 'radar', true)
 
 	procCallOnAll('OnPlayerSpawn', playerID)
 	setPlayerState(player, PLAYER_STATE_ONFOOT)

@@ -125,7 +125,6 @@ function startClassSelection(classInfo)
 	setElementCollisionsEnabled(localPlayer, false)
 
 	-- interaction
-	setPlayerHudComponentVisible('radar', false)
 	if not g_ClassSelectionInfo.selectedclass then
 		g_ClassSelectionInfo.selectedclass = 0
 	end
@@ -202,7 +201,6 @@ function destroyClassSelGUI()
 		removeEventHandler('onClientRender', root, renderClassSelText)
 	end
 
-	setPlayerHudComponentVisible('radar', true)
 	setCameraTarget(localPlayer)
 	setElementCollisionsEnabled(localPlayer, true)
 	ShowPlayerDialog(-1, -1, '', '', '', '') -- hide any dialog and cursor
@@ -245,8 +243,6 @@ function showIntroScene()
 	if introSceneShown then
 		return
 	end
-	setPlayerHudComponentVisible('area_name', false)
-	setPlayerHudComponentVisible('radar', false)
 	fadeCamera(true)
 
 	local scene = table.random(g_IntroScenes)
@@ -1862,7 +1858,7 @@ addEventHandler('onClientPedDamage', root, clientPedDamage)
 
 function enableWeaponSyncing(enable)
 	if enable and not g_WeaponSyncTimer then
-		g_WeaponSyncTimer = setTimer(sendWeapons, 500, 0)
+		g_WeaponSyncTimer = setTimer(sendWeapons, 250, 0)
 	elseif not enable and g_WeaponSyncTimer then
 		killTimer(g_WeaponSyncTimer)
 		g_WeaponSyncTimer = nil

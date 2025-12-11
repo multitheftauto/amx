@@ -1207,23 +1207,24 @@ function TogglePlayerSpectating(amx, player, enable)
 			setElementVisibleTo(playerdata.blip, root, false)
 		end
 	else
+		setCameraTarget(player, player)
+		clientCall(player, 'setCameraTarget', player) -- Clear the one on the client as well, otherwise we can't go back to normal camera after spectating vehicles
+		-- In SA-MP calling TogglePlayerSpectating also unsets camera interpolation
+		clientCall(player, 'removeCamHandlers')
 		if playerdata.returntoclasssel then
 			playerdata.returntoclasssel = nil
 			playerdata.spawninfo = nil
 			if procCallOnAll('OnPlayerRequestClass', getElemID(player), 0) then
+				setElementAlpha(player, 255)
+				setPlayerState(player, PLAYER_STATE_WASTED)
 				putPlayerInClassSelection(player)
 			else
 				outputDebugString('Not allowed to select a class', 1)
+				setPlayerState(player, PLAYER_STATE_SPAWNED)
 			end
 		else
 			spawnPlayerBySelectedClass(player)
-			setPlayerHudComponentVisible(player, 'radar', true)
 		end
-		setCameraTarget(player, player)
-		setPlayerState(player, PLAYER_STATE_SPAWNED)
-		clientCall(player, 'setCameraTarget', player) -- Clear the one on the client as well, otherwise we can't go back to normal camera after spectating vehicles
-		-- In SA-MP calling TogglePlayerSpectating also unsets camera interpolation
-		clientCall(player, 'removeCamHandlers')
 	end
 	return true
 end
