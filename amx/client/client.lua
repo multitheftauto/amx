@@ -640,6 +640,8 @@ function SetPlayerCheckpoint(x, y, z, size)
 	if g_PlayerCheckpoint then
 		DisablePlayerCheckpoint()
 	end
+	local hitZ = getGroundPosition(x, y, z)
+	if hitZ and hitZ ~= 0 then z = hitZ end
 	g_PlayerCheckpoint = {
 		marker = createMarker(x, y, z, 'cylinder', size, 255, 0, 0, 150),
 		colshape = createColCircle(x, y, size),
@@ -1755,7 +1757,9 @@ end
 -- Others
 
 function SetPlayerPosFindZ(x, y, z)
-	setElementPosition(localPlayer, x, y, getGroundPosition(x, y, z) + 1)
+	local hitZ = getGroundPosition(x, y, z)
+	if hitZ and hitZ ~= 0 then z = hitZ + 1 end
+	setElementPosition(localPlayer, x, y, z)
 end
 
 local function clientPlayerDamage(attacker, weapon, bodypart, loss)
@@ -1895,10 +1899,16 @@ function SetPlayerMapIcon(blipID, x, y, z, type, r, g, b, a, style)
 		destroyElement(g_Blips[blipID])
 		g_Blips[blipID] = nil
 	end
+	local hitZ = getGroundPosition(x, y, z)
+	if hitZ and hitZ ~= 0 then z = hitZ end
 	g_Blips[blipID] = createBlip(x, y, z, type, 2, r, g, b, a)
-	-- TODO: Implement checkpoint styles
 	if style == 0 or style == 2 then -- Local / local checkpoint
 		setBlipVisibleDistance(g_Blips[blipID], 250.0)
+	end
+	if style == 2 or style == 3 then -- Local checkpoint / global checkpoint
+		local marker = createMarker(x, y, z, 'cylinder', 2.0, 255, 0, 0, 50)
+		attachElements(marker, g_Blips[blipID], 0, 0, 0)
+		setElementParent(marker, g_Blips[blipID])
 	end
 	return true
 end
