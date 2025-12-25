@@ -1193,7 +1193,9 @@ end
 
 function TogglePlayerSpectating(amx, player, enable)
 	local playerdata = g_Players[getElemID(player)]
+	local spectating = (playerdata.state == PLAYER_STATE_SPECTATING)
 	if enable then
+		if spectating then return false end
 		fadeCamera(player, true)
 		setCameraMatrix(player, 75.461357116699, 64.600051879883, 51.685581207275, 149.75857543945, 131.53228759766, 40.597320556641)
 		-- controls, alpha, collisions and blip will be re-enabled on spawn
@@ -1207,6 +1209,7 @@ function TogglePlayerSpectating(amx, player, enable)
 			setElementVisibleTo(playerdata.blip, root, false)
 		end
 	else
+		if not spectating then return false end
 		setCameraTarget(player, player)
 		clientCall(player, 'setCameraTarget', player) -- Clear the one on the client as well, otherwise we can't go back to normal camera after spectating vehicles
 		-- In SA-MP calling TogglePlayerSpectating also unsets camera interpolation
