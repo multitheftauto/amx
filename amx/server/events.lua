@@ -280,7 +280,7 @@ function spawnPlayerBySelectedClass(player, x, y, z, r)
 	if not spawninfo then
 		if not g_PlayerClasses[0] then
 			spawninfo = {
-				0, 0, 3, 0, 0, 0, 0, false,
+				0.0, 0.0, 3.1279, 0.0, 0, 0, 0, false,
 				weapons = { { -1, 0 }, { -1, 0 }, { -1, 0 } }
 			}
 		else
