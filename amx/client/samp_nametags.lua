@@ -5,29 +5,11 @@ local nameTagShowing = {}
 
 local font = 'arial' -- default font
 
-HealthBarBorderVertices =
-{
-	{ x = 0, y = 0, z = 0, c = tocolor(0, 0, 0, 255) },
-	{ x = 0, y = 0, z = 0, c = tocolor(0, 0, 0, 255) },
-	{ x = 0, y = 0, z = 0, c = tocolor(0, 0, 0, 255) },
-	{ x = 0, y = 0, z = 0, c = tocolor(0, 0, 0, 255) }
-}
+local borderWidth = 40
+local borderHeight = 6
 
-HealthBarBackgroundVertices =
-{
-	{ x = 0, y = 0, z = 0, c = tocolor(90, 12, 14, 255) },
-	{ x = 0, y = 0, z = 0, c = tocolor(90, 12, 14, 255) },
-	{ x = 0, y = 0, z = 0, c = tocolor(90, 12, 14, 255) },
-	{ x = 0, y = 0, z = 0, c = tocolor(90, 12, 14, 255) }
-}
-
-HealthBarInnerVertices =
-{
-	{ x = 0, y = 0, z = 0, c = tocolor(180, 25, 29, 255) },
-	{ x = 0, y = 0, z = 0, c = tocolor(180, 25, 29, 255) },
-	{ x = 0, y = 0, z = 0, c = tocolor(180, 25, 29, 255) },
-	{ x = 0, y = 0, z = 0, c = tocolor(180, 25, 29, 255) }
-}
+local innerWidth = 38
+local innerHeight = 4
 
 function drawNameTag(position, nameText, r, g, b, a, health, armor, distance)
 	if not r or not g or not b or not a then
@@ -39,139 +21,49 @@ function drawNameTag(position, nameText, r, g, b, a, health, armor, distance)
 	local screenCoordsX, screenCoordsY = getScreenFromWorldPosition(position.x, position.y, position.z)
 	if not screenCoordsX then return end
 
-	local rect = {left = screenCoordsX, top = screenCoordsY, right = screenCoordsX + 1, bottom = screenCoordsY + 1}
-	local textSizeX = dxGetTextSize(nameText, 0, 1, 1, font)
+	-- Name tag outline
+	local outlinecolor = tocolor(0, 0, 0, a)
+	local rect = {
+		left = screenCoordsX - (dxGetTextSize(nameText, 0, 1, 1, font) / 2),
+		top = screenCoordsY,
+		right = screenCoordsX + 1,
+		bottom = screenCoordsY + 1
+	}
 
-	rect.left = rect.left - (textSizeX / 2)
+	dxDrawText(nameText, rect.left + 1, rect.top, rect.right, rect.bottom, outlinecolor, 1, font)
+	dxDrawText(nameText, rect.left - 1, rect.top, rect.right, rect.bottom, outlinecolor, 1, font)
+	dxDrawText(nameText, rect.left, rect.top - 1, rect.right, rect.bottom, outlinecolor, 1, font)
+	dxDrawText(nameText, rect.left, rect.top + 1, rect.right, rect.bottom, outlinecolor, 1, font)
 
-	--doOutline(nameText, 1, 1, rect.left, rect.top)
-	dxDrawText(
-		nameText, rect.left + 1, rect.top, rect.right, rect.bottom,
-		tocolor(0, 0, 0, a), 1, 1,
+	-- Name tag text
+	dxDrawText(nameText, rect.left, rect.top, rect.right, rect.bottom, tocolor(r, g, b, a), 1, font)
 
-		font, 'left', 'top', false, false,
-		false, false, false,
-		0, 0, 0
-	)
+	-- Health bar
+	local borderX = screenCoordsX - 20
+	local borderY = screenCoordsY + 18
 
-	dxDrawText(
-		nameText, rect.left - 1, rect.top, rect.right, rect.bottom,
-		tocolor(0, 0, 0, a), 1, 1,
+	if armor > 0 then borderY = borderY + 8 end
 
-		font, 'left', 'top', false, false,
-		false, false, false,
-		0, 0, 0
-	)
+	local innerX = borderX + 1
+	local innerY = borderY + 1
 
-	dxDrawText(
-		nameText, rect.left, rect.top - 1, rect.right, rect.bottom,
-		tocolor(0, 0, 0, a), 1, 1,
+	dxDrawRectangle(borderX, borderY, borderWidth, borderHeight, outlinecolor)
+	dxDrawRectangle(innerX, innerY, innerWidth, innerHeight, tocolor(90, 12, 14, a))
 
-		font, 'left', 'top', false, false,
-		false, false, false,
-		0, 0, 0
-	)
-
-	dxDrawText(
-		nameText, rect.left, rect.top + 1, rect.right, rect.bottom,
-		tocolor(0, 0, 0, a), 1, 1,
-
-		font, 'left', 'top', false, false,
-		false, false, false,
-		0, 0, 0
-	)
-
-	dxDrawText(
-		nameText, rect.left, rect.top, rect.right, rect.bottom,
-		tocolor(r, g, b, a), 1, 1,
-
-		font, 'left', 'top', false, false,
-		false, false, false,
-		0, 0, 0
-	)
-
-	HealthBarBorderVertices[1].x = screenCoordsX - 20 -- Top left
-	HealthBarBorderVertices[1].y = screenCoordsY + 18
-	HealthBarBorderVertices[2].x = screenCoordsX - 20 -- Bottom left
-	HealthBarBorderVertices[2].y = screenCoordsY + 24
-	HealthBarBorderVertices[3].x = screenCoordsX + 21 -- Bottom right
-	HealthBarBorderVertices[3].y = screenCoordsY + 24
-	HealthBarBorderVertices[4].x = screenCoordsX + 21 -- Top Right
-	HealthBarBorderVertices[4].y = screenCoordsY + 18
-
-	HealthBarInnerVertices[1].x = screenCoordsX - 19 -- Top left
-	HealthBarInnerVertices[1].y = screenCoordsY + 19
-	HealthBarInnerVertices[2].x = screenCoordsX - 19 -- Bottom left
-	HealthBarInnerVertices[2].y = screenCoordsY + 23
-	HealthBarInnerVertices[3].x = screenCoordsX + 19 -- Bottom right
-	HealthBarInnerVertices[3].y = screenCoordsY + 23
-	HealthBarInnerVertices[4].x = screenCoordsX + 19 -- Top Right
-	HealthBarInnerVertices[4].y = screenCoordsY + 19
-
-	HealthBarBackgroundVertices[1].x = HealthBarInnerVertices[1].x
-	HealthBarBackgroundVertices[1].y = HealthBarInnerVertices[1].y
-	HealthBarBackgroundVertices[2].x = HealthBarInnerVertices[2].x
-	HealthBarBackgroundVertices[2].y = HealthBarInnerVertices[2].y
-	HealthBarBackgroundVertices[3].x = HealthBarInnerVertices[3].x
-	HealthBarBackgroundVertices[3].y = HealthBarInnerVertices[3].y
-	HealthBarBackgroundVertices[4].x = HealthBarInnerVertices[4].x
-	HealthBarBackgroundVertices[4].y = HealthBarInnerVertices[4].y
-
-	health = math.min(health, 100) / 2.6 - 19
-
-	HealthBarInnerVertices[3].x = screenCoordsX + health -- Bottom right
-	HealthBarInnerVertices[4].x = screenCoordsX + health -- Top Right
-
-	if armor > 0 then
-		for i = 1, 4 do
-			HealthBarBorderVertices[i].y = HealthBarBorderVertices[i].y + 8
-			HealthBarBackgroundVertices[i].y = HealthBarBackgroundVertices[i].y + 8
-			HealthBarInnerVertices[i].y = HealthBarInnerVertices[i].y + 8
-		end
+	if health > 0 then
+		health = (math.min(health, 100) / 100) * innerWidth
+		dxDrawRectangle(innerX, innerY, health, innerHeight, tocolor(180, 25, 29, a))
 	end
 
-	local healthBarBordersDxVertices = {}
-	local healthBarBackgroundDxVertices = {}
-	local healthBarInnerDxVertices = {}
-	for i = 1, 4 do
-		HealthBarBorderVertices[i].c = tocolor(0, 0, 0, a)
-		table.insert(healthBarBordersDxVertices, {HealthBarBorderVertices[i].x, HealthBarBorderVertices[i].y, HealthBarBorderVertices[i].c})
-		HealthBarBackgroundVertices[i].c = tocolor(90, 12, 14, a)
-		table.insert(healthBarBackgroundDxVertices, {HealthBarBackgroundVertices[i].x, HealthBarBackgroundVertices[i].y, HealthBarBackgroundVertices[i].c})
-		HealthBarInnerVertices[i].c = tocolor(180, 25, 29, a)
-		table.insert(healthBarInnerDxVertices, {HealthBarInnerVertices[i].x, HealthBarInnerVertices[i].y, HealthBarInnerVertices[i].c})
-	end
-
-	dxDrawPrimitive('trianglefan', false, unpack(healthBarBordersDxVertices))
-	dxDrawPrimitive('trianglefan', false, unpack(healthBarBackgroundDxVertices))
-	dxDrawPrimitive('trianglefan', false, unpack(healthBarInnerDxVertices))
-
-	-- Armor Bar
+	-- Armor bar
 	if armor > 0 then
-		armor = math.min(armor, 100) / 2.6 - 19
+		borderY = borderY - 8
 
-		HealthBarInnerVertices[3].x = screenCoordsX + armor -- Bottom right
-		HealthBarInnerVertices[4].x = screenCoordsX + armor -- Top Right
+		dxDrawRectangle(borderX, borderY, borderWidth, borderHeight, outlinecolor)
+		dxDrawRectangle(innerX, borderY + 1, innerWidth, innerHeight, tocolor(112, 112, 112, a))
 
-		local armorBarBordersDxVertices = {}
-		local armorBarBackgroundDxVertices = {}
-		local armorBarInnerDxVertices = {}
-		for i = 1, 4 do
-			HealthBarBorderVertices[i].y = HealthBarBorderVertices[i].y - 8
-			HealthBarBackgroundVertices[i].y = HealthBarBackgroundVertices[i].y - 8
-			HealthBarInnerVertices[i].y = HealthBarInnerVertices[i].y - 8
-
-			HealthBarBorderVertices[i].c = tocolor(0, 0, 0, a)
-			table.insert(armorBarBordersDxVertices, {HealthBarBorderVertices[i].x, HealthBarBorderVertices[i].y, HealthBarBorderVertices[i].c})
-			HealthBarBackgroundVertices[i].c = tocolor(112, 112, 112, a)
-			table.insert(armorBarBackgroundDxVertices, {HealthBarBackgroundVertices[i].x, HealthBarBackgroundVertices[i].y, HealthBarBackgroundVertices[i].c})
-			HealthBarInnerVertices[i].c = tocolor(225, 225, 225, a)
-			table.insert(armorBarInnerDxVertices, {HealthBarInnerVertices[i].x, HealthBarInnerVertices[i].y, HealthBarInnerVertices[i].c})
-		end
-
-		dxDrawPrimitive('trianglefan', false, unpack(armorBarBordersDxVertices))
-		dxDrawPrimitive('trianglefan', false, unpack(armorBarBackgroundDxVertices))
-		dxDrawPrimitive('trianglefan', false, unpack(armorBarInnerDxVertices))
+		armor = (math.min(armor, 100) / 100) * innerWidth
+		dxDrawRectangle(innerX, borderY + 1, armor, innerHeight, tocolor(225, 225, 225, a))
 	end
 end
 
@@ -189,9 +81,13 @@ addEventHandler('onClientRender', root,
 				if distance < nameTagsRadius and a > 0 then
 					local cx, cy, cz = getCameraMatrix()
 
-					if not nameTagsLOS or isLineOfSightClear(cx, cy, cz, fPosX, fPosY, fPosZ, true, false, false, true, true, false, false) then
-						local r, g, b = getPlayerNametagColor(player)
-						drawNameTag({x = fPosX, y = fPosY, z = fPosZ}, getPlayerName(player) .. ' (' .. getElemID(player) .. ')', r, g, b, a, getElementHealth(player), getPedArmor(player), distance)
+					if not nameTagsLOS or isLineOfSightClear(cx, cy, cz, fPosX, fPosY, fPosZ, true, false, false, true, true) then
+						drawNameTag(
+							{x = fPosX, y = fPosY, z = fPosZ},
+							getPlayerName(player) .. ' (' .. getElemID(player) .. ')',
+							getPlayerNametagColor(player), a,
+							getElementHealth(player), getPedArmor(player), distance
+						)
 					end
 				end
 			end
@@ -206,14 +102,16 @@ addEventHandler('onClientRender', root,
 				if distance < nameTagsRadius and a > 0 then
 					local cx, cy, cz = getCameraMatrix()
 
-					if not nameTagsLOS or isLineOfSightClear(cx, cy, cz, fPosX, fPosY, fPosZ, true, false, false, true, true, false, false) then
+					if not nameTagsLOS or isLineOfSightClear(cx, cy, cz, fPosX, fPosY, fPosZ, true, false, false, true, true) then
 						local botName = getElementData(bot, 'BotName')
-						if botName and botName:len() >= 1 then
-							botName = botName .. ' (' .. getElemID(bot) .. ')'
-						else
-							botName = 'Bot (' .. getElemID(bot) .. ')'
-						end
-						drawNameTag({x = fPosX, y = fPosY, z = fPosZ}, botName, 255, 255, 255, a, getElementHealth(bot), getPedArmor(bot), distance)
+						if not botName or botName:len() < 1 then botName = 'Bot' end
+
+						drawNameTag(
+							{x = fPosX, y = fPosY, z = fPosZ},
+							botName .. ' (' .. getElemID(bot) .. ')',
+							255, 255, 255, a,
+							getElementHealth(bot), getPedArmor(bot), distance
+						)
 					end
 				end
 			end

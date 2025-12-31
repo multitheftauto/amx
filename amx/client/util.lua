@@ -68,12 +68,14 @@ end
 
 function drawBorderText(text, x, y, color, scalex, scaley, font, outlinesize, outlinecolor)
 	local alpha = math.floor(color / 16777216)
+	outlinecolor = outlinecolor or tocolor(0, 0, 0, alpha)
+
 	if outlinesize > 0 then
 		outlinesize = outlinesize * 2
 		for offsetX = -outlinesize, outlinesize, outlinesize do
 			for offsetY = -outlinesize, outlinesize, outlinesize do
 				if not (offsetX == 0 and offsetY == 0) then
-					dxDrawText(text, x + offsetX, y + offsetY, x + offsetX, y + offsetY, outlinecolor or tocolor(0, 0, 0, alpha), scalex, scaley, font)
+					dxDrawText(text, x + offsetX, y + offsetY, x + offsetX, y + offsetY, outlinecolor, scalex, scaley, font)
 				end
 			end
 		end
@@ -82,10 +84,14 @@ function drawBorderText(text, x, y, color, scalex, scaley, font, outlinesize, ou
 end
 
 function drawShadowText(text, x, y, color, scale, font, shadowDist, width, align)
+	scale = scale or 1
+	font = font or 'default'
 	shadowDist = shadowDist or 1
+	align = align or 'center'
+
 	local alpha = math.floor(color / 16777216)
-	dxDrawText(text, x + shadowDist, y + shadowDist, x + shadowDist + (width or 0), 0, tocolor(0, 0, 0, alpha), scale or 1, font or 'default', width and (align or 'center') or 'left')
-	dxDrawText(text, x, y, x + (width or 0), 0, color, scale or 1, font or 'default', width and (align or 'center') or 'left')
+	dxDrawText(text, x + shadowDist, y + shadowDist, x + shadowDist + (width or 0), 0, tocolor(0, 0, 0, alpha), scale, font, width and align or 'left')
+	dxDrawText(text, x, y, x + (width or 0), 0, color, scale, font, width and align or 'left')
 end
 
 function destroyBlipsAttachedTo(elem)
