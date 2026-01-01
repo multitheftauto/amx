@@ -380,7 +380,12 @@ static cell AMX_NATIVE_CALL n_strfind(AMX *amx,const cell *params)
   f=extractchar(csub,0,params[3]);
   assert(f!=0);         /* string length is already checked */
 
-  for (offs=(int)params[4]; offs+lensub<=lenstr; offs++) {
+  int start_pos = (int)params[4];
+
+  if (start_pos < 0)
+      start_pos = 0;
+
+  for (offs=start_pos; offs+lensub<=lenstr; offs++) {
     /* find the initial character */
     c=extractchar(csub,0,params[3]);
     assert(c!=0);      /* string length is already checked */
@@ -468,6 +473,10 @@ static cell AMX_NATIVE_CALL n_strdel(AMX *amx,const cell *params)
   cstr=amx_Address(amx,params[1]);
   amx_StrLen(cstr,&length);
   index=(int)params[2];
+
+  if (index < 0)
+      index = 0;
+
   offs=(int)params[3]-index;
   if (index>=length || offs<=0)
     return 0;
@@ -514,6 +523,10 @@ static cell AMX_NATIVE_CALL n_strins(AMX *amx,const cell *params)
   if ((ucell)*cstr>UNPACKEDMAX)
     maxlen*=sizeof(cell);
   maxlen-=1;
+
+  if (index < 0)
+    index = 0;
+
   if (index>lenstr || index>maxlen)
     return amx_RaiseError(amx,AMX_ERR_NATIVE);
 
@@ -529,12 +542,33 @@ static cell AMX_NATIVE_CALL n_strins(AMX *amx,const cell *params)
     return 1;
   } /* if */
 
-  lenstr+=lensub; /* length after insertion */
-  if (lenstr>=maxlen)
-    lenstr=maxlen-1;
+  if (lenstr + lensub >= maxlen && index + lensub >= maxlen) {
+    int max_substr = maxlen - index;
+
+    if ((ucell)*cstr > UNPACKEDMAX) {
+      for (count = 0; count < max_substr; count++) {
+        c = extractchar(csub, count, 0);
+        ptr = packedptr(cstr, index + count);
+        *ptr = (unsigned char)c;
+      } /* for */
+      *(packedptr(cstr, maxlen)) = 0;
+    } else {
+      for (count = 0; count < max_substr; count++) {
+        c = extractchar(csub, count, 0);
+        cstr[index + count] = c;
+      } /* for */
+      cstr[maxlen] = 0;
+    } /* if */
+
+    return 1;
+  } /* if */
+
+  int final_len=lenstr+lensub; /* length after insertion */
+  if (final_len>=maxlen)
+    final_len=maxlen-1;
   if ((ucell)*cstr>UNPACKEDMAX) {
     /* make room for the new characters */
-    for (count=lenstr; count>index; count--) {
+    for (count=final_len; count>index; count--) {
       ptr=packedptr(cstr,count-lensub);
       c=*ptr;
       ptr=packedptr(cstr,count);
@@ -546,15 +580,17 @@ static cell AMX_NATIVE_CALL n_strins(AMX *amx,const cell *params)
       ptr=packedptr(cstr,index+count);
       *ptr=(unsigned char)c;
     } /* for */
+    *(packedptr(cstr,maxlen))=0;
   } else {
     /* make room for the new characters */
-    for (count=lenstr; count>index; count--)
+    for (count=final_len; count>index; count--)
       cstr[count]=cstr[count-lensub];
     /* copy in the new characters */
     for (count=0; count<lensub; count++) {
       c=extractchar(csub,count,0);
       cstr[index+count]=c;
     } /* for */
+    cstr[maxlen]=0;
   } /* if */
 
   return 1;
@@ -573,11 +609,13 @@ static cell AMX_NATIVE_CALL n_strval(AMX *amx,const cell *params)
   /* get parameters */
   cstr=amx_Address(amx,params[1]);
   amx_StrLen(cstr,&len);
+  if (len == 0)
+    return 0;
   if ((unsigned)params[0]>=2*sizeof(cell))
     offset=params[2];
   if (offset<0)
     offset=0;
-  else if (offset>=len && len>0)
+  else if (offset>=len)
     offset=len-1;
 
   /* skip a number of cells */
@@ -622,9 +660,10 @@ static cell AMX_NATIVE_CALL n_strval(AMX *amx,const cell *params)
 static cell AMX_NATIVE_CALL n_valstr(AMX *amx,const cell *params)
 {
   TCHAR str[50];
-  cell value,temp;
+  cell value;
   cell *cstr;
   int len,result,negate=0;
+  unsigned int temp;
 
   (void)(amx);
   /* find out how many digits are needed */
@@ -633,18 +672,25 @@ static cell AMX_NATIVE_CALL n_valstr(AMX *amx,const cell *params)
   if (value<0) {
     negate=1;
     len++;
-    value=-value;
+    temp=(unsigned int)-value;
+  } else {
+    temp=(unsigned int)value;
   } /* if */
-  for (temp=value; temp>=10; temp/=10)
+  for (; temp>=10; temp/=10)
     len++;
   assert(len<=sizearray(str));
 
   /* put in the string */
+  if (value<0)
+    temp=(unsigned int)-value;
+  else
+    temp=(unsigned int)value;
+
   result=len;
   str[len--]='\0';
   while (len>=negate) {
-    str[len--]=(char)((value % 10)+'0');
-    value/=10;
+    str[len--]=(TCHAR)((temp % 10)+'0');
+    temp/=10;
   } /* while */
   if (negate)
     str[0]='-';
@@ -658,7 +704,7 @@ static cell AMX_NATIVE_CALL n_ispacked(AMX *amx,const cell *params)
 {
   cell *cstr=amx_Address(amx,params[1]);
   (void)(amx);
-  return *cstr>=UNPACKEDMAX;
+  return (ucell)*cstr>UNPACKEDMAX;
 }
 
 

@@ -60,12 +60,11 @@
 #else
   #include <io.h>
 #endif
-#if defined __GNUC__ || defined __clang__
-  #include <unistd.h>
-#endif
 #include "amx.h"
 #if defined __WIN32__ || defined _Windows
   #include <windows.h>
+#elif defined __GNUC__ || defined __clang__
+  #include <unistd.h>
 #endif
 
 #include "fpattern.c"
@@ -210,7 +209,7 @@ static size_t fgets_cell(FILE *fp,cell *string,size_t max,int utf8mode)
           /* the code positions 0xd800--0xdfff and 0xfffe & 0xffff do not
            * exist in UCS-4 (and hence, they do not exist in Unicode)
            */
-          if (string[index]>=0xd800 && string[index]<=0xdfff
+          if ((string[index]>=0xd800 && string[index]<=0xdfff)
               || string[index]==0xfffe || string[index]==0xffff)
             utf8mode=0;
           index++;
@@ -296,34 +295,34 @@ static size_t fputs_cell(FILE *fp,cell *string,int utf8mode)
         fputc((unsigned char)c,fp);
       } else if (c<0x800) {
         /* 110xxxxx 10xxxxxx */
-        fputc((unsigned char)((c>>6) & 0x1f | 0xc0),fp);
-        fputc((unsigned char)(c & 0x3f | 0x80),fp);
+        fputc((unsigned char)(((c>>6) & 0x1f) | 0xc0),fp);
+        fputc((unsigned char)((c & 0x3f) | 0x80),fp);
       } else if (c<0x10000) {
         /* 1110xxxx 10xxxxxx 10xxxxxx (16 bits, BMP plane) */
-        fputc((unsigned char)((c>>12) & 0x0f | 0xe0),fp);
-        fputc((unsigned char)((c>>6) & 0x3f | 0x80),fp);
-        fputc((unsigned char)(c & 0x3f | 0x80),fp);
+        fputc((unsigned char)(((c>>12) & 0x0f) | 0xe0),fp);
+        fputc((unsigned char)(((c>>6) & 0x3f) | 0x80),fp);
+        fputc((unsigned char)((c & 0x3f) | 0x80),fp);
       } else if (c<0x200000) {
         /* 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx */
-        fputc((unsigned char)((c>>18) & 0x07 | 0xf0),fp);
-        fputc((unsigned char)((c>>12) & 0x3f | 0x80),fp);
-        fputc((unsigned char)((c>>6) & 0x3f | 0x80),fp);
-        fputc((unsigned char)(c & 0x3f | 0x80),fp);
+        fputc((unsigned char)(((c>>18) & 0x07) | 0xf0),fp);
+        fputc((unsigned char)(((c>>12) & 0x3f) | 0x80),fp);
+        fputc((unsigned char)(((c>>6) & 0x3f) | 0x80),fp);
+        fputc((unsigned char)((c & 0x3f) | 0x80),fp);
       } else if (c<0x4000000) {
         /* 111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx */
-        fputc((unsigned char)((c>>24) & 0x03 | 0xf8),fp);
-        fputc((unsigned char)((c>>18) & 0x3f | 0x80),fp);
-        fputc((unsigned char)((c>>12) & 0x3f | 0x80),fp);
-        fputc((unsigned char)((c>>6) & 0x3f | 0x80),fp);
-        fputc((unsigned char)(c & 0x3f | 0x80),fp);
+        fputc((unsigned char)(((c>>24) & 0x03) | 0xf8),fp);
+        fputc((unsigned char)(((c>>18) & 0x3f) | 0x80),fp);
+        fputc((unsigned char)(((c>>12) & 0x3f) | 0x80),fp);
+        fputc((unsigned char)(((c>>6) & 0x3f) | 0x80),fp);
+        fputc((unsigned char)((c & 0x3f) | 0x80),fp);
       } else {
         /* 1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx (31 bits) */
-        fputc((unsigned char)((c>>30) & 0x01 | 0xfc),fp);
-        fputc((unsigned char)((c>>24) & 0x3f | 0x80),fp);
-        fputc((unsigned char)((c>>18) & 0x3f | 0x80),fp);
-        fputc((unsigned char)((c>>12) & 0x3f | 0x80),fp);
-        fputc((unsigned char)((c>>6) & 0x3f | 0x80),fp);
-        fputc((unsigned char)(c & 0x3f | 0x80),fp);
+        fputc((unsigned char)(((c>>30) & 0x01) | 0xfc),fp);
+        fputc((unsigned char)(((c>>24) & 0x3f) | 0x80),fp);
+        fputc((unsigned char)(((c>>18) & 0x3f) | 0x80),fp);
+        fputc((unsigned char)(((c>>12) & 0x3f) | 0x80),fp);
+        fputc((unsigned char)(((c>>6) & 0x3f) | 0x80),fp);
+        fputc((unsigned char)((c & 0x3f) | 0x80),fp);
       } /* if */
     } else {
       /* not UTF-8 mode */
@@ -521,13 +520,22 @@ static cell AMX_NATIVE_CALL n_fopen(AMX *amx, const cell *params)
 /* fclose(File: handle) */
 static cell AMX_NATIVE_CALL n_fclose(AMX *amx, const cell *params)
 {
+  FILE* f = params[1];
+  if (!f) {
+    return 0;
+  }
   (void)amx;
-  return fclose((FILE*)params[1]) == 0;
+  return fclose(f) == 0;
 }
 
 /* fwrite(File: handle, const string[]) */
 static cell AMX_NATIVE_CALL n_fwrite(AMX *amx, const cell *params)
 {
+  FILE* f = params[1];
+  if (!f) {
+    return 0;
+  }
+
   size_t r = 0;
   cell *cptr;
   char *str;
@@ -543,11 +551,11 @@ static cell AMX_NATIVE_CALL n_fwrite(AMX *amx, const cell *params)
     /* the string is packed, write it as an ASCII/ANSI string */
     if ((str=(char*)alloca(len + 1))!=NULL) {
       amx_GetString(str,cptr,0,len);
-      r=fputs(str,(FILE*)params[1]);
+      r=fputs(str,f);
     } /* if */
   } else {
     /* the string is unpacked, write it as UTF-8 */
-    r=fputs_cell((FILE*)params[1],cptr,1);
+    r=fputs_cell(f,cptr,1);
   } /* if */
   return (cell)r;
 }
@@ -555,6 +563,11 @@ static cell AMX_NATIVE_CALL n_fwrite(AMX *amx, const cell *params)
 /* fread(File: handle, string[], size=sizeof string, bool:pack=false) */
 static cell AMX_NATIVE_CALL n_fread(AMX *amx, const cell *params)
 {
+  FILE* f = params[1];
+  if (!f) {
+    return 0;
+  }
+
   size_t chars;
   int max;
   char *str;
@@ -575,12 +588,12 @@ static cell AMX_NATIVE_CALL n_fread(AMX *amx, const cell *params)
 
   if (params[4]) {
     /* store as packed string, read an ASCII/ANSI string */
-    chars=fgets_char((FILE*)params[1],str,max);
+    chars=fgets_char(f,str,max);
     assert((int)chars<max);
     amx_SetString(cptr,str,1,0,max);
   } else {
     /* store and unpacked string, interpret UTF-8 */
-    chars=fgets_cell((FILE*)params[1],cptr,max,1);
+    chars=fgets_cell(f,cptr,max,1);
   } /* if */
 
   assert((int)chars<max);
@@ -590,6 +603,11 @@ static cell AMX_NATIVE_CALL n_fread(AMX *amx, const cell *params)
 /* fputchar(File: handle, value, bool:utf8 = true) */
 static cell AMX_NATIVE_CALL n_fputchar(AMX *amx, const cell *params)
 {
+  FILE* f = params[1];
+  if (!f) {
+    return 0;
+  }
+
   size_t result;
 
   (void)amx;
@@ -597,9 +615,9 @@ static cell AMX_NATIVE_CALL n_fputchar(AMX *amx, const cell *params)
     cell str[2];
     str[0]=params[2];
     str[1]=0;
-    result=fputs_cell((FILE*)params[1],str,1);
+    result=fputs_cell(f,str,1);
   } else {
-    fputc((int)params[2],(FILE*)params[1]);
+    fputc((int)params[2],f);
 	result=1;
   } /* if */
   assert(result==0 || result==1);
@@ -609,14 +627,19 @@ static cell AMX_NATIVE_CALL n_fputchar(AMX *amx, const cell *params)
 /* fgetchar(File: handle, bool:utf8 = true) */
 static cell AMX_NATIVE_CALL n_fgetchar(AMX *amx, const cell *params)
 {
+  FILE* f = params[1];
+  if (!f) {
+    return 0;
+  }
+
   cell str[2];
   size_t result;
 
   (void)amx;
   if (params[2]) {
-    result=fgets_cell((FILE*)params[1],str,2,1);
+    result=fgets_cell(f,str,2,1);
   } else {
-    str[0]=fgetc((FILE*)params[1]);
+    str[0]=fgetc(f);
     result= (str[0]!=EOF);
   } /* if */
   assert(result==0 || result==1);
@@ -639,6 +662,11 @@ static cell AMX_NATIVE_CALL n_fgetchar(AMX *amx, const cell *params)
 /* fblockwrite(File: handle, buffer[], size=sizeof buffer) */
 static cell AMX_NATIVE_CALL n_fblockwrite(AMX *amx, const cell *params)
 {
+  FILE* f = params[1];
+  if (!f) {
+    return 0;
+  }
+
   cell *cptr;
   cell count=0;
 
@@ -649,7 +677,7 @@ static cell AMX_NATIVE_CALL n_fblockwrite(AMX *amx, const cell *params)
     ucell v;
     for (count=0; count<max; count++) {
       v=(ucell)*cptr++;
-      if (fwrite(aligncell(&v),sizeof(cell),1,(FILE*)params[1])!=1)
+      if (fwrite(aligncell(&v),sizeof(cell),1,f)!=1)
         break;          /* write error */
     } /* for */
   } /* if */
@@ -659,6 +687,11 @@ static cell AMX_NATIVE_CALL n_fblockwrite(AMX *amx, const cell *params)
 /* fblockread(File: handle, buffer[], size=sizeof buffer) */
 static cell AMX_NATIVE_CALL n_fblockread(AMX *amx, const cell *params)
 {
+  FILE* f = params[1];
+  if (!f) {
+    return 0;
+  }
+
   cell *cptr;
   cell count=0;
 
@@ -668,7 +701,7 @@ static cell AMX_NATIVE_CALL n_fblockread(AMX *amx, const cell *params)
     cell max=params[3];
     ucell v;
     for (count=0; count<max; count++) {
-      if (fread(&v,sizeof(cell),1,(FILE*)params[1])!=1)
+      if (fread(&v,sizeof(cell),1,f)!=1)
         break;          /* write error */
       *cptr++=(cell)*aligncell(&v);
     } /* for */
@@ -687,6 +720,11 @@ static cell AMX_NATIVE_CALL n_ftemp(AMX *amx, const cell *params)
 /* fseek(File: handle, position, seek_whence: whence=seek_start) */
 static cell AMX_NATIVE_CALL n_fseek(AMX *amx, const cell *params)
 {
+  FILE* f = params[1];
+  if (!f) {
+    return 0;
+  }
+
   int whence;
   (void)amx;
   switch (params[3]) {
@@ -704,7 +742,7 @@ static cell AMX_NATIVE_CALL n_fseek(AMX *amx, const cell *params)
   default:
     return 0;
   } /* switch */
-  return lseek(fileno((FILE*)params[1]),params[2],whence);
+  return fseek(f,params[2],whence);
 }
 
 /* bool: fremove(const name[]) */
@@ -774,11 +812,16 @@ static cell AMX_NATIVE_CALL n_frename(AMX *amx, const cell *params)
 /* flength(File: handle) */
 static cell AMX_NATIVE_CALL n_flength(AMX *amx, const cell *params)
 {
+  FILE* f = params[1];
+  if (!f) {
+    return 0;
+  }
+
   long l,c;
-  int fn=fileno((FILE*)params[1]);
+  int fn=fileno(f);
   c=lseek(fn,0,SEEK_CUR); /* save the current position */
   l=lseek(fn,0,SEEK_END); /* return the file position at its end */
-  lseek(fn,c,SEEK_SET);   /* restore the file pointer */
+  fseek(f,c,SEEK_SET);   /* restore the file pointer */
   (void)amx;
   return l;
 }

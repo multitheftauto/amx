@@ -38,8 +38,7 @@
 #endif
 #if defined __WIN32__ || defined _Windows
   #include <windows.h>
-#endif
-#if defined __GNUC__ || defined __clang__
+#elif defined __GNUC__ || defined __clang__
   #include <unistd.h>
 #endif
 #include "amx.h"
@@ -191,7 +190,7 @@ static const TCHAR *tokenize(const TCHAR *string, int index, int *length)
         endchar = *start++;
       else
         endchar = __T(' ');
-      } /* if */
+    } /* if */
     index--;
   } /* while */
   if (start != NULL && length != NULL) {
@@ -222,8 +221,8 @@ static const TCHAR *matcharg(const TCHAR *key, int skip, int *length)
     if (vptr != NULL && (int)(vptr - option) > *length)
       vptr = NULL;
     optlen = (vptr != NULL) ? (int)(vptr - option) : 0;
-    if (keylen == 0 && vptr == NULL
-        || keylen > 0 && keylen == optlen && _tcsncmp(option, key, optlen) == 0)
+    if ((keylen == 0 && vptr == NULL)
+        || (keylen > 0 && keylen == optlen && _tcsncmp(option, key, optlen) == 0))
     {
       if (vptr != NULL)
         optlen++;               /* if ':' or '=' was found, skip it too */
