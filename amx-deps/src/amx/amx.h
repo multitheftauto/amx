@@ -205,6 +205,7 @@ extern  "C" {
 
 #define UNPACKEDMAX   (((cell)1 << (sizeof(cell)-1)*8) - 1)
 #define UNLIMITED     (~1u >> 1)
+#define STKMARGIN     ((cell)(16*sizeof(cell)))
 
 struct tagAMX;
 typedef cell (AMX_NATIVE_CALL *AMX_NATIVE)(struct tagAMX *amx, const cell *params);
@@ -218,8 +219,10 @@ typedef int (AMXAPI *AMX_IDLE)(struct tagAMX *amx, int AMXAPI Exec(struct tagAMX
 
 #if defined _MSC_VER
   #pragma warning(disable:4100)  /* "'%$S' : unreferenced formal parameter" */
-  #pragma warning(disable:4103)  /* disable warning message 4103 that complains about pragma pack in a header file */
-  #pragma warning(disable:4127)  /* "conditional expression is constant" (needed for static_assert) */
+  #pragma warning(disable:4103)  /* disable warning message 4103 that complains
+                                  * about pragma pack in a header file */
+  #pragma warning(disable:4127)  /* "conditional expression is constant"
+                                  * (needed for static_assert) */
   #pragma warning(disable:4996)  /* POSIX name is deprecated */
 #elif defined __GNUC__
 #elif defined __clang__
@@ -263,7 +266,9 @@ typedef struct tagAMX_NATIVE_INFO {
 #define AMX_USERNUM     4
 #endif
 #define sEXPMAX         19      /* maximum name length for file version <= 6 */
-#define sNAMEMAX        31      /* maximum name length of symbol name */
+#ifndef sNAMEMAX
+  #define sNAMEMAX      31      /* maximum name length of symbol name */
+#endif
 
 typedef struct tagAMX_FUNCSTUB {
   ucell address         PACKED;
@@ -346,6 +351,28 @@ typedef struct tagAMX_HEADER {
   #define AMX_MAGIC     AMX_MAGIC_32
 #elif PAWN_CELL_SIZE==64
   #define AMX_MAGIC     AMX_MAGIC_64
+#endif
+
+#define USENAMETABLE(hdr) \
+                        ((hdr)->defsize==sizeof(AMX_FUNCSTUBNT))
+#define NUMENTRIES(hdr,field,nextfield) \
+                        (unsigned)(((hdr)->nextfield - (hdr)->field) / (hdr)->defsize)
+#define GETENTRY(hdr,table,index) \
+                        (AMX_FUNCSTUB *)((unsigned char*)(hdr) + (unsigned)(hdr)->table + (unsigned)index*(hdr)->defsize)
+#define GETENTRYNAME(hdr,entry) \
+                        ( USENAMETABLE(hdr) \
+                           ? (char *)((unsigned char*)(hdr) + (unsigned)((AMX_FUNCSTUBNT*)(entry))->nameofs) \
+                           : ((AMX_FUNCSTUB*)(entry))->name )
+
+#define CHARBITS        (8*sizeof(char))
+#if PAWN_CELL_SIZE==16
+  #define CHARMASK      (0xffffu << 8*(2-sizeof(char)))
+#elif PAWN_CELL_SIZE==32
+  #define CHARMASK      (0xffffffffuL << 8*(4-sizeof(char)))
+#elif PAWN_CELL_SIZE==64
+  #define CHARMASK      (0xffffffffffffffffuLL << 8*(8-sizeof(char)))
+#else
+  #error Unsupported cell size
 #endif
 
 enum {
@@ -496,7 +523,7 @@ int AMXAPI amx_Release(AMX *amx, cell amx_addr);
 int AMXAPI amx_SetCallback(AMX *amx, AMX_CALLBACK callback);
 int AMXAPI amx_SetDebugHook(AMX *amx, AMX_DEBUG debug);
 int AMXAPI amx_SetString(cell *dest, const char *source, int pack, int use_wchar, size_t size);
-int AMXAPI amx_SetUserData(AMX *amx, long tag, void *ptr);
+int AMXAPI amx_SetUserData(AMX* amx, long tag, void* ptr);
 int AMXAPI amx_StrLen(const cell *cstring, int *length);
 int AMXAPI amx_UTF8Check(const char *string, int *length);
 int AMXAPI amx_UTF8Get(const char *string, const char **endptr, cell *value);

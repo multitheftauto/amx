@@ -252,7 +252,7 @@ static cell AMX_NATIVE_CALL n_argindex(AMX *amx, const cell *params)
   max = (int)params[3];
   if (max <= 0)
     return 0;
-  amx_GetAddr(amx, params[2], &cptr);
+  amx_GetAddr(amx, params[2],&cptr);
 
   if ((option = tokenize(cmdline, params[1], &length)) == NULL) {
     /* option not found, return an empty string */
@@ -290,7 +290,7 @@ static cell AMX_NATIVE_CALL n_argstr(AMX *amx, const cell *params)
   if (max <= 0)
     return 0;
   amx_StrParam(amx, params[2], key);
-  amx_GetAddr(amx, params[3], &cptr);
+  amx_GetAddr(amx, params[3],&cptr);
 
   option = matcharg(key, (int)params[1], &length);
   if (option == NULL)
@@ -329,7 +329,7 @@ static cell AMX_NATIVE_CALL n_argvalue(AMX *amx, const cell *params)
   cell *cptr;
 
   amx_StrParam(amx, params[2], key);
-  amx_GetAddr(amx, params[3], &cptr);
+  amx_GetAddr(amx, params[3],&cptr);
 
   option = matcharg(key, (int)params[1], &length);
   if (option == NULL)

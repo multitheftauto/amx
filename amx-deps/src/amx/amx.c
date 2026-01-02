@@ -295,17 +295,6 @@ typedef enum {
   OP_NUM_OPCODES
 } OPCODE;
 
-#define USENAMETABLE(hdr) \
-                        ((hdr)->defsize==sizeof(AMX_FUNCSTUBNT))
-#define NUMENTRIES(hdr,field,nextfield) \
-                        (unsigned)(((hdr)->nextfield - (hdr)->field) / (hdr)->defsize)
-#define GETENTRY(hdr,table,index) \
-                        (AMX_FUNCSTUB *)((unsigned char*)(hdr) + (unsigned)(hdr)->table + (unsigned)index*(hdr)->defsize)
-#define GETENTRYNAME(hdr,entry) \
-                        ( USENAMETABLE(hdr) \
-                           ? (char *)((unsigned char*)(hdr) + (unsigned)((AMX_FUNCSTUBNT*)(entry))->nameofs) \
-                           : ((AMX_FUNCSTUB*)(entry))->name )
-
 #if !defined NDEBUG
   static int check_endian(void)
   {
@@ -940,7 +929,7 @@ int AMXAPI amx_Init(AMX *amx,void *program)
       #endif
     #endif
     int numlibraries,i;
-    AMX_FUNCSTUB *lib;
+    AMX_FUNCSTUB* lib;
     AMX_ENTRY libinit;
   #endif
 
@@ -1256,13 +1245,13 @@ int AMXAPI amx_Cleanup(AMX *amx)
     #endif
     AMX_HEADER *hdr;
     int numlibraries,i;
-    AMX_FUNCSTUB *lib;
+    AMX_FUNCSTUB* lib;
     AMX_ENTRY libcleanup;
   #endif
 
   /* unload all extension modules */
   #if (defined _Windows || defined LINUX || defined __FreeBSD__ || defined __OpenBSD__) && !defined AMX_NODYNALOAD
-    hdr=(AMX_HEADER *)amx->base;
+    hdr=(AMX_HEADER*)amx->base;
     assert(hdr->magic==AMX_MAGIC);
     numlibraries=NUMENTRIES(hdr,libraries,pubvars);
     for (i=0; i<numlibraries; i++) {
@@ -1407,7 +1396,7 @@ int AMXAPI amx_GetNative(AMX *amx, int index, char *funcname)
   return AMX_ERR_NONE;
 }
 
-int AMXAPI amx_FindNative(AMX *amx, const char *name, int *index)
+int AMXAPI amx_FindNative(AMX* amx, const char* name, int* index)
 {
   int first,last,mid,result;
   char pname[sNAMEMAX+1];
@@ -1524,7 +1513,7 @@ int AMXAPI amx_FindPubVar(AMX *amx, const char *varname, cell *amx_addr)
 {
   int first,last,mid,result;
   char pname[sNAMEMAX+1];
-  cell paddr;
+  cell paddr=0;
 
   amx_NumPubVars(amx, &last);
   last--;       /* last valid index is 1 less than the number of functions */
@@ -1603,7 +1592,7 @@ int AMXAPI amx_GetTag(AMX *amx, int index, char *tagname, cell *tag_id)
 int AMXAPI amx_FindTagId(AMX *amx, cell tag_id, char *tagname)
 {
   int first,last,mid;
-  cell mid_id;
+  cell mid_id=tag_id;
 
   #if !defined NDEBUG
     /* verify that the tagname table is sorted on the tag_id */
@@ -1683,7 +1672,7 @@ static AMX_NATIVE findfunction(const char *name, const AMX_NATIVE_INFO *list, in
   int i;
 
   assert(list!=NULL);
-  for (i=0; list[i].name!=NULL && (i<number || number==-1); i++)
+  for (i=0; (i<number || number==-1) && list[i].name!=NULL; i++)
     if (strcmp(name,list[i].name)==0)
       return list[i].func;
   return NULL;
@@ -1730,9 +1719,6 @@ AMX_NATIVE_INFO * AMXAPI amx_NativeInfo(const char *name, AMX_NATIVE func)
   return &n;
 }
 #endif /* AMX_NATIVEINFO */
-
-
-#define STKMARGIN       ((cell)(16*sizeof(cell)))
 
 #if defined AMX_PUSHXXX
 
@@ -3245,14 +3231,14 @@ int AMXAPI amx_Exec(AMX *amx, cell *retval, int index)
       break;
     case OP_LOAD_I:
       /* verify address */
-      if (pri>=hea && pri<stk || (ucell)pri>=(ucell)amx->stp)
+      if ((pri>=hea && pri<stk) || (ucell)pri>=(ucell)amx->stp)
         ABORT(amx,AMX_ERR_MEMACCESS);
       pri=_R(data,pri);
       break;
     case OP_LODB_I:
       GETPARAM(offs);
       /* verify address */
-      if (pri>=hea && pri<stk || (ucell)pri>=(ucell)amx->stp)
+      if ((pri>=hea && pri<stk) || (ucell)pri>=(ucell)amx->stp)
         ABORT(amx,AMX_ERR_MEMACCESS);
       switch ((int)offs) {
       case 1:
@@ -3318,14 +3304,14 @@ int AMXAPI amx_Exec(AMX *amx, cell *retval, int index)
       break;
     case OP_STOR_I:
       /* verify address */
-      if (alt>=hea && alt<stk || (ucell)alt>=(ucell)amx->stp)
+      if ((alt>=hea && alt<stk) || (ucell)alt>=(ucell)amx->stp)
         ABORT(amx,AMX_ERR_MEMACCESS);
       _W(data,alt,pri);
       break;
     case OP_STRB_I:
       GETPARAM(offs);
       /* verify address */
-      if (alt>=hea && alt<stk || (ucell)alt>=(ucell)amx->stp)
+      if ((alt>=hea && alt<stk) || (ucell)alt>=(ucell)amx->stp)
         ABORT(amx,AMX_ERR_MEMACCESS);
       switch ((int)offs) {
       case 1:
@@ -3342,7 +3328,7 @@ int AMXAPI amx_Exec(AMX *amx, cell *retval, int index)
     case OP_LIDX:
       offs=pri*sizeof(cell)+alt;
       /* verify address */
-      if (offs>=hea && offs<stk || (ucell)offs>=(ucell)amx->stp)
+      if ((offs>=hea && offs<stk) || (ucell)offs>=(ucell)amx->stp)
         ABORT(amx,AMX_ERR_MEMACCESS);
       pri=_R(data,offs);
       break;
@@ -3350,7 +3336,7 @@ int AMXAPI amx_Exec(AMX *amx, cell *retval, int index)
       GETPARAM(offs);
       offs=(pri << (int)offs)+alt;
       /* verify address */
-      if (offs>=hea && offs<stk || (ucell)offs>=(ucell)amx->stp)
+      if ((offs>=hea && offs<stk) || (ucell)offs>=(ucell)amx->stp)
         ABORT(amx,AMX_ERR_MEMACCESS);
       pri=_R(data,offs);
       break;
@@ -3840,13 +3826,13 @@ int AMXAPI amx_Exec(AMX *amx, cell *retval, int index)
       /* verify top & bottom memory addresses, for both source and destination
        * addresses
        */
-      if (pri>=hea && pri<stk || (ucell)pri>=(ucell)amx->stp)
+      if ((pri>=hea && pri<stk) || (ucell)pri>=(ucell)amx->stp)
         ABORT(amx,AMX_ERR_MEMACCESS);
-      if ((pri+offs)>hea && (pri+offs)<stk || (ucell)(pri+offs)>(ucell)amx->stp)
+      if (((pri+offs)>hea && (pri+offs)<stk) || (ucell)(pri+offs)>(ucell)amx->stp)
         ABORT(amx,AMX_ERR_MEMACCESS);
-      if (alt>=hea && alt<stk || (ucell)alt>=(ucell)amx->stp)
+      if ((alt>=hea && alt<stk) || (ucell)alt>=(ucell)amx->stp)
         ABORT(amx,AMX_ERR_MEMACCESS);
-      if ((alt+offs)>hea && (alt+offs)<stk || (ucell)(alt+offs)>(ucell)amx->stp)
+      if (((alt+offs)>hea && (alt+offs)<stk) || (ucell)(alt+offs)>(ucell)amx->stp)
         ABORT(amx,AMX_ERR_MEMACCESS);
       #if defined _R_DEFAULT
         memcpy(data+(int)alt, data+(int)pri, (int)offs);
@@ -3866,13 +3852,13 @@ int AMXAPI amx_Exec(AMX *amx, cell *retval, int index)
       /* verify top & bottom memory addresses, for both source and destination
        * addresses
        */
-      if (pri>=hea && pri<stk || (ucell)pri>=(ucell)amx->stp)
+      if ((pri>=hea && pri<stk) || (ucell)pri>=(ucell)amx->stp)
         ABORT(amx,AMX_ERR_MEMACCESS);
-      if ((pri+offs)>hea && (pri+offs)<stk || (ucell)(pri+offs)>(ucell)amx->stp)
+      if (((pri+offs)>hea && (pri+offs)<stk) || (ucell)(pri+offs)>(ucell)amx->stp)
         ABORT(amx,AMX_ERR_MEMACCESS);
-      if (alt>=hea && alt<stk || (ucell)alt>=(ucell)amx->stp)
+      if ((alt>=hea && alt<stk) || (ucell)alt>=(ucell)amx->stp)
         ABORT(amx,AMX_ERR_MEMACCESS);
-      if ((alt+offs)>hea && (alt+offs)<stk || (ucell)(alt+offs)>(ucell)amx->stp)
+      if (((alt+offs)>hea && (alt+offs)<stk) || (ucell)(alt+offs)>(ucell)amx->stp)
         ABORT(amx,AMX_ERR_MEMACCESS);
       #if defined _R_DEFAULT
         pri=memcmp(data+(int)alt, data+(int)pri, (int)offs);
@@ -3887,9 +3873,9 @@ int AMXAPI amx_Exec(AMX *amx, cell *retval, int index)
     case OP_FILL:
       GETPARAM(offs);
       /* verify top & bottom memory addresses (destination only) */
-      if (alt>=hea && alt<stk || (ucell)alt>=(ucell)amx->stp)
+      if ((alt>=hea && alt<stk) || (ucell)alt>=(ucell)amx->stp)
         ABORT(amx,AMX_ERR_MEMACCESS);
-      if ((alt+offs)>hea && (alt+offs)<stk || (ucell)(alt+offs)>(ucell)amx->stp)
+      if (((alt+offs)>hea && (alt+offs)<stk) || (ucell)(alt+offs)>(ucell)amx->stp)
         ABORT(amx,AMX_ERR_MEMACCESS);
       for (i=(int)alt; (size_t)offs>=sizeof(cell); i+=sizeof(cell), offs-=sizeof(cell))
         _W32(data,i,pri);
@@ -4282,17 +4268,6 @@ int AMXAPI amx_Release(AMX *amx,cell amx_addr)
 #endif /* AMX_ALLOT */
 
 #if defined AMX_XXXSTRING || defined AMX_UTF8XXX
-
-#define CHARBITS        (8*sizeof(char))
-#if PAWN_CELL_SIZE==16
-  #define CHARMASK      (0xffffu << 8*(2-sizeof(char)))
-#elif PAWN_CELL_SIZE==32
-  #define CHARMASK      (0xffffffffuL << 8*(4-sizeof(char)))
-#elif PAWN_CELL_SIZE==64
-  #define CHARMASK      (0xffffffffffffffffuLL << 8*(8-sizeof(char)))
-#else
-  #error Unsupported cell size
-#endif
 
 int AMXAPI amx_StrLen(const cell *cstr, int *length)
 {

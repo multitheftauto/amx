@@ -749,13 +749,13 @@ static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,T
   assert(f_putstr!=NULL);
   assert(f_putchar!=NULL);
   if (width < 0) {
-    amx_GetAddr(amx,params[paramidx],&cptr);
+    amx_GetAddr(amx, params[paramidx],&cptr);
     width=*cptr;
     ++paramidx;
     ++ret;
   }
   if (digits < 0) {
-    amx_GetAddr(amx,params[paramidx],&cptr);
+    amx_GetAddr(amx, params[paramidx],&cptr);
     digits=*cptr;
     ++paramidx;
     ++ret;
@@ -763,7 +763,7 @@ static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,T
 
   switch (ch) {
   case __T('c'):
-    amx_GetAddr(amx,params[paramidx],&cptr);
+    amx_GetAddr(amx, params[paramidx],&cptr);
     width--;            /* single character itself has a with of 1 */
     if (sign!=__T('-'))
       while (width-->0)
@@ -777,7 +777,7 @@ static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,T
   case __T('i'): {
     cell value;
     int length=1;
-    amx_GetAddr(amx,params[paramidx],&cptr);
+    amx_GetAddr(amx, params[paramidx],&cptr);
     value=*cptr;
     if (value<0 || sign==__T('+'))
       length++;
@@ -814,7 +814,7 @@ static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,T
     if (width>0)
       _stprintf(formatstring+_tcslen(formatstring),__T("%d"),width);
     _stprintf(formatstring+_tcslen(formatstring),__T(".%df"),digits);
-    amx_GetAddr(amx,params[paramidx],&cptr);
+    amx_GetAddr(amx, params[paramidx],&cptr);
     #if PAWN_CELL_SIZE == 64
       _stprintf(buffer,formatstring,*(double*)cptr);
     #else
@@ -835,7 +835,7 @@ static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,T
 #if !defined FLOATPOINT
   case __T('r'): /* if fixed point is enabled, and floating point is not, %r == %q */
 #endif
-    amx_GetAddr(amx,params[paramidx],&cptr);
+    amx_GetAddr(amx, params[paramidx],&cptr);
     /* format the number */
     if (digits==INT_MAX)
       digits=3;
@@ -862,7 +862,7 @@ static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,T
     info.f_putstr=f_putstr;
     info.f_putchar=f_putchar;
     info.user=user;
-    amx_GetAddr(amx,params[paramidx],&cptr);
+    amx_GetAddr(amx, params[paramidx],&cptr);
     amx_printstring(amx,cptr,&info);
     return ret;
   } /* case */
@@ -870,7 +870,7 @@ static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,T
   case __T('x'): {
     ucell value;
     int length=1;
-    amx_GetAddr(amx,params[paramidx],&cptr);
+    amx_GetAddr(amx, params[paramidx],&cptr);
     value=*(ucell*)cptr;
     while (value>=0x10) {
       length++;
@@ -890,7 +890,7 @@ static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,T
   case __T('b'): {
     ucell value;
     int length = 1;
-    amx_GetAddr(amx, params[paramidx], &cptr);
+    amx_GetAddr(amx, params[paramidx],&cptr);
     value = *(ucell*)cptr;
     while (value >= 0x1) {
       length++;
