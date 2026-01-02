@@ -74,7 +74,7 @@ static cell AMX_NATIVE_CALL n_strfloat(AMX *amx,const cell *params)
     assert(params[0]/sizeof(cell)==1);
 
     /* Get the real address of the string. */
-    pString=amx_Address(amx,params[1]);
+    amx_GetAddr(amx,params[1],&pString);
 
     /* Find out how long the string is in characters. */
     amx_StrLen(pString, &nLen);

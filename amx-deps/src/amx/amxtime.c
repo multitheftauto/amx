@@ -257,11 +257,11 @@ static cell AMX_NATIVE_CALL n_gettime(AMX *amx, const cell *params)
    * library; in that case gmtime() and localtime() return the same value
    */
   gtm=*localtime(&sec1970);
-  cptr=amx_Address(amx,params[1]);
+  amx_GetAddr(amx,params[1],&cptr);
   *cptr=gtm.tm_hour;
-  cptr=amx_Address(amx,params[2]);
+  amx_GetAddr(amx,params[2],&cptr);
   *cptr=gtm.tm_min;
-  cptr=amx_Address(amx,params[3]);
+  amx_GetAddr(amx,params[3],&cptr);
   *cptr=gtm.tm_sec;
 
   /* the time() function returns the number of seconds since January 1 1970
@@ -295,11 +295,11 @@ static cell AMX_NATIVE_CALL n_getdate(AMX *amx, const cell *params)
   time(&sec1970);
 
   gtm=*localtime(&sec1970);
-  cptr=amx_Address(amx,params[1]);
+  amx_GetAddr(amx,params[1],&cptr);
   *cptr=gtm.tm_year+1900;
-  cptr=amx_Address(amx,params[2]);
+  amx_GetAddr(amx,params[2],&cptr);
   *cptr=gtm.tm_mon+1;
-  cptr=amx_Address(amx,params[3]);
+  amx_GetAddr(amx,params[3],&cptr);
   *cptr=gtm.tm_mday;
 
   return gtm.tm_yday+1;
@@ -316,7 +316,7 @@ static cell AMX_NATIVE_CALL n_tickcount(AMX *amx, const cell *params)
   assert(params[0]==(int)sizeof(cell));
 
   INIT_TIMER();
-  cptr=amx_Address(amx,params[1]);
+  amx_GetAddr(amx,params[1],&cptr);
   #if defined __WIN32__ || defined _WIN32 || defined WIN32
     *cptr=1000;               	/* granularity = 1 ms */
   #else
@@ -365,9 +365,9 @@ static cell AMX_NATIVE_CALL n_gettimer(AMX *amx, const cell *params)
   cell *cptr;
 
   assert(params[0]==(int)(2*sizeof(cell)));
-  cptr=amx_Address(amx,params[1]);
+  amx_GetAddr(amx,params[1],&cptr);
   *cptr=timelimit;
-  cptr=amx_Address(amx,params[2]);
+  amx_GetAddr(amx,params[2],&cptr);
   *cptr=timerepeat;
   return timelimit>0;
 }

@@ -749,19 +749,21 @@ static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,T
   assert(f_putstr!=NULL);
   assert(f_putchar!=NULL);
   if (width < 0) {
-    width = *amx_Address(amx, params[paramidx]);
+    amx_GetAddr(amx,params[paramidx],&cptr);
+    width=*cptr;
     ++paramidx;
     ++ret;
   }
   if (digits < 0) {
-    digits = *amx_Address(amx, params[paramidx]);
+    amx_GetAddr(amx,params[paramidx],&cptr);
+    digits=*cptr;
     ++paramidx;
     ++ret;
   }
 
   switch (ch) {
   case __T('c'):
-    cptr=amx_Address(amx, params[paramidx]);
+    amx_GetAddr(amx,params[paramidx],&cptr);
     width--;            /* single character itself has a with of 1 */
     if (sign!=__T('-'))
       while (width-->0)
@@ -775,7 +777,7 @@ static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,T
   case __T('i'): {
     cell value;
     int length=1;
-    cptr=amx_Address(amx, params[paramidx]);
+    amx_GetAddr(amx,params[paramidx],&cptr);
     value=*cptr;
     if (value<0 || sign==__T('+'))
       length++;
@@ -812,7 +814,7 @@ static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,T
     if (width>0)
       _stprintf(formatstring+_tcslen(formatstring),__T("%d"),width);
     _stprintf(formatstring+_tcslen(formatstring),__T(".%df"),digits);
-    cptr=amx_Address(amx, params[paramidx]);
+    amx_GetAddr(amx,params[paramidx],&cptr);
     #if PAWN_CELL_SIZE == 64
       _stprintf(buffer,formatstring,*(double*)cptr);
     #else
@@ -833,7 +835,7 @@ static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,T
 #if !defined FLOATPOINT
   case __T('r'): /* if fixed point is enabled, and floating point is not, %r == %q */
 #endif
-    cptr=amx_Address(amx, params[paramidx]);
+    amx_GetAddr(amx,params[paramidx],&cptr);
     /* format the number */
     if (digits==INT_MAX)
       digits=3;
@@ -860,7 +862,7 @@ static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,T
     info.f_putstr=f_putstr;
     info.f_putchar=f_putchar;
     info.user=user;
-    cptr=amx_Address(amx, params[paramidx]);
+    amx_GetAddr(amx,params[paramidx],&cptr);
     amx_printstring(amx,cptr,&info);
     return ret;
   } /* case */
@@ -868,7 +870,7 @@ static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,T
   case __T('x'): {
     ucell value;
     int length=1;
-    cptr=amx_Address(amx, params[paramidx]);
+    amx_GetAddr(amx,params[paramidx],&cptr);
     value=*(ucell*)cptr;
     while (value>=0x10) {
       length++;
@@ -888,7 +890,7 @@ static int dochar(AMX *amx,TCHAR ch,const cell* params,int paramidx,TCHAR sign,T
   case __T('b'): {
     ucell value;
     int length = 1;
-    cptr = amx_Address(amx, params[paramidx]);
+    amx_GetAddr(amx, params[paramidx], &cptr);
     value = *(ucell*)cptr;
     while (value >= 0x1) {
       length++;
@@ -1171,7 +1173,7 @@ static cell AMX_NATIVE_CALL n_print(AMX *amx,const cell *params)
   info.length= ((size_t)params[0]>=3*sizeof(cell)) ? (int)(params[3]-info.skip) : INT_MAX;
 
   CreateConsole();
-  cstr=amx_Address(amx,params[1]);
+  amx_GetAddr(amx,params[1],&cstr);
   amx_printstring(amx,cstr,&info);
   amx_fflush();
   return 0;
@@ -1188,7 +1190,7 @@ static cell AMX_NATIVE_CALL n_print(AMX *amx,const cell *params)
   /* set the new colours */
   oldcolours=amx_setattr((int)params[2],(int)params[3],(int)params[4]);
 
-  cstr=amx_Address(amx,params[1]);
+  amx_GetAddr(amx,params[1],&cstr);
   amx_printstring(amx,cstr,NULL);
   cons_putchar(NULL, __T('\n'));
 
@@ -1211,7 +1213,7 @@ static cell AMX_NATIVE_CALL n_printf(AMX *amx,const cell *params)
   info.length=INT_MAX;
 
   CreateConsole();
-  cstr=amx_Address(amx,params[1]);
+  amx_GetAddr(amx,params[1],&cstr);
   amx_printstring(amx,cstr,&info);
   cons_putchar(NULL, __T('\n'));
   amx_fflush();
@@ -1274,7 +1276,7 @@ static cell AMX_NATIVE_CALL n_getstring(AMX *amx,const cell *params)
     assert(chars<max);
     str[chars]='\0';
 
-    cptr=amx_Address(amx,params[1]);
+    amx_GetAddr(amx,params[1],&cptr);
     amx_SetString(cptr,(char*)str,(int)params[3],sizeof(TCHAR)>1,max);
 
   } /* if */
@@ -1320,7 +1322,7 @@ static int inlist(AMX *amx,int c,const cell *params,int num)
       key = (int)params[i];
     } else {
       cell *cptr;
-      cptr=amx_Address(amx,params[i]);
+      amx_GetAddr(amx,params[i],&cptr);
       key=(int)*cptr;
     } /* if */
     if (c==key || c==-key)
@@ -1430,8 +1432,8 @@ static cell AMX_NATIVE_CALL n_wherexy(AMX *amx,const cell *params)
   (void)amx;
   CreateConsole();
   amx_wherexy(&x,&y);
-  px=amx_Address(amx,params[1]);
-  py=amx_Address(amx,params[2]);
+  amx_GetAddr(amx,params[1],&px);
+  amx_GetAddr(amx,params[2],&py);
   *px=x;
   *py=y;
   return 0;

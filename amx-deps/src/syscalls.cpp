@@ -29,7 +29,7 @@ static cell AMX_NATIVE_CALL n_samp(AMX *amx, const cell *params, const char* fnN
 	cell numParams = params[0]/sizeof(cell);
 	char type;
 	for(cell i = 1; i <= numParams; i++) {
-		if(i <= numPrototypeArgs) {
+		if((size_t)i <= numPrototypeArgs) {
 			lua_pushnumber(mainVM, i);
 			lua_gettable(mainVM, -1 - i);
 			type = *lua_tostring(mainVM, -1);
@@ -282,7 +282,7 @@ static cell AMX_NATIVE_CALL n_lua(AMX *amx, const cell *params) {
 
 	lua_getfield(resVM, -1, "pointers");
 	for(cell i = 1; i < numParams; i++) {
-		if(i - 1 < numPrototypeArgs) {
+		if((size_t)(i - 1) < numPrototypeArgs) {
 			lua_pushnumber(mainVM, i);
 			lua_gettable(mainVM, -1 - i);
 			const char *t = lua_tostring(mainVM, -1);

@@ -201,7 +201,7 @@ static cell AMX_NATIVE_CALL funcidx(AMX *amx,const cell *params)
   cell *cstr;
   int index,err;
 
-  cstr=amx_Address(amx,params[1]);
+  amx_GetAddr(amx,params[1],&cstr);
   amx_GetString(name,cstr,0,sizeof name);
   err=amx_FindPublic(amx,name,&index);
   if (err!=AMX_ERR_NONE)
@@ -341,12 +341,12 @@ static cell AMX_NATIVE_CALL getproperty(AMX *amx,const cell *params)
   proplist *item;
 
   (void)amx;
-  cstr=amx_Address(amx,params[2]);
+  amx_GetAddr(amx,params[2],&cstr);
   name=MakePackedString(cstr);
   item=list_finditem(&proproot,params[1],name,params[3],NULL);
   /* if list_finditem() found the value, store the name */
   if (item!=NULL && item->value==params[3] && strlen(name)==0) {
-    cstr=amx_Address(amx,params[4]);
+    amx_GetAddr(amx,params[4],&cstr);
     amx_SetString(cstr,item->name,1,0,params[5]);
   } /* if */
   free(name);
@@ -361,7 +361,7 @@ static cell AMX_NATIVE_CALL setproperty(AMX *amx,const cell *params)
   char *name;
   proplist *item;
 
-  cstr=amx_Address(amx,params[2]);
+  amx_GetAddr(amx,params[2],&cstr);
   name=MakePackedString(cstr);
   item=list_finditem(&proproot,params[1],name,params[3],NULL);
   if (item==NULL)
@@ -372,7 +372,7 @@ static cell AMX_NATIVE_CALL setproperty(AMX *amx,const cell *params)
     prev=item->value;
     if (strlen(name)==0) {
       free(name);
-      cstr=amx_Address(amx,params[4]);
+      amx_GetAddr(amx,params[4],&cstr);
       name=MakePackedString(cstr);
     } /* if */
     list_setitem(item,params[1],name,params[3]);
@@ -390,7 +390,7 @@ static cell AMX_NATIVE_CALL delproperty(AMX *amx,const cell *params)
   proplist *item,*pred;
 
   (void)amx;
-  cstr=amx_Address(amx,params[2]);
+  amx_GetAddr(amx,params[2],&cstr);
   name=MakePackedString(cstr);
   item=list_finditem(&proproot,params[1],name,params[3],&pred);
   if (item!=NULL) {
@@ -409,7 +409,7 @@ static cell AMX_NATIVE_CALL existproperty(AMX *amx,const cell *params)
   proplist *item;
 
   (void)amx;
-  cstr=amx_Address(amx,params[2]);
+  amx_GetAddr(amx,params[2],&cstr);
   name=MakePackedString(cstr);
   item=list_finditem(&proproot,params[1],name,params[3],NULL);
   free(name);
