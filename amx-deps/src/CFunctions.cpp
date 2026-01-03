@@ -169,7 +169,7 @@ int CFunctions::amxLoad(lua_State *luaVM) {
 
 	// Load .amx
 	AMX *amx = new AMX;
-	int  err = aux_LoadProgram(amx, amxPath, NULL);
+	int err = aux_LoadProgram(amx, amxPath, NULL);
 	if(err != AMX_ERR_NONE) {
 		delete amx;
 		lua_pushboolean(luaVM, 0);

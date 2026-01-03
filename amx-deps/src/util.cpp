@@ -68,9 +68,9 @@ std::string ToUTF8(const char * str)
 
 std::string ToOriginalCP(const char * str)
 {
-    /*iconv_t conv = iconv_open("CP1251","UTF-8");
-    iconv(conv, (const char**)&str, (size_t*)&strLen, &pOut, (size_t*)&newstrLen);
-    iconv_close(conv);*/
+	/*iconv_t conv = iconv_open("CP1251","UTF-8");
+	iconv(conv, (const char**)&str, (size_t*)&strLen, &pOut, (size_t*)&newstrLen);
+	iconv_close(conv);*/
 
 	std::wstring newstr = utf8_mbstowcs(str);
 
@@ -82,7 +82,7 @@ std::string ToOriginalCP(const char * str)
 	dest[newstr.length()] = 0;
 
 	std::string retstr = dest;
-    delete[] dest;
+	delete[] dest;
 	return retstr;
 }
 

@@ -172,9 +172,15 @@ static cell extractchar(cell *string,int index,int mklower)
     c=string[index];
   if (mklower) {
     #if defined __WIN32__ || defined _WIN32 || defined WIN32
-      c=(cell)CharLower((LPTSTR)c);
+      /* this takes a string pointer or a single character */
+      intptr_t p=c;
+      p=(intptr_t)CharLower((LPTSTR)p);
+      c=(cell)p;
     #elif defined _Windows
-      c=(cell)AnsiLower((LPSTR)c);
+      /* just fix some truncation warnings */
+      intptr_t p=c;
+      p=(intptr_t)AnsiLower((LPSTR)p);
+      c=(cell)p;
     #else
       if ((unsigned int)(c-'A')<26u)
         c+='a'-'A';

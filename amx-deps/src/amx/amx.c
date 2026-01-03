@@ -1757,31 +1757,41 @@ int AMXAPI amx_PushArray(AMX *amx, cell *amx_addr, cell **phys_addr, const cell 
   return err;
 }
 
+int AMXAPI amx_PushStringLen(AMX* amx, cell* amx_addr, cell** phys_addr, const char* string, int length, int pack, int use_wchar)
+{
+    cell *paddr, xaddr;
+    int numcells, err;
+
+    assert(amx != NULL);
+
+    numcells = length + 1;
+
+    if (pack)
+        numcells = (numcells + sizeof(cell) - 1) / sizeof(cell);
+    err = amx_Allot(amx, numcells, &xaddr, &paddr);
+    if (err == AMX_ERR_NONE) {
+        if (amx_addr != NULL)
+            *amx_addr = xaddr;
+        if (phys_addr != NULL)
+            *phys_addr = paddr;
+        amx_SetStringLen(paddr, string, length, pack, use_wchar, UNLIMITED);
+        err = amx_Push(amx, xaddr);
+    } /* if */
+    return err;
+}
+
 int AMXAPI amx_PushString(AMX *amx, cell *amx_addr, cell **phys_addr, const char *string, int pack, int use_wchar)
 {
-  cell *paddr, xaddr;
-  int numcells,err;
+  int length;
 
-  assert(amx!=NULL);
   assert(string!=NULL);
 
   #if defined AMX_ANSIONLY
-    numcells=strlen(string) + 1;
+    length = strlen(string);
   #else
-    numcells= (use_wchar ? wcslen((const wchar_t*)string) : strlen(string)) + 1;
+    length = (use_wchar ? wcslen((const wchar_t*)string) : strlen(string));
   #endif
-  if (pack)
-    numcells=(numcells+sizeof(cell)-1)/sizeof(cell);
-  err=amx_Allot(amx,numcells,&xaddr,&paddr);
-  if (err==AMX_ERR_NONE) {
-    if (amx_addr!=NULL)
-      *amx_addr=xaddr;
-    if (phys_addr!=NULL)
-      *phys_addr=paddr;
-    amx_SetString(paddr,string,pack,use_wchar,UNLIMITED);
-    err=amx_Push(amx,xaddr);
-  } /* if */
-  return err;
+    return amx_PushStringLen(amx, amx_addr, phys_addr, string, length, pack, use_wchar);
 }
 #endif /* AMX_PUSHXXX */
 
@@ -1937,7 +1947,7 @@ static const void * const amx_opcodelist[] = {
   if (index==AMX_EXEC_MAIN) {
     if (hdr->cip<0)
       return AMX_ERR_INDEX;
-    cip=(cell *)(code + (int)hdr->cip);
+    cip=(cell *)(code+(int)hdr->cip);
   } else if (index==AMX_EXEC_CONT) {
     /* all registers: pri, alt, frm, cip, hea, stk, reset_stk, reset_hea */
     frm=amx->frm;
@@ -1947,14 +1957,14 @@ static const void * const amx_opcodelist[] = {
     alt=amx->alt;
     reset_stk=amx->reset_stk;
     reset_hea=amx->reset_hea;
-    cip=(cell *)(code + (int)amx->cip);
+    cip=(cell *)(code+(int)amx->cip);
   } else if (index<0) {
     return AMX_ERR_INDEX;
   } else {
     if (index>=(int)NUMENTRIES(hdr,publics,natives))
       return AMX_ERR_INDEX;
     func=GETENTRY(hdr,publics,index);
-    cip=(cell *)(code + (int)func->address);
+    cip=(cell *)(code+(int)func->address);
   } /* if */
   /* check values just copied */
   CHKSTACK();
@@ -2206,7 +2216,7 @@ static const void * const amx_opcodelist[] = {
       frm=pri;
       break;
     case 6:
-      cip=(cell *)(code + (int)pri);
+      cip=(cell *)(code+(int)pri);
       break;
     } /* switch */
     NEXT(cip);
@@ -2301,7 +2311,7 @@ static const void * const amx_opcodelist[] = {
     NEXT(cip);
   op_jrel:
     offs=*cip;
-    cip=(cell *)((unsigned char *)cip + (int)offs + sizeof(cell));
+    cip=(cell *)((unsigned char *)cip+(int)offs + sizeof(cell));
     NEXT(cip);
   op_jzer:
     if (pri==0)
@@ -2749,7 +2759,7 @@ static const void * const amx_opcodelist[] = {
     NEXT(cip);
   op_symbol:
     GETPARAM(offs);
-    cip=(cell *)((unsigned char *)cip + (int)offs);
+    cip=(cell *)((unsigned char *)cip+(int)offs);
     NEXT(cip);
   op_srange:
     SKIPPARAM(2);
@@ -3093,7 +3103,7 @@ int AMXAPI amx_Exec(AMX *amx, cell *retval, int index)
   if (index==AMX_EXEC_MAIN) {
     if (hdr->cip<0)
       return AMX_ERR_INDEX;
-    cip=(cell *)(code + (int)hdr->cip);
+    cip=(cell *)(code+(int)hdr->cip);
   } else if (index==AMX_EXEC_CONT) {
     /* all registers: pri, alt, frm, cip, hea, stk, reset_stk, reset_hea */
     frm=amx->frm;
@@ -3103,14 +3113,14 @@ int AMXAPI amx_Exec(AMX *amx, cell *retval, int index)
     alt=amx->alt;
     reset_stk=amx->reset_stk;
     reset_hea=amx->reset_hea;
-    cip=(cell *)(code + (int)amx->cip);
+    cip=(cell *)(code+(int)amx->cip);
   } else if (index<0) {
     return AMX_ERR_INDEX;
   } else {
     if (index>=(cell)NUMENTRIES(hdr,publics,natives))
       return AMX_ERR_INDEX;
     func=GETENTRY(hdr,publics,index);
-    cip=(cell *)(code + (int)func->address);
+    cip=(cell *)(code+(int)func->address);
   } /* if */
   /* check values just copied */
   CHKSTACK();
@@ -3405,7 +3415,7 @@ int AMXAPI amx_Exec(AMX *amx, cell *retval, int index)
         frm=pri;
         break;
       case 6:
-        cip=(cell *)(code + (int)pri);
+        cip=(cell *)(code+(int)pri);
         break;
       } /* switch */
       break;
@@ -3501,7 +3511,7 @@ int AMXAPI amx_Exec(AMX *amx, cell *retval, int index)
       break;
     case OP_JREL:
       offs=*cip;
-      cip=(cell *)((unsigned char *)cip + (int)offs + sizeof(cell));
+      cip=(cell *)((unsigned char *)cip+(int)offs + sizeof(cell));
       break;
     case OP_JZER:
       if (pri==0)
@@ -3946,7 +3956,7 @@ int AMXAPI amx_Exec(AMX *amx, cell *retval, int index)
       break;
     case OP_SYMBOL:
       GETPARAM(offs);
-      cip=(cell *)((unsigned char *)cip + (int)offs);
+      cip=(cell *)((unsigned char *)cip+(int)offs);
       break;
     case OP_SRANGE:
       SKIPPARAM(2);
@@ -4306,61 +4316,72 @@ int AMXAPI amx_StrLen(const cell *cstr, int *length)
 #endif
 
 #if defined AMX_XXXSTRING || defined AMX_EXEC
+int AMXAPI amx_SetStringLen(cell* dest, const char* source, int length, int pack, int use_wchar, size_t size)
+{ /* the memory blocks should not overlap */
+    int len, i;
+
+    assert_static(UNLIMITED > 0);
+    len = length;
+    if (pack) {
+        /* create a packed string */
+        if (size < UNLIMITED / sizeof(cell) && (size_t)len >= size * sizeof(cell))
+            len = size * sizeof(cell) - 1;
+        dest[len / sizeof(cell)] = 0; /* clear last bytes of last (semi-filled) cell*/
+#if defined AMX_ANSIONLY
+        memcpy(dest, source, len);
+#else
+        if (use_wchar) {
+            for (i = 0; i < len; i++)
+                ((char*)dest)[i] = (char)(((wchar_t*)source)[i]);
+        } else {
+            memcpy(dest, source, len);
+        } /* if */
+#endif
+        /* On Big Endian machines, the characters are well aligned in the
+         * cells; on Little Endian machines, we must swap all cells.
+         */
+        assert(check_endian());
+#if BYTE_ORDER == LITTLE_ENDIAN
+        len /= sizeof(cell);
+        while (len > 0)
+          swapcell((ucell*)&dest[len--]);
+        swapcell((ucell*)&dest[0]);
+#endif
+
+    } else {
+        /* create an unpacked string */
+        if (size < UNLIMITED && (size_t)len >= size)
+            len = size - 1;
+#if defined AMX_ANSIONLY
+        for (i = 0; i < len; i++)
+            dest[i] = (cell)source[i];
+#else
+        if (use_wchar) {
+            for (i = 0; i < len; i++)
+                dest[i] = (cell)(((wchar_t*)source)[i]);
+        } else {
+            for (i = 0; i < len; i++)
+                dest[i] = (cell)(unsigned char)source[i];
+        } /* if */
+#endif
+        dest[len] = 0;
+    } /* if */
+    return AMX_ERR_NONE;
+}
+
 int AMXAPI amx_SetString(cell *dest,const char *source,int pack,int use_wchar,size_t size)
 {                 /* the memory blocks should not overlap */
-  int len, i;
+  int length;
 
-  assert_static(UNLIMITED>0);
+  assert(source!=NULL);
+
   #if defined AMX_ANSIONLY
     (void)use_wchar;
-    len=strlen(source);
+    length = strlen(source);
   #else
-    len= use_wchar ? wcslen((const wchar_t*)source) : strlen(source);
+    length = use_wchar ? wcslen((const wchar_t*)source) : strlen(source);
   #endif
-  if (pack) {
-    /* create a packed string */
-    if (size<UNLIMITED/sizeof(cell) && (size_t)len>=size*sizeof(cell))
-      len=size*sizeof(cell)-1;
-    dest[len/sizeof(cell)]=0;   /* clear last bytes of last (semi-filled) cell*/
-    #if defined AMX_ANSIONLY
-      memcpy(dest,source,len);
-    #else
-      if (use_wchar) {
-        for (i=0; i<len; i++)
-          ((char*)dest)[i]=(char)(((wchar_t*)source)[i]);
-      } else {
-        memcpy(dest,source,len);
-      } /* if */
-    #endif
-    /* On Big Endian machines, the characters are well aligned in the
-     * cells; on Little Endian machines, we must swap all cells.
-     */
-    assert(check_endian());
-    #if BYTE_ORDER==LITTLE_ENDIAN
-      len /= sizeof(cell);
-      while (len>=0)
-        swapcell((ucell *)&dest[len--]);
-    #endif
-
-  } else {
-    /* create an unpacked string */
-    if (size<UNLIMITED && (size_t)len>=size)
-      len=size-1;
-    #if defined AMX_ANSIONLY
-      for (i=0; i<len; i++)
-        dest[i]=(cell)source[i];
-    #else
-      if (use_wchar) {
-        for (i=0; i<len; i++)
-          dest[i]=(cell)(((wchar_t*)source)[i]);
-      } else {
-        for (i=0; i<len; i++)
-          dest[i]=(cell)source[i];
-      } /* if */
-    #endif
-    dest[len]=0;
-  } /* if */
-  return AMX_ERR_NONE;
+    return amx_SetStringLen(dest, source, length, pack, use_wchar, size);
 }
 #endif
 

@@ -203,7 +203,7 @@ extern  "C" {
   #error Unsupported cell size (PAWN_CELL_SIZE)
 #endif
 
-#define UNPACKEDMAX   (((cell)1 << (sizeof(cell)-1)*8) - 1)
+#define UNPACKEDMAX   (((ucell)1 << (sizeof(ucell)-1)*8) - 1)
 #define UNLIMITED     (~1u >> 1)
 #define STKMARGIN     ((cell)(16*sizeof(cell)))
 
@@ -219,10 +219,8 @@ typedef int (AMXAPI *AMX_IDLE)(struct tagAMX *amx, int AMXAPI Exec(struct tagAMX
 
 #if defined _MSC_VER
   #pragma warning(disable:4100)  /* "'%$S' : unreferenced formal parameter" */
-  #pragma warning(disable:4103)  /* disable warning message 4103 that complains
-                                  * about pragma pack in a header file */
-  #pragma warning(disable:4127)  /* "conditional expression is constant"
-                                  * (needed for static_assert) */
+  #pragma warning(disable:4103)  /* disable warning message 4103 that complains about pragma pack in a header file */
+  #pragma warning(disable:4127)  /* "conditional expression is constant" (needed for static_assert) */
   #pragma warning(disable:4996)  /* POSIX name is deprecated */
 #elif defined __GNUC__
 #elif defined __clang__
@@ -517,12 +515,14 @@ int AMXAPI amx_NumTags(AMX *amx, int *number);
 int AMXAPI amx_Push(AMX *amx, cell value);
 int AMXAPI amx_PushArray(AMX *amx, cell *amx_addr, cell **phys_addr, const cell array[], int numcells);
 int AMXAPI amx_PushString(AMX *amx, cell *amx_addr, cell **phys_addr, const char *string, int pack, int use_wchar);
+int AMXAPI amx_PushStringLen(AMX* amx, cell* amx_addr, cell** phys_addr, const char* string, int length, int pack, int use_wchar);
 int AMXAPI amx_RaiseError(AMX *amx, int error);
 int AMXAPI amx_Register(AMX *amx, const AMX_NATIVE_INFO *nativelist, int number);
 int AMXAPI amx_Release(AMX *amx, cell amx_addr);
 int AMXAPI amx_SetCallback(AMX *amx, AMX_CALLBACK callback);
 int AMXAPI amx_SetDebugHook(AMX *amx, AMX_DEBUG debug);
 int AMXAPI amx_SetString(cell *dest, const char *source, int pack, int use_wchar, size_t size);
+int AMXAPI amx_SetStringLen(cell* dest, const char* source, int length, int pack, int use_wchar, size_t size);
 int AMXAPI amx_SetUserData(AMX* amx, long tag, void* ptr);
 int AMXAPI amx_StrLen(const cell *cstring, int *length);
 int AMXAPI amx_UTF8Check(const char *string, int *length);
