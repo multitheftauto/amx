@@ -708,11 +708,11 @@ function SetVehicleParamsForPlayer(vehicle, isObjective, doorsLocked)
 		return
 	end
 	local vehInfo = g_Vehicles[vehID]
+	if isElement(vehInfo.blip) then
+		destroyElement(vehInfo.blip)
+		vehInfo.blip = nil
+	end
 	if isObjective then
-		if isElement(vehInfo.blip) then
-			destroyElement(vehInfo.blip)
-			vehInfo.blip = nil
-		end
 		vehInfo.blip = createBlipAttachedTo(vehicle, 0, 2, 226, 192, 99)
 		setBlipOrdering(vehInfo.blip, 1)
 		vehInfo.blippersistent = true
@@ -2274,22 +2274,21 @@ function colorizeString(string)
 end
 
 function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
-	if dialogid < -1 then
-		return true
-	elseif dialogid == -1 then
-		if msgDialog then
-			guiSetVisible(msgWindow, false)
-			msgDialog = nil
-		end
-		if inputDialog then
-			guiSetVisible(inputWindow, false)
-			inputDialog = nil
-		end
-		if listDialog then
-			guiSetVisible(listWindow, false)
-			listDialog = nil
-			clearListItem()
-		end
+	if msgDialog then
+		guiSetVisible(msgWindow, false)
+		msgDialog = nil
+	end
+	if inputDialog then
+		guiSetVisible(inputWindow, false)
+		inputDialog = nil
+	end
+	if listDialog then
+		guiSetVisible(listWindow, false)
+		listDialog = nil
+		clearListItem()
+	end
+
+	if dialogid == -1 then
 		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
 			showCursor(true)
 		else
@@ -2297,6 +2296,7 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 		end
 		return true
 	end
+
 	showCursor(true)
 	if dialogtype == 0 then
 		createMessageDialog(caption, colorizeString(info), button1, button2)

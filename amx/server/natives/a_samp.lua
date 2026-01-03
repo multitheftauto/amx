@@ -352,6 +352,7 @@ function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnD
 	g_Vehicles[vehID].vehicleIsAlive = true
 	g_Vehicles[vehID].respawndelay = respawnDelay * 1000
 	g_Vehicles[vehID].spawninfo = { x = x, y = y, z = z, angle = angle }
+	g_Vehicles[vehID].engineState = false
 
 	setElementData(vehicle, 'WindowFrontLeft', true)
 	setElementData(vehicle, 'WindowFrontRight', true)
@@ -364,7 +365,6 @@ function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnD
 			for i = 0, 4 do
 				setVehicleLightState(vehicle, i, 0)
 			end
-			g_Vehicles[vehID].engineState = false
 		end
 	end
 

@@ -575,6 +575,7 @@ function respawnStaticVehicle(vehicle)
 	if isTimer(g_Vehicles[vehID].respawntimer) then
 		killTimer(g_Vehicles[vehID].respawntimer)
 	end
+	g_Vehicles[vehID].respawntimer = nil
 
 	local occupants = getVehicleOccupants(vehicle)
 	if occupants then
@@ -583,18 +584,23 @@ function respawnStaticVehicle(vehicle)
 		end
 	end
 
-	g_Vehicles[vehID].respawntimer = nil
-	g_Vehicles[vehID].vehicleIsAlive = true
-
-	setElementData(vehicle, 'WindowFrontLeft', true)
-	setElementData(vehicle, 'WindowFrontRight', true)
-	setElementData(vehicle, 'WindowRearLeft', true)
-	setElementData(vehicle, 'WindowRearRight', true)
-
 	local spawninfo = g_Vehicles[vehID].spawninfo
 	setTimer(
 		function()
 			if not isElement(vehicle) then return end
+			g_Vehicles[vehID].vehicleIsAlive = true
+
+			setElementData(vehicle, 'WindowFrontLeft', true)
+			setElementData(vehicle, 'WindowFrontRight', true)
+			setElementData(vehicle, 'WindowRearLeft', true)
+			setElementData(vehicle, 'WindowRearRight', true)
+
+			SetVehicleParamsEx(false, vehicle, false, false, false, false, false, false, false)
+			setVehicleOverrideLights(vehicle, 0)
+			for i = 2, 5 do
+				setVehicleDoorOpenRatio(vehicle, i, 0)
+			end
+
 			spawnVehicle(vehicle, spawninfo.x, spawninfo.y, spawninfo.z, 0, 0, spawninfo.angle)
 			procCallOnAll('OnVehicleSpawn', vehID)
 		end, 500, 1
