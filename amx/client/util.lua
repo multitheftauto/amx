@@ -62,10 +62,6 @@ server = setmetatable(
 	}
 )
 
-function serverAMXEvent(eventName, ...)
-	server.procCallOnAll(eventName, ...)
-end
-
 function drawBorderText(text, x, y, color, scalex, scaley, font, outlinesize, outlinecolor)
 	local alpha = math.floor(color / 16777216)
 	outlinecolor = outlinecolor or tocolor(0, 0, 0, alpha)

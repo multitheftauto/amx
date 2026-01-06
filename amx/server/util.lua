@@ -14,7 +14,7 @@ local function fndebug(...)
 				end
 				if type(a) == 'userdata' then
 					if getElementType(a) == 'player' then
-						a = getClientName(a)
+						a = getPlayerName(a)
 					else
 						a = 'element:' .. getElementType(a)
 					end
@@ -35,8 +35,7 @@ fndebug(
 --	'setCameraMatrix',
 --	'setCameraInterior',
 --	'setCameraTarget',
---	'setElementInterior',
---	'spawnPlayer'
+--	'setElementInterior'
 	'createObject'
 )
 --]]
@@ -222,13 +221,8 @@ g_EventNames = {
 }
 
 local allowedRPC = {
-	procCallOnAll = true,
-	setCameraMatrix = true,
-	setCameraInterior = true,
-	setElementInterior = true,
-	spawnPlayer = true,
-	syncPlayerWeapons = true,
 	setGarageOpen = true,
+	syncPlayerWeapons = true,
 	requestClass = true,
 	requestSpawn = true
 }

@@ -85,8 +85,8 @@ function joinHandler(player)
 
 	local playerID = addElem(g_Players, player)
 	setElementData(player, 'ID', playerID)
+
 	clientCall(player, 'setAMXVersion', amxVersionString())
-	clientCall(player, 'setPlayerID', playerID)
 
 	-- Keybinds
 	bindKey(player, 'F4', 'down', 'changeclass')
@@ -376,6 +376,18 @@ addEventHandler('onPlayerChat', root,
 	end
 )
 
+addEventHandler('onPlayerWeaponSwitch', root,
+	function(prev, current)
+		procCallOnAll('OnPlayerWeaponSwitch', getElemID(source), current, prev)
+	end
+)
+
+addEventHandler('onPlayerWeaponReload', root,
+	function(weapon, clip, ammo)
+		procCallOnAll('OnPlayerWeaponReload', getElemID(source), weapon, clip, ammo)
+	end
+)
+
 addEvent('onPlayerDamage_Ev', true)
 addEventHandler('onPlayerDamage_Ev', root,
 	function(opponent, givetake, loss, weapon, bodypart)
@@ -397,18 +409,6 @@ addEventHandler('onPlayerDamage_Ev', root,
 			if not opponent then otherID = INVALID_PLAYER_ID end
 			procCallOnAll('OnPlayerTakeDamage', playerID, otherID, float2cell(loss), reason, bodypart)
 		end
-	end
-)
-
-addEventHandler('onPlayerWeaponSwitch', root,
-	function(prev, current)
-		procCallOnAll('OnPlayerWeaponSwitch', getElemID(source), current, prev)
-	end
-)
-
-addEventHandler('onPlayerWeaponReload', root,
-	function(weapon, clip, ammo)
-		procCallOnAll('OnPlayerWeaponReload', getElemID(source), weapon, clip, ammo)
 	end
 )
 
@@ -732,6 +732,16 @@ addEventHandler('onVehicleExplode', root,
 	end
 )
 
+addEvent('onVehicleDamageStatusUpdate_Ev', true)
+addEventHandler('onVehicleDamageStatusUpdate_Ev', root,
+	function(vehicle)
+		local playerID, vehID = getElemID(client), getElemID(vehicle)
+		if not playerID or not g_Vehicles[vehID] then return end
+
+		procCallOnAll('OnVehicleDamageStatusUpdate', vehID, playerID)
+	end
+)
+
 addEvent('onPlayerStuntStart_Ev', true)
 addEventHandler('onPlayerStuntStart_Ev', root,
 	function(vehicle, stuntType)
@@ -752,47 +762,7 @@ addEventHandler('onPlayerStuntFinish_Ev', root,
 	end
 )
 -------------------------------
--- Markers
-
-addEventHandler('onMarkerHit', root,
-	function(elem, dimension)
-		local elemType = getElementType(elem)
-		if elemType == 'player' or elemType == 'vehicle' or elemType == 'ped' then
-			local elemID = getElemID(elem)
-
-			if elemType == 'ped' then
-				if getElementData(elem, 'ActorPed') then
-					elemType = 'actor'
-				else
-					elemType = 'bot'
-				end
-			end
-
-			procCallOnAll('OnMarkerHit', getElemID(source), elemType, elemID, dimension)
-		end
-	end
-)
-
-addEventHandler('onMarkerLeave', root,
-	function(elem, dimension)
-		local elemType = getElementType(elem)
-		if elemType == 'player' or elemType == 'vehicle' or elemType == 'ped' then
-			local elemID = getElemID(elem)
-
-			if elemType == 'ped' then
-				if getElementData(elem, 'ActorPed') then
-					elemType = 'actor'
-				else
-					elemType = 'bot'
-				end
-			end
-
-			procCallOnAll('OnMarkerLeave', getElemID(source), elemType, elemID, dimension)
-		end
-	end
-)
--------------------------------
--- Peds
+-- Bots
 
 addEvent('onBotDamage_Ev', true)
 addEventHandler('onBotDamage_Ev', root,
@@ -843,6 +813,98 @@ addEventHandler('onPedWasted', root,
 
 		setBotState(source, PLAYER_STATE_WASTED)
 		procCallOnAll('OnBotDeath', getElemID(source), killerID, reason, bodypart)
+	end
+)
+-------------------------------
+-- Menus
+
+addEvent('onPlayerSelectedMenuRow_Ev', true)
+addEventHandler('onPlayerSelectedMenuRow_Ev', root,
+	function(selectedRow)
+		local playerID = getElemID(client)
+		if not playerID then return end
+
+		procCallOnAll('OnPlayerSelectedMenuRow', playerID, selectedRow)
+	end
+)
+
+addEvent('onPlayerExitedMenu_Ev', true)
+addEventHandler('onPlayerExitedMenu_Ev', root,
+	function()
+		local playerID = getElemID(client)
+		if not playerID then return end
+
+		procCallOnAll('OnPlayerExitedMenu', playerID)
+	end
+)
+-------------------------------
+-- Checkpoints
+
+addEvent('onPlayerCheckpoint_Ev', true)
+addEventHandler('onPlayerCheckpoint_Ev', root,
+	function(entered)
+		local playerID = getElemID(client)
+		if not playerID then return end
+
+		if entered then
+			procCallOnAll('OnPlayerEnterCheckpoint', playerID)
+		else
+			procCallOnAll('OnPlayerLeaveCheckpoint', playerID)
+		end
+	end
+)
+
+addEvent('onPlayerRaceCheckpoint_Ev', true)
+addEventHandler('onPlayerRaceCheckpoint_Ev', root,
+	function(entered)
+		local playerID = getElemID(client)
+		if not playerID then return end
+
+		if entered then
+			procCallOnAll('OnPlayerEnterRaceCheckpoint', playerID)
+		else
+			procCallOnAll('OnPlayerLeaveRaceCheckpoint', playerID)
+		end
+	end
+)
+-------------------------------
+-- Markers
+
+addEventHandler('onMarkerHit', root,
+	function(elem, dimension)
+		local elemType = getElementType(elem)
+		if elemType == 'player' or elemType == 'vehicle' or elemType == 'ped' then
+			local elemID = getElemID(elem)
+
+			if elemType == 'ped' then
+				if getElementData(elem, 'ActorPed') then
+					elemType = 'actor'
+				else
+					elemType = 'bot'
+				end
+			end
+
+			procCallOnAll('OnMarkerHit', getElemID(source), elemType, elemID, dimension)
+		end
+	end
+)
+
+addEventHandler('onMarkerLeave', root,
+	function(elem, dimension)
+		local elemType = getElementType(elem)
+		if elemType == 'player' or elemType == 'vehicle' or elemType == 'ped' then
+			local elemID = getElemID(elem)
+
+			if elemType == 'ped' then
+				if getElementData(elem, 'ActorPed') then
+					elemType = 'actor'
+				else
+					elemType = 'bot'
+				end
+			end
+
+			procCallOnAll('OnMarkerLeave', getElemID(source), elemType, elemID, dimension)
+		end
 	end
 )
 -------------------------------
@@ -898,6 +960,16 @@ addEventHandler('onPlayerPickUpPickup_Ev', root,
 			-- Jetpack pickup
 			setPedWearingJetpack(client, true)
 		end
+	end
+)
+
+addEvent('onDialogResponse_Ev', true)
+addEventHandler('onDialogResponse_Ev', root,
+	function(dialogID, response, listitem, inputtext)
+		local playerID = getElemID(client)
+		if not playerID or not dialogID then return end
+
+		procCallOnAll('OnDialogResponse', playerID, dialogID, response, listitem, inputtext)
 	end
 )
 
@@ -962,8 +1034,8 @@ addEventHandler('onPlayerChangeNick', root,
 -- Actors
 addEvent('onActorStream_Ev', true)
 addEventHandler('onActorStream_Ev', root,
-	function(actorID, streamed)
-		local playerID = getElemID(client)
+	function(actor, streamed)
+		local playerID, actorID = getElemID(client), getElemID(actor)
 		if not playerID or not g_Actors[actorID] then return end
 
 		if streamed then
@@ -979,8 +1051,8 @@ addEventHandler('onActorStream_Ev', root,
 -- Players
 addEvent('onPlayerStream_Ev', true)
 addEventHandler('onPlayerStream_Ev', root,
-	function(otherID, streamed)
-		local playerID = getElemID(client)
+	function(player, streamed)
+		local playerID, otherID = getElemID(client), getElemID(player)
 		if not playerID or not g_Players[otherID] then return end
 
 		if streamed then
@@ -996,16 +1068,16 @@ addEventHandler('onPlayerStream_Ev', root,
 -- Vehicles
 addEvent('onVehicleStream_Ev', true)
 addEventHandler('onVehicleStream_Ev', root,
-	function(vehicleID, streamed)
-		local playerID = getElemID(client)
-		if not playerID or not g_Vehicles[vehicleID] then return end
+	function(vehicle, streamed)
+		local playerID, vehID = getElemID(client), getElemID(vehicle)
+		if not playerID or not g_Vehicles[vehID] then return end
 
 		if streamed then
-			g_Players[playerID].streamedVehicles[vehicleID] = true
-			procCallOnAll('OnVehicleStreamIn', vehicleID, playerID)
+			g_Players[playerID].streamedVehicles[vehID] = true
+			procCallOnAll('OnVehicleStreamIn', vehID, playerID)
 		else
-			g_Players[playerID].streamedVehicles[vehicleID] = nil
-			procCallOnAll('OnVehicleStreamOut', vehicleID, playerID)
+			g_Players[playerID].streamedVehicles[vehID] = nil
+			procCallOnAll('OnVehicleStreamOut', vehID, playerID)
 		end
 	end
 )
@@ -1013,8 +1085,8 @@ addEventHandler('onVehicleStream_Ev', root,
 -- Bots
 addEvent('onBotStream_Ev', true)
 addEventHandler('onBotStream_Ev', root,
-	function(botID, streamed)
-		local playerID = getElemID(client)
+	function(bot, streamed)
+		local playerID, botID = getElemID(client), getElemID(bot)
 		if not playerID or not g_Bots[botID] then return end
 
 		if streamed then
@@ -1033,3 +1105,15 @@ local function playerKillMessage(killer, weapon, bodypart)
 	cancelEvent()
 end
 addEventHandler('onPlayerKillMessage', root, playerKillMessage)
+
+-- depends on scoreboard resource
+addEvent('onPlayerClickPlayer_Ev', true)
+addEventHandler('onPlayerClickPlayer_Ev', root,
+	function(clickPlayer)
+		local playerID, clickedID = getElemID(client), getElemID(clickPlayer)
+		if not playerID or not g_Players[clickedID] then return end
+
+		-- the last argument is a click source which is always 0
+		procCallOnAll('OnPlayerClickPlayer', playerID, clickedID, 0)
+	end
+)

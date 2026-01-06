@@ -102,10 +102,6 @@ function gamemodeUnload()
 	destroyGlobalElements()
 	setElementAlpha(localPlayer, 255)
 end
-
-function setPlayerID(id)
-	g_PlayerID = id
-end
 -----------------------------
 -- Class selection screen
 
@@ -613,14 +609,14 @@ end
 function OnPlayerEnterCheckpoint(elem)
 	local vehicle = getPedOccupiedVehicle(localPlayer)
 	if (vehicle and elem == vehicle) or (not vehicle and elem == localPlayer) then
-		serverAMXEvent('OnPlayerEnterCheckpoint', g_PlayerID)
+		triggerServerEvent('onPlayerCheckpoint_Ev', localPlayer, true)
 	end
 end
 
 function OnPlayerLeaveCheckpoint(elem)
 	local vehicle = getPedOccupiedVehicle(localPlayer)
 	if (vehicle and elem == vehicle) or (not vehicle and elem == localPlayer) then
-		serverAMXEvent('OnPlayerLeaveCheckpoint', g_PlayerID)
+		triggerServerEvent('onPlayerCheckpoint_Ev', localPlayer, false)
 	end
 end
 
@@ -656,14 +652,14 @@ end
 function OnPlayerEnterRaceCheckpoint(elem)
 	local vehicle = getPedOccupiedVehicle(localPlayer)
 	if (vehicle and elem == vehicle) or (not vehicle and elem == localPlayer) then
-		serverAMXEvent('OnPlayerEnterRaceCheckpoint', g_PlayerID)
+		triggerServerEvent('onPlayerRaceCheckpoint_Ev', localPlayer, true)
 	end
 end
 
 function OnPlayerLeaveRaceCheckpoint(elem)
 	local vehicle = getPedOccupiedVehicle(localPlayer)
 	if (vehicle and elem == vehicle) or (not vehicle and elem == localPlayer) then
-		serverAMXEvent('OnPlayerLeaveRaceCheckpoint', g_PlayerID)
+		triggerServerEvent('onPlayerRaceCheckpoint_Ev', localPlayer, false)
 	end
 end
 
@@ -802,14 +798,14 @@ addEventHandler('onClientElementStreamIn', root,
 			setVehicleWindowOpen(source, 4, not getElementData(source, 'WindowFrontLeft'))
 			setVehicleWindowOpen(source, 5, not getElementData(source, 'WindowRearLeft'))
 
-			triggerServerEvent('onVehicleStream_Ev', localPlayer, getElemID(source), true)
+			triggerServerEvent('onVehicleStream_Ev', localPlayer, source, true)
 		elseif getElementType(source) == 'player' then
-			triggerServerEvent('onPlayerStream_Ev', localPlayer, getElemID(source), true)
+			triggerServerEvent('onPlayerStream_Ev', localPlayer, source, true)
 		elseif getElementType(source) == 'ped' then
 			if getElementData(source, 'ActorPed') then
-				triggerServerEvent('onActorStream_Ev', localPlayer, getElemID(source), true)
+				triggerServerEvent('onActorStream_Ev', localPlayer, source, true)
 			else
-				triggerServerEvent('onBotStream_Ev', localPlayer, getElemID(source), true)
+				triggerServerEvent('onBotStream_Ev', localPlayer, source, true)
 			end
 		end
 	end
@@ -828,14 +824,14 @@ addEventHandler('onClientElementStreamOut', root,
 				vehInfo.blip = nil
 			end
 
-			triggerServerEvent('onVehicleStream_Ev', localPlayer, getElemID(source), false)
+			triggerServerEvent('onVehicleStream_Ev', localPlayer, source, false)
 		elseif getElementType(source) == 'player' then
-			triggerServerEvent('onPlayerStream_Ev', localPlayer, getElemID(source), false)
+			triggerServerEvent('onPlayerStream_Ev', localPlayer, source, false)
 		elseif getElementType(source) == 'ped' then
 			if getElementData(source, 'ActorPed') then
-				triggerServerEvent('onActorStream_Ev', localPlayer, getElemID(source), false)
+				triggerServerEvent('onActorStream_Ev', localPlayer, source, false)
 			else
-				triggerServerEvent('onBotStream_Ev', localPlayer, getElemID(source), false)
+				triggerServerEvent('onBotStream_Ev', localPlayer, source, false)
 			end
 		end
 	end
@@ -893,7 +889,7 @@ local function clientVehicleDamage(attacker, weapon, loss, x, y, z, tire)
 	end
 
 	if driver ~= localPlayer then return end
-	serverAMXEvent('OnVehicleDamageStatusUpdate', getElemID(source), g_PlayerID)
+	triggerServerEvent('onVehicleDamageStatusUpdate_Ev', localPlayer, source)
 end
 addEventHandler('onClientVehicleDamage', root, clientVehicleDamage)
 
@@ -1663,7 +1659,7 @@ function closeMenu()
 end
 
 function exitMenu()
-	serverAMXEvent('OnPlayerExitedMenu', g_PlayerID)
+	triggerServerEvent('onPlayerExitedMenu_Ev', localPlayer)
 	closeMenu()
 end
 
@@ -1740,7 +1736,7 @@ function menuClickHandler(button, state, clickX, clickY)
 	local selectedRow = math.floor((clickY - g_CurrentMenu.y - MENU_TOP_PADDING) / MENU_ITEM_HEIGHT)
 	if not (g_CurrentMenu.disabledrows and table.find(g_CurrentMenu.disabledrows, selectedRow)) then
 		playSoundFrontEnd(1)
-		serverAMXEvent('OnPlayerSelectedMenuRow', g_PlayerID, selectedRow)
+		triggerServerEvent('onPlayerSelectedMenuRow_Ev', localPlayer, selectedRow)
 		closeMenu()
 	else
 		playSoundFrontEnd(4)
@@ -2119,7 +2115,7 @@ function OnListDialogButton1Click(button, state)
 	if button == 'left' then
 		local row, column = guiGridListGetSelectedItem(listGrid)
 		local text = guiGridListGetItemText(listGrid, row, column)
-		serverAMXEvent('OnDialogResponse', g_PlayerID, listDialog, 1, row, text)
+		triggerServerEvent('onDialogResponse_Ev', localPlayer, listDialog, 1, row, text)
 		guiSetVisible(listWindow, false)
 		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
 			showCursor(true)
@@ -2135,7 +2131,7 @@ function OnListDialogButton2Click(button, state)
 	if button == 'left' then
 		local row, column = guiGridListGetSelectedItem(listGrid)
 		local text = guiGridListGetItemText(listGrid, row, column)
-		serverAMXEvent('OnDialogResponse', g_PlayerID, listDialog, 0, row, text)
+		triggerServerEvent('onDialogResponse_Ev', localPlayer, listDialog, 0, row, text)
 		guiSetVisible(listWindow, false)
 		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
 			showCursor(true)
@@ -2149,7 +2145,7 @@ end
 
 function OnInputDialogButton1Click(button, state)
 	if button == 'left' then
-		serverAMXEvent('OnDialogResponse', g_PlayerID, inputDialog, 1, 0, guiGetText(inputEdit))
+		triggerServerEvent('onDialogResponse_Ev', localPlayer, inputDialog, 1, -1, guiGetText(inputEdit))
 		guiSetVisible(inputWindow, false)
 		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
 			showCursor(true)
@@ -2162,7 +2158,7 @@ end
 
 function OnInputDialogButton2Click(button, state)
 	if button == 'left' then
-		serverAMXEvent('OnDialogResponse', g_PlayerID, inputDialog, 0, 0, guiGetText(inputEdit))
+		triggerServerEvent('onDialogResponse_Ev', localPlayer, inputDialog, 0, -1, guiGetText(inputEdit))
 		guiSetVisible(inputWindow, false)
 		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
 			showCursor(true)
@@ -2175,7 +2171,7 @@ end
 
 function OnMessageDialogButton1Click(button, state)
 	if button == 'left' then
-		serverAMXEvent('OnDialogResponse', g_PlayerID, msgDialog, 1, 0, '')
+		triggerServerEvent('onDialogResponse_Ev', localPlayer, msgDialog, 1, -1, '')
 		guiSetVisible(msgWindow, false)
 		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
 			showCursor(true)
@@ -2188,7 +2184,7 @@ end
 
 function OnMessageDialogButton2Click(button, state)
 	if button == 'left' then
-		serverAMXEvent('OnDialogResponse', g_PlayerID, msgDialog, 0, 0, '')
+		triggerServerEvent('onDialogResponse_Ev', localPlayer, msgDialog, 0, -1, '')
 		guiSetVisible(msgWindow, false)
 		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
 			showCursor(true)
@@ -2363,6 +2359,6 @@ end
 -- depends on scoreboard resource
 local function clientPlayerScoreboardClick(selected, cX, cY, clickedColumn)
 	if getElementType(source) ~= 'player' then return end
-	serverAMXEvent('OnPlayerClickPlayer', g_PlayerID, getElemID(source), 0)
+	triggerServerEvent('onPlayerClickPlayer_Ev', localPlayer, source)
 end
 addEventHandler('onClientPlayerScoreboardClick', root, clientPlayerScoreboardClick)
