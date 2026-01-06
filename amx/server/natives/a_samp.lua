@@ -3,9 +3,9 @@
 
 -- replace colors
 function colorizeString(string)
-	return string:gsub("(=?{[0-9A-Fa-f]*})",
+	return string:gsub('(=?{[0-9A-Fa-f]*})',
 	function(colorMatches)
-		colorMatches = colorMatches:gsub("[{}]+", "") -- replace the curly brackets with nothing
+		colorMatches = colorMatches:gsub('[{}]+', '') -- replace the curly brackets with nothing
 		colorMatches = '#' .. colorMatches -- Append to the beginning
 		return colorMatches
 	end)

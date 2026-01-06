@@ -390,7 +390,7 @@ addEventHandler('onPlayerWeaponReload', root,
 
 addEvent('onPlayerDamage_Ev', true)
 addEventHandler('onPlayerDamage_Ev', root,
-	function(opponent, givetake, loss, weapon, bodypart)
+	function(opponent, giveTake, loss, weapon, bodypart)
 		local playerID, otherID = getElemID(client), getElemID(opponent)
 		if not playerID then return end
 
@@ -401,7 +401,7 @@ addEventHandler('onPlayerDamage_Ev', root,
 			reason = weapon
 		end
 
-		if givetake then
+		if giveTake then
 			if not opponent or not g_Players[otherID] or reason > 46 then return end
 			setTimer(procCallOnAll, 1, 1, 'OnPlayerGiveDamage', playerID, otherID, float2cell(loss), reason, bodypart)
 			-- This needs to be just a bit delayed to arrive after OnPlayerWeaponShot
@@ -766,7 +766,7 @@ addEventHandler('onPlayerStuntFinish_Ev', root,
 
 addEvent('onBotDamage_Ev', true)
 addEventHandler('onBotDamage_Ev', root,
-	function(bot, givetake, loss, weapon, bodypart)
+	function(bot, giveTake, loss, weapon, bodypart)
 		local playerID, botID = getElemID(client), getElemID(bot)
 		if not playerID or not g_Bots[botID] then return end
 
@@ -777,7 +777,7 @@ addEventHandler('onBotDamage_Ev', root,
 			reason = weapon
 		end
 
-		if givetake then
+		if giveTake then
 			procCallOnAll('OnBotGiveDamage', botID, playerID, float2cell(loss), reason, bodypart)
 		else
 			setTimer(procCallOnAll, 1, 1, 'OnBotTakeDamage', botID, playerID, float2cell(loss), reason, bodypart)
@@ -965,11 +965,11 @@ addEventHandler('onPlayerPickUpPickup_Ev', root,
 
 addEvent('onDialogResponse_Ev', true)
 addEventHandler('onDialogResponse_Ev', root,
-	function(dialogID, response, listitem, inputtext)
+	function(dialogID, response, listItem, inputText)
 		local playerID = getElemID(client)
 		if not playerID or not dialogID then return end
 
-		procCallOnAll('OnDialogResponse', playerID, dialogID, response, listitem, inputtext)
+		procCallOnAll('OnDialogResponse', playerID, dialogID, response, listItem, inputText)
 	end
 )
 

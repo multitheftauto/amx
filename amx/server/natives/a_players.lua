@@ -906,7 +906,7 @@ function GetAnimationName(amx, index, animLib, libLen, animName, nameLen)
 	local foundKey = lookupAnimByID[index]
 	if not foundKey then return false end
 
-	local animLibPart, animNamePart = foundKey:match("^([^:]+):([^:]+)$")
+	local animLibPart, animNamePart = foundKey:match('^([^:]+):([^:]+)$')
 	if not animLibPart or not animNamePart then return false end
 
 	local copyLen = math.min(#animLibPart, libLen)

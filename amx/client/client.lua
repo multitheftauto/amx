@@ -328,7 +328,7 @@ function camAttachRender()
 			--outputConsole('ped is aiming')
 		end
 
-		--outputConsole(string.format("camAttachRender - Camera Matrix is: CamPos: %f %f %f CamLookAt: %f %f %f", camX, camY, camZ, x1, y1, z1))
+		--outputConsole(string.format('camAttachRender - Camera Matrix is: CamPos: %f %f %f CamLookAt: %f %f %f', camX, camY, camZ, x1, y1, z1))
 	else
 		removeEventHandler('onClientPreRender', root, camAttachRender)
 	end
@@ -415,7 +415,7 @@ function camRender()
 		if isElement(sm.objLookAt) then
 			x2, y2, z2 = getElementPosition(sm.objLookAt)
 		end
-		--outputConsole(string.format("Current Camera Matrix is: CamPos: %f %f %f CamLookAt: %f %f %f", x1, y1, z1, x2, y2, z2))
+		--outputConsole(string.format('Current Camera Matrix is: CamPos: %f %f %f CamLookAt: %f %f %f', x1, y1, z1, x2, y2, z2))
 		setCameraMatrix(x1, y1, z1, x2, y2, z2)
 	else
 		removeEventHandler('onClientPreRender', root, camRender)
@@ -435,13 +435,13 @@ function setupCameraObject(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 end
 
 function InterpolateCameraPos(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
-	--outputConsole(string.format("InterpolateCameraPos called with args %f %f %f %f %f %f %d %d", FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut))
+	--outputConsole(string.format('InterpolateCameraPos called with args %f %f %f %f %f %f %d %d', FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut))
 	sm.objCamPos = setupCameraObject(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	addEventHandler('onClientPreRender', root, camRender)
 end
 
 function InterpolateCameraLookAt(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
-	--outputConsole(string.format("InterpolateCameraLookAt called with args %f %f %f %f %f %f %d %d", FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut))
+	--outputConsole(string.format('InterpolateCameraLookAt called with args %f %f %f %f %f %f %d %d', FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut))
 	sm.objLookAt = setupCameraObject(FromX, FromY, FromZ, ToX, ToY, ToZ, time, cut)
 	addEventHandler('onClientPreRender', root, camRender)
 end
@@ -543,17 +543,17 @@ end
 
 local pAudioStreamSound = nil -- SA-MP can only do one stream at a time anyway
 function PlayAudioStreamForPlayer(url, posX, posY, posZ, distance, usepos)
-	--outputConsole(string.format("PlayAudioStreamForPlayer called with args %s %f %f %f %f %d", url, posX, posY, posZ, distance, usepos))
+	--outputConsole(string.format('PlayAudioStreamForPlayer called with args %s %f %f %f %f %d', url, posX, posY, posZ, distance, usepos))
 	if pAudioStreamSound and isElement(pAudioStreamSound) then -- If there's one already playing, stop it
-		--outputConsole("PlayAudioStreamForPlayer is stopping an audio stream")
+		--outputConsole('PlayAudioStreamForPlayer is stopping an audio stream')
 		stopSound(pAudioStreamSound)
 	end
 
 	if not usepos then
-		--outputConsole(string.format("PlayAudioStreamForPlayer now playing non-3d sound %s", url))
+		--outputConsole(string.format('PlayAudioStreamForPlayer now playing non-3d sound %s', url))
 		pAudioStreamSound = playSound(url)
 	else
-		--outputConsole(string.format("PlayAudioStreamForPlayer now playing 3d sound %s with max dist %d", url, distance))
+		--outputConsole(string.format('PlayAudioStreamForPlayer now playing 3d sound %s with max dist %d', url, distance))
 		pAudioStreamSound = playSound3D(url, posX, posY, posZ)
 		setSoundMaxDistance(pAudioStreamSound, distance)
 	end
@@ -589,10 +589,10 @@ function PlayerPlaySound(soundid, posX, posY, posZ)
 			local audioEvent = soundid - first
 
 			if posX ~= 0.0 or posY ~= 0.0 or posZ ~= 0.0 then
-				--outputConsole(string.format("PlayerPlaySound now playing 3d sound %d (bank %d)", audioEvent, bankIdx))
+				--outputConsole(string.format('PlayerPlaySound now playing 3d sound %d (bank %d)', audioEvent, bankIdx))
 				sfxSound = playSFX3D('script', bankIdx, audioEvent, posX, posY, posZ)
 			else
-				--outputConsole(string.format("PlayerPlaySound now playing non-3d sound %d (bank %d)", audioEvent, bankIdx))
+				--outputConsole(string.format('PlayerPlaySound now playing non-3d sound %d (bank %d)', audioEvent, bankIdx))
 				sfxSound = playSFX('script', bankIdx, audioEvent)
 			end
 			break
@@ -967,14 +967,14 @@ local function getSAMPBoundKey(control)
 end
 
 local textDrawColorMapping = {
-	r = {180, 25, 29},
-	g = {54, 104, 44},
-	b = {50, 60, 127},
-	o = {215, 146, 24},
-	w = {225, 225, 225},
-	y = {226, 192, 99},
-	p = {168, 110, 252},
-	l = {10, 10, 10}
+	r = { 180, 25, 29 },
+	g = { 54, 104, 44 },
+	b = { 50, 60, 127 },
+	o = { 215, 146, 24 },
+	w = { 225, 225, 225 },
+	y = { 226, 192, 99 },
+	p = { 168, 110, 252 },
+	l = { 10, 10, 10 }
 }
 
 local textDrawFonts = {
@@ -1019,11 +1019,11 @@ function initTextDraw(textdraw)
 	g_TextDraws[textdraw.clientTDId] = textdraw
 
 	-- GTA replaces underscores with spaces
-	textdraw.text = textdraw.text:gsub("_", " ")
+	textdraw.text = textdraw.text:gsub('_', ' ')
 
 	-- and also such brackets with stars on these fonts
 	if textdraw.font and (textdraw.font == 0 or textdraw.font == 2) then
-		textdraw.text = textdraw.text:gsub("]", "★")
+		textdraw.text = textdraw.text:gsub(']', '★')
 	end
 
 	local scale = (textdraw.lwidth or 0.48)
@@ -1186,7 +1186,7 @@ function renderTextDraws()
 				end
 
 				dxDrawRectangle(x, sourceY, w * getAspectRatio(), h * getAspectRatio(), boxcolor)
-				--outputConsole(string.format("Drawing textdraw box: sourceX: %f, sourceY: %f %s", sourceX, sourceY, textdraw.text))
+				--outputConsole(string.format('Drawing textdraw box: sourceX: %f, sourceY: %f %s', sourceX, sourceY, textdraw.text))
 			end
 
 			for i, part in pairs(textdraw.parts) do
@@ -1194,7 +1194,7 @@ function renderTextDraws()
 				sourceX = screenWidth - ((DEFAULT_SCREEN_WIDTH - part.x) * (screenWidth * horHudScale))
 				sourceY = screenHeight - ((DEFAULT_SCREEN_HEIGHT - part.y) * (screenHeight * vertHudScale))
 
-				--outputConsole(string.format("text: %s partx: %f, party: %f sourceX: %f, sourceY: %f", part.text, part.x, part.y, sourceX, sourceY))
+				--outputConsole(string.format('text: %s partx: %f, party: %f sourceX: %f, sourceY: %f', part.text, part.x, part.y, sourceX, sourceY))
 
 				if textdraw.shade > 0 then -- Draw the shadow
 					local shade = textdraw.outlinesize > 0 and 0 or textdraw.shade * 2
@@ -1208,8 +1208,7 @@ function renderTextDraws()
 				drawBorderText(
 					part.text, sourceX, sourceY,
 					textdraw.alpha and setcoloralpha(part.color, math.floor(textdraw.alpha * 255)) or part.color,
-					scalex, scaley, font, textdraw.outlinesize,
-					textdraw.outlinecolor
+					scalex, scaley, font, textdraw.outlinesize, textdraw.outlinecolor
 				)
 			end
 		end
@@ -1457,10 +1456,10 @@ function TextDrawPropertyChanged(id, prop, newval, skipInit)
 end
 
 function TextDrawShowForPlayer(id)
-	--outputConsole(string.format("TextDrawShowForPlayer trying to show textdraw with id %d", id))
+	--outputConsole(string.format('TextDrawShowForPlayer trying to show textdraw with id %d', id))
 	local clientTDIdx = findTextDrawHandleByID(id)
 	if clientTDIdx ~= -1 then
-		--outputConsole(string.format("TextDrawShowForPlayer trying to show textdraw with text %s", g_TextDraws[id].text))
+		--outputConsole(string.format('TextDrawShowForPlayer trying to show textdraw with text %s', g_TextDraws[id].text))
 		showTextDraw(g_TextDraws[clientTDIdx])
 	end
 end
@@ -2196,7 +2195,7 @@ function OnMessageDialogButton2Click(button, state)
 end
 
 -- Originally by UAEpro from here: https://forum.multitheftauto.com/topic/33149-colorcodes-in-labels/#comment-335358
-function guiCreateColoredLabel(ax, ay, bx, by,str, parent, relative) -- x, y, width, height
+function guiCreateColoredLabel(ax, ay, bx, by, str, parent, relative) -- x, y, width, height
 	if not relative then
 		relative = true
 	end
@@ -2204,7 +2203,7 @@ function guiCreateColoredLabel(ax, ay, bx, by,str, parent, relative) -- x, y, wi
 	local scrollpane = guiCreateScrollPane(ax, ay, bx, by, relative, parent)
 	--outputConsole('main string:' .. str)
 
-	local pat = "(.-)#(%x%x%x%x%x%x)"
+	local pat = '(.-)#(%x%x%x%x%x%x)'
 	local s, e, cap, col = str:find(pat, 1)
 	local last = 1
 	local labels = {}
@@ -2261,9 +2260,9 @@ end
 
 -- replace colors
 function colorizeString(string)
-	return string:gsub("(=?{[0-9A-Fa-f]*})",
+	return string:gsub('(=?{[0-9A-Fa-f]*})',
 	function(colorMatches)
-		colorMatches = colorMatches:gsub("[{}]+", "") -- replace the curly brackets with nothing
+		colorMatches = colorMatches:gsub('[{}]+', '') -- replace the curly brackets with nothing
 		colorMatches = '#' .. colorMatches -- Append to the beginning
 		return colorMatches
 	end)
@@ -2313,7 +2312,7 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 		-- Process each
 		-- DIALOG_STYLE_LIST
 		if dialogtype == 2 then
-			local items = info:gsub("\t", "        ")
+			local items = info:gsub('\t', '        ')
 			items = items:split('\n')
 			listColumn = guiGridListAddColumn(listGrid, 'List', 0.85)
 			for k, v in ipairs(items) do
