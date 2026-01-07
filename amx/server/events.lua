@@ -330,21 +330,19 @@ function handlePlayerSpawn(player)
 	setPlayerHudComponentVisible(player, 'area_name', g_ShowZoneNames)
 	setPlayerHudComponentVisible(player, 'radar', true)
 
-	if g_Players[playerID].spawnint then
-		setElementInterior(source, g_Players[playerID].spawnint)
-		g_Players[playerID].spawnint = nil
-	else
-		SetPlayerInterior(nil, player, 0)
+	if playerdata.spawnint then
+		setElementInterior(player, playerdata.spawnint)
+		playerdata.spawnint = nil
 	end
 
-	if g_Players[playerID].spawnhealth then
-		setElementHealth(source, g_Players[playerID].spawnhealth)
-		g_Players[playerID].spawnhealth = nil
+	if playerdata.spawnhealth then
+		setElementHealth(player, playerdata.spawnhealth)
+		playerdata.spawnhealth = nil
 	end
 
-	if g_Players[playerID].spawnarmor then
-		setPedArmor(source, g_Players[playerID].spawnarmor)
-		g_Players[playerID].spawnarmor = nil
+	if playerdata.spawnarmor then
+		setPedArmor(player, playerdata.spawnarmor)
+		playerdata.spawnarmor = nil
 	end
 
 	-- wanna see CJ in a white singlet?
@@ -355,18 +353,42 @@ function handlePlayerSpawn(player)
 		setPedWalkingStyle(player, WalkingStyle[skin] or 0)
 	end
 
-	if isTimer(g_Players[playerID].updatetimer) then
-		killTimer(g_Players[playerID].updatetimer)
+	if isTimer(playerdata.updatetimer) then
+		killTimer(playerdata.updatetimer)
 	end
-	g_Players[playerID].updatetimer = setTimer(procCallOnAll, 100, 0, 'OnPlayerUpdate', playerID)
+	playerdata.updatetimer = setTimer(procCallOnAll, 100, 0, 'OnPlayerUpdate', playerID)
 
 	playerdata.vehicle = nil
 	playerdata.specialaction = SPECIAL_ACTION_NONE
 	playerdata.drunklevel = 0
 
 	procCallOnAll('OnPlayerSpawn', playerID)
+	if playerdata.oldint then
+		-- manually call delayed callback, originally called while being not spawned
+		procCallOnAll('OnPlayerInteriorChange', playerID, getElementInterior(player), playerdata.oldint)
+		playerdata.oldint = nil
+	end
 	setPlayerState(player, PLAYER_STATE_ONFOOT)
 end
+
+addEventHandler('onElementInteriorChange', root,
+	function(oldInterior, newInterior)
+		if getElementType(source) ~= 'player' then return end
+
+		local playerID = getElemID(source)
+		local playerdata = g_Players[playerID]
+
+		if playerdata.spawnint then return end
+
+		-- call OnPlayerInteriorChange only if player spawned
+		if playerdata.state ~= PLAYER_STATE_WASTED and playerdata.state ~= PLAYER_STATE_NONE then
+			procCallOnAll('OnPlayerInteriorChange', playerID, newInterior, oldInterior)
+		else -- otherwise make it to be called after onPlayerSpawn event
+			-- it's necessary to replicate SA-MP callbacks order
+			playerdata.oldint = oldInterior
+		end
+	end
+)
 
 addEventHandler('onPlayerChat', root,
 	function(msg, type)
@@ -480,6 +502,10 @@ addEventHandler('onPlayerWasted', root,
 		else
 			setTimer(spawnPlayerBySelectedClass, 3000, 1, source, false)
 		end
+
+		g_Players[playerID].spawnint = nil
+		g_Players[playerID].spawnhealth = nil
+		g_Players[playerID].spawnarmor = nil
 
 		if isTimer(g_Players[playerID].updatetimer) then
 			killTimer(g_Players[playerID].updatetimer)

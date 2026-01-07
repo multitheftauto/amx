@@ -88,14 +88,13 @@ end
 
 function SetPlayerInterior(amx, player, interior)
 	local playerID = getElemID(player)
+	if not g_Players[playerID] then
+		return false
+	end
 	if g_Players[playerID].viewingintro then
 		return false
 	end
-	local oldInt = getElementInterior(player)
 	setElementInterior(player, interior)
-	if interior ~= oldInt then
-		procCallOnAll('OnPlayerInteriorChange', playerID, interior, oldInt)
-	end
 	return true
 end
 
@@ -104,7 +103,15 @@ function GetPlayerInterior(amx, player)
 end
 
 function SetPlayerHealth(amx, player, health)
-	return setElementHealth(player, health)
+	local playerID = getElemID(player)
+	if not g_Players[playerID] then
+		return false
+	end
+	if g_Players[playerID].state == PLAYER_STATE_SPECTATING then
+		return false
+	end
+	setElementHealth(player, health)
+	return true
 end
 
 function GetPlayerHealth(amx, player, refHealth)
@@ -239,9 +246,11 @@ function SetPlayerDrunkLevel(amx, player, level)
 end
 
 function SetPlayerColor(amx, player, r, g, b)
+	local playerdata = g_Players[getElemID(player)]
+	if not playerdata then return false end
+
 	setPlayerNametagColor(player, r, g, b)
 
-	local playerdata = g_Players[getElemID(player)]
 	if g_PlayerMarkersMode ~= 0 and playerdata.blip then
 		setBlipColor(playerdata.blip, r, g, b, 255)
 	end
@@ -286,6 +295,8 @@ end
 
 function GetPlayerWeaponData(amx, player, slot, refWeapon, refAmmo)
 	local playerdata = g_Players[getElemID(player)]
+	if not playerdata then return false end
+
 	local weapon = playerdata.weapons and playerdata.weapons[slot]
 	if weapon then
 		amx.memDAT[refWeapon], amx.memDAT[refAmmo] = weapon.id, weapon.ammo
