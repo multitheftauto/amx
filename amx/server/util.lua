@@ -904,6 +904,19 @@ function string:split(sep)
 	return result
 end
 
+function colorizeString(string)
+	return string:gsub('(=?{[0-9A-Fa-f]*})',
+	function(colorMatches)
+		-- replace the curly brackets with nothing
+		colorMatches = colorMatches:gsub('[{}]+', '')
+
+		-- Append to the beginning
+		colorMatches = '#' .. colorMatches
+
+		return colorMatches
+	end)
+end
+
 function cell2color(val)
 	local r = bitExtract(val, 24, 8)
 	local g = bitExtract(val, 16, 8)

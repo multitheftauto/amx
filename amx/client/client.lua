@@ -1463,28 +1463,6 @@ function TextDrawShowForPlayer(id)
 		showTextDraw(g_TextDraws[clientTDIdx])
 	end
 end
-
-function displayFadingMessage(text, r, g, b, fadeInTime, stayTime, fadeOutTime)
-	local lineHeight = 40
-	local label = guiCreateLabel(screenWidth, screenHeight, 500, lineHeight, text, false)
-	local width = guiLabelGetTextExtent(label)
-	guiSetPosition(label, screenWidth / 2 - width / 2, 3 * screenHeight / 4, false)
-	guiSetSize(label, width, lineHeight, false)
-	guiSetAlpha(label, 0)
-	if r and g and b then
-		guiLabelSetColor(label, r, g, b)
-	end
-	local anim = Animation.createNamed('fadingLabels')
-	anim:addPhase(
-		{ elem = label,
-			Animation.presets.guiFadeIn(fadeInTime or 1000),
-			{ time = stayTime or 3000 },
-			Animation.presets.guiFadeOut(fadeOutTime or 1000),
-			destroyElement
-		}
-	)
-	anim:play()
-end
 -----------------------------
 -- Menus
 
@@ -2216,7 +2194,7 @@ function guiCreateColoredLabel(ax, ay, bx, by, str, parent, relative) -- x, y, w
 		if (s ~= 1) or cap ~= '' then
 			--outputConsole('guiCreateColoredLabel: ' .. cap)
 
-			lbl = guiCreateLabel(ax + incx, ay + incy, 1.0, by, cap, relative, scrollpane)
+			lbl = guiCreateLabel(ax + incx, ay + incy, bx, by, cap, relative, scrollpane)
 			guiLabelSetHorizontalAlign(lbl, 'left')
 			table.insert(labels, lbl)
 			if not r then r = 255 end
@@ -2248,7 +2226,8 @@ function guiCreateColoredLabel(ax, ay, bx, by, str, parent, relative) -- x, y, w
 	end
 	if (last <= #str) then
 		cap = str:sub(last)
-		lbl2 = guiCreateLabel(ax + incx, ay + incy, 1.0, by, cap, relative, scrollpane)
+		lbl2 = guiCreateLabel(ax + incx, ay + incy, bx, by, cap, relative, scrollpane)
+		guiLabelSetHorizontalAlign(lbl, 'left')
 		table.insert(labels, lbl2)
 		if not r then r = 255 end
 		if not g then g = 255 end
@@ -2256,16 +2235,6 @@ function guiCreateColoredLabel(ax, ay, bx, by, str, parent, relative) -- x, y, w
 		guiLabelSetColor(lbl2, r, g, b)
 	end
 	return labels
-end
-
--- replace colors
-function colorizeString(string)
-	return string:gsub('(=?{[0-9A-Fa-f]*})',
-	function(colorMatches)
-		colorMatches = colorMatches:gsub('[{}]+', '') -- replace the curly brackets with nothing
-		colorMatches = '#' .. colorMatches -- Append to the beginning
-		return colorMatches
-	end)
 end
 
 function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
@@ -2293,6 +2262,8 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 	end
 
 	showCursor(true)
+	caption = caption:gsub('(=?{[0-9A-Fa-f]*})', '')
+
 	if dialogtype == 0 then
 		createMessageDialog(caption, colorizeString(info), button1, button2)
 		guiSetVisible(msgWindow, true)

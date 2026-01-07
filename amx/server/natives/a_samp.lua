@@ -1,16 +1,6 @@
 ----------------------------------------------
 -- Start of SA-MP API implementation
 
--- replace colors
-function colorizeString(string)
-	return string:gsub('(=?{[0-9A-Fa-f]*})',
-	function(colorMatches)
-		colorMatches = colorMatches:gsub('[{}]+', '') -- replace the curly brackets with nothing
-		colorMatches = '#' .. colorMatches -- Append to the beginning
-		return colorMatches
-	end)
-end
-
 function SendClientMessage(amx, player, r, g, b, a, message)
 	if message:len() > 75 and message:match('^%-+$') then
 		message = ('-'):rep(75)

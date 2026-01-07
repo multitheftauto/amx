@@ -62,6 +62,28 @@ server = setmetatable(
 	}
 )
 
+function displayFadingMessage(text, r, g, b, fadeInTime, stayTime, fadeOutTime)
+	local lineHeight = 40
+	local label = guiCreateLabel(screenWidth, screenHeight, 500, lineHeight, text, false)
+	local width = guiLabelGetTextExtent(label)
+	guiSetPosition(label, screenWidth / 2 - width / 2, 3 * screenHeight / 4, false)
+	guiSetSize(label, width, lineHeight, false)
+	guiSetAlpha(label, 0)
+	if r and g and b then
+		guiLabelSetColor(label, r, g, b)
+	end
+	local anim = Animation.createNamed('fadingLabels')
+	anim:addPhase(
+		{ elem = label,
+			Animation.presets.guiFadeIn(fadeInTime or 1000),
+			{ time = stayTime or 3000 },
+			Animation.presets.guiFadeOut(fadeOutTime or 1000),
+			destroyElement
+		}
+	)
+	anim:play()
+end
+
 function drawBorderText(text, x, y, color, scalex, scaley, font, outlinesize, outlinecolor)
 	local alpha = math.floor(color / 16777216)
 	outlinecolor = outlinecolor or tocolor(0, 0, 0, alpha)
@@ -257,6 +279,19 @@ function string:split(sep, plain)
 		from = nextfrom and nextfrom + 1
 	until not to
 	return result
+end
+
+function colorizeString(string)
+	return string:gsub('(=?{[0-9A-Fa-f]*})',
+	function(colorMatches)
+		-- replace the curly brackets with nothing
+		colorMatches = colorMatches:gsub('[{}]+', '')
+
+		-- Append to the beginning
+		colorMatches = '#' .. colorMatches
+
+		return colorMatches
+	end)
 end
 
 function setcoloralpha(color, alpha)
