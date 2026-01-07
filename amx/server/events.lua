@@ -26,8 +26,8 @@ function gameModeInit(player)
 	setPlayerHudComponentVisible(player, 'radar', false)
 	setPlayerNametagShowing(player, false)
 	local r, g, b = math.random(50, 255), math.random(50, 255), math.random(50, 255)
-	ShowPlayerMarker(false, player, g_PlayerMarkersMode)
-	SetPlayerColor(false, player, r, g, b)
+	ShowPlayerMarker(nil, player, g_PlayerMarkersMode)
+	SetPlayerColor(nil, player, r, g, b)
 	setElementData(player, 'Score', 0)
 	toggleAllControls(player, false, true, false)
 	clientCall(player, 'showIntroScene')
@@ -157,11 +157,8 @@ end
 function mtaKeyStateChange(player, key, state)
 	if state == 'up' then
 		procCallOnAll('OnPlayerKeyUp', getElemID(player), key)
-		return
-	end
-	if state == 'down' then
+	elseif state == 'down' then
 		procCallOnAll('OnPlayerKeyDown', getElemID(player), key)
-		return
 	end
 end
 
@@ -272,8 +269,7 @@ function spawnPlayerBySelectedClass(player, x, y, z, r)
 	if not isElement(player) then
 		return
 	end
-	local playerID = getElemID(player)
-	local playerdata = g_Players[playerID]
+	local playerdata = g_Players[getElemID(player)]
 	playerdata.viewingintro = nil
 	playerdata.doingclasssel = nil
 	local spawninfo = playerdata.spawninfo or (g_PlayerClasses and g_PlayerClasses[playerdata.selectedclass])
@@ -290,6 +286,11 @@ function spawnPlayerBySelectedClass(player, x, y, z, r)
 	if x then
 		spawninfo = table.shallowcopy(spawninfo)
 		spawninfo[1], spawninfo[2], spawninfo[3], spawninfo[4] = x, y, z, r or spawninfo[4]
+	end
+	if playerdata.state ~= PLAYER_STATE_WASTED and playerdata.state ~= PLAYER_STATE_NONE then
+		playerdata.spawnint = getElementInterior(player)
+		playerdata.spawnhealth = getElementHealth(player)
+		playerdata.spawnarmor = getPedArmor(player)
 	end
 	spawnPlayer(player, unpack(spawninfo))
 	setPlayerTeam(player, spawninfo[8] or nil)
@@ -329,8 +330,22 @@ function handlePlayerSpawn(player)
 	setPlayerHudComponentVisible(player, 'area_name', g_ShowZoneNames)
 	setPlayerHudComponentVisible(player, 'radar', true)
 
-	procCallOnAll('OnPlayerSpawn', playerID)
-	setPlayerState(player, PLAYER_STATE_ONFOOT)
+	if g_Players[playerID].spawnint then
+		setElementInterior(source, g_Players[playerID].spawnint)
+		g_Players[playerID].spawnint = nil
+	else
+		SetPlayerInterior(nil, player, 0)
+	end
+
+	if g_Players[playerID].spawnhealth then
+		setElementHealth(source, g_Players[playerID].spawnhealth)
+		g_Players[playerID].spawnhealth = nil
+	end
+
+	if g_Players[playerID].spawnarmor then
+		setPedArmor(source, g_Players[playerID].spawnarmor)
+		g_Players[playerID].spawnarmor = nil
+	end
 
 	-- wanna see CJ in a white singlet?
 	addPedClothes(player, 'vest', 'vest', 0)
@@ -348,6 +363,9 @@ function handlePlayerSpawn(player)
 	playerdata.vehicle = nil
 	playerdata.specialaction = SPECIAL_ACTION_NONE
 	playerdata.drunklevel = 0
+
+	procCallOnAll('OnPlayerSpawn', playerID)
+	setPlayerState(player, PLAYER_STATE_ONFOOT)
 end
 
 addEventHandler('onPlayerChat', root,
@@ -490,16 +508,17 @@ addEventHandler('onPlayerQuit', root,
 		g_PlayerTextDraws[source] = nil
 
 		local playerID = getElemID(source)
+		procCallOnAll('OnPlayerDisconnect', playerID, quitReasons[reason])
 
 		for i, playerdata in pairs(g_Players) do
 			playerdata.streamedPlayers[playerID] = nil
 		end
 
-		procCallOnAll('OnPlayerDisconnect', playerID, quitReasons[reason])
 		if g_Players[playerID].blip then
 			destroyElement(g_Players[playerID].blip)
 			g_Players[playerID].blip = nil
 		end
+
 		if isTimer(g_Players[playerID].updatetimer) then
 			killTimer(g_Players[playerID].updatetimer)
 		end
@@ -595,7 +614,7 @@ function respawnStaticVehicle(vehicle)
 			setElementData(vehicle, 'WindowRearLeft', true)
 			setElementData(vehicle, 'WindowRearRight', true)
 
-			SetVehicleParamsEx(false, vehicle, false, false, false, false, false, false, false)
+			SetVehicleParamsEx(nil, vehicle, false, false, false, false, false, false, false)
 			setVehicleOverrideLights(vehicle, 0)
 			for i = 2, 5 do
 				setVehicleDoorOpenRatio(vehicle, i, 0)
@@ -683,7 +702,7 @@ addEventHandler('onVehicleExit', root,
 		local _, occupant = occupants and next(occupants)
 		if occupant then return end
 
-		if g_Vehicles[vehID] then
+		if g_Vehicles[vehID] and g_Vehicles[vehID].vehicleIsAlive then
 			if isTimer(g_Vehicles[vehID].respawntimer) then
 				killTimer(g_Vehicles[vehID].respawntimer)
 			end

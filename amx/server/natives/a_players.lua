@@ -1202,6 +1202,7 @@ function TogglePlayerSpectating(amx, player, enable)
 		toggleAllControls(player, false, true, false)
 		setPedWeaponSlot(player, 0)
 		setElementAlpha(player, 0)
+		setElementHealth(player, 100)
 		setElementCollisionsEnabled(player, false)
 		setPlayerHudComponentVisible(player, 'radar', false)
 		setPlayerState(player, PLAYER_STATE_SPECTATING)
@@ -1225,6 +1226,10 @@ function TogglePlayerSpectating(amx, player, enable)
 				outputDebugString('Not allowed to select a class', 1)
 				setPlayerState(player, PLAYER_STATE_SPAWNED)
 			end
+		elseif playerdata.doingclasssel then
+			-- Call requestSpawn instead so we clear up any binds
+			-- since there's a workaround in SA-MP to skip the spawn selection screen
+			requestSpawn(player, false, false)
 		else
 			spawnPlayerBySelectedClass(player)
 		end
