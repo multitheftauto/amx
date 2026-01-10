@@ -550,7 +550,7 @@ static cell AMX_NATIVE_CALL n_fwrite(AMX *amx, const cell *params)
   if ((ucell)*cptr>UNPACKEDMAX) {
     /* the string is packed, write it as an ASCII/ANSI string */
     if ((str=(char*)alloca(len + 1))!=NULL) {
-      amx_GetString(str,cptr,0,len);
+      amx_GetString(str,cptr,0,len+1);
       r=fputs(str,f);
     } /* if */
   } else {
