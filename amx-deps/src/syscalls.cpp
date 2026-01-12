@@ -80,13 +80,13 @@ struct NativeGenerator {
 		boundNativeNames[index] = &BoundNativeName;
 		boundNatives[index] = reinterpret_cast<AMX_NATIVE>(&DoNative);
 
-		NativeGenerator<index + 1>::Generate();
+		if constexpr (index + 1 < MAX_SAMP_NATIVES) {
+			NativeGenerator<index + 1>::Generate();
+		}
 	}
 };
 
-template<> struct NativeGenerator<MAX_SAMP_NATIVES> {
-	static void Generate() {}
-};
+template<> struct NativeGenerator<MAX_SAMP_NATIVES> {};
 
 template<size_t index>
 const char* NativeGenerator<index>::BoundNativeName = nullptr;
