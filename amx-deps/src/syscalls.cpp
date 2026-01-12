@@ -86,7 +86,12 @@ struct NativeGenerator {
 	}
 };
 
-template<> struct NativeGenerator<MAX_SAMP_NATIVES> {};
+template<> struct NativeGenerator<0> {
+	static void Generate() {}
+};
+template<> struct NativeGenerator<MAX_SAMP_NATIVES> {
+	static void Generate() {}
+};
 
 template<size_t index>
 const char* NativeGenerator<index>::BoundNativeName = nullptr;
@@ -509,3 +514,4 @@ int amx_SAMPInit(AMX *amx) {
 
 	return amx_Register(amx, sampNatives, -1);
 }
+
