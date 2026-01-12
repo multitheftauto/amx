@@ -521,7 +521,7 @@ static cell AMX_NATIVE_CALL n_fopen(AMX *amx, const cell *params)
 static cell AMX_NATIVE_CALL n_fclose(AMX *amx, const cell *params)
 {
   FILE* f = (FILE*)params[1];
-  if (!f) {
+  if (!f || fileno(f) == -1) {
     return 0;
   }
   (void)amx;
@@ -532,7 +532,7 @@ static cell AMX_NATIVE_CALL n_fclose(AMX *amx, const cell *params)
 static cell AMX_NATIVE_CALL n_fwrite(AMX *amx, const cell *params)
 {
   FILE* f = (FILE*)params[1];
-  if (!f) {
+  if (!f || fileno(f) == -1) {
     return 0;
   }
 
@@ -564,7 +564,7 @@ static cell AMX_NATIVE_CALL n_fwrite(AMX *amx, const cell *params)
 static cell AMX_NATIVE_CALL n_fread(AMX *amx, const cell *params)
 {
   FILE* f = (FILE*)params[1];
-  if (!f) {
+  if (!f || fileno(f) == -1) {
     return 0;
   }
 
@@ -604,7 +604,7 @@ static cell AMX_NATIVE_CALL n_fread(AMX *amx, const cell *params)
 static cell AMX_NATIVE_CALL n_fputchar(AMX *amx, const cell *params)
 {
   FILE* f = (FILE*)params[1];
-  if (!f) {
+  if (!f || fileno(f) == -1) {
     return 0;
   }
 
@@ -628,7 +628,7 @@ static cell AMX_NATIVE_CALL n_fputchar(AMX *amx, const cell *params)
 static cell AMX_NATIVE_CALL n_fgetchar(AMX *amx, const cell *params)
 {
   FILE* f = (FILE*)params[1];
-  if (!f) {
+  if (!f || fileno(f) == -1) {
     return 0;
   }
 
@@ -663,7 +663,7 @@ static cell AMX_NATIVE_CALL n_fgetchar(AMX *amx, const cell *params)
 static cell AMX_NATIVE_CALL n_fblockwrite(AMX *amx, const cell *params)
 {
   FILE* f = (FILE*)params[1];
-  if (!f) {
+  if (!f || fileno(f) == -1) {
     return 0;
   }
 
@@ -688,7 +688,7 @@ static cell AMX_NATIVE_CALL n_fblockwrite(AMX *amx, const cell *params)
 static cell AMX_NATIVE_CALL n_fblockread(AMX *amx, const cell *params)
 {
   FILE* f = (FILE*)params[1];
-  if (!f) {
+  if (!f || fileno(f) == -1) {
     return 0;
   }
 
@@ -721,7 +721,7 @@ static cell AMX_NATIVE_CALL n_ftemp(AMX *amx, const cell *params)
 static cell AMX_NATIVE_CALL n_fseek(AMX *amx, const cell *params)
 {
   FILE* f = (FILE*)params[1];
-  if (!f) {
+  if (!f || fileno(f) == -1) {
     return 0;
   }
 
@@ -813,7 +813,7 @@ static cell AMX_NATIVE_CALL n_frename(AMX *amx, const cell *params)
 static cell AMX_NATIVE_CALL n_flength(AMX *amx, const cell *params)
 {
   FILE* f = (FILE*)params[1];
-  if (!f) {
+  if (!f || fileno(f) == -1) {
     return 0;
   }
 
