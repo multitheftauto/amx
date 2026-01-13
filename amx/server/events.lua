@@ -565,6 +565,10 @@ addEventHandler('onResourceStart', resourceRoot,
 	Now it's also used for updating players drunk level (decrease it over time)
 ]]
 function checkAndUpdatePlayers()
+	if not getRunningGameMode() then
+		return
+	end
+
 	for i, data in pairs(g_Players) do
 		local state = getPlayerState(data.elem)
 
