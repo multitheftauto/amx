@@ -70,31 +70,32 @@ AMX_NATIVE boundNatives[MAX_SAMP_NATIVES];
 
 template<size_t index>
 struct NativeGenerator {
-	static const char* BoundNativeName;
+    static const char* BoundNativeName;
+    static cell AMX_NATIVE_CALL DoNative(AMX* amx, const cell* params) {
+        return n_samp(amx, params, BoundNativeName);
+    }
 
-	static cell AMX_NATIVE_CALL DoNative(AMX* amx, const cell* params) {
-		return n_samp(amx, params, BoundNativeName);
-	}
-
-	static void Generate() {
-		boundNativeNames[index] = &BoundNativeName;
-		boundNatives[index] = reinterpret_cast<AMX_NATIVE>(&DoNative);
-
-		if constexpr (index + 1 < MAX_SAMP_NATIVES) {
-			NativeGenerator<index + 1>::Generate();
-		}
-	}
-};
-
-template<> struct NativeGenerator<0> {
-	static void Generate() {}
-};
-template<> struct NativeGenerator<MAX_SAMP_NATIVES> {
-	static void Generate() {}
+    static void Register() {
+        boundNativeNames[index] = &BoundNativeName;
+        boundNatives[index] = reinterpret_cast<AMX_NATIVE>(&DoNative);
+    }
 };
 
 template<size_t index>
 const char* NativeGenerator<index>::BoundNativeName = nullptr;
+
+template<size_t Start, size_t End>
+struct RecursiveRegister {
+    static void Run() {
+        if constexpr (Start == End) {
+            NativeGenerator<Start>::Register();
+        } else {
+            constexpr size_t Mid = Start + (End - Start) / 2;
+            RecursiveRegister<Start, Mid>::Run();
+            RecursiveRegister<Mid + 1, End>::Run();
+        }
+    }
+};
 
 int callLuaMTRead(lua_State *luaVM) {
 	luaL_checktype(luaVM, 1, LUA_TTABLE);
@@ -468,7 +469,7 @@ void initSAMPSyscalls() {
 	if(!mainVM || sampNatives)
 		return;
 
-	NativeGenerator<0>::Generate();
+	RecursiveRegister<0, MAX_SAMP_NATIVES - 1>::Run();
 
 	lua_getglobal(mainVM, "g_SAMPSyscallPrototypes");
 	int numNatives = 0;
@@ -514,4 +515,3 @@ int amx_SAMPInit(AMX *amx) {
 
 	return amx_Register(amx, sampNatives, -1);
 }
-
