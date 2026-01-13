@@ -146,15 +146,6 @@ function getElemID(elem)
 	return elem and isElement(elem) and getElementData(elem, 'amx.id')
 end
 
-function atNextFrame(callback, ...)
-	local args = { ... }
-	local function fn()
-		callback(unpack(args))
-		removeEventHandler('onClientRender', root, fn)
-	end
-	addEventHandler('onClientRender', root, fn)
-end
-
 function table.find(t, ...)
 	local args = { ... }
 	if #args == 0 then
