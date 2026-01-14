@@ -61,8 +61,6 @@ static cell AMX_NATIVE_CALL n_samp(AMX *amx, const cell *params, const char* fnN
 	}
 }
 
-
-
 constexpr size_t MAX_SAMP_NATIVES = 700; // Should be enough for now
 
 const char** boundNativeNames[MAX_SAMP_NATIVES];
@@ -70,31 +68,31 @@ AMX_NATIVE boundNatives[MAX_SAMP_NATIVES];
 
 template<size_t index>
 struct NativeGenerator {
-    static const char* BoundNativeName;
-    static cell AMX_NATIVE_CALL DoNative(AMX* amx, const cell* params) {
-        return n_samp(amx, params, BoundNativeName);
-    }
+	static const char* BoundNativeName;
 
-    static void Register() {
-        boundNativeNames[index] = &BoundNativeName;
-        boundNatives[index] = reinterpret_cast<AMX_NATIVE>(&DoNative);
-    }
+	static cell AMX_NATIVE_CALL DoNative(AMX* amx, const cell* params) {
+		return n_samp(amx, params, BoundNativeName);
+	}
 };
 
 template<size_t index>
 const char* NativeGenerator<index>::BoundNativeName = nullptr;
 
 template<size_t Start, size_t End>
-struct RecursiveRegister {
-    static void Run() {
-        if constexpr (Start == End) {
-            NativeGenerator<Start>::Register();
-        } else {
-            constexpr size_t Mid = Start + (End - Start) / 2;
-            RecursiveRegister<Start, Mid>::Run();
-            RecursiveRegister<Mid + 1, End>::Run();
-        }
-    }
+struct GenerateRange {
+	static void Generate() {
+		constexpr size_t Mid = (Start + End) / 2;
+		GenerateRange<Start, Mid>::Generate();
+		GenerateRange<Mid + 1, End>::Generate();
+	}
+};
+
+template <size_t Index>
+struct GenerateRange<Index, Index> {
+	static void Generate() {
+		boundNativeNames[Index] = &NativeGenerator<Index>::BoundNativeName;
+		boundNatives[Index] = reinterpret_cast<AMX_NATIVE>(&NativeGenerator<Index>::DoNative);
+	}
 };
 
 int callLuaMTRead(lua_State *luaVM) {
@@ -469,7 +467,7 @@ void initSAMPSyscalls() {
 	if(!mainVM || sampNatives)
 		return;
 
-	RecursiveRegister<0, MAX_SAMP_NATIVES - 1>::Run();
+	GenerateRange<0, MAX_SAMP_NATIVES - 1>::Generate();
 
 	lua_getglobal(mainVM, "g_SAMPSyscallPrototypes");
 	int numNatives = 0;
