@@ -32,6 +32,7 @@
     <script src="client/samp_nametags.lua" type="client" />
     <script src="client/map_waypoint.lua" type="client" />
     <script src="client/garages.lua" type="client" />
+    <script src="client/samp_chatbubbles.lua" type="client" />
 
     <!-- 
         attachToBones: Credit to Tekken (also known as mihayy5)
@@ -59,3 +60,4 @@
         <setting name="plugins" value="" />
     </settings>
 </meta>
+
