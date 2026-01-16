@@ -832,7 +832,11 @@ function SetPlayerChatBubble(amx, player, text, color, dist, exptime)
         return false
     end
 
-	triggerClientEvent(root, "onChatBubbleRequested", player, player, text, color, dist, exptime)
+	for _, plr in ipairs(getElementsByType('player')) do
+		if isElementStreamedIn(plr) then
+	        triggerClientEvent(root, "onChatBubbleRequested", plr, player, text, color, dist, exptime)
+		end
+	end
 	return true
 end
 
