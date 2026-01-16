@@ -24,22 +24,6 @@ addEventHandler("onChatBubbleRequested", root, function(player, text, colour, di
 end)
 
 addEventHandler("onClientRender", root, function()
-    local text, colour, dist, exptime, zOffset = nil
-    for targetPlayer, data in pairs(g_Players) do
-        if isElement(targetPlayer) and isElementStreamedIn(targetPlayer) then
-            for key, bubble in pairs(data.pvars) do
-                if getTickCount() > bubble.expires then
-                    data.pvars[key] = nil
-                else
-				    text = bubble.text
-					colour = bubble.colour
-					zOffset = bubble.zOffset
-					exptime = bubble.expires
-					dist = bubble.drawDist
-                end
-			end
-		end
-	end
 	local chatBubbleTimer = nil
 	local function destroyDisplay(serverDisplay, dspText, targetPlayer, forPlayer)
 	    textDisplayRemoveObserver(serverDisplay, forPlayer)
@@ -51,47 +35,50 @@ addEventHandler("onClientRender", root, function()
 		    killTimer(chatBubbleTimer)
 		end
 	end
-	
+
 	chatBubbleTimer = setTimer(function()
-		local bx, by, bz = getPedBonePosition(localPlayer, 8)
-		local sx, sy = getScreenFromWorldPosition(bx, by, bz + zOffset)
-		local targetPos = Vector3(sx, sy, sz)
-		for _, plr in ipairs(getElementsByType('player')) do
-		    if isElementStreamedIn(plr) then
-				local cx, cy, cz = getCameraMatrix(plr)
+		local text, colour, dist, exptime, zOffset
+		local data = getPlayerData(localPlayer)
+		for key, bubble in pairs(data.pvars) do
+			if getTickCount() > bubble.expires then
+				data.pvars[key] = nil
+			else
+		        local bx, by, bz = getPedBonePosition(localPlayer, 8)
+		        local sx, sy = getScreenFromWorldPosition(bx, by, bz + (bubble.zOffset or 0.7))
+		        local targetPos = Vector3(sx, sy, sz)
+				local cx, cy, cz = getCameraMatrix(localPlayer)
 				local camPos = Vector3(cx, cy, cz)
 
-				g_Players[plr].pvars = {}	
 				if targetPos.x and targetPos.y then
 					local distance = (camPos - targetPos).length
-					if distance <= dist and isLineOfSightClear(camPos.x, camPos.y, camPos.z, targetPos.x, targetPos.y, targetPos.z, true, true, true, true, true, false, false) then
+					if distance <= bubble.drawDist and isLineOfSightClear(camPos.x, camPos.y, camPos.z, targetPos.x, targetPos.y, targetPos.z, true, true, true, true, true, false, false) then
 						local scale = math.max(0.6, (15 / distance * 1.0))
-						if not g_Players[plr].pvars["_chtbbl" .. tostring(getElemID(player))].txtDisplay == nil then
-							g_Players[plr].pvars["_chtbbl" .. tostring(getElemID(player))].txtDisplay = textCreateDisplay()
-							g_Players[plr].pvars["_chtbbl" .. tostring(getElemID(player))].serverText = textCreateTextItem(text, 0.5, 0.5)
-						    local r = bitAnd(bitRShift(colour, 24), 0xFF)
-						    local g = bitAnd(bitRShift(colour, 16), 0xFF)
-						    local b = bitAnd(bitRShift(colour, 8), 0xFF)
-						    local a = bitAnd(colour, 0xFF)
-   						    textItemSetColor(g_Players[plr].pvars["_chtbbl" .. tostring(getElemID(player))].serverText, r, g, b, a)
-							textDisplayAddText(g_Players[plr].pvars["_chtbbl" .. tostring(getElemID(player))].txtDisplay, g_Players[plr].pvars["_chtbbl" .. tostring(getElemID(player))].serverText)
+						if not data.pvars["_chtbbl" .. tostring(getElemID(player))].txtDisplay == nil then
+							data.pvars["_chtbbl" .. tostring(getElemID(player))].txtDisplay = textCreateDisplay()
+							data.pvars["_chtbbl" .. tostring(getElemID(player))].serverText = textCreateTextItem(bubble.text, 0.5, 0.5)
+							local r = bitAnd(bitRShift(bubble.colour, 24), 0xFF)
+							local g = bitAnd(bitRShift(bubble.colour, 16), 0xFF)
+							local b = bitAnd(bitRShift(bubble.colour), 0xFF)
+							local a = bitAnd(bubble.colour, 0xFF)
+							textItemSetColor(data.pvars["_chtbbl" .. tostring(getElemID(player))].serverText, r, g, b, a)
+							textDisplayAddText(data.pvars["_chtbbl" .. tostring(getElemID(player))].txtDisplay, data.pvars["_chtbbl" .. tostring(getElemID(player))].serverText)
 							local normX = targetPos.x / screenW
 							local normY = targetPos.y / screenH
-							textItemSetPosition(g_Players[plr].pvars["_chtbbl" .. tostring(getElemID(player))].serverText, normX, normY)
+							textItemSetPosition(data.pvars["_chtbbl" .. tostring(getElemID(player))].serverText, normX, normY)
 
-							textItemSetScale(g_Players[plr].pvars["_chtbbl" .. tostring(getElemID(player))].serverText, scale)
+							textItemSetScale(data.pvars["_chtbbl" .. tostring(getElemID(player))].serverText, scale)
 						end
 						
-						if not textDisplayIsObserver(g_Players[plr].pvars["_chtbbl" .. tostring(getElemID(player))].txtDisplay, plr) then
-							textDisplayAddObserver(g_Players[plr].pvars["_chtbbl" .. tostring(getElemID(player))].txtDisplay, plr)
+						if not textDisplayIsObserver(data.pvars["_chtbbl" .. tostring(getElemID(player))].txtDisplay, localPlayer) then
+							textDisplayAddObserver(data.pvars["_chtbbl" .. tostring(getElemID(player))].txtDisplay, localPlayer)
 						end
 					end
 				else
-					if textDisplayIsObserver(g_Players[plr].pvars["_chtbbl" .. tostring(getElemID(player))].txtDisplay) then
-						destroyDisplay(g_Players[plr].pvars["_chtbbl" .. tostring(getElemID(player))].txtDisplay, g_Players[plr].pvars["_chtbbl" .. tostring(getElemID(player))].serverText, plr)
+					if textDisplayIsObserver(data.pvars["_chtbbl" .. tostring(getElemID(player))].txtDisplay) then
+						destroyDisplay(data.pvars["_chtbbl" .. tostring(getElemID(player))].txtDisplay, data.pvars["_chtbbl" .. tostring(getElemID(player))].serverText, localPlayer)
 					end
 				end
-				setTimer(destroyDisplay, exptime, 1, g_Players[plr].pvars["_chtbbl" .. tostring(getElemID(player))].txtDisplay, g_Players[plr].pvars["_chtbbl" .. tostring(getElemID(player))].serverText, plr)
+				setTimer(destroyDisplay, bubble.expires, 1, data.pvars["_chtbbl" .. tostring(getElemID(player))].txtDisplay, data.pvars["_chtbbl" .. tostring(getElemID(player))].serverText, localPlayer)
 			end
 		end
 	end, 500, 0)
