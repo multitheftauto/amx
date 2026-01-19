@@ -21,9 +21,9 @@ function SetPlayerPosFindZ(amx, player, x, y, z)
 end
 
 function GetPlayerPos(amx, player, refX, refY, refZ)
-	if not isElement(player) or getElementType(player) ~= "player" then
-        return false
-    end
+	if not player then 
+		return false
+	end
 
 	local x, y, z
 
@@ -46,9 +46,9 @@ function SetPlayerFacingAngle(amx, player, angle)
 end
 
 function GetPlayerFacingAngle(amx, player, refAng)
-	if not isElement(player) or getElementType(player) ~= "player" then
-        return false
-    end
+	if not player then 
+		return false
+	end
 	local rX, rY, rZ = getElementRotation(player)
 	writeMemFloat(amx, refAng, rZ)
 	return true
@@ -115,9 +115,9 @@ function SetPlayerHealth(amx, player, health)
 end
 
 function GetPlayerHealth(amx, player, refHealth)
-	if not isElement(player) or getElementType(player) ~= "player" then
-        return false
-    end
+	if not player then 
+		return false
+	end
 	writeMemFloat(amx, refHealth, getElementHealth(player))
 	return true
 end
@@ -127,9 +127,9 @@ function SetPlayerArmour(amx, player, armor)
 end
 
 function GetPlayerArmour(amx, player, refArmor)
-	if not isElement(player) or getElementType(player) ~= "player" then
-        return false
-    end
+	if not player then 
+		return false
+	end
 	writeMemFloat(amx, refArmor, getPedArmor(player))
 	return true
 end
@@ -410,9 +410,9 @@ function SetPlayerVelocity(amx, player, vx, vy, vz)
 end
 
 function GetPlayerVelocity(amx, player, refVX, refVY, refVZ)
-	if not isElement(player) or getElementType(player) ~= "player" then
-        return false
-    end
+	if not player then 
+		return false
+	end
 	local vx, vy, vz = getElementVelocity(player)
 	writeMemFloat(amx, refVX, vx)
 	writeMemFloat(amx, refVY, vy)
@@ -824,9 +824,9 @@ function GetPVarType(amx, player, varname)
 end
 
 function SetPlayerChatBubble(amx, player, text, color, dist, exptime)
-	if not isElement(player) or getElementType(player) ~= "player" then
-        return false
-    end
+	if not player then 
+		return false
+	end
 	
     if not text or string.len(text) == 0 then
         return false
@@ -839,9 +839,9 @@ function SetPlayerChatBubble(amx, player, text, color, dist, exptime)
 end
 
 function PutPlayerInVehicle(amx, player, vehicle, seat)
-	if not isElement(player) or getElementType(player) ~= "player" then
-        return false
-    end
+	if not player then 
+		return false
+	end
 	warpPedIntoVehicle(player, vehicle, seat)
 	if g_RCVehicles[getElementModel(vehicle)] then
 		setPedWeaponSlot(player, 0)
@@ -1047,18 +1047,18 @@ function SetPlayerDisabledWeapons(amx, player, ...)
 end
 
 function SetPlayerCameraPos(amx, player, x, y, z)
-	if not isElement(player) or getElementType(player) ~= "player" then
-        return false
-    end
+	if not player then 
+		return false
+	end
 	fadeCamera(player, true)
 	setCameraMatrix(player, x, y, z)
 	return true
 end
 
 function SetPlayerCameraLookAt(amx, player, lx, ly, lz, cut)
-	if not isElement(player) or getElementType(player) ~= "player" then
-        return false
-    end
+	if not player then 
+		return false
+	end
 	local x, y, z = getCameraMatrix(player)
 	if not x then
 		return false
@@ -1075,9 +1075,9 @@ function SetCameraBehindPlayer(amx, player)
 end
 
 function GetPlayerCameraPos(amx, player, refX, refY, refZ)
-	if not isElement(player) or getElementType(player) ~= "player" then
-        return false
-    end
+	if not player then 
+		return false
+	end
 	local x, y, z = getCameraMatrix(player)
 	writeMemFloat(amx, refX, x)
 	writeMemFloat(amx, refY, y)
@@ -1086,9 +1086,9 @@ function GetPlayerCameraPos(amx, player, refX, refY, refZ)
 end
 
 function GetPlayerCameraFrontVector(amx, player, refX, refY, refZ)
-	if not isElement(player) or getElementType(player) ~= "player" then
-        return false
-    end
+	if not player then 
+		return false
+	end
 
 	local x, y, z, lx, ly, lz = getCameraMatrix(player)
 	local vx, vy, vz = 0.0, 0.0, 0.0
