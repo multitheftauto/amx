@@ -2227,7 +2227,6 @@ function guiCreateColoredLabel(ax, ay, bx, by, str, parent, relative) -- x, y, w
 	if (last <= #str) then
 		cap = str:sub(last)
 		lbl2 = guiCreateLabel(ax + incx, ay + incy, bx, by, cap, relative, scrollpane)
-		guiLabelSetHorizontalAlign(lbl, 'left')
 		table.insert(labels, lbl2)
 		if not r then r = 255 end
 		if not g then g = 255 end
