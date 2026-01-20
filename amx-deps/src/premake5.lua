@@ -58,9 +58,6 @@ solution "king"
 		filter {"system:linux", "platforms:x64" }
 			linkoptions { "-Wl,-rpath=x64" }
 
-		filter "system:linux"
-			linkoptions { "-l:lua5.1.so" }
-
 		filter "system:windows"
 			links { "lua5.1", "sqlite3" }
 
