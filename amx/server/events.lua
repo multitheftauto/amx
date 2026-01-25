@@ -520,21 +520,21 @@ addEventHandler('onPlayerWasted', root,
 )
 
 local quitReasons = {
-	['Timed out'] = 0,
 	Quit = 1,
-	Kicked = 2
+	Kicked = 2,
+	Banned = 2
 }
 addEventHandler('onPlayerQuit', root,
 	function(reason)
 		local vehicle = getPedOccupiedVehicle(source)
-		if vehicle then
+		if isElement(vehicle) then
 			triggerEvent('onVehicleExit', vehicle, source)
 		end
 		g_PlayerObjects[source] = nil
 		g_PlayerTextDraws[source] = nil
 
 		local playerID = getElemID(source)
-		procCallOnAll('OnPlayerDisconnect', playerID, quitReasons[reason])
+		procCallOnAll('OnPlayerDisconnect', playerID, quitReasons[reason] or 0)
 
 		for i, playerdata in pairs(g_Players) do
 			playerdata.streamedPlayers[playerID] = nil

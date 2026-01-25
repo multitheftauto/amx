@@ -829,7 +829,7 @@ function SetPlayerChatBubble(amx, player, text, color, dist, exptime)
 end
 
 function PutPlayerInVehicle(amx, player, vehicle, seat)
-	if not player then
+	if not player or not vehicle then
 		return false
 	end
 	warpPedIntoVehicle(player, vehicle, seat)

@@ -2,12 +2,14 @@ CreateVehicle = AddStaticVehicleEx
 
 function DestroyVehicle(amx, vehicle)
 	if vehicle then
-		local vehicleID = getElemID(vehicle)
-		clientCall(root, 'DestroyVehicle', vehicleID)
+		local vehID = getElemID(vehicle)
 		for i, playerdata in pairs(g_Players) do
-			playerdata.streamedVehicles[vehicleID] = nil
+			if playerdata.streamedVehicles[vehID] then
+				procCallOnAll('OnVehicleStreamOut', vehID, i)
+			end
 		end
 		removeElem(g_Vehicles, vehicle)
+		clientCall(root, 'DestroyVehicle', vehID)
 		destroyElement(vehicle)
 	end
 	return true
@@ -67,16 +69,16 @@ function ManualVehicleEngineAndLights()
 end
 
 function GetVehicleParamsEx(amx, vehicle, refEngine, refLights, refAlarm, refDoors, refBonnet, refBoot, refObjective)
-	local vehicleID = getElemID(vehicle)
+	local vehID = getElemID(vehicle)
 
 	-- Lua expects every argument to be an int, so cast it
 	amx.memDAT[refEngine] = getVehicleEngineState(vehicle) and 1 or 0
 	amx.memDAT[refLights] = getVehicleOverrideLights(vehicle) == 2 and 1 or 0
-	amx.memDAT[refAlarm] = g_Vehicles[vehicleID].alarm and 1 or 0
+	amx.memDAT[refAlarm] = g_Vehicles[vehID].alarm and 1 or 0
 	amx.memDAT[refDoors] = isVehicleLocked(vehicle) and 1 or 0
 	amx.memDAT[refBonnet] = getVehicleDoorOpenRatio(vehicle, 0) > 0 and 1 or 0
 	amx.memDAT[refBoot] = getVehicleDoorOpenRatio(vehicle, 1) > 0 and 1 or 0
-	amx.memDAT[refObjective] = g_Vehicles[vehicleID].objective or 0
+	amx.memDAT[refObjective] = g_Vehicles[vehID].objective or 0
 
 	return true
 end
@@ -93,10 +95,10 @@ function SetVehicleParamsEx(amx, vehicle, engine, lights, alarm, doors, bonnet, 
 		clientCall(playerdata.elem, 'SetVehicleParamsForPlayer', vehicle, objective, doors)
 	end
 
-	local vehicleID = getElemID(vehicle)
-	g_Vehicles[vehicleID].alarm = alarm
-	g_Vehicles[vehicleID].objective = objective
-	g_Vehicles[vehicleID].engineState = engine
+	local vehID = getElemID(vehicle)
+	g_Vehicles[vehID].alarm = alarm
+	g_Vehicles[vehID].objective = objective
+	g_Vehicles[vehID].engineState = engine
 	return true
 end
 
@@ -394,8 +396,8 @@ function GetVehicleModel(amx, vehicle)
 	return getElementModel(vehicle)
 end
 
-function IsValidVehicle(amx, vehicleID)
-	return g_Vehicles[vehicleID] ~= nil
+function IsValidVehicle(amx, vehID)
+	return g_Vehicles[vehID] ~= nil
 end
 
 function GetVehiclePoolSize(amx)

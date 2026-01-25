@@ -216,12 +216,16 @@ function IsBotStreamedIn(amx, bot, player)
 end
 
 function DestroyBot(amx, bot)
-	for i, playerdata in pairs(g_Players) do
-		playerdata.streamedBots[getElemID(bot)] = nil
+	if bot then
+		local botID = getElemID(bot)
+		for i, playerdata in pairs(g_Players) do
+			if playerdata.streamedBots[botID] then
+				procCallOnAll('OnBotStreamOut', botID, i)
+			end
+		end
+		removeElem(g_Bots, bot)
+		destroyElement(bot)
 	end
-
-	removeElem(g_Bots, bot)
-	destroyElement(bot)
 	return true
 end
 
