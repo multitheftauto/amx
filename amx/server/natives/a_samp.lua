@@ -360,6 +360,26 @@ function AddStaticVehicleEx(amx, model, x, y, z, angle, color1, color2, respawnD
 
 	if getVehicleType(vehicle) == 'Train' then
 		setTrainDerailable(vehicle, false)
+
+		local model = getElementModel(vehicle)
+		local carriageModels = {
+			[537] = 569, -- Freight -> Freight carriage
+			[538] = 570 -- Streak -> Streak carriage
+		}
+
+		local wagonModel = carriageModels[model]
+		if wagonModel then
+			local vehToAttach = vehicle
+
+			for i = 1, 3 do
+				local wagonID = AddStaticVehicleEx(amx, wagonModel, x, y, z, angle, color1, color2, respawnDelay, addSiren)
+				if wagonID == INVALID_VEHICLE_ID then break end
+
+				setElementParent(g_Vehicles[wagonID].elem, vehicle)
+				attachTrailerToVehicle(vehToAttach, g_Vehicles[wagonID].elem)
+				vehToAttach = g_Vehicles[wagonID].elem
+			end
+		end
 	end
 
 	if addSiren then

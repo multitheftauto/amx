@@ -3,13 +3,33 @@ CreateVehicle = AddStaticVehicleEx
 function DestroyVehicle(amx, vehicle)
 	if vehicle then
 		local vehID = getElemID(vehicle)
+
+		if getVehicleType(vehicle) == 'Train' then
+			local train = vehicle
+
+			-- find the last carriage
+			while getVehicleTowedByVehicle(train) do
+				train = getVehicleTowedByVehicle(train)
+			end
+
+			while train and train ~= vehicle do
+				local wagon = train
+				train = getVehicleTowingVehicle(train)
+
+				-- remove and destroy the current carriage
+				clientCall(root, 'DestroyVehicle', getElemID(wagon))
+				removeElem(g_Vehicles, wagon)
+				destroyElement(wagon)
+			end
+		end
+
 		for i, playerdata in pairs(g_Players) do
 			if playerdata.streamedVehicles[vehID] then
 				procCallOnAll('OnVehicleStreamOut', vehID, i)
 			end
 		end
-		removeElem(g_Vehicles, vehicle)
 		clientCall(root, 'DestroyVehicle', vehID)
+		removeElem(g_Vehicles, vehicle)
 		destroyElement(vehicle)
 	end
 	return true
@@ -198,6 +218,20 @@ function GetVehicleHealth(amx, vehicle, refHealth)
 end
 
 function AttachTrailerToVehicle(amx, trailer, vehicle)
+	if getVehicleType(vehicle) == 'Train' then
+		local train = vehicle
+
+		-- find the train locomotive
+		while getVehicleTowingVehicle(train) do
+			train = getVehicleTowingVehicle(train)
+		end
+
+		local model = getElementModel(train)
+		if model == 537 or model == 538 then
+			setElementParent(trailer, train)
+		end
+	end
+
 	return attachTrailerToVehicle(vehicle, trailer)
 end
 

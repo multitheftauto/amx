@@ -9,19 +9,6 @@ local MENU_TOP_PADDING = MENU_ITEM_HEIGHT * 2
 local MENU_BOTTOM_PADDING = 10
 local MENU_SIDE_PADDING = 20
 
-local BOATS = {
-	[472] = true,
-	[473] = true,
-	[493] = true,
-	[595] = true,
-	[484] = true,
-	[430] = true,
-	[453] = true,
-	[452] = true,
-	[446] = true,
-	[454] = true
-}
-
 local defaultEmptyTableMt = {
 	__index = function(t, k)
 		local info = {}
@@ -779,7 +766,8 @@ addEventHandler('onClientElementStreamIn', root,
 	function()
 		if getElementType(source) == 'vehicle' then
 			-- drop floating/underground vehicles
-			if not vehicleDrops[source] and isVehicleEmpty(source) and not BOATS[getElementModel(source)] then
+			local specVeh = getVehicleType(source) == 'Boat' or getVehicleType(source) == 'Train'
+			if not vehicleDrops[source] and isVehicleEmpty(source) and not specVeh then
 				setElementCollisionsEnabled(source, false)
 				local timer = setTimer(dropVehicle, VEHICLE_DROP_TRY_INTERVAL, VEHICLE_DROP_MAX_TRIES, source)
 				vehicleDrops[source] = { timer = timer, tries = 0 }
@@ -797,6 +785,11 @@ addEventHandler('onClientElementStreamIn', root,
 			setVehicleWindowOpen(source, 3, not getElementData(source, 'WindowRearRight'))
 			setVehicleWindowOpen(source, 4, not getElementData(source, 'WindowFrontLeft'))
 			setVehicleWindowOpen(source, 5, not getElementData(source, 'WindowRearLeft'))
+
+			if getVehicleType(source) == 'Train' and getVehicleTowingVehicle(source) then
+				-- if it's a train carriage, don't call stream event
+				return
+			end
 
 			triggerServerEvent('onVehicleStream_Ev', localPlayer, source, true)
 		elseif getElementType(source) == 'player' then
@@ -822,6 +815,11 @@ addEventHandler('onClientElementStreamOut', root,
 					destroyElement(vehInfo.blip)
 				end
 				vehInfo.blip = nil
+			end
+
+			if getVehicleType(source) == 'Train' and getVehicleTowingVehicle(source) then
+				-- if it's a train carriage, don't call stream event
+				return
 			end
 
 			triggerServerEvent('onVehicleStream_Ev', localPlayer, source, false)

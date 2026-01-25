@@ -626,6 +626,11 @@ function respawnStaticVehicle(vehicle)
 	end
 	g_Vehicles[vehID].respawntimer = nil
 
+	if getVehicleType(vehicle) == 'Train' and getVehicleTowingVehicle(vehicle) then
+		-- if it's a train carriage, don't process respawn
+		return false
+	end
+
 	local occupants = getVehicleOccupants(vehicle)
 	if occupants then
 		for seat, player in pairs(occupants) do
@@ -730,7 +735,7 @@ addEventHandler('onVehicleExit', root,
 
 		local occupants = getVehicleOccupants(source)
 		local _, occupant = occupants and next(occupants)
-		if occupant then return end
+		if occupant or getVehicleType(source) == 'Train' then return end
 
 		if g_Vehicles[vehID] and g_Vehicles[vehID].vehicleIsAlive then
 			if isTimer(g_Vehicles[vehID].respawntimer) then
