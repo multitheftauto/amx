@@ -11,14 +11,14 @@ local borderHeight = 6
 local innerWidth = 38
 local innerHeight = 4
 
-function drawNameTag(position, nameText, r, g, b, a, health, armor, distance)
+function drawNameTag(x, y, z, nameText, r, g, b, a, health, armor, distance)
 	if not r or not g or not b or not a then
 		r, g, b, a = 255, 255, 255, 255
 	end
 
-	position.z = (distance * 0.025) + position.z + 0.3
+	z = (distance * 0.025) + z + 0.3
 
-	local screenCoordsX, screenCoordsY = getScreenFromWorldPosition(position.x, position.y, position.z)
+	local screenCoordsX, screenCoordsY = getScreenFromWorldPosition(x, y, z)
 	if not screenCoordsX then return end
 
 	-- Name tag outline
@@ -82,11 +82,14 @@ addEventHandler('onClientRender', root,
 					local cx, cy, cz = getCameraMatrix()
 
 					if not nameTagsLOS or isLineOfSightClear(cx, cy, cz, fPosX, fPosY, fPosZ, true, false, false, true, true) then
+						local r, g, b = getPlayerNametagColor(player)
+
 						drawNameTag(
-							{x = fPosX, y = fPosY, z = fPosZ},
+							fPosX, fPosY, fPosZ,
 							getPlayerName(player) .. ' (' .. getElemID(player) .. ')',
-							getPlayerNametagColor(player), a,
-							getElementHealth(player), getPedArmor(player), distance
+							r, g, b, a,
+							getElementHealth(player), getPedArmor(player),
+							distance
 						)
 					end
 				end
@@ -107,10 +110,11 @@ addEventHandler('onClientRender', root,
 						if not botName or botName:len() < 1 then botName = 'Bot' end
 
 						drawNameTag(
-							{x = fPosX, y = fPosY, z = fPosZ},
+							fPosX, fPosY, fPosZ,
 							botName .. ' (' .. getElemID(bot) .. ')',
 							255, 255, 255, a,
-							getElementHealth(bot), getPedArmor(bot), distance
+							getElementHealth(bot), getPedArmor(bot),
+							distance
 						)
 					end
 				end
