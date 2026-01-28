@@ -42,4 +42,3 @@ extern "C" char* getScriptFilePath(AMX *amx, char *dest, const char *filename, s
 bool isSafePath(const char* path);
 
 #endif
-

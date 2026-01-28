@@ -1,20 +1,20 @@
 /*********************************************************
-*
-*  Multi Theft Auto: San Andreas - Deathmatch
-*
-*  ml_base, External lua add-on module
-*
-*  Copyright © 2003-2008 MTA.  All Rights Reserved.
-*
-*  Grand Theft Auto is © 2002-2003 Rockstar North
-*
-*  THE FOLLOWING SOURCES ARE PART OF THE MULTI THEFT
-*  AUTO SOFTWARE DEVELOPMENT KIT AND ARE RELEASED AS
-*  OPEN SOURCE FILES. THESE FILES MAY BE USED AS LONG
-*  AS THE DEVELOPER AGREES TO THE LICENSE THAT IS
-*  PROVIDED WITH THIS PACKAGE.
-*
-*********************************************************/
+ *
+ *  Multi Theft Auto: San Andreas - Deathmatch
+ *
+ *  ml_base, External lua add-on module
+ *
+ *  Copyright Â© 2003-2018 MTA.  All Rights Reserved.
+ *
+ *  Grand Theft Auto is Â© 2002-2018 Rockstar North
+ *
+ *  THE FOLLOWING SOURCES ARE PART OF THE MULTI THEFT
+ *  AUTO SOFTWARE DEVELOPMENT KIT AND ARE RELEASED AS
+ *  OPEN SOURCE FILES. THESE FILES MAY BE USED AS LONG
+ *  AS THE DEVELOPER AGREES TO THE LICENSE THAT IS
+ *  PROVIDED WITH THIS PACKAGE.
+ *
+ *********************************************************/
 
 #ifndef __CFUNCTIONS_H
 #define __CFUNCTIONS_H
@@ -26,7 +26,6 @@ extern vector<ProcessTick_t*> vecPfnProcessTick;
 class CFunctions
 {
 public:
-
 	static int amxLoadPlugin(lua_State *luaVM);
 	static int amxIsPluginLoaded(lua_State *luaVM);
 	static int amxLoad(lua_State *luaVM);
@@ -50,7 +49,6 @@ public:
 	static int pawn(lua_State *luaVM);
 	static int cell2float(lua_State *luaVM);
 	static int float2cell(lua_State *luaVM);
-
 };
 
 #endif
