@@ -835,19 +835,11 @@ addEventHandler('onClientElementStreamOut', root,
 	end
 )
 
-local function clientPlayerStuntStart(stuntType)
-	local vehicle = getPedOccupiedVehicle(localPlayer)
-	if not vehicle then return cancelEvent() end
-
-	triggerServerEvent('onPlayerStuntStart_Ev', localPlayer, vehicle, stuntType)
-end
-addEventHandler('onClientPlayerStuntStart', root, clientPlayerStuntStart)
-
 local function clientPlayerStuntFinish(stuntType, stuntTime, stuntDistance)
 	local vehicle = getPedOccupiedVehicle(localPlayer)
 	if not vehicle then return cancelEvent() end
 
-	triggerServerEvent('onPlayerStuntFinish_Ev', localPlayer, vehicle, stuntType, stuntTime, stuntDistance)
+	triggerServerEvent('onPlayerStunt_Ev', localPlayer, vehicle, stuntType, stuntTime, stuntDistance)
 end
 addEventHandler('onClientPlayerStuntFinish', root, clientPlayerStuntFinish)
 

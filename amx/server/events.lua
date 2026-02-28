@@ -796,23 +796,13 @@ addEventHandler('onVehicleDamageStatusUpdate_Ev', root,
 	end
 )
 
-addEvent('onPlayerStuntStart_Ev', true)
-addEventHandler('onPlayerStuntStart_Ev', root,
-	function(vehicle, stuntType)
-		local playerID, vehID = getElemID(client), getElemID(vehicle)
-		if not playerID or not g_Vehicles[vehID] then return end
-
-		procCallOnAll('OnPlayerStuntStart', playerID, vehID, stuntType)
-	end
-)
-
-addEvent('onPlayerStuntFinish_Ev', true)
-addEventHandler('onPlayerStuntFinish_Ev', root,
+addEvent('onPlayerStunt_Ev', true)
+addEventHandler('onPlayerStunt_Ev', root,
 	function(vehicle, stuntType, stuntTime, stuntDistance)
 		local playerID, vehID = getElemID(client), getElemID(vehicle)
 		if not playerID or not g_Vehicles[vehID] then return end
 
-		procCallOnAll('OnPlayerStuntFinish', playerID, vehID, stuntType, stuntTime, float2cell(stuntDistance))
+		procCallOnAll('OnPlayerStunt', playerID, vehID, stuntType, stuntTime, float2cell(stuntDistance))
 	end
 )
 -------------------------------
