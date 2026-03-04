@@ -199,7 +199,9 @@ function CreateBot(amx, model, x, y, z, name)
 	local bot = createPed(g_SkinReplace[model] or model, x, y, z)
 	addPedClothes(bot, 'vest', 'vest', 0)
 	setElementData(bot, 'ShowNameTag', true)
-	setElementData(bot, 'BotName', name)
+	if name and name:len() >= 1 then
+		setElementData(bot, 'BotName', name)
+	end
 	local botID = addElem(g_Bots, bot)
 	procCallOnAll('OnBotCreate', botID, name)
 	g_Bots[botID].state = PLAYER_STATE_ONFOOT
@@ -284,10 +286,26 @@ function ShowBotNameTag(amx, bot, show)
 	return setElementData(bot, 'ShowNameTag', show)
 end
 
+function GetBotColor(amx, bot)
+	local r, g, b
+	r = getElementData(bot, 'BotColorR') or 255
+	g = getElementData(bot, 'BotColorG') or 255
+	b = getElementData(bot, 'BotColorB') or 255
+	return color2cell(r, g, b, 255)
+end
+
+function SetBotColor(amx, bot, r, g, b)
+	setElementData(bot, 'BotColorR', r)
+	setElementData(bot, 'BotColorG', g)
+	setElementData(bot, 'BotColorB', b)
+	return true
+end
+
 function GetBotName(amx, bot, nameBuf, bufSize)
 	if bufSize <= 0 then return 0 end
 
 	local name = getElementData(bot, 'BotName')
+	if not name then name = 'Bot' end
 
 	local copyLen = math.min(#name, bufSize)
 	writeMemString(amx, nameBuf, name:sub(1, copyLen))
@@ -295,6 +313,7 @@ function GetBotName(amx, bot, nameBuf, bufSize)
 end
 
 function SetBotName(amx, bot, name)
+	if not name or name:len() < 1 then return 0 end
 	return setElementData(bot, 'BotName', name)
 end
 

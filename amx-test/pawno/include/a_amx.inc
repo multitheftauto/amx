@@ -281,6 +281,8 @@ native SetBotHeadless(botid, bool:headless);
 native IsBotDead(botid);
 native KillBot(botid, killerid, reason, bodypart);
 native ShowBotNameTag(botid, bool:show);
+native GetBotColor(botid);
+native SetBotColor(botid, color);
 native GetBotName(botid, buf[], bufsize = sizeof(buf));
 native SetBotName(botid, const name[]);
 native GetBotAlpha(botid);

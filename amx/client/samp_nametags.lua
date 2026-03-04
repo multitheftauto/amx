@@ -109,10 +109,14 @@ addEventHandler('onClientRender', root,
 						local botName = getElementData(bot, 'BotName')
 						if not botName or botName:len() < 1 then botName = 'Bot' end
 
+						local r = getElementData(bot, 'BotColorR') or 255
+						local g = getElementData(bot, 'BotColorG') or 255
+						local b = getElementData(bot, 'BotColorB') or 255
+
 						drawNameTag(
 							fPosX, fPosY, fPosZ,
 							botName .. ' (' .. getElemID(bot) .. ')',
-							255, 255, 255, a,
+							r, g, b, a,
 							getElementHealth(bot), getPedArmor(bot),
 							distance
 						)
