@@ -85,7 +85,7 @@ function displayFadingMessage(text, r, g, b, fadeInTime, stayTime, fadeOutTime)
 end
 
 function drawBorderText(text, x, y, color, scalex, scaley, font, outlinesize, outlinecolor)
-	local alpha = math.floor(color / 16777216)
+	local alpha = bitExtract(color, 24, 8)
 	outlinecolor = outlinecolor or tocolor(0, 0, 0, alpha)
 
 	if outlinesize > 0 then
@@ -107,7 +107,7 @@ function drawShadowText(text, x, y, color, scale, font, shadowDist, width, align
 	shadowDist = shadowDist or 1
 	align = align or 'center'
 
-	local alpha = math.floor(color / 16777216)
+	local alpha = bitExtract(color, 24, 8)
 	dxDrawText(text, x + shadowDist, y + shadowDist, x + shadowDist + (width or 0), 0, tocolor(0, 0, 0, alpha), scale, font, width and align or 'left')
 	dxDrawText(text, x, y, x + (width or 0), 0, color, scale, font, width and align or 'left')
 end

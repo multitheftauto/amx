@@ -35,11 +35,23 @@ function SendClientMessageToAll(amx, r, g, b, a, message)
 end
 
 function SendPlayerMessageToAll(amx, sender, message)
-	return outputChatBox(getPlayerName(sender) .. ' ' .. message, root, 255, 255, 255, true)
+	local r, g, b = getPlayerNametagColor(sender)
+	if not r then
+		r, g, b = 255, 255, 255
+	end
+	local hexColor = string.format("#%02X%02X%02X", r, g, b)
+	local formattedMessage = hexColor .. getPlayerName(sender) .. ":#FFFFFF " .. message
+	return outputChatBox(formattedMessage, root, 255, 255, 255, true)
 end
 
 function SendPlayerMessageToPlayer(amx, playerTo, playerFrom, message)
-	return outputChatBox(getPlayerName(playerFrom) .. ' ' .. message, playerTo, 255, 255, 255, true)
+	local r, g, b = getPlayerNametagColor(playerFrom)
+	if not r then
+		r, g, b = 255, 255, 255
+	end
+	local hexColor = string.format("#%02X%02X%02X", r, g, b)
+	local formattedMessage = hexColor .. getPlayerName(playerFrom) .. ":#FFFFFF " .. message
+	return outputChatBox(formattedMessage, playerTo, 255, 255, 255, true)
 end
 
 function SendDeathMessage(amx, killerID, victim, reason)

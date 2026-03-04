@@ -191,7 +191,10 @@ function destroyGlobalElements()
 	for i, elemtype in ipairs({ g_Vehicles, g_Pickups, g_Objects, g_GangZones, g_Markers, g_Bots, g_Actors }) do
 		for id, data in pairs(elemtype) do
 			removeElem(elemtype, data.elem)
-			destroyElement(data.elem)
+
+			if isElement(data.elem) then
+				destroyElement(data.elem)
+			end
 		end
 	end
 end

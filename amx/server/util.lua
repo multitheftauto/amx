@@ -929,7 +929,17 @@ function color2cell(r, g, b, a)
 	g = math.min(math.max(g, 0), 255)
 	b = math.min(math.max(b, 0), 255)
 	a = math.min(math.max(a, 0), 255)
-	return bitLShift(r, 24) + bitLShift(g, 16) + bitLShift(b, 8) + a
+
+	local unsigned = r * 0x1000000	-- 2^24
+			+ g * 0x10000	-- 2^16
+			+ b * 0x100	-- 2^8
+			+ a
+
+	if unsigned >= 0x80000000 then
+		return unsigned - 0x100000000
+	else
+		return unsigned
+	end
 end
 
 function isPed(elem)
