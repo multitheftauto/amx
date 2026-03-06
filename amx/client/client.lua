@@ -1568,7 +1568,12 @@ function ShowMenuForPlayer(menuID)
 		setMenuAlpha(g_CurrentMenu, 1)
 	end
 
-	bindKey('enter', 'down', OnKeyPress)
+	bindKey('enter', 'down',
+		function()
+			playSoundFrontEnd(2)
+			HideMenuForPlayer()
+		end
+	)
 end
 
 function HideMenuForPlayer(menuID)
@@ -1617,7 +1622,12 @@ function closeMenu()
 	destroyElement(g_CurrentMenu.closebtnhover)
 	g_CurrentMenu.closebtnhover = nil
 	g_CurrentMenu = nil
-	unbindKey('enter', 'down', OnKeyPress)
+	unbindKey('enter', 'down',
+		function()
+			playSoundFrontEnd(2)
+			HideMenuForPlayer()
+		end
+	)
 	if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
 		showCursor(true)
 	else
@@ -1707,13 +1717,6 @@ function menuClickHandler(button, state, clickX, clickY)
 		closeMenu()
 	else
 		playSoundFrontEnd(4)
-	end
-end
-
-function OnKeyPress(key, keyState)
-	if (keyState == 'down') then
-		playSoundFrontEnd(2)
-		HideMenuForPlayer()
 	end
 end
 -----------------------------
