@@ -30,6 +30,7 @@
     <script src="client/arrowmarkers.lua" type="client" />
     <script src="client/client.lua" type="client" />
     <script src="client/samp_nametags.lua" type="client" />
+    <script src="client/special_actions.lua" type="client" />
     <script src="client/map_waypoint.lua" type="client" />
     <script src="client/garages.lua" type="client" />
 

@@ -461,13 +461,12 @@ function resetSpecialAction(player)
 	local playerdata = g_Players[getElemID(player)]
 	if not playerdata or not playerdata.specialaction then return end
 
-	if playerdata.specialaction == SPECIAL_ACTION_USECELLPHONE then
-		local actionID = SPECIAL_ACTION_STOPUSECELLPHONE
-		playerdata.specialaction = SPECIAL_ACTION_STOPUSECELLPHONE
-		setPedAnimation(player, unpack(g_SpecialActions[actionID]))
-	elseif playerdata.specialaction ~= SPECIAL_ACTION_STOPUSECELLPHONE then
-		playerdata.specialaction = SPECIAL_ACTION_NONE
+	if playerdata.specialaction ~= SPECIAL_ACTION_NONE then
+		if playerdata.specialaction == SPECIAL_ACTION_USECELLPHONE then return end
+
 		setPedAnimation(player, false)
+		playerdata.specialaction = SPECIAL_ACTION_NONE
+		setElementData(player, 'SpecialAction', nil)
 	end
 end
 

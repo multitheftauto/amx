@@ -49,6 +49,7 @@ function gameModeInit(player)
 		hX = 0.0, hY = 0.0, hZ = 0.0
 	}
 	g_Players[playerID].conntick = getTickCount()
+	g_Players[playerID].specialaction = SPECIAL_ACTION_NONE
 	g_Players[playerID].viewingintro = true
 	g_Players[playerID].state = PLAYER_STATE_NONE
 	g_Players[playerID].doingclasssel = nil
@@ -359,9 +360,9 @@ function handlePlayerSpawn(player)
 	playerdata.updatetimer = setTimer(procCallOnAll, 100, 0, 'OnPlayerUpdate', playerID)
 
 	playerdata.vehicle = nil
-	playerdata.specialaction = SPECIAL_ACTION_NONE
 	playerdata.drunklevel = 0
 
+	resetSpecialAction(player)
 	procCallOnAll('OnPlayerSpawn', playerID)
 	if playerdata.oldint then
 		-- manually call delayed callback, originally called while being not spawned
@@ -481,6 +482,7 @@ addEventHandler('onPlayerWasted', root,
 
 		setPlayerState(source, PLAYER_STATE_WASTED)
 		procCallOnAll('OnPlayerDeath', playerID, killerID, reason)
+		resetSpecialAction(source)
 
 		if g_Players[playerID].returntoclasssel then
 			g_Players[playerID].returntoclasssel = nil
@@ -513,7 +515,6 @@ addEventHandler('onPlayerWasted', root,
 		g_Players[playerID].updatetimer = nil
 
 		g_Players[playerID].vehicle = nil
-		g_Players[playerID].specialaction = SPECIAL_ACTION_NONE
 		clientCall(source, 'setCameraDrunkLevel', 0)
 		g_Players[playerID].drunklevel = 0
 	end
@@ -674,7 +675,7 @@ addEventHandler('onVehicleEnter', root,
 			local playerID = getElemID(player)
 			g_Players[playerID].vehicle = source
 			setPlayerState(player, seat == 0 and PLAYER_STATE_DRIVER or PLAYER_STATE_PASSENGER)
-			g_Players[playerID].specialaction = SPECIAL_ACTION_NONE
+			resetSpecialAction(player)
 		end
 
 		if g_Vehicles[vehID] then
@@ -1024,6 +1025,19 @@ addEventHandler('onPlayerClickMap_Ev', root,
 		if not playerID then return end
 
 		procCallOnAll('OnPlayerClickMap', playerID, float2cell(clickX), float2cell(clickY), float2cell(clickZ))
+	end
+)
+
+addEvent('onDrunkLevelRequested', true)
+addEventHandler('onDrunkLevelRequested', root,
+	function()
+		local playerdata = g_Players[getElemID(client)]
+
+		-- do not increase it from sprunk or cigar
+		if playerdata.specialaction == SPECIAL_ACTION_DRINK_BEER or
+		   playerdata.specialaction == SPECIAL_ACTION_DRINK_WINE then
+			playerdata.drunklevel = playerdata.drunklevel + 1350
+		end
 	end
 )
 

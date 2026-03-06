@@ -248,7 +248,6 @@ SPECIAL_ACTION_DRINK_BEER = 20
 SPECIAL_ACTION_SMOKE_CIGGY = 21
 SPECIAL_ACTION_DRINK_WINE = 22
 SPECIAL_ACTION_DRINK_SPRUNK = 23
-SPECIAL_ACTION_CARRY = 25
 SPECIAL_ACTION_PISSING = 68
 
 g_SpecialActions = {
@@ -260,11 +259,6 @@ g_SpecialActions = {
 	[SPECIAL_ACTION_HANDSUP] = { 'ped', 'handsup', -1, false, false, false, true, 250, false },
 	[SPECIAL_ACTION_USECELLPHONE] = { 'ped', 'phone_in', -1, false, true, false, true, 250, true },
 	[SPECIAL_ACTION_STOPUSECELLPHONE] = { 'ped', 'phone_out', -1, false, true, false, false, 250, true },
-	[SPECIAL_ACTION_DRINK_BEER] = { 'bar', 'dnk_stndm_loop', -1, false, true, false, false, 250, true },
-	[SPECIAL_ACTION_SMOKE_CIGGY] = { 'gangs', 'smkcig_prtl', -1, false, true, false, false, 250, true },
-	[SPECIAL_ACTION_DRINK_WINE] = { 'bar', 'dnk_stndm_loop', -1, false, true, false, false, 250, true },
-	[SPECIAL_ACTION_DRINK_SPRUNK] = { 'bar', 'dnk_stndm_loop', -1, false, true, false, false, 250, true },
-	[SPECIAL_ACTION_CARRY] = { 'carry', 'crry_prtial', -1, true, true, false, false, 250, true },
 	[SPECIAL_ACTION_PISSING] = { 'paulnmac', 'piss_loop', -1, true, false, false, false, 250, false }
 }
 
