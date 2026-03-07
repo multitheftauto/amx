@@ -139,10 +139,10 @@ function onDrinkKey(key, keyState)
 end
 
 function processDance()
-	local up = getControlState('forwards')
-	local down = getControlState('backwards')
-	local left = getControlState('left')
-	local right = getControlState('right')
+	local up = getPedControlState('forwards')
+	local down = getPedControlState('backwards')
+	local left = getPedControlState('left')
+	local right = getPedControlState('right')
 
 	local upDown = 0
 	if up and not down then
@@ -187,7 +187,7 @@ function processDance()
 		lastDanceAnim = nil
 		lastDanceMove = nil
 	else
-		if getControlState('sprint') then
+		if getPedControlState('sprint') then
 			move = move + 8
 		end
 
