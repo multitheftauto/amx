@@ -360,9 +360,10 @@ function handlePlayerSpawn(player)
 	playerdata.updatetimer = setTimer(procCallOnAll, 100, 0, 'OnPlayerUpdate', playerID)
 
 	playerdata.vehicle = nil
+	playerdata.specialaction = SPECIAL_ACTION_NONE
+	setElementData(player, 'SpecialAction', nil)
 	playerdata.drunklevel = 0
 
-	resetSpecialAction(player)
 	procCallOnAll('OnPlayerSpawn', playerID)
 	if playerdata.oldint then
 		-- manually call delayed callback, originally called while being not spawned
@@ -482,7 +483,6 @@ addEventHandler('onPlayerWasted', root,
 
 		setPlayerState(source, PLAYER_STATE_WASTED)
 		procCallOnAll('OnPlayerDeath', playerID, killerID, reason)
-		resetSpecialAction(source)
 
 		if g_Players[playerID].returntoclasssel then
 			g_Players[playerID].returntoclasssel = nil
@@ -515,6 +515,8 @@ addEventHandler('onPlayerWasted', root,
 		g_Players[playerID].updatetimer = nil
 
 		g_Players[playerID].vehicle = nil
+		g_Players[playerID].specialaction = SPECIAL_ACTION_NONE
+		setElementData(source, 'SpecialAction', nil)
 		clientCall(source, 'setCameraDrunkLevel', 0)
 		g_Players[playerID].drunklevel = 0
 	end
@@ -675,7 +677,9 @@ addEventHandler('onVehicleEnter', root,
 			local playerID = getElemID(player)
 			g_Players[playerID].vehicle = source
 			setPlayerState(player, seat == 0 and PLAYER_STATE_DRIVER or PLAYER_STATE_PASSENGER)
-			resetSpecialAction(player)
+
+			g_Players[playerID].specialaction = SPECIAL_ACTION_NONE
+			setElementData(player, 'SpecialAction', nil)
 		end
 
 		if g_Vehicles[vehID] then

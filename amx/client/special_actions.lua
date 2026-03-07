@@ -1,8 +1,13 @@
 local SPECIAL_ACTION_NONE = 0
+local SPECIAL_ACTION_DUCK = 1
+local SPECIAL_ACTION_USEJETPACK = 2
 local SPECIAL_ACTION_DANCE1 = 5
 local SPECIAL_ACTION_DANCE2 = 6
 local SPECIAL_ACTION_DANCE3 = 7
 local SPECIAL_ACTION_DANCE4 = 8
+local SPECIAL_ACTION_HANDSUP = 10
+local SPECIAL_ACTION_USECELLPHONE = 11
+local SPECIAL_ACTION_STOPUSECELLPHONE = 13
 local SPECIAL_ACTION_DRINK_BEER = 20
 local SPECIAL_ACTION_SMOKE_CIGGY = 21
 local SPECIAL_ACTION_DRINK_WINE = 22
@@ -129,6 +134,7 @@ function onDrinkKey(key, keyState)
 		end
 	end
 
+	-- request to add drunk camera effects
 	triggerServerEvent('onDrunkLevelRequested', localPlayer)
 end
 
@@ -176,9 +182,7 @@ function processDance()
 		if not lastDanceMove then return end
 
 		local anim = danceStyles[currentAction]
-		if anim then
-			setPedAnimation(localPlayer, anim.group, anim.idle, -1, true, false, false, false, 250, false)
-		end
+		setPedAnimation(localPlayer, anim.group, anim.idle, -1, true, false, false, false, 250, false)
 
 		lastDanceAnim = nil
 		lastDanceMove = nil
@@ -188,32 +192,23 @@ function processDance()
 		end
 
 		if move ~= lastDanceMove then
-			local animName
+			local animName = danceMoves.male[move]
 			local animGroup = danceStyles[currentAction].group
 
 			if currentAction == SPECIAL_ACTION_DANCE4 then
 				animName = danceMoves.strip[move]
-			else
-				if isFemaleSkin(getElementModel(localPlayer)) then
-					animName = danceMoves.female[move]
-				else
-					animName = danceMoves.male[move]
-				end
+			elseif isFemaleSkin(getElementModel(localPlayer)) then
+				animName = danceMoves.female[move]
 			end
 
-			if animName then
-				setPedAnimation(localPlayer, animGroup, animName, -1, false, false, false, false, 250, false)
-			end
-
+			setPedAnimation(localPlayer, animGroup, animName, -1, false, false, false, false, 250, false)
 			lastDanceAnim = {group = animGroup, name = animName}
 		elseif lastDanceAnim then
 			local group, name = getPedAnimation(localPlayer)
 
 			if group ~= lastDanceAnim.group or name ~= lastDanceAnim.name then
 				local anim = danceStyles[currentAction]
-				if anim then
-					setPedAnimation(localPlayer, anim.group, anim.idle, -1, true, false, false, false, 250, false)
-				end
+				setPedAnimation(localPlayer, anim.group, anim.idle, -1, true, false, false, false, 250, false)
 
 				lastDanceAnim = nil
 			end
@@ -225,11 +220,22 @@ end
 function handleSpecialAction(action)
 	if action == currentAction then return end
 
-	resetSpecialAction()
+	if currentAction == SPECIAL_ACTION_USECELLPHONE and action == SPECIAL_ACTION_NONE then
+		-- stop using cellphone properly
+		setPedAnimation(localPlayer, 'ped', 'phone_out', -1, false, true, false, false, 250, true)
+	else
+		resetSpecialAction()
+	end
 
-	-- all initial animations are already set by the server
 	if action >= SPECIAL_ACTION_DANCE1 and action <= SPECIAL_ACTION_DANCE4 then
+		local anim = danceStyles[action]
+		setPedAnimation(localPlayer, anim.group, anim.idle, -1, true, false, false, false, 250, false)
+
 		addEventHandler('onClientRender', root, processDance)
+	elseif action == SPECIAL_ACTION_HANDSUP then
+		setPedAnimation(localPlayer, 'ped', 'handsup', -1, false, false, false, true, 250, false)
+	elseif action == SPECIAL_ACTION_USECELLPHONE then
+		setPedAnimation(localPlayer, 'ped', 'phone_in', -1, false, true, false, true, 250, true)
 	elseif action >= SPECIAL_ACTION_DRINK_BEER and action <= SPECIAL_ACTION_DRINK_SPRUNK then
 		toggleControl('fire', false)
 		bindKey('fire', 'down', onDrinkKey)
@@ -238,13 +244,14 @@ function handleSpecialAction(action)
 		setPedWeaponSlot(localPlayer, 0)
 
 		local data = drinkData[action]
-		if data then
-			drinkObject = createObject(data.model, 0.0, 0.0, 0.0)
-			if drinkObject then
-				attachElementToBone(drinkObject, localPlayer, 24, data.offset.x, data.offset.y, data.offset.z, 0.0, 0.0, 0.0)
-			end
+
+		drinkObject = createObject(data.model, 0.0, 0.0, 0.0)
+		if drinkObject then
+			attachElementToBone(drinkObject, localPlayer, 24, data.offset.x, data.offset.y, data.offset.z, 0.0, 0.0, 0.0)
 		end
 	elseif action == SPECIAL_ACTION_PISSING then
+		setPedAnimation(localPlayer, 'paulnmac', 'piss_loop', -1, true, false, false, false, 250, false)
+
 		-- how could we do without a strong jet?
 		jetEffect = createEffect('petrolcan', 0.0, 0.0, 0.0)
 		if jetEffect then
@@ -271,9 +278,8 @@ addEventHandler('onClientElementDataChange', localPlayer,
 	end
 )
 
-addEventHandler('onClientResourceStop', resourceRoot,
-	function()
-		-- unbind keys, destroy temp objects
-		resetSpecialAction()
-	end
-)
+-- unbind keys, destroy temp objects
+addEventHandler('onClientPlayerSpawn', localPlayer, resetSpecialAction)
+addEventHandler('onClientPlayerWasted', localPlayer, resetSpecialAction)
+addEventHandler('onClientPlayerVehicleEnter', localPlayer, resetSpecialAction)
+addEventHandler('onClientResourceStop', resourceRoot, resetSpecialAction)

@@ -903,8 +903,9 @@ function ClearAnimations(amx, player, forcesync)
 	setPedWearingJetpack(player, false)
 
 	local playerdata = g_Players[getElemID(player)]
-	if playerdata.specialaction ~= SPECIAL_ACTION_USECELLPHONE then
+	if playerdata.specialaction == SPECIAL_ACTION_NONE then
 		setPedAnimation(player, false)
+	elseif playerdata.specialaction ~= SPECIAL_ACTION_USECELLPHONE then
 		playerdata.specialaction = SPECIAL_ACTION_NONE
 		setElementData(player, 'SpecialAction', nil)
 	end
@@ -950,45 +951,32 @@ function SetPlayerSpecialAction(amx, player, actionID)
 	if not player then return false end
 	local playerdata = g_Players[getElemID(player)]
 
+	-- special action cannot be set or it's invalid
 	if not g_SpecialActions[actionID] then
-		-- special action cannot be set or it's invalid
-		if actionID < SPECIAL_ACTION_DRINK_BEER or actionID > SPECIAL_ACTION_DRINK_SPRUNK then
-			if actionID ~= SPECIAL_ACTION_USEJETPACK then return false end
-		end
-	elseif actionID >= SPECIAL_ACTION_DANCE1 and actionID <= SPECIAL_ACTION_PISSING then
-		-- special action won't be applied in vehicle
-		if isPedInVehicle(player) then return false end
+		return false
+	end
 
-		-- won't stop using cellphone if there's no cellphone
-		if playerdata.specialaction ~= SPECIAL_ACTION_USECELLPHONE then
-			if actionID == SPECIAL_ACTION_STOPUSECELLPHONE then return false end
+	if actionID == SPECIAL_ACTION_USEJETPACK then
+		setElementData(player, 'SpecialAction', nil)
+		return setPedWearingJetpack(player, true)
+	end
+
+	-- special action won't be applied in vehicle
+	if isPedInVehicle(player) then return false end
+
+	if actionID == SPECIAL_ACTION_STOPUSECELLPHONE then
+		if playerdata.specialaction == SPECIAL_ACTION_USECELLPHONE then
+			actionID = SPECIAL_ACTION_NONE
+		else
+			-- won't stop using cellphone if there's no cellphone
+			return false
 		end
 	end
 
 	setPedWearingJetpack(player, false)
-	setElementData(player, 'SpecialAction', nil)
-
-	if actionID == SPECIAL_ACTION_USEJETPACK then
-		return setPedWearingJetpack(player, true)
-	elseif actionID == SPECIAL_ACTION_NONE or actionID == SPECIAL_ACTION_STOPUSECELLPHONE then
-		if playerdata.specialaction == SPECIAL_ACTION_USECELLPHONE then
-			-- stop using cellphone properly
-			actionID = SPECIAL_ACTION_STOPUSECELLPHONE
-
-			playerdata.specialaction = SPECIAL_ACTION_NONE
-			return setPedAnimation(player, unpack(g_SpecialActions[actionID]))
-		end
-	elseif actionID >= SPECIAL_ACTION_DANCE1 and actionID <= SPECIAL_ACTION_DANCE4 then
-		setElementData(player, 'SpecialAction', actionID)
-	elseif actionID >= SPECIAL_ACTION_DRINK_BEER and actionID <= SPECIAL_ACTION_DRINK_SPRUNK then
-		playerdata.specialaction = actionID
-		return setElementData(player, 'SpecialAction', actionID)
-	elseif actionID == SPECIAL_ACTION_PISSING then
-		setElementData(player, 'SpecialAction', actionID)
-	end
-
-	setPedAnimation(player, unpack(g_SpecialActions[actionID]))
+	setElementData(player, 'SpecialAction', actionID)
 	playerdata.specialaction = actionID
+
 	return true
 end
 

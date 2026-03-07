@@ -251,15 +251,20 @@ SPECIAL_ACTION_DRINK_SPRUNK = 23
 SPECIAL_ACTION_PISSING = 68
 
 g_SpecialActions = {
-	[SPECIAL_ACTION_NONE] = { false },
-	[SPECIAL_ACTION_DANCE1] = { 'wop', 'dance_loop', -1, true, false, false, false, 250, false },
-	[SPECIAL_ACTION_DANCE2] = { 'gfunk', 'dance_loop', -1, true, false, false, false, 250, false },
-	[SPECIAL_ACTION_DANCE3] = { 'runningman', 'dance_loop', -1, true, false, false, false, 250, false },
-	[SPECIAL_ACTION_DANCE4] = { 'strip', 'str_loop_b', -1, true, false, false, false, 250, false },
-	[SPECIAL_ACTION_HANDSUP] = { 'ped', 'handsup', -1, false, false, false, true, 250, false },
-	[SPECIAL_ACTION_USECELLPHONE] = { 'ped', 'phone_in', -1, false, true, false, true, 250, true },
-	[SPECIAL_ACTION_STOPUSECELLPHONE] = { 'ped', 'phone_out', -1, false, true, false, false, 250, true },
-	[SPECIAL_ACTION_PISSING] = { 'paulnmac', 'piss_loop', -1, true, false, false, false, 250, false }
+	[SPECIAL_ACTION_NONE] = true,
+	[SPECIAL_ACTION_USEJETPACK] = true,
+	[SPECIAL_ACTION_DANCE1] = true,
+	[SPECIAL_ACTION_DANCE2] = true,
+	[SPECIAL_ACTION_DANCE3] = true,
+	[SPECIAL_ACTION_DANCE4] = true,
+	[SPECIAL_ACTION_HANDSUP] = true,
+	[SPECIAL_ACTION_USECELLPHONE] = true,
+	[SPECIAL_ACTION_STOPUSECELLPHONE] = true,
+	[SPECIAL_ACTION_DRINK_BEER] = true,
+	[SPECIAL_ACTION_SMOKE_CIGGY] = true,
+	[SPECIAL_ACTION_DRINK_WINE] = true,
+	[SPECIAL_ACTION_DRINK_SPRUNK] = true,
+	[SPECIAL_ACTION_PISSING] = true
 }
 
 PLAYER_VARTYPE_NONE = 0
