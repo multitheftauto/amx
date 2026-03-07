@@ -1,15 +1,24 @@
+local playerGarages = {
+	-- Open/close logic only for CJ house garages
+	5, 9, 13, 14, 17, 21, 25, 28, 34, 37, 38, 39, 42, 43, 48, 49
+}
+
 addEventHandler('onClientResourceStart', resourceRoot,
 	function()
-		for i = 0, 49 do
-			local gx, gy, gz = getGaragePosition(i)
+		for _, garage in ipairs(playerGarages) do
+			local gx, gy, gz = getGaragePosition(garage)
 			local colshape = createColSphere(gx, gy, gz, 20)
-			setElementData(colshape, 'GarageID', i, false)
+			setElementData(colshape, 'GarageID', garage, false)
 
 			-- Check initial proximity
 			if isElementWithinColShape(localPlayer, colshape) then
-				server.setGarageOpen(i, true)
+				server.setGarageOpen(garage, true)
 			end
 		end
+
+		-- Airport hangars are always opened
+		server.setGarageOpen(30, true)
+		server.setGarageOpen(45, true)
 	end
 )
 
