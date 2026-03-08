@@ -1160,11 +1160,11 @@ function format(amx, outBuf, outBufSize, fmt, ...)
 			c = c:sub(2)
 			table.remove(args, i)
 		end
-		if c == 'd' then
+		if c == 'd' or c == 'c' or c == 'x' then
 			args[i] = amx.memDAT[args[i]] or 0
 		elseif c == 'f' then
 			args[i] = cell2float(amx.memDAT[args[i]] or 0)
-		elseif c == 's' then
+		elseif c == 's' or c == 'q' then
 			args[i] = readMemString(amx, args[i]) or ''
 		else
 			i = i - 1
@@ -1172,6 +1172,15 @@ function format(amx, outBuf, outBufSize, fmt, ...)
 	end
 
 	fmt = fmt:gsub('(%%[%-%d%.]*)%*(%a)', '%1%2')
+
+	local valid = { d = true, c = true, x = true, f = true, s = true, q = true }
+	fmt = fmt:gsub('%%([%-%d%.%*]*)(%a)',
+		function(flags, letter)
+			if valid[letter] then return '%' .. flags .. letter
+			else return letter end
+		end
+	)
+
 	local result = fmt:format(unpack(args))
 
 	local copyLen = math.min(#result, outBufSize)
