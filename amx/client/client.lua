@@ -2070,7 +2070,9 @@ function createMessageDialog(titleText, message, button1txt, button2txt)
 end
 
 function clearListItem()
-	guiGridListRemoveColumn(listGrid, listColumn) -- First remove the default column
+	if listColumn then
+		guiGridListRemoveColumn(listGrid, listColumn) -- First remove the default column
+	end
 	local colAmount = guiGridListGetColumnCount(listGrid)
 	for i = 1, colAmount do -- Column indexes appear to start from 1
 		if not guiGridListRemoveColumn(listGrid, i) then -- Always clean up all columns
@@ -2266,8 +2268,10 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 		guiSetVisible(inputWindow, true)
 		inputDialog = dialogid
 	elseif dialogtype == 2 or dialogtype == 4 or dialogtype == 5 then -- DIALOG_STYLE_LIST, DIALOG_STYLE_TABLIST, DIALOG_STYLE_TABLIST_HEADER
+		info = info:gsub('(=?{[0-9A-Fa-f]*})', '')
+
 		-- Setup the UI
-		createListDialog(caption, colorizeString(info), button1, button2)
+		createListDialog(caption, info, button1, button2)
 		guiSetVisible(listWindow, true)
 		listDialog = dialogid
 		-- Done
