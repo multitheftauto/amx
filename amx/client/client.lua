@@ -1526,20 +1526,12 @@ function ShowMenuForPlayer(menuID)
 		g_CurrentMenu.closebtnhover = guiCreateStaticImage(g_CurrentMenu.x + g_CurrentMenu.width - closebtnSide, g_CurrentMenu.y, closebtnSide, closebtnSide, 'images/closebtn_hover.png', false, nil)
 		guiSetVisible(g_CurrentMenu.closebtnhover, false)
 		guiSetAlpha(g_CurrentMenu.closebtnhover, .75)
+
+		addEventHandler('onClientGUIClick', g_CurrentMenu.closebtnhover, menuHideHandler, false)
 		addEventHandler('onClientMouseLeave', g_CurrentMenu.closebtnhover,
 			function()
 				guiSetVisible(g_CurrentMenu.closebtnhover, false)
 				guiSetVisible(g_CurrentMenu.closebtn, true)
-			end,
-			false
-		)
-
-		addEventHandler('onClientGUIClick', g_CurrentMenu.closebtnhover,
-			function()
-				if not g_CurrentMenu.anim then
-					playSoundFrontEnd(2)
-					HideMenuForPlayer()
-				end
 			end,
 			false
 		)
@@ -1568,12 +1560,7 @@ function ShowMenuForPlayer(menuID)
 		setMenuAlpha(g_CurrentMenu, 1)
 	end
 
-	bindKey('enter', 'down',
-		function()
-			playSoundFrontEnd(2)
-			HideMenuForPlayer()
-		end
-	)
+	bindKey('enter', 'down', menuHideHandler)
 end
 
 function HideMenuForPlayer(menuID)
@@ -1622,12 +1609,7 @@ function closeMenu()
 	destroyElement(g_CurrentMenu.closebtnhover)
 	g_CurrentMenu.closebtnhover = nil
 	g_CurrentMenu = nil
-	unbindKey('enter', 'down',
-		function()
-			playSoundFrontEnd(2)
-			HideMenuForPlayer()
-		end
-	)
+	unbindKey('enter', 'down', menuHideHandler)
 	if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
 		showCursor(true)
 	else
@@ -1717,6 +1699,13 @@ function menuClickHandler(button, state, clickX, clickY)
 		closeMenu()
 	else
 		playSoundFrontEnd(4)
+	end
+end
+
+function menuHideHandler()
+	if not g_CurrentMenu.anim then
+		playSoundFrontEnd(2)
+		HideMenuForPlayer()
 	end
 end
 -----------------------------
@@ -1966,8 +1955,8 @@ end
 
 function createListDialog(titleText, message, button1txt, button2txt)
 	if isElement(listWindow) then
-		removeEventHandler('onClientGUIClick', getRootElement(), OnListDialogButton1Click) -- Remove handlers so they are not registered more than once
-		removeEventHandler('onClientGUIClick', getRootElement(), OnListDialogButton2Click)
+		removeEventHandler('onClientGUIClick', root, OnListDialogButton1Click) -- Remove handlers so they are not registered more than once
+		removeEventHandler('onClientGUIClick', root, OnListDialogButton2Click)
 		destroyElement(listWindow) -- Assuming listWindow is the parent of everything, it should remove the whole hierarchy
 	end
 
@@ -2004,8 +1993,8 @@ end
 
 function createInputDialog(titleText, message, button1txt, button2txt)
 	if isElement(inputWindow) then
-		removeEventHandler('onClientGUIClick', getRootElement(), OnInputDialogButton1Click) -- Remove handlers so they are not registered more than once
-		removeEventHandler('onClientGUIClick', getRootElement(), OnInputDialogButton2Click)
+		removeEventHandler('onClientGUIClick', root, OnInputDialogButton1Click) -- Remove handlers so they are not registered more than once
+		removeEventHandler('onClientGUIClick', root, OnInputDialogButton2Click)
 		destroyElement(inputWindow) -- Assuming inputWindow is the parent of everything, it should remove the whole hierarchy
 	end
 
@@ -2038,8 +2027,8 @@ end
 
 function createMessageDialog(titleText, message, button1txt, button2txt)
 	if isElement(msgWindow) then
-		removeEventHandler('onClientGUIClick', getRootElement(), OnMessageDialogButton1Click) -- Remove handlers so they are not registered more than once
-		removeEventHandler('onClientGUIClick', getRootElement(), OnMessageDialogButton2Click)
+		removeEventHandler('onClientGUIClick', root, OnMessageDialogButton1Click) -- Remove handlers so they are not registered more than once
+		removeEventHandler('onClientGUIClick', root, OnMessageDialogButton2Click)
 		destroyElement(msgWindow) -- Assuming msgWindow is the parent of everything, it should remove the whole hierarchy
 	end
 
