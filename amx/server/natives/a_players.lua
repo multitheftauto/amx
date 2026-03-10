@@ -905,7 +905,8 @@ function ClearAnimations(amx, player, forcesync)
 	local playerdata = g_Players[getElemID(player)]
 	if playerdata.specialaction == SPECIAL_ACTION_NONE then
 		setPedAnimation(player, false)
-	elseif playerdata.specialaction ~= SPECIAL_ACTION_USECELLPHONE then
+	elseif playerdata.specialaction ~= SPECIAL_ACTION_USECELLPHONE and
+	       playerdata.specialaction ~= SPECIAL_ACTION_CARRY then
 		playerdata.specialaction = SPECIAL_ACTION_NONE
 		setElementData(player, 'SpecialAction', nil)
 	end

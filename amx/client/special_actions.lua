@@ -12,6 +12,7 @@ local SPECIAL_ACTION_DRINK_BEER = 20
 local SPECIAL_ACTION_SMOKE_CIGGY = 21
 local SPECIAL_ACTION_DRINK_WINE = 22
 local SPECIAL_ACTION_DRINK_SPRUNK = 23
+local SPECIAL_ACTION_CARRY = 25
 local SPECIAL_ACTION_PISSING = 68
 
 local drinkData = {
@@ -92,6 +93,12 @@ end
 function resetSpecialAction()
 	if currentAction == SPECIAL_ACTION_NONE then return end
 
+	toggleControl('fire', true)
+	toggleControl('aim_weapon', true)
+	toggleControl('jump', true)
+	toggleControl('sprint', true)
+	toggleControl('crouch', true)
+
 	if currentAction >= SPECIAL_ACTION_DANCE1 and currentAction <= SPECIAL_ACTION_DANCE4 then
 		removeEventHandler('onClientRender', root, processDance)
 
@@ -99,7 +106,6 @@ function resetSpecialAction()
 		lastDanceMove = nil
 	elseif currentAction >= SPECIAL_ACTION_DRINK_BEER and currentAction <= SPECIAL_ACTION_DRINK_SPRUNK then
 		unbindKey('fire', 'down', onDrinkKey)
-		toggleControl('fire', true)
 
 		if isElement(drinkObject) then
 			destroyElement(drinkObject)
@@ -218,13 +224,25 @@ function processDance()
 end
 
 function handleSpecialAction(action)
-	if action == currentAction then return end
-
-	if currentAction == SPECIAL_ACTION_USECELLPHONE and action == SPECIAL_ACTION_NONE then
-		-- stop using cellphone properly
-		setPedAnimation(localPlayer, 'ped', 'phone_out', -1, false, true, false, false, 250, true)
-	else
+	if currentAction ~= SPECIAL_ACTION_USECELLPHONE and
+	   currentAction ~= SPECIAL_ACTION_CARRY then
 		resetSpecialAction()
+	else
+		toggleControl('fire', true)
+		toggleControl('aim_weapon', true)
+		toggleControl('jump', true)
+		toggleControl('sprint', true)
+		toggleControl('crouch', true)
+
+		if currentAction == SPECIAL_ACTION_USECELLPHONE and action == SPECIAL_ACTION_NONE then
+			-- stop using cellphone with extra animation
+			setPedAnimation(localPlayer, 'ped', 'phone_out', -1, false, true, false, false, 250, true)
+		elseif action == SPECIAL_ACTION_NONE or
+		       (action >= SPECIAL_ACTION_DRINK_BEER and action <= SPECIAL_ACTION_DRINK_SPRUNK) then
+			-- tricks to properly stop such looping animations
+			setPedAnimation(localPlayer, 'fat', 'fatidle', 1, false, false, true, false, 250, true)
+			setTimer(setPedAnimation, 10, 1, localPlayer, false)
+		end
 	end
 
 	if action >= SPECIAL_ACTION_DANCE1 and action <= SPECIAL_ACTION_DANCE4 then
@@ -234,8 +252,18 @@ function handleSpecialAction(action)
 		addEventHandler('onClientRender', root, processDance)
 	elseif action == SPECIAL_ACTION_HANDSUP then
 		setPedAnimation(localPlayer, 'ped', 'handsup', -1, false, false, false, true, 250, false)
-	elseif action == SPECIAL_ACTION_USECELLPHONE then
-		setPedAnimation(localPlayer, 'ped', 'phone_in', -1, false, true, false, true, 250, true)
+	elseif action == SPECIAL_ACTION_USECELLPHONE or action == SPECIAL_ACTION_CARRY then
+		toggleControl('fire', false)
+		toggleControl('aim_weapon', false)
+		toggleControl('jump', false)
+		toggleControl('sprint', false)
+		toggleControl('crouch', false)
+
+		if action == SPECIAL_ACTION_USECELLPHONE then
+			setPedAnimation(localPlayer, 'ped', 'phone_in', 1, false, true, false, true, 250, true)
+		else
+			setPedAnimation(localPlayer, 'carry', 'crry_prtial', 1, true, true, false, true, 250, true)
+		end
 	elseif action >= SPECIAL_ACTION_DRINK_BEER and action <= SPECIAL_ACTION_DRINK_SPRUNK then
 		toggleControl('fire', false)
 		bindKey('fire', 'down', onDrinkKey)
@@ -281,5 +309,4 @@ addEventHandler('onClientElementDataChange', localPlayer,
 -- unbind keys, destroy temp objects
 addEventHandler('onClientPlayerSpawn', localPlayer, resetSpecialAction)
 addEventHandler('onClientPlayerWasted', localPlayer, resetSpecialAction)
-addEventHandler('onClientPlayerVehicleEnter', localPlayer, resetSpecialAction)
 addEventHandler('onClientResourceStop', resourceRoot, resetSpecialAction)

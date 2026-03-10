@@ -461,7 +461,8 @@ function resetSpecialAction(player)
 	local playerdata = g_Players[getElemID(player)]
 	if not playerdata or not playerdata.specialaction then return end
 
-	if playerdata.specialaction ~= SPECIAL_ACTION_USECELLPHONE then
+	if playerdata.specialaction ~= SPECIAL_ACTION_USECELLPHONE and
+	   playerdata.specialaction ~= SPECIAL_ACTION_CARRY then
 		playerdata.specialaction = SPECIAL_ACTION_NONE
 		setElementData(player, 'SpecialAction', nil)
 	end

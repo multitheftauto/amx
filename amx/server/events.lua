@@ -677,9 +677,7 @@ addEventHandler('onVehicleEnter', root,
 			local playerID = getElemID(player)
 			g_Players[playerID].vehicle = source
 			setPlayerState(player, seat == 0 and PLAYER_STATE_DRIVER or PLAYER_STATE_PASSENGER)
-
-			g_Players[playerID].specialaction = SPECIAL_ACTION_NONE
-			setElementData(player, 'SpecialAction', nil)
+			resetSpecialAction(player)
 		end
 
 		if g_Vehicles[vehID] then
