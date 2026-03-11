@@ -111,12 +111,12 @@ function resetSpecialAction()
 			destroyElement(drinkObject)
 		end
 		drinkObject = nil
-	elseif currentAction == SPECIAL_ACTION_PISSING then
-		if isElement(jetEffect) then
-			destroyElement(jetEffect)
-		end
-		jetEffect = nil
 	end
+
+	if isElement(jetEffect) then
+		destroyElement(jetEffect)
+	end
+	jetEffect = nil
 
 	setPedAnimation(localPlayer, false)
 	currentAction = SPECIAL_ACTION_NONE

@@ -39,9 +39,8 @@ function SendPlayerMessageToAll(amx, sender, message)
 	if not r then
 		r, g, b = 255, 255, 255
 	end
-	local hexColor = string.format("#%02X%02X%02X", r, g, b)
-	local formattedMessage = hexColor .. getPlayerName(sender) .. ":#FFFFFF " .. message
-	return outputChatBox(formattedMessage, root, 255, 255, 255, true)
+	local formattedMessage = getPlayerName(sender) .. ':#FFFFFF ' .. message:gsub('#%x%x%x%x%x%x', '')
+	return outputChatBox(formattedMessage, root, r, g, b, true)
 end
 
 function SendPlayerMessageToPlayer(amx, playerTo, playerFrom, message)
@@ -49,9 +48,8 @@ function SendPlayerMessageToPlayer(amx, playerTo, playerFrom, message)
 	if not r then
 		r, g, b = 255, 255, 255
 	end
-	local hexColor = string.format("#%02X%02X%02X", r, g, b)
-	local formattedMessage = hexColor .. getPlayerName(playerFrom) .. ":#FFFFFF " .. message
-	return outputChatBox(formattedMessage, playerTo, 255, 255, 255, true)
+	local formattedMessage = getPlayerName(playerFrom) .. ':#FFFFFF ' .. message:gsub('#%x%x%x%x%x%x', '')
+	return outputChatBox(formattedMessage, playerTo, r, g, b, true)
 end
 
 function SendDeathMessage(amx, killerID, victim, reason)
@@ -194,19 +192,19 @@ function VectorSize(amx, x, y, z)
 end
 
 function acos(amx, f)
-	return float2cell(math.acos(f))
+	return float2cell(math.deg(math.acos(f)))
 end
 
 function asin(amx, f)
-	return float2cell(math.asin(f))
+	return float2cell(math.deg(math.asin(f)))
 end
 
 function atan(amx, f)
-	return float2cell(math.atan(f))
+	return float2cell(math.deg(math.atan(f)))
 end
 
 function atan2(amx, x, y)
-	return float2cell(math.atan2(y, x))
+	return float2cell(math.deg(math.atan2(x, y)))
 end
 
 -- Security

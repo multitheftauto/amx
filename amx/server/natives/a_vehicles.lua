@@ -65,7 +65,7 @@ function GetVehicleZAngle(amx, vehicle, refZ)
 	if not vehicle then
 		return false
 	end
-	local rX, rY, rZ = getVehicleRotation(vehicle)
+	local rX, rY, rZ = getElementRotation(vehicle)
 	writeMemFloat(amx, refZ, rZ)
 	return true
 end
@@ -78,8 +78,8 @@ end
 GetVehicleDistanceFromPoint = GetPlayerDistanceFromPoint
 
 function SetVehicleZAngle(amx, vehicle, rZ)
-	local rX, rY = getVehicleRotation(vehicle)
-	return setVehicleRotation(vehicle, 0, 0, rZ)
+	local rX, rY = getElementRotation(vehicle)
+	return setElementRotation(vehicle, 0, 0, rZ)
 end
 
 -- SetVehicleParamsForPlayer client

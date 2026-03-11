@@ -139,7 +139,7 @@ function classSelKey(player)
 	if g_Players[playerID].returntoclasssel then return end
 
 	clientCall(player, 'displayFadingMessage', 'Returning to class selection after next death', 136, 140, 68)
-	outputChatBox('* Returning to class selection after next death', player, 136, 170, 98)
+	outputChatBox('Returning to class selection after next death', player, 136, 170, 98)
 	g_Players[playerID].returntoclasssel = true
 end
 addCommandHandler('changeclass', classSelKey)

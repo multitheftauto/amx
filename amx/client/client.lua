@@ -1897,6 +1897,11 @@ function checkWorldBounds()
 		elem = localPlayer
 		isVehicle = false
 	end
+
+	if getElementInterior(elem) > 0 then
+		return
+	end
+
 	local bounds = g_WorldBounds
 	x, y, z = getElementPosition(elem)
 
@@ -1928,13 +1933,12 @@ function checkWorldBounds()
 		changed = true
 	end
 	if changed then
+		GameTextForPlayer('Stay within the ~r~world boundries', 1000, 5)
+
 		if isVehicle then
 			setElementVelocity(elem, vx, vy, vz)
 		else
 			setElementPosition(elem, x, y, z)
-		end
-		if not gameText then
-			GameTextForPlayer('Don\'t leave the ~r~world boundaries!', 2000)
 		end
 	end
 end
