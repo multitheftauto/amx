@@ -71,8 +71,48 @@ function GetVehicleZAngle(amx, vehicle, refZ)
 end
 
 function GetVehicleRotationQuat(amx, vehicle, refW, refX, refY, refZ)
-	notImplemented('GetVehicleRotationQuat')
-	return false
+	if not vehicle then
+		return false
+	end
+
+	local m = getElementMatrix(vehicle)
+	local qW, qX, qY, qZ = 1, 0, 0, 0
+
+	if m then
+		local t, s
+
+		local rightX, rightY, rightZ = m[1][1], m[1][2], m[1][3]
+		local upX, upY, upZ = m[2][1], m[2][2], m[2][3]
+		local atX, atY, atZ = m[3][1], m[3][2], m[3][3]
+
+		t = rightX + upY + atZ + 1.0
+		if t < 0 then t = 0 end
+		qW = math.sqrt(t) * 0.5
+
+		t = rightX + 1.0 - upY - atZ
+		if t < 0 then t = 0 end
+		qX = math.sqrt(t) * 0.5
+
+		s = 1.0 - rightX
+		t = upY + s - atZ
+		if t < 0 then t = 0 end
+		qY = math.sqrt(t) * 0.5
+
+		t = s - upY + atZ
+		if t < 0 then t = 0 end
+		qZ = math.sqrt(t) * 0.5
+
+		qX = math.abs(qX) * (atY - upZ >= 0 and 1 or -1)
+		qY = math.abs(qY) * (rightZ - atX >= 0 and 1 or -1)
+		qZ = math.abs(qZ) * (upX - rightY >= 0 and 1 or -1)
+	end
+
+	writeMemFloat(amx, refW, qW)
+	writeMemFloat(amx, refX, qX)
+	writeMemFloat(amx, refY, qY)
+	writeMemFloat(amx, refZ, qZ)
+
+	return true
 end
 
 GetVehicleDistanceFromPoint = GetPlayerDistanceFromPoint
