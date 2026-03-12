@@ -39,7 +39,7 @@ function SendPlayerMessageToAll(amx, sender, message)
 	if not r then
 		r, g, b = 255, 255, 255
 	end
-	local formattedMessage = getPlayerName(sender) .. ':#FFFFFF ' .. message:gsub('#%x%x%x%x%x%x', '')
+	local formattedMessage = getPlayerName(sender) .. ':#FFFFFF ' .. colorizeString(message)
 	return outputChatBox(formattedMessage, root, r, g, b, true)
 end
 
@@ -48,7 +48,7 @@ function SendPlayerMessageToPlayer(amx, playerTo, playerFrom, message)
 	if not r then
 		r, g, b = 255, 255, 255
 	end
-	local formattedMessage = getPlayerName(playerFrom) .. ':#FFFFFF ' .. message:gsub('#%x%x%x%x%x%x', '')
+	local formattedMessage = getPlayerName(playerFrom) .. ':#FFFFFF ' .. colorizeString(message)
 	return outputChatBox(formattedMessage, playerTo, r, g, b, true)
 end
 

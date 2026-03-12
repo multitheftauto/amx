@@ -398,7 +398,11 @@ addEventHandler('onPlayerChat', root,
 			return
 		end
 		cancelEvent()
+
 		msg = tostring(msg)
+		msg = msg:gsub('(=?{[0-9A-Fa-f]*})', '') -- remove SA-MP colors
+		msg = msg:gsub('#%x%x%x%x%x%x', '') -- remove MTA colors
+
 		if not procCallOnAll('OnPlayerText', getElemID(source), msg) then
 			return
 		end
@@ -409,11 +413,11 @@ addEventHandler('onPlayerChat', root,
 			local x, y, z = getElementPosition(source)
 			for i, data in pairs(g_Players) do
 				if getDistanceBetweenPoints3D(x, y, z, getElementPosition(data.elem)) <= g_GlobalChatRadius then
-					outputChatBox(getPlayerName(source) .. ':#FFFFFF ' .. msg:gsub('#%x%x%x%x%x%x', ''), data.elem, r, g, b, true)
+					outputChatBox(getPlayerName(source) .. ':#FFFFFF ' .. msg, data.elem, r, g, b, true)
 				end
 			end
 		else
-			outputChatBox(getPlayerName(source) .. ':#FFFFFF ' .. msg:gsub('#%x%x%x%x%x%x', ''), root, r, g, b, true)
+			outputChatBox(getPlayerName(source) .. ':#FFFFFF ' .. msg, root, r, g, b, true)
 		end
 	end
 )
