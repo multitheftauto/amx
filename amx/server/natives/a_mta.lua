@@ -549,8 +549,8 @@ function GetVehicleDoorState(amx, vehicle, door)
 	return getVehicleDoorState(vehicle, door)
 end
 
-function SetVehicleDoorState(amx, vehicle, door, doorState)
-	return setVehicleDoorState(vehicle, door, doorState)
+function SetVehicleDoorState(amx, vehicle, door, doorState, flyingComponent)
+	return setVehicleDoorState(vehicle, door, doorState, flyingComponent)
 end
 
 function GetVehicleLightState(amx, vehicle, light)
@@ -585,8 +585,8 @@ function GetVehiclePanelState(amx, vehicle, panel)
 	return getVehiclePanelState(vehicle, panel)
 end
 
-function SetVehiclePanelState(amx, vehicle, panel, panelState)
-	return setVehiclePanelState(vehicle, panel, panelState)
+function SetVehiclePanelState(amx, vehicle, panel, panelState, flyingComponent)
+	return setVehiclePanelState(vehicle, panel, panelState, flyingComponent)
 end
 
 function GetVehicleVariant(amx, vehicle, refVar1, refVar2)
@@ -672,6 +672,17 @@ function GetVehicleNumberPlate(amx, vehicle, buf, len)
 	local copyLen = math.min(#plate, len)
 	writeMemString(amx, buf, plate:sub(1, copyLen))
 	return copyLen
+end
+
+function GetVehicleRotation(amx, vehicle, refX, refY, refZ)
+	if not vehicle then
+		return false
+	end
+	local rX, rY, rZ = getElementRotation(vehicle)
+	writeMemFloat(amx, refX, rX)
+	writeMemFloat(amx, refY, rY)
+	writeMemFloat(amx, refZ, rZ)
+	return true
 end
 
 function GetVehicleColor(amx, vehicle, refColor1, refColor2)
