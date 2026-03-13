@@ -255,7 +255,7 @@ Changes the value of a specific statistic for a player. See the [stats page] for
 
 ```pawn
 native GetVehicleVariant(vehicleid, &var1, &var2);
-native SetVehicleVariant(vehicleid, var1, var2);
+native SetVehicleVariant(vehicleid, var1 = 255, var2 = 255);
 ```
 
 Changes the variant of a vehicle. Vehicle variants can be anything from different adverts to additional parts of the model. See the [vehicle variants page] for a list of default vehicle variants.
