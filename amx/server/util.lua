@@ -830,60 +830,6 @@ function writeMemFloat(amx, offset, float)
 	amx.memDAT[offset] = float2cell(float)
 end
 
---[[
-function cell2float(cell)
-	if cell == 0 then
-		return 0
-	end
-
-	local sign = cell >= 0x80000000 and -1 or 1
-	local exp = (math.floor(cell / (2 ^ 23)) % (2 ^ 8)) - 127
-	local mantissa = (cell % (2 ^ 23)) / (2 ^ 23)
-	return sign * (2 ^ exp) * (1 + mantissa)
-end
-
-function float2cell(float)
-	if float == 0 then
-		return 0
-	end
-	local ldexp = math.ldexp
-
-	-- sign bit
-	local sign = 0
-	if float < 0 then
-		sign = 2 ^ 31
-		float = -float
-	end
-	local ipart, fpart = math.modf(float)
-	-- exponent
-	local exp = 0
-	while ipart > 2 ^ exp do
-		exp = exp + 1
-	end
-	if 2 ^ exp > ipart then
-		exp = exp - 1
-	end
-	-- mantissa
-	local numFPartBits = 0
-	local fpartBits = 0
-	while fpart ~= 0 and numFPartBits < 23 do
-		fpart = 2 * fpart
-		if fpart >= 1 then
-			fpart = fpart - 1
-			fpartBits = fpartBits * 2 + 1
-		else
-			fpartBits = fpartBits * 2
-		end
-		numFPartBits = numFPartBits + 1
-	end
-	ipart = ipart - 2 ^ exp
-	local mantissa = ldexp(ipart, numFPartBits) + fpartBits
-
-	-- build
-	return sign + ldexp(exp + 127, 23) + ldexp(mantissa, 23 - (exp + numFPartBits))
-end
---]]
-
 function string:split(sep)
 	if #self == 0 then
 		return {}

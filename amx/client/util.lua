@@ -62,26 +62,76 @@ server = setmetatable(
 	}
 )
 
-function displayFadingMessage(text, r, g, b, fadeInTime, stayTime, fadeOutTime)
-	local lineHeight = 40
-	local label = guiCreateLabel(screenWidth, screenHeight, 500, lineHeight, text, false)
-	local width = guiLabelGetTextExtent(label)
-	guiSetPosition(label, screenWidth / 2 - width / 2, 3 * screenHeight / 4, false)
-	guiSetSize(label, width, lineHeight, false)
-	guiSetAlpha(label, 0)
-	if r and g and b then
-		guiLabelSetColor(label, r, g, b)
+g_TextDrawColorMapping = {
+	r = { 180, 25, 29 },
+	g = { 54, 104, 44 },
+	b = { 50, 60, 127 },
+	o = { 215, 146, 24 },
+	w = { 225, 225, 225 },
+	y = { 226, 192, 99 },
+	p = { 168, 110, 252 },
+	l = { 10, 10, 10 }
+}
+
+g_TextDrawFonts = {
+	[0] = { font = 'beckett', lsizemul = 1.25 },		-- TextDraw letter size -> dxDrawText scale multiplier
+	[1] = { font = 'default-bold', lsizemul = 1.25 },
+	[2] = { font = 'bankgothic',   lsizemul = 1.5 },
+	[3] = { font = 'pricedown', lsizemul = 1.25 }
+}
+
+local controlNames = {
+	VEHICLE_TURRETLEFT = 'special_control_left',
+	VEHICLE_TURRETRIGHT = 'special_control_right',
+	VEHICLE_TURRETUP = 'special_control_up',
+	VEHICLE_TURRETDOWN = 'special_control_down',
+	VEHICLE_HORN = 'horn',
+	VEHICLE_LOOKLEFT = 'vehicle_look_left',
+	VEHICLE_LOOKRIGHT = 'vehicle_look_right',
+	VEHICLE_ENTER_EXIT = 'enter_exit',
+	VEHICLE_ACCELERATE = 'accelerate',
+	VEHICLE_BRAKE = 'brake_reverse',
+	VEHICLE_HANDBRAKE = 'handbrake',
+	VEHICLE_STEERDOWN = 'steer_forward',
+	VEHICLE_STEERUP = 'steer_backward',
+	VEHICLE_STEERLEFT = 'vehicle_left',
+	VEHICLE_STEERRIGHT = 'vehicle_right',
+	VEHICLE_FIREWEAPON_ALT = 'vehicle_secondary_fire',
+	VEHICLE_RADIO_STATION_UP = 'radio_next',
+	VEHICLE_RADIO_STATION_DOWN = 'radio_previous',
+
+	PED_SPRINT = 'sprint',
+	PED_FIREWEAPON = 'fire',
+	PED_ANSWER_PHONE = 'action',
+	PED_LOCK_TARGET = 'aim_weapon',
+	PED_LOOKBEHIND = 'look_behind',
+	PED_SNIPER_ZOOM_IN = 'zoom_in',
+	PED_SNIPER_ZOOM_OUT = 'zoom_out',
+	PED_CYCLE_WEAPON_LEFT = 'previous_weapon',
+	PED_CYCLE_WEAPON_RIGHT = 'next_weapon',
+	PED_DUCK = 'crouch',
+	PED_JUMPING = 'jump',
+
+	GO_LEFT = 'left',
+	GO_RIGHT = 'right',
+	GO_BACK = 'backwards',
+	GO_FORWARD = 'forwards',
+
+	CONVERSATION_NO = 'conversation_no',
+	CONVERSATION_YES = 'conversation_yes',
+
+	GROUP_CONTROL_BWD = 'group_control_back',
+	GROUP_CONTROL_FWD = 'group_control_forwards'
+}
+
+function getSAMPBoundKey(control)
+	control = controlNames[control] or control
+	local keys = getBoundKeys(control)
+	if keys and #keys > 0 then
+		return keys[1]
+	else
+		return control
 	end
-	local anim = Animation.createNamed('fadingLabels')
-	anim:addPhase(
-		{ elem = label,
-			Animation.presets.guiFadeIn(fadeInTime or 1000),
-			{ time = stayTime or 3000 },
-			Animation.presets.guiFadeOut(fadeOutTime or 1000),
-			destroyElement
-		}
-	)
-	anim:play()
 end
 
 function drawBorderText(text, x, y, color, scalex, scaley, font, outlinesize, outlinecolor)
@@ -110,6 +160,92 @@ function drawShadowText(text, x, y, color, scale, font, shadowDist, width, align
 	local alpha = bitExtract(color, 24, 8)
 	dxDrawText(text, x + shadowDist, y + shadowDist, x + shadowDist + (width or 0), 0, tocolor(0, 0, 0, alpha), scale, font, width and align or 'left')
 	dxDrawText(text, x, y, x + (width or 0), 0, color, scale, font, width and align or 'left')
+end
+
+-- Originally by UAEpro from here: https://forum.multitheftauto.com/topic/33149-colorcodes-in-labels/#comment-335358
+function guiCreateColoredLabel(ax, ay, bx, by, str, parent, relative) -- x, y, width, height
+	if not relative then
+		relative = true
+	end
+
+	local scrollpane = guiCreateScrollPane(ax, ay, bx, by, relative, parent)
+	--outputConsole('main string:' .. str)
+
+	local pat = '(.-)#(%x%x%x%x%x%x)'
+	local s, e, cap, col = str:find(pat, 1)
+	local last = 1
+	local labels = {}
+	local incy = 0
+	local incx = 0
+	while s do
+		if cap == '' and col then
+			r, g, b = tonumber('0x' .. col:sub(1, 2)), tonumber('0x' .. col:sub(3, 4)), tonumber('0x' .. col:sub(5, 6))
+		end
+		if (s ~= 1) or cap ~= '' then
+			--outputConsole('guiCreateColoredLabel: ' .. cap)
+
+			lbl = guiCreateLabel(ax + incx, ay + incy, bx, by, cap, relative, scrollpane)
+			guiLabelSetHorizontalAlign(lbl, 'left')
+			table.insert(labels, lbl)
+			if not r then r = 255 end
+			if not g then g = 255 end
+			if not b then b = 255 end
+			guiLabelSetColor(lbl, r, g, b)
+			r, g, b = tonumber('0x' .. col:sub(1, 2)), tonumber('0x' .. col:sub(3, 4)), tonumber('0x' .. col:sub(5, 6))
+
+			local match = cap:find('\n')
+			if match then
+				local xtxtsize, ytxtsize = guiGetSize(lbl, true) -- not relative
+				incy = incy + (ytxtsize / 8) -- We found a /n so send it further down on the next line
+				incx = 0 -- Don't add spaces on new lines
+				--outputConsole('found a new line')
+			else
+				if r ~= 255 or g ~= 255 or b ~= 255 then -- It's colored so separate it
+					incy = 0
+					local xsize, ysize = guiGetSize(scrollpane, false) -- not relative
+					incx = incx + (guiLabelGetTextExtent(lbl) / xsize) -- Make space for the next word, relative to the parent width
+					--outputConsole('Separating string')
+				else
+					incy = 0
+					incx = 0
+				end
+			end
+		end
+		last = e + 1
+		s, e, cap, col = str:find(pat, last)
+	end
+	if (last <= #str) then
+		cap = str:sub(last)
+		lbl2 = guiCreateLabel(ax + incx, ay + incy, bx, by, cap, relative, scrollpane)
+		table.insert(labels, lbl2)
+		if not r then r = 255 end
+		if not g then g = 255 end
+		if not b then b = 255 end
+		guiLabelSetColor(lbl2, r, g, b)
+	end
+	return labels
+end
+
+function displayFadingMessage(text, r, g, b, fadeInTime, stayTime, fadeOutTime)
+	local lineHeight = 40
+	local label = guiCreateLabel(screenWidth, screenHeight, 500, lineHeight, text, false)
+	local width = guiLabelGetTextExtent(label)
+	guiSetPosition(label, screenWidth / 2 - width / 2, 3 * screenHeight / 4, false)
+	guiSetSize(label, width, lineHeight, false)
+	guiSetAlpha(label, 0)
+	if r and g and b then
+		guiLabelSetColor(label, r, g, b)
+	end
+	local anim = Animation.createNamed('fadingLabels')
+	anim:addPhase(
+		{ elem = label,
+			Animation.presets.guiFadeIn(fadeInTime or 1000),
+			{ time = stayTime or 3000 },
+			Animation.presets.guiFadeOut(fadeOutTime or 1000),
+			destroyElement
+		}
+	)
+	anim:play()
 end
 
 function destroyBlipsAttachedTo(elem)
