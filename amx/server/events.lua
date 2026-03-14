@@ -205,6 +205,16 @@ function putPlayerInClassSelection(player)
 	g_Players[playerID].viewingintro = nil
 	g_Players[playerID].doingclasssel = true
 	g_Players[playerID].selectedclass = g_Players[playerID].selectedclass or 0
+
+	for i = 0, 9 do
+		local obj = g_Players[playerID].attachedObjects[i]
+		if obj then
+			detachElementFromBone(obj)
+			destroyElement(obj)
+			g_Players[playerID].attachedObjects[i] = nil
+		end
+	end
+
 	killPed(player)
 	if g_Players[playerID].blip then
 		setElementVisibleTo(g_Players[playerID].blip, root, false)
@@ -330,6 +340,15 @@ function handlePlayerSpawn(player)
 	setElementCollisionsEnabled(player, true)
 	setPlayerHudComponentVisible(player, 'area_name', g_ShowZoneNames)
 	setPlayerHudComponentVisible(player, 'radar', true)
+
+	for i = 0, 9 do
+		local obj = playerdata.attachedObjects[i]
+		if obj then
+			detachElementFromBone(obj)
+			destroyElement(obj)
+			playerdata.attachedObjects[i] = nil
+		end
+	end
 
 	if playerdata.spawnint then
 		setElementInterior(player, playerdata.spawnint)
@@ -542,6 +561,14 @@ addEventHandler('onPlayerQuit', root,
 
 		local playerID = getElemID(source)
 		procCallOnAll('OnPlayerDisconnect', playerID, quitReasons[reason] or 0)
+
+		for i = 0, 9 do
+			local obj = g_Players[playerID].attachedObjects[i]
+			if obj then
+				detachElementFromBone(obj)
+				destroyElement(obj)
+			end
+		end
 
 		for i, playerdata in pairs(g_Players) do
 			playerdata.streamedPlayers[playerID] = nil
