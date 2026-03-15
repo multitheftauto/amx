@@ -94,7 +94,7 @@ end)
 addEventHandler('onClientPedsProcessed', root, function()
 	for element, data in next, AttachementsTable do
 		local ped = data[1]
-		if _isElementOnScreen(ped) then
+		if elm(ped) and _isElementOnScreen(ped) then
 			notOnScrenElements[element] = false
 			boneMat = _getElementBoneMatrix(ped, data[2])
 			rotMat = data[6]
