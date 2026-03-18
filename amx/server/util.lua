@@ -859,29 +859,21 @@ function colorizeString(string)
 	end)
 end
 
-function cell2color(val)
-	local r = bitExtract(val, 24, 8)
-	local g = bitExtract(val, 16, 8)
-	local b = bitExtract(val, 8, 8)
-	local a = bitExtract(val, 0, 8)
-	return r, g, b, a
-end
-
 function color2cell(r, g, b, a)
 	r = math.min(math.max(r, 0), 255)
 	g = math.min(math.max(g, 0), 255)
 	b = math.min(math.max(b, 0), 255)
 	a = math.min(math.max(a, 0), 255)
 
-	local unsigned = r * 0x1000000	-- 2^24
-			+ g * 0x10000	-- 2^16
-			+ b * 0x100	-- 2^8
-			+ a
+	local u = r * 0x1000000	-- 2^24
+		+ g * 0x10000	-- 2^16
+		+ b * 0x100	-- 2^8
+		+ a
 
-	if unsigned >= 0x80000000 then
-		return unsigned - 0x100000000
+	if u >= 0x80000000 then
+		return u - 0x100000000
 	else
-		return unsigned
+		return u
 	end
 end
 

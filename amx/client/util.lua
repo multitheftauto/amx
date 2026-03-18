@@ -74,10 +74,10 @@ g_TextDrawColorMapping = {
 }
 
 g_TextDrawFonts = {
-	[0] = { font = 'beckett', lsizemul = 1.25 },		-- TextDraw letter size -> dxDrawText scale multiplier
-	[1] = { font = 'default-bold', lsizemul = 1.25 },
-	[2] = { font = 'bankgothic',   lsizemul = 1.5 },
-	[3] = { font = 'pricedown', lsizemul = 1.25 }
+	[0] = 'beckett',
+	[1] = 'default-bold',
+	[2] = 'bankgothic',
+	[3] = 'pricedown'
 }
 
 local controlNames = {
@@ -138,7 +138,7 @@ function drawBorderText(text, x, y, color, scalex, scaley, font, outlinesize, ou
 	local alpha = bitExtract(color, 24, 8)
 	outlinecolor = outlinecolor or tocolor(0, 0, 0, alpha)
 
-	if outlinesize > 0 then
+	if outlinesize and outlinesize ~= 0 then
 		outlinesize = outlinesize * 2
 		for offsetX = -outlinesize, outlinesize, outlinesize do
 			for offsetY = -outlinesize, outlinesize, outlinesize do
@@ -421,39 +421,35 @@ function colorizeString(string)
 	end)
 end
 
-function setcoloralpha(color, alpha)
-	local a = bitExtract(color, 24, 8)
-	return bitReplace(color, alpha, 24, 8)
+function colorToRGB(val)
+	return {
+		bitExtract(val, 16, 8),
+		bitExtract(val, 8, 8),
+		bitExtract(val, 0, 8)
+	}
 end
 
 DEFAULT_SCREEN_WIDTH = 640.0
 DEFAULT_SCREEN_HEIGHT = 448.0
-DEFAULT_ASPECT_RATIO = 4.0 / 3.0
 
 screenWidth, screenHeight = guiGetScreenSize()
 
 -- This scales from PS2 pixel coordinates to the real resolution
-function SCREEN_STRETCH_X(a)
+function posStretchX(a)
 	return ((a) * screenWidth / DEFAULT_SCREEN_WIDTH)
 end
 
-function SCREEN_STRETCH_Y(a)
+function posStretchY(a)
 	return ((a) * screenHeight / DEFAULT_SCREEN_HEIGHT)
 end
 
-function getAspectRatio()
-	return screenWidth / screenHeight
+MINIMAL_SCREEN_WIDTH = 640.0
+MINIMAL_SCREEN_HEIGHT = 480.0
+
+function sizeScaleX(a)
+	return ((a) * screenWidth / MINIMAL_SCREEN_WIDTH)
 end
 
-function SCREEN_SCALE_AR(a)
-	return ((a) * DEFAULT_ASPECT_RATIO / getAspectRatio())
-end
-
--- This scales from PS2 pixel coordinates while optionally maintaining the aspect ratio
-function SCREEN_SCALE_X(a)
-	return SCREEN_SCALE_AR(SCREEN_STRETCH_X(a))
-end
-
-function SCREEN_SCALE_Y(a)
-	return SCREEN_STRETCH_Y(a)
+function sizeScaleY(a)
+	return ((a) * screenHeight / MINIMAL_SCREEN_HEIGHT)
 end

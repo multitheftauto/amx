@@ -94,12 +94,12 @@ function SendDeathMessageToPlayer(amx, player, killerID, victim, reason)
 end
 
 function GameTextForAll(amx, str, time, style)
-	str = str:lower()
 	--[[
 	for mta, samp in pairs(g_CommandMapping) do
 		str = str:gsub('/' .. samp, '/' .. mta)
 	end
 	]] -- This replaces any part of a string, causing commands such as '/quitfaction' to display as '/outfaction'
+
 	for i, player in pairs(g_Players) do
 		GameTextForPlayer(amx, player.elem, str, time, style)
 	end
@@ -107,12 +107,12 @@ function GameTextForAll(amx, str, time, style)
 end
 
 function GameTextForPlayer(amx, player, str, time, style)
-	str = str:lower()
 	--[[
 	for mta, samp in pairs(g_CommandMapping) do
 		str = str:gsub('/' .. samp, '/' .. mta)
 	end
 	]] -- This replaces any part of a string, causing commands such as '/quitfaction' to display as '/outfaction'
+
 	clientCall(player, 'GameTextForPlayer', str, time, style)
 	return true
 end
@@ -848,10 +848,10 @@ function TextDrawCreate(amx, x, y, text)
 	--outputDebugString('TextDrawCreate called with args ' .. x .. ' ' .. y .. ' ' .. text)
 
 	local textdraw = { x = x, y = y, shadow = { align = 1, outlinesize = 0, shade = 2, text = text, font = 1, lwidth = 0.48, lheight = 1.12 } }
-	textdraw.clientTDId = #g_TextDraws + 1
 	textdraw.visible = false
 
 	local id = table.insert(g_TextDraws, textdraw)
+	textdraw.clientTDId = id
 
 	setmetatable(
 		textdraw,
@@ -876,7 +876,8 @@ function TextDrawCreate(amx, x, y, text)
 			end
 		}
 	)
-	clientCall(root, 'TextDrawCreate', id, table.deshadowize(textdraw, true))
+
+	clientCall(root, 'TextDrawCreate', textdraw.clientTDId, table.deshadowize(textdraw, true))
 	return id
 end
 
@@ -906,7 +907,7 @@ function TextDrawAlignment(amx, textdraw, align)
 end
 
 function TextDrawColor(amx, textdraw, r, g, b, a)
-	textdraw.color = { r, g, b }
+	textdraw.color = { r, g, b, a }
 	return true
 end
 

@@ -80,7 +80,7 @@ function gamemodeUnload()
 	end
 	DisablePlayerCheckpoint()
 	DisablePlayerRaceCheckpoint()
-	destroyGameText()
+	destroyAllGameTexts()
 	destroyClassSelGUI()
 	if g_WorldBounds and g_WorldBounds.handled then
 		removeEventHandler('onClientRender', root, checkWorldBounds)
@@ -923,39 +923,37 @@ function hideTextDraw(textdraw)
 	end
 end
 
-function hudGetVerticalScale()
-	return 1.0 / DEFAULT_SCREEN_HEIGHT
-end
-
-function hudGetHorizontalScale()
-	return 1.0 / DEFAULT_SCREEN_WIDTH
-end
-
 function initTextDraw(textdraw)
 	if not textdraw then return end
 	textdraw.clientTDId = textdraw.clientTDId or (#g_TextDraws + 1)
 	g_TextDraws[textdraw.clientTDId] = textdraw
 
-	-- GTA replaces underscores with spaces
-	textdraw.text = textdraw.text:gsub('_', ' ')
+	if textdraw.font then
+		-- GTA replaces such brackets with stars on these fonts
+		if textdraw.font == 0 or textdraw.font == 2 then
+			textdraw.text = textdraw.text:gsub(']', '★')
+		end
 
-	-- and also such brackets with stars on these fonts
-	if textdraw.font and (textdraw.font == 0 or textdraw.font == 2) then
-		textdraw.text = textdraw.text:gsub(']', '★')
+		-- and also makes chars in same case on these fonts
+		if textdraw.font == 2 then
+			textdraw.text = textdraw.text:upper()
+		elseif textdraw.font == 3 then
+			textdraw.text = textdraw.text:lower()
+		end
 	end
 
-	local scale = (textdraw.lwidth or 0.48)
-	local tWidth, tHeight = dxGetTextSize(textdraw.text, scale, (textdraw.lheight or 1.12))
+	local tWidth, tHeight = dxGetTextSize(textdraw.text, textdraw.lwidth, textdraw.lheight)
 	local lineHeight = (tHeight or 0.25) / 2 -- space between lines (vertical) also used to calculate size of the box if any
 	local lineWidth = (tWidth or 0.25) -- space between words (horizontal)
 
 	local text = textdraw.text:gsub('~k~~(.-)~', getSAMPBoundKey)
 	local lines = {}
 	local pos, stop, c
+
 	stop = 0
 	while true do
 		pos, stop, c = text:find('~(%a)~', stop + 1)
-		if c == 'n' then -- If we found a new line
+		if c and c:lower() == 'n' then -- If we found a new line
 			lines[#lines + 1] = text:sub(1, pos - 1)
 			text = text:sub(stop + 1)
 			stop = 0
@@ -969,11 +967,15 @@ function initTextDraw(textdraw)
 	end
 
 	textdraw.parts = {}
+
 	local font = g_TextDrawFonts[textdraw.font and textdraw.font >= 0 and textdraw.font <= #g_TextDrawFonts and textdraw.font or 0]
-	font = font.font
+	local baseColor = textdraw.color or tocolor(225, 225, 225)
+	local alpha = bitExtract(baseColor, 24, 8)
 
 	local TDXPos = textdraw.x or DEFAULT_SCREEN_WIDTH - #lines * lineWidth
 	local TDYPos = textdraw.y or DEFAULT_SCREEN_HEIGHT - #lines * lineHeight
+
+	textdraw.absheight = #lines * lineHeight
 
 	-- Process the lines we previously found
 	for _, line in ipairs(lines) do
@@ -985,6 +987,7 @@ function initTextDraw(textdraw)
 			if not start then
 				break
 			end
+
 			local extrabright = 0
 			colorpos = start
 			while true do
@@ -993,140 +996,135 @@ function initTextDraw(textdraw)
 					break
 				end
 				colorpos = colorpos + 3
+				c = c:lower()
 				if g_TextDrawColorMapping[c] then
 					color = g_TextDrawColorMapping[c]
 				elseif c == 'h' then
 					extrabright = extrabright + 1
 				else
+					line = line:sub(1, start - 1) .. line:sub(colorpos)
+					colorpos = start
 					break
 				end
 			end
-			if color or extrabright > 0 then
-				if extrabright > 0 then
-					color = color and table.shallowcopy(color) or { 255, 255, 255 }
-					for i = 1, 3 do
-						color[i] = math.min(color[i] + extrabright * 40, 255)
-					end
+
+			if extrabright > 0 then
+				local factor = 1.5 ^ extrabright
+				color = color and table.shallowcopy(color) or colorToRGB(baseColor)
+				for i = 1, 3 do
+					color[i] = math.min(math.floor(color[i] * factor + 0.5), 255)
 				end
-				line = line:sub(1, start - 1) .. ('#%02X%02X%02X'):format(unpack(color)) .. line:sub(colorpos)
+			elseif not color then
+				color = colorToRGB(baseColor)
 			end
+			baseColor = tocolor(color[1], color[2], color[3], alpha)
+			line = line:sub(1, start - 1) .. ('#%02X%02X%02X'):format(unpack(color)) .. line:sub(colorpos)
+			colorpos = start + 7
 		end
 
-		local textWidth = dxGetTextWidth(line:gsub('#%x%x%x%x%x%x', ''), scale, font)
+		-- Remove any remaining single tildes
+		line = line:gsub('~', '')
+
+		local textWidth = dxGetTextWidth(line:gsub('#%x%x%x%x%x%x', ''), textdraw.lwidth, font)
 		textdraw.width = math.max(textdraw.width or 0, textWidth)
 
-		-- left by default
-		TDXPos = textdraw.x-- - textWidth
+		TDXPos = textdraw.x -- left by default
 
 		if textdraw.align == 2 then -- center
-			TDXPos = textdraw.x - textWidth / 2
+			TDXPos = TDXPos - textWidth / 2
 		elseif textdraw.align == 3 then -- right
-			TDXPos = textdraw.x - textWidth
+			TDXPos = TDXPos - textWidth
 		end
 
-		color = textdraw.color or tocolor(225, 225, 225)
+		if color then
+			color = textdraw.color or tocolor(225, 225, 225)
+		else
+			color = baseColor
+		end
+
 		colorpos = 1
 		local nextcolorpos
 		while colorpos < line:len() + 1 do
 			local r, g, b = line:sub(colorpos, colorpos + 6):match('#(%x%x)(%x%x)(%x%x)')
 			if r then
-				color = tocolor(tonumber(r, 16), tonumber(g, 16), tonumber(b, 16))
+				color = tocolor(tonumber(r, 16), tonumber(g, 16), tonumber(b, 16), alpha)
 				colorpos = colorpos + 7
 			end
 			nextcolorpos = line:find('#%x%x%x%x%x%x', colorpos) or line:len() + 1
 			local part = { text = line:sub(colorpos, nextcolorpos - 1), x = TDXPos, y = TDYPos, color = color }
 			table.insert(textdraw.parts, part)
-			TDXPos = TDXPos + dxGetTextWidth(part.text, scale, font)
+			TDXPos = TDXPos + dxGetTextWidth(part.text, textdraw.lwidth, font)
 			colorpos = nextcolorpos
 		end
 		TDYPos = TDYPos + lineHeight
 	end
-	textdraw.absheight = tHeight
 end
 
 function renderTextDraws()
 	if isPlayerMapVisible() then return end
 
 	for id, textdraw in pairs(g_TextDraws) do
-		if textdraw.visible and textdraw.parts and not (textdraw.text:match('^%s*$')) then --and not textdraw.usebox then
+		if textdraw.visible and textdraw.parts and not (textdraw.text:match('^%s*$')) then
 			local font = g_TextDrawFonts[textdraw.font and textdraw.font >= 0 and textdraw.font <= #g_TextDrawFonts and textdraw.font or 0]
-			font = font.font
 
-			textdraw.upscalex = textdraw.upscalex or 1.0
-			textdraw.upscaley = textdraw.upscaley or 1.0
+			local scalex = sizeScaleX(textdraw.lwidth)
+			local scaley = sizeScaleY(textdraw.lheight) * 0.5
 
-			local letterHeight = (textdraw.lheight * textdraw.upscaley or 0.25)
-			local letterWidth = (textdraw.lwidth * textdraw.upscalex or 0.5)
-
-			local vertHudScale = hudGetVerticalScale()
-			local horHudScale = hudGetHorizontalScale()
-
-			local scalex = screenWidth * horHudScale * letterWidth
-			local scaley = screenHeight * vertHudScale * letterHeight * 0.5
-
-			local sourceX = screenWidth - ((DEFAULT_SCREEN_WIDTH - textdraw.x) * (screenWidth * horHudScale))
-			local sourceY = screenHeight - ((DEFAULT_SCREEN_HEIGHT - textdraw.y) * (screenHeight * vertHudScale))
+			local sourceX = posStretchX(textdraw.x)
+			local sourceY = posStretchY(textdraw.y)
 
 			-- Process box alignments
 			if textdraw.usebox and textdraw.usebox ~= 0 then
 				--outputConsole('textdraw uses box: ' .. textdraw.text)
-				local boxcolor = textdraw.boxcolor or tocolor(0, 0, 0, 120 * (textdraw.alpha or 1))
+				local boxcolor = textdraw.boxcolor or tocolor(0, 0, 0)
 				local x, w, h
-				w = textdraw.width
-				if textdraw.align == 1 then -- left
-					x = sourceX
-					if textdraw.boxsize then
-						w = textdraw.boxsize[1]-- - x
-					else
-						w = textdraw.width
-					end
-				elseif textdraw.align == 2 then -- center
-					x = sourceX-- / 2
-					if textdraw.boxsize then
-						w = textdraw.boxsize[1]
-					else
-						w = textdraw.width
-					end
-				elseif textdraw.align == 3 then -- right
-					x = sourceX - w
-					if textdraw.boxsize then
-						w = sourceX - textdraw.boxsize[1]
-					else
-						w = textdraw.width
-					end
-				end
 
 				-- Calculates box size
-				if textdraw.boxsize and textdraw.text:match('^%s*$') then
-					h = textdraw.boxsize[2]
+				if textdraw.boxsize then
+					w = posStretchX(textdraw.boxsize[1]) - sourceX
 				else
-					h = textdraw.absheight
+					w = posStretchX(textdraw.width)
 				end
 
-				dxDrawRectangle(x, sourceY, w * getAspectRatio(), h * getAspectRatio(), boxcolor)
+				h = posStretchY(textdraw.absheight)
+				x = sourceX -- left by default
+
+				if textdraw.align == 2 then -- center
+					-- need to invert x and y
+					if textdraw.boxsize then
+						w = posStretchX(textdraw.boxsize[2])
+					end
+
+					x = sourceX - (w / 2)
+				elseif textdraw.align == 3 then -- right
+					x = sourceX - w
+				end
+
+				dxDrawRectangle(x, sourceY, w, h, boxcolor)
 				--outputConsole(string.format('Drawing textdraw box: sourceX: %f, sourceY: %f %s', sourceX, sourceY, textdraw.text))
 			end
 
 			for i, part in pairs(textdraw.parts) do
 
-				sourceX = screenWidth - ((DEFAULT_SCREEN_WIDTH - part.x) * (screenWidth * horHudScale))
-				sourceY = screenHeight - ((DEFAULT_SCREEN_HEIGHT - part.y) * (screenHeight * vertHudScale))
+				sourceX = posStretchX(part.x)
+				sourceY = posStretchY(part.y)
 
+				part.text = part.text:gsub('_', ' ') -- replace underscores with spaces
 				--outputConsole(string.format('text: %s partx: %f, party: %f sourceX: %f, sourceY: %f', part.text, part.x, part.y, sourceX, sourceY))
 
-				if textdraw.shade > 0 then -- Draw the shadow
-					local shade = textdraw.outlinesize > 0 and 0 or textdraw.shade * 2
+				-- Draw the shadow
+				if textdraw.shade and textdraw.shade ~= 0 and textdraw.outlinesize == 0 then
+					local shade = textdraw.shade * 2
 					dxDrawText(
 						part.text, sourceX + shade, sourceY + shade, sourceX + shade, sourceY + shade,
-						tocolor(0, 0, 0, 100 * (textdraw.alpha or 1)), scalex, scaley, font
+						textdraw.outlinecolor or tocolor(0, 0, 0), scalex, scaley, font
 					)
 				end
 
 				-- Draw the actual text
 				drawBorderText(
-					part.text, sourceX, sourceY,
-					textdraw.alpha and setcoloralpha(part.color, math.floor(textdraw.alpha * 255)) or part.color,
-					scalex, scaley, font, textdraw.outlinesize, textdraw.outlinecolor
+					part.text, sourceX, sourceY, part.color, scalex, scaley,
+					font, textdraw.outlinesize, textdraw.outlinecolor
 				)
 			end
 		end
@@ -1144,6 +1142,14 @@ end
 
 local gameText = {}
 local gIndex = 1
+
+function destroyAllGameTexts()
+	for i = 1, gIndex do
+		if gameText[i] then
+			destroyGameText(i)
+		end
+	end
+end
 
 function destroyAllGameTextsWithStyle(stylePassed)
 	for i = 1, gIndex do
@@ -1187,7 +1193,7 @@ function GameTextForPlayer(text, time, style)
 			time = 8000 -- Displays for 8 seconds regardless of time set
 		else
 			gameText[gIndex].x = 0.5 * DEFAULT_SCREEN_WIDTH
-			gameText[gIndex].y = 0.2 * DEFAULT_SCREEN_HEIGHT
+			gameText[gIndex].y = 0.15 * DEFAULT_SCREEN_HEIGHT
 			gameText[gIndex].color = tocolor(169, 196, 228)
 			gameText[gIndex].align = 2
 		end
@@ -1196,10 +1202,11 @@ function GameTextForPlayer(text, time, style)
 		gameText[gIndex].font = 3
 	elseif style == 2 then
 		gameText[gIndex].x = 0.5 * DEFAULT_SCREEN_WIDTH
-		gameText[gIndex].y = 0.4 * DEFAULT_SCREEN_HEIGHT
+		gameText[gIndex].y = 0.35 * DEFAULT_SCREEN_HEIGHT
 		gameText[gIndex].lheight = 3.0
 		gameText[gIndex].lwidth = 2.0
 		gameText[gIndex].color = tocolor(225, 225, 225)
+		gameText[gIndex].outlinesize = 3
 		gameText[gIndex].align = 2
 		gameText[gIndex].font = 0
 	elseif style >= 3 and style <= 5 then
@@ -1208,7 +1215,7 @@ function GameTextForPlayer(text, time, style)
 			gameText[gIndex].y = 0.35 * DEFAULT_SCREEN_HEIGHT
 			gameText[gIndex].color = tocolor(144, 98, 16)
 		elseif style == 4 then
-			gameText[gIndex].y = 0.2 * DEFAULT_SCREEN_HEIGHT
+			gameText[gIndex].y = 0.25 * DEFAULT_SCREEN_HEIGHT
 			gameText[gIndex].color = tocolor(144, 98, 16)
 		elseif style == 5 then
 			gameText[gIndex].y = 0.5 * DEFAULT_SCREEN_HEIGHT
@@ -1216,7 +1223,7 @@ function GameTextForPlayer(text, time, style)
 			time = 3000 -- Displays for 3 seconds regardless of time set
 		end
 		gameText[gIndex].lheight = 2.0
-		gameText[gIndex].lwidth = 1.0
+		gameText[gIndex].lwidth = 0.8
 		gameText[gIndex].align = 2
 		gameText[gIndex].font = 2
 	end
@@ -1317,26 +1324,17 @@ function TextDrawCreate(id, textdraw)
 	initTextDraw(textdraw)
 end
 
-function findTextDrawHandleByID(id)
-	for _, textdraw in pairs(g_TextDraws) do
-		if textdraw.clientTDId == id then
-			return textdraw.clientTDId
-		end
-	end
-	return -1
-end
-
 function TextDrawDestroy(id)
-	local clientTDIdx = findTextDrawHandleByID(id)
-	if clientTDIdx ~= -1 then
-		destroyTextDraw(g_TextDraws[clientTDIdx])
+	local textdraw = g_TextDraws[id]
+	if textdraw then
+		destroyTextDraw(textdraw)
 	end
 end
 
 function TextDrawHideForPlayer(id)
-	local clientTDIdx = findTextDrawHandleByID(id)
-	if clientTDIdx ~= -1 then
-		hideTextDraw(g_TextDraws[clientTDIdx])
+	local textdraw = g_TextDraws[id]
+	if textdraw then
+		hideTextDraw(textdraw)
 	end
 end
 
@@ -1346,25 +1344,18 @@ function TextDrawPropertyChanged(id, prop, newval, skipInit)
 		return
 	end
 
-	local clientTDIdx = findTextDrawHandleByID(id)
-	if clientTDIdx == -1 then
-		outputConsole('[TextDrawPropertyChanged] Error: g_TextDraws couldn\'t find handle for id: ' .. id)
+	local textdraw = g_TextDraws[id]
+	if not textdraw then
+		outputConsole('[TextDrawPropertyChanged] Error: g_TextDraws is nil at index: ' .. id)
 		return
 	end
-
-	if not g_TextDraws[clientTDIdx] then
-		outputConsole('[TextDrawPropertyChanged] Error: g_TextDraws is nil at index: ' .. clientTDIdx)
-		return
-	end
-
-	local textdraw = g_TextDraws[clientTDIdx]
 
 	--outputConsole('[TextDrawPropertyChanged]: Received new property ' .. prop .. ' - ' .. newval .. ' for ' .. textdraw.text)
 
 	textdraw[prop] = newval
-	if prop == 'boxsize' then
-		textdraw.boxsize[1] = textdraw.boxsize[1]
-		textdraw.boxsize[2] = textdraw.boxsize[2]
+	if prop == 'lwidth' then
+		-- same as multiplying by (4 / 3)
+		textdraw.lwidth = textdraw.lwidth / 0.75
 	elseif prop:match('color') then
 		textdraw[prop] = tocolor(unpack(newval))
 	end
@@ -1375,10 +1366,10 @@ end
 
 function TextDrawShowForPlayer(id)
 	--outputConsole(string.format('TextDrawShowForPlayer trying to show textdraw with id %d', id))
-	local clientTDIdx = findTextDrawHandleByID(id)
-	if clientTDIdx ~= -1 then
-		--outputConsole(string.format('TextDrawShowForPlayer trying to show textdraw with text %s', g_TextDraws[id].text))
-		showTextDraw(g_TextDraws[clientTDIdx])
+	local textdraw = g_TextDraws[id]
+	if textdraw then
+		--outputConsole(string.format('TextDrawShowForPlayer trying to show textdraw with text %s', textdraw.text))
+		showTextDraw(textdraw)
 	end
 end
 -----------------------------

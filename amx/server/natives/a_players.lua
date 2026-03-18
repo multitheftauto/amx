@@ -535,14 +535,12 @@ function CreatePlayerTextDraw(amx, player, x, y, text)
 	end
 
 	local serverTDId = #g_PlayerTextDraws[player] + 1
-	local clientTDId = #g_TextDraws + serverTDId
 
 	local textdraw = { x = x, y = y, shadow = { align = 1, outlinesize = 0, shade = 2, text = text, font = 1, lwidth = 0.48, lheight = 1.12 } }
-	textdraw.clientTDId = clientTDId
-	textdraw.serverTDId = serverTDId
 	textdraw.visible = false
 
 	g_PlayerTextDraws[player][serverTDId] = textdraw
+	textdraw.clientTDId = 2048 + serverTDId
 
 	setmetatable(
 		textdraw,
@@ -568,8 +566,8 @@ function CreatePlayerTextDraw(amx, player, x, y, text)
 		}
 	)
 
-	--outputDebugString('assigned id s->' .. serverTDId .. ' c->' .. clientTDId .. ' to g_PlayerTextDraws[player]')
-	clientCall(player, 'TextDrawCreate', clientTDId, table.deshadowize(textdraw, true))
+	--outputDebugString('assigned id s->' .. serverTDId .. ' c->' .. textdraw.clientTDId .. ' to g_PlayerTextDraws[player]')
+	clientCall(player, 'TextDrawCreate', textdraw.clientTDId, table.deshadowize(textdraw, true))
 	return serverTDId
 end
 
@@ -589,7 +587,7 @@ function PlayerTextDrawDestroy(amx, player, textdrawID)
 	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
-	--outputDebugString('Sending textdraw id s->' .. g_PlayerTextDraws[player][textdrawID].serverTDId .. ' c->' .. g_PlayerTextDraws[player][textdrawID].clientTDId .. ' for destruction')
+	--outputDebugString('Sending textdraw id s->' .. textdrawID .. ' c->' .. g_PlayerTextDraws[player][textdrawID].clientTDId .. ' for destruction')
 	clientCall(player, 'TextDrawDestroy', g_PlayerTextDraws[player][textdrawID].clientTDId)
 	g_PlayerTextDraws[player][textdrawID] = nil
 	return true
@@ -624,7 +622,7 @@ function PlayerTextDrawColor(amx, player, textdrawID, r, g, b, a)
 	if not isPlayerTextDrawValid(player, textdrawID) then
 		return false
 	end
-	g_PlayerTextDraws[player][textdrawID].color = { r, g, b }
+	g_PlayerTextDraws[player][textdrawID].color = { r, g, b, a }
 	return true
 end
 
