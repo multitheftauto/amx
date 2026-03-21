@@ -2,29 +2,17 @@
 -- Start of SA-MP API implementation
 
 function SendClientMessage(amx, player, r, g, b, a, message)
-	if message:len() > 75 and message:match('^%-+$') then
-		message = ('-'):rep(75)
-	elseif message:len() > 43 and message:match('^_+$') then
-		message = ('_'):rep(43)
-	elseif message:len() > 44 and message:match('^%*+$') then
-		message = ('*'):rep(44)
 	--[[
-	else
-		for mta, samp in pairs(g_CommandMapping) do
-			message = message:gsub('/' .. samp, '/' .. mta)
-		end
-	]] -- This replaces any part of a string, causing commands such as '/quitfaction' to display as '/outfaction'
+	for mta, samp in pairs(g_CommandMapping) do
+		message = message:gsub('/' .. samp, '/' .. mta)
 	end
+	]] -- This replaces any part of a string, causing commands such as '/quitfaction' to display as '/outfaction'
 
 	-- replace colors
 	return outputChatBox(colorizeString(message), player, r, g, b, true)
 end
 
 function SendClientMessageToAll(amx, r, g, b, a, message)
-	if (amx.proc == 'OnPlayerConnect' and message:match('joined')) or (amx.proc == 'OnPlayerDisconnect' and message:match('left')) then
-		return false
-	end
-
 	-- replace colors
 	message = colorizeString(message)
 
