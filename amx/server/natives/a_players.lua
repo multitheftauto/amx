@@ -134,8 +134,8 @@ function GetPlayerArmour(amx, player, refArmor)
 	return true
 end
 
-function SetPlayerAmmo(amx, player, slot, ammo)
-	return setWeaponAmmo(player, slot, ammo)
+function SetPlayerAmmo(amx, player, weapon, ammo)
+	return setWeaponAmmo(player, weapon, ammo)
 end
 
 function GetPlayerAmmo(amx, player)

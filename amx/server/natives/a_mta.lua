@@ -561,12 +561,12 @@ function SetVehicleLightState(amx, vehicle, light, lightState)
 	return setVehicleLightState(vehicle, light, lightState)
 end
 
-function GetVehicleOverrideLights(amx, vehicle)
-	return getVehicleOverrideLights(vehicle)
+function GetVehicleTaxiLightState(amx, vehicle)
+	return isVehicleTaxiLightOn(vehicle)
 end
 
-function SetVehicleOverrideLights(amx, vehicle, override)
-	return setVehicleOverrideLights(vehicle, override)
+function SetVehicleTaxiLightState(amx, vehicle, light)
+	return setVehicleTaxiLightOn(vehicle, light)
 end
 
 function GetVehicleWheelState(amx, vehicle, wheel)
@@ -587,6 +587,31 @@ end
 
 function SetVehiclePanelState(amx, vehicle, panel, panelState, flyingComponent)
 	return setVehiclePanelState(vehicle, panel, panelState, flyingComponent)
+end
+
+function GetVehicleLandingGearState(amx, vehicle)
+	return getVehicleLandingGearDown(vehicle) and 0 or 1
+end
+
+function SetVehicleLandingGearState(amx, vehicle, gear)
+	return setVehicleLandingGearDown(vehicle, not gear)
+end
+
+function GetVehicleOverrideLights(amx, vehicle)
+	return getVehicleOverrideLights(vehicle)
+end
+
+function SetVehicleOverrideLights(amx, vehicle, override)
+	return setVehicleOverrideLights(vehicle, override)
+end
+
+function GetVehicleHeadLightColor(amx, vehicle)
+	local r, g, b = getVehicleHeadLightColor(vehicle)
+	return color2cell(r, g, b, 255)
+end
+
+function SetVehicleHeadLightColor(amx, vehicle, r, g, b)
+	return setVehicleHeadLightColor(vehicle, r, g, b)
 end
 
 function GetVehicleVariant(amx, vehicle, refVar1, refVar2)
