@@ -446,6 +446,21 @@ function RemoveBuildingForPlayer(model, x, y, z, radius)
 	return
 end
 
+function RestoreBuildingForPlayer(model, x, y, z, radius)
+	if model == -1 then
+		for i = 550, 20000 do -- Restore all world models around radius if they sent -1
+			restoreWorldModel(i, radius, x, y, z)
+		end
+		return -- Don't run the rest of the code
+	end
+	restoreWorldModel(model, radius, x, y, z)
+	return
+end
+
+function RestoreAllBuildingsForPlayer()
+	restoreAllWorldModels()
+end
+
 function AttachPlayerObjectToPlayer(objID, attachPlayer, offsetX, offsetY, offsetZ, rX, rY, rZ)
 	local obj = g_PlayerObjects[objID]
 	if not obj then

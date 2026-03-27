@@ -44,6 +44,9 @@ SetBotAlpha = SetAlpha
 -----------------------------------------------------
 -- Misc player funcs
 
+-- RestoreBuildingForPlayer client
+-- RestoreAllBuildingsForPlayer client
+
 function IsPlayerInWater(amx, player)
 	return isElementInWater(player)
 end
@@ -157,8 +160,8 @@ function ForcePlayerMap(amx, player, forceOn)
 	return forcePlayerMap(player, forceOn)
 end
 
-function FadePlayerCamera(amx, player, fadeIn, timeToFade, red, green, blue)
-	return fadeCamera(player, fadeIn, timeToFade, red, green, blue)
+function FadePlayerCamera(amx, player, fadeIn, timeToFade, r, g, b)
+	return fadeCamera(player, fadeIn, timeToFade, r, g, b)
 end
 
 function SetPlayerControlState(amx, player, control, controlState)
@@ -386,13 +389,9 @@ function DestroyMarker(amx, marker)
 	return true
 end
 
-function GetMarkerColor(amx, marker, colorid)
-	local R, G, B, A = getMarkerColor(marker)
-	if colorid == 0 then return R end
-	if colorid == 1 then return G end
-	if colorid == 2 then return B end
-	if colorid == 3 then return A end
-	return 0
+function GetMarkerColor(amx, marker)
+	local r, g, b, a = getMarkerColor(marker)
+	return color2cell(r, g, b, a)
 end
 
 function GetMarkerIcon(amx, marker)
@@ -438,8 +437,8 @@ function GetMarkerType(amx, marker)
 	return -1
 end
 
-function SetMarkerColor(amx, marker, red, green, blue, alpha)
-	return setMarkerColor(marker, red, green, blue, alpha)
+function SetMarkerColor(amx, marker, r, g, b, a)
+	return setMarkerColor(marker, r, g, b, a)
 end
 
 function SetMarkerIcon(amx, marker, icon)
@@ -447,6 +446,7 @@ function SetMarkerIcon(amx, marker, icon)
 	elseif icon == 1 then icon = 'arrow'
 	elseif icon == 2 then icon = 'finish'
 	else return false end
+
 	return setMarkerIcon(amx, marker, icon)
 end
 
@@ -465,6 +465,7 @@ function SetMarkerType(amx, marker, typeid)
 	elseif typeid == 3 then typeid = 'arrow'
 	elseif typeid == 4 then typeid = 'corona'
 	else return false end
+
 	return setMarkerType(marker, typeid)
 end
 
@@ -855,25 +856,50 @@ function ResetRainLevel(amx)
 	return resetRainLevel()
 end
 
-function GetSkyGradient(amx, refTopRed, refTopGreen, refTopBlue, refBtmRed, refBtmGreen, refBtmBlue)
+function GetSkyGradient(amx, refTopColor, refBtmColor)
 	local topRed, topGreen, topBlue, btmRed, btmGreen, btmBlue = getSkyGradient()
 
-	amx.memDAT[refTopRed] = topRed
-	amx.memDAT[refTopGreen] = topGreen
-	amx.memDAT[refTopBlue] = topBlue
-	amx.memDAT[refBtmRed] = btmRed
-	amx.memDAT[refBtmGreen] = btmGreen
-	amx.memDAT[refBtmBlue] = btmBlue
+	amx.memDAT[refTopColor] = color2cell(topRed, topGreen, topBlue, 255)
+	amx.memDAT[refBtmColor] = color2cell(btmRed, btmGreen, btmBlue, 255)
 
 	return true
 end
 
-function SetSkyGradient(amx, topRed, topGreen, topBlue, btmRed, btmGreen, btmBlue)
+function SetSkyGradient(amx, topColor, btmColor)
+	local topRed, topGreen, topBlue, btmRed, btmGreen, btmBlue
+
+	topRed = bitExtract(topColor, 24, 8)
+	topGreen = bitExtract(topColor, 16, 8)
+	topBlue = bitExtract(topColor, 8, 8)
+
+	btmRed = bitExtract(btmColor, 24, 8)
+	btmGreen = bitExtract(btmColor, 16, 8)
+	btmBlue = bitExtract(btmColor, 8, 8)
+
 	return setSkyGradient(topRed, topGreen, topBlue, btmRed, btmGreen, btmBlue)
 end
 
 function ResetSkyGradient(amx)
 	return resetSkyGradient()
+end
+
+function GetWindVelocity(amx, refVX, refVY, refVZ)
+	local vx, vy, vz = getWindVelocity()
+	if not vx then
+		vx, vy, vz = 0.0, 0.0, 0.0
+	end
+	writeMemFloat(amx, refVX, vx)
+	writeMemFloat(amx, refVY, vy)
+	writeMemFloat(amx, refVZ, vz)
+	return true
+end
+
+function SetWindVelocity(amx, vx, vy, vz)
+	return setWindVelocity(vx, vy, vz)
+end
+
+function ResetWindVelocity(amx)
+	return resetWindVelocity()
 end
 
 function GetFogDistance(amx)

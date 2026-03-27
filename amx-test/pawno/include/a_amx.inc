@@ -42,9 +42,12 @@ native SetGameSpeed(Float:speed);
 native Float:GetRainLevel();
 native SetRainLevel(Float:level);
 native ResetRainLevel();
-native GetSkyGradient(&topRed, &topGreen, &topBlue, &bottomRed, &bottomGreen, &bottomBlue);
-native SetSkyGradient(topRed = 0, topGreen = 0, topBlue = 0, bottomRed = 0, bottomGreen = 0, bottomBlue = 0);
+native GetSkyGradient(&topColor, &bottomColor);
+native SetSkyGradient(topColor = 255, bottomColor = 255);
 native ResetSkyGradient();
+native GetWindVelocity(&Float:X, &Float:Y, &Float:Z);
+native SetWindVelocity(Float:X, Float:Y, Float:Z);
+native ResetWindVelocity();
 native Float:GetFogDistance();
 native SetFogDistance(Float:distance);
 native ResetFogDistance();
@@ -93,14 +96,14 @@ native GetPickupWeapon(pickupid);
 native GetPickupAmmo(pickupid);
 
 // Native Markers
-native CreateMarker(Float:X, Float:Y, Float:Z, const type[], Float:size, red, green, blue, alpha);
+native CreateMarker(Float:X, Float:Y, Float:Z, const type[], Float:size, color);
 native DestroyMarker(markerid);
-native GetMarkerColor(markerid, colorid); // Color IDs: 0 = Red, 1 = Green, 2 = Blue, 3 = Alpha
+native GetMarkerColor(markerid);
 native GetMarkerIcon(markerid); // 0 = No icon, 1 = Arrow, 2 = Race finish
 native GetMarkerSize(markerid, &Float:size);
 native GetMarkerTarget(markerid, &Float:X, &Float:Y, &Float:Z);
 native GetMarkerType(markerid); // 0 = Checkpoint, 1 = Ring, 2 = Cylinder, 3 = Arrow, 4 = Corona
-native SetMarkerColor(markerid, red, green, blue, alpha);
+native SetMarkerColor(markerid, color);
 native SetMarkerIcon(markerid, iconid); // 0 = No icon, 1 = Arrow, 2 = Race finish
 native SetMarkerSize(markerid, Float:size);
 native SetMarkerTarget(markerid, Float:X, Float:Y, Float:Z);
@@ -133,6 +136,8 @@ native AddPlayerClothes(playerid, type, index);
 native GetPlayerClothes(playerid, type);
 native RemovePlayerClothes(playerid, type);
 native ShowPlayerMarker(playerid, mode); // 0 = Off, 1 = Global, 2 = Streamed
+native RestoreBuildingForPlayer(playerid, modelid, Float:fX, Float:fY, Float:fZ, Float:fRadius);
+native RestoreAllBuildingsForPlayer(playerid);
 native IsPlayerInWater(playerid);
 native IsPlayerOnFire(playerid);
 native SetPlayerOnFire(playerid, bool:fire);
@@ -159,7 +164,7 @@ native GetPlayerBlurLevel(playerid);
 native SetPlayerBlurLevel(playerid, level);
 native IsPlayerMapForced(playerid);
 native ForcePlayerMap(playerid, bool:forceOn);
-native FadePlayerCamera(playerid, bool:fadeIn, Float:timeToFade = 1.0, red = 0, green = 0, blue = 0);
+native FadePlayerCamera(playerid, bool:fadeIn, Float:timeToFade = 1.0, color = 255);
 native SetPlayerControlState(playerid, const control[], bool:controlState);
 native IsPlayerCursorShowing(playerid);
 native ShowPlayerCursor(playerid, bool:show, bool:controls = true);

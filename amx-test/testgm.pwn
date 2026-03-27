@@ -148,7 +148,7 @@ public OnPlayerSpawn(playerid)
 {
 	new Float:x, Float:y, Float:z;
 	GetPlayerPos(playerid, x, y, z);
-	CreateMarker(x, y, z, "checkpoint", 3.0, 255, 0, 0, 250);
+	CreateMarker(x, y, z, "checkpoint", 3.0, 0xFF0000FA);
 
 	SetBotPos(bot, x, y, z);
 	SetBotHealth(bot, 100.0);
