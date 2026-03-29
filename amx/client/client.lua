@@ -437,7 +437,7 @@ end
 
 function RemoveBuildingForPlayer(model, x, y, z, radius)
 	if model == -1 then
-		for i = 550, 20000 do -- Remove all world models around radius if they sent -1
+		for i = 321, 18630 do -- Remove all world models around radius if they sent -1
 			removeWorldModel(i, radius, x, y, z)
 		end
 		return -- Don't run the rest of the code
@@ -448,7 +448,7 @@ end
 
 function RestoreBuildingForPlayer(model, x, y, z, radius)
 	if model == -1 then
-		for i = 550, 20000 do -- Restore all world models around radius if they sent -1
+		for i = 321, 18630 do -- Restore all world models around radius if they sent -1
 			restoreWorldModel(i, radius, x, y, z)
 		end
 		return -- Don't run the rest of the code

@@ -41,16 +41,12 @@ native Float:GetGameSpeed();
 native SetGameSpeed(Float:speed);
 native Float:GetRainLevel();
 native SetRainLevel(Float:level);
-native ResetRainLevel();
 native GetSkyGradient(&topColor, &bottomColor);
 native SetSkyGradient(topColor = 255, bottomColor = 255);
-native ResetSkyGradient();
 native GetWindVelocity(&Float:X, &Float:Y, &Float:Z);
 native SetWindVelocity(Float:X, Float:Y, Float:Z);
-native ResetWindVelocity();
 native Float:GetFogDistance();
 native SetFogDistance(Float:distance);
-native ResetFogDistance();
 native SetWeatherBlended(weatherid);
 native GetMinuteDuration();
 native SetMinuteDuration(timems);
@@ -72,12 +68,10 @@ native Float:GetAircraftMaxVelocity();
 native SetAircraftMaxVelocity(Float:velocity);
 native Float:GetAircraftMaxHeight();
 native SetAircraftMaxHeight(Float:height);
-native GetPlayerIDFromName(const name[]);
-native GetWeaponSlot(weaponid);
-native GetRandomPlayer();
-native GetPlayerCount();
 
 // Water
+native GetWaterColor();
+native SetWaterColor(color);
 native Float:GetWaveHeight();
 native SetWaveHeight(Float:height);
 native SetWaterLevel(Float:level);
@@ -113,17 +107,11 @@ native IsVehicleInMarker(markerid, vehicleid);
 native IsActorInMarker(markerid, actorid);
 native IsBotInMarker(markerid, botid);
 
-// Rules
-native IsValidServerRule(const name[]);
-native GetServerRule(const name[], buf[], bufsize = sizeof(buf));
-native SetServerRule(const name[], const value[]);
-native RemoveServerRule(const name[]);
-
 // Objects
 native BreakObject(objectid);
 native RespawnObject(objectid);
 native SetObjectBreakable(objectid, bool:breakable);
-native ToggleObjectRespawn(objectid, bool:respawn);
+native SetObjectRespawnable(objectid, bool:respawnable);
 native IsObjectBreakable(objectid);
 native IsObjectRespawnable(objectid);
 native GetObjectScale(objectid, &Float:X, &Float:Y, &Float:Z);
@@ -131,13 +119,18 @@ native SetObjectScale(objectid, Float:X, Float:Y, Float:Z);
 native GetObjectAlpha(objectid);
 native SetObjectAlpha(objectid, alpha);
 
+// Buildings
+native RemoveBuilding(modelid, Float:X, Float:Y, Float:Z, Float:radius);
+native RestoreBuildingForPlayer(playerid, modelid, Float:X, Float:Y, Float:Z, Float:radius);
+native RestoreAllBuildingsForPlayer(playerid);
+native RestoreBuilding(modelid, Float:X, Float:Y, Float:Z, Float:radius);
+native RestoreAllBuildings();
+
 // Players
 native AddPlayerClothes(playerid, type, index);
 native GetPlayerClothes(playerid, type);
 native RemovePlayerClothes(playerid, type);
 native ShowPlayerMarker(playerid, mode); // 0 = Off, 1 = Global, 2 = Streamed
-native RestoreBuildingForPlayer(playerid, modelid, Float:fX, Float:fY, Float:fZ, Float:fRadius);
-native RestoreAllBuildingsForPlayer(playerid);
 native IsPlayerInWater(playerid);
 native IsPlayerOnFire(playerid);
 native SetPlayerOnFire(playerid, bool:fire);
@@ -145,8 +138,11 @@ native IsPlayerDucked(playerid);
 native IsPlayerOnGround(playerid);
 native IsPlayerChoking(playerid);
 native SetPlayerChoking(playerid, bool:choking);
+native Float:GetPlayerGravity(playerid);
+native SetPlayerGravity(playerid, Float:gravity);
 native GetPlayerWalkingStyle(playerid);
 native SetPlayerWalkingStyle(playerid, style);
+native GetPlayerSkillLevel(playerid, skill);
 native GetPlayerStat(playerid, statid);
 native SetPlayerStat(playerid, statid, Float:value);
 native IsPlayerDoingDriveBy(playerid);
@@ -155,6 +151,7 @@ native GetPlayerWeaponSlot(playerid);
 native SetPlayerWeaponSlot(playerid, slot);
 native GetPlayerAmmoInClip(playerid);
 native ReloadPlayerWeapon(playerid);
+native RemovePlayerWeapon(playerid, weaponid);
 native GetPlayerIdleTime(playerid);
 native IsPlayerHeadless(playerid);
 native SetPlayerHeadless(playerid, bool:headless);
@@ -171,15 +168,13 @@ native ShowPlayerCursor(playerid, bool:show, bool:controls = true);
 native ShowPlayerChat(playerid, bool:show, bool:input);
 native GetPlayerAlpha(playerid);
 native SetPlayerAlpha(playerid, alpha);
-native RemovePlayerWeapon(playerid, weaponid);
-native Float:GetPlayerGravity(playerid);
-native SetPlayerGravity(playerid, Float:gravity);
-native GetPlayerSkillLevel(playerid, skill);
 
 // Vehicles
 native IsVehicleInWater(vehicleid);
 native IsVehicleOnGround(vehicleid);
 native SetVehicleModel(vehicleid, model);
+native GetVehicleInterior(vehicleid);
+native GetVehicleOccupant(vehicleid, seatid);
 native GetVehicleMaxPassengers(vehicleid);
 native GetVehicleEngineState(vehicleid);
 native SetVehicleEngineState(vehicleid, bool:engine);
@@ -201,12 +196,15 @@ native GetVehicleOverrideLights(vehicleid);
 native SetVehicleOverrideLights(vehicleid, override);
 native GetVehicleHeadLightColor(vehicleid);
 native SetVehicleHeadLightColor(vehicleid, color);
+native GetVehicleColor(vehicleid, &color1, &color2);
+native GetVehiclePaintjob(vehicleid);
 native GetVehicleVariant(vehicleid, &var1, &var2);
 native SetVehicleVariant(vehicleid, var1 = 255, var2 = 255);
 native IsVehicleBlown(vehicleid);
 native BlowVehicle(vehicleid, bool:explode = true);
-native GetVehicleAlpha(vehicleid);
-native SetVehicleAlpha(vehicleid, alpha);
+native GetVehicleRotation(vehicleid, &Float:rX, &Float:rY, &Float:rZ);
+native GetVehicleNumberPlate(vehicleid, plate[], len = sizeof(plate));
+native GetVehicleCab(vehicleid);
 native IsTrainDerailable(vehicleid);
 native SetTrainDerailable(vehicleid, bool:derailable);
 native IsTrainDerailed(vehicleid);
@@ -215,13 +213,8 @@ native GetTrainDirection(vehicleid);
 native SetTrainDirection(vehicleid, bool:clockwise);
 native GetTrainSpeed(vehicleid, &Float:speed);
 native SetTrainSpeed(vehicleid, Float:speed);
-native GetVehicleCab(vehicleid);
-native GetVehicleOccupant(vehicleid, seatid);
-native GetVehicleNumberPlate(vehicleid, plate[], len = sizeof(plate));
-native GetVehicleRotation(vehicleid, &Float:rX, &Float:rY, &Float:rZ);
-native GetVehicleColor(vehicleid, &color1, &color2);
-native GetVehiclePaintjob(vehicleid);
-native GetVehicleInterior(vehicleid);
+native GetVehicleAlpha(vehicleid);
+native SetVehicleAlpha(vehicleid, alpha);
 
 // Bots
 native CreateBot(modelid, Float:x, Float:y, Float:z, const name[] = "");
@@ -300,6 +293,12 @@ native SetBotName(botid, const name[]);
 native GetBotAlpha(botid);
 native SetBotAlpha(botid, alpha);
 
+// Rules
+native IsValidServerRule(const name[]);
+native GetServerRule(const name[], buf[], bufsize = sizeof(buf));
+native SetServerRule(const name[], const value[]);
+native RemoveServerRule(const name[]);
+
 // Scoreboard
 native AddScoreBoardColumn(const column[]);
 native GetPlayerScoreBoardData(playerid, const column[], buf[], bufsize = sizeof(buf));
@@ -319,6 +318,10 @@ native RemovePlayerData(playerid, const key[]);
 native HasPlayerData(playerid, const key[]);
 
 // Misc
+native GetWeaponSlot(weaponid);
 native AddEventHandler(const event[], const func[]);
 native RemoveEventHandler(const func[]);
 native IsPluginLoaded(const plugin[]);
+native GetPlayerIDFromName(const name[]);
+native GetRandomPlayer();
+native GetPlayerCount();

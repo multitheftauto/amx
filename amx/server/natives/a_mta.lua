@@ -44,9 +44,6 @@ SetBotAlpha = SetAlpha
 -----------------------------------------------------
 -- Misc player funcs
 
--- RestoreBuildingForPlayer client
--- RestoreAllBuildingsForPlayer client
-
 function IsPlayerInWater(amx, player)
 	return isElementInWater(player)
 end
@@ -75,6 +72,14 @@ function SetPlayerChoking(amx, player, choking)
 	return setPedChoking(player, choking)
 end
 
+function GetPlayerGravity(amx, player)
+	return float2cell(getPedGravity(player))
+end
+
+function SetPlayerGravity(amx, player, gravity)
+	return setPedGravity(player, gravity)
+end
+
 function GetPlayerWalkingStyle(amx, player)
 	return getPedWalkingStyle(player)
 end
@@ -89,6 +94,10 @@ function SetPlayerWalkingStyle(amx, player, style)
 		return setPedWalkingStyle(player, WalkingStyle[skin] or 0)
 	end
 	return setPedWalkingStyle(player, style)
+end
+
+function GetPlayerSkillLevel(amx, player, skill)
+	return math.floor(getPedStat(player, skill + 69))
 end
 
 function GetPlayerStat(amx, player, stat)
@@ -121,6 +130,10 @@ end
 
 function ReloadPlayerWeapon(amx, player)
 	return reloadPedWeapon(player)
+end
+
+function RemovePlayerWeapon(amx, player, weaponID)
+	return takeWeapon(player, weaponID)
 end
 
 function GetPlayerIdleTime(amx, player)
@@ -178,22 +191,6 @@ end
 
 function ShowPlayerChat(amx, player, show, input)
 	return showChat(player, show, input)
-end
-
-function RemovePlayerWeapon(amx, player, weaponID)
-	return takeWeapon(player, weaponID)
-end
-
-function GetPlayerGravity(amx, player)
-	return float2cell(getPedGravity(player))
-end
-
-function SetPlayerGravity(amx, player, gravity)
-	return setPedGravity(player, gravity)
-end
-
-function GetPlayerSkillLevel(amx, player, skill)
-	return math.floor(getPedStat(player, skill + 69))
 end
 -----------------------------------------------------
 -- Bots
@@ -526,6 +523,14 @@ function SetVehicleModel(amx, vehicle, model)
 	return setElementModel(vehicle, model)
 end
 
+function GetVehicleOccupant(amx, vehicle, seat)
+	local player = getVehicleOccupant(vehicle, seat)
+	if not player then
+		return INVALID_PLAYER_ID
+	end
+	return getElemID(player)
+end
+
 function GetVehicleMaxPassengers(amx, vehicle)
 	return getVehicleMaxPassengers(vehicle)
 end
@@ -615,6 +620,20 @@ function SetVehicleHeadLightColor(amx, vehicle, r, g, b)
 	return setVehicleHeadLightColor(vehicle, r, g, b)
 end
 
+function GetVehicleColor(amx, vehicle, refColor1, refColor2)
+	if not vehicle then
+		return false
+	end
+	local color1, color2 = getVehicleColor(vehicle, false)
+	amx.memDAT[refColor1] = color1
+	amx.memDAT[refColor2] = color2
+	return true
+end
+
+function GetVehiclePaintjob(amx, vehicle)
+	return getVehiclePaintjob(vehicle)
+end
+
 function GetVehicleVariant(amx, vehicle, refVar1, refVar2)
 	if not vehicle then
 		return false
@@ -635,6 +654,35 @@ end
 
 function BlowVehicle(amx, vehicle, explode)
 	return blowVehicle(vehicle, explode)
+end
+
+function GetVehicleRotation(amx, vehicle, refX, refY, refZ)
+	if not vehicle then
+		return false
+	end
+	local rX, rY, rZ = getElementRotation(vehicle)
+	writeMemFloat(amx, refX, rX)
+	writeMemFloat(amx, refY, rY)
+	writeMemFloat(amx, refZ, rZ)
+	return true
+end
+
+function GetVehicleNumberPlate(amx, vehicle, buf, len)
+	if len <= 0 then return 0 end
+
+	local plate = getVehiclePlateText(vehicle)
+
+	local copyLen = math.min(#plate, len)
+	writeMemString(amx, buf, plate:sub(1, copyLen))
+	return copyLen
+end
+
+function GetVehicleCab(amx, vehicle)
+	local cab = getVehicleTowingVehicle(vehicle)
+	if not cab then
+		return 0
+	end
+	return getElemID(cab)
 end
 
 function IsTrainDerailable(amx, train)
@@ -674,62 +722,20 @@ function SetTrainSpeed(amx, train, speed)
 	return setTrainSpeed(train, speed)
 end
 
-function GetVehicleCab(amx, vehicle)
-	local cab = getVehicleTowingVehicle(vehicle)
-	if not cab then
-		return 0
-	end
-	return getElemID(cab)
-end
-
-function GetVehicleOccupant(amx, vehicle, seat)
-	local player = getVehicleOccupant(vehicle, seat)
-	if not player then
-		return INVALID_PLAYER_ID
-	end
-	return getElemID(player)
-end
-
-function GetVehicleNumberPlate(amx, vehicle, buf, len)
-	if len <= 0 then return 0 end
-
-	local plate = getVehiclePlateText(vehicle)
-
-	local copyLen = math.min(#plate, len)
-	writeMemString(amx, buf, plate:sub(1, copyLen))
-	return copyLen
-end
-
-function GetVehicleRotation(amx, vehicle, refX, refY, refZ)
-	if not vehicle then
-		return false
-	end
-	local rX, rY, rZ = getElementRotation(vehicle)
-	writeMemFloat(amx, refX, rX)
-	writeMemFloat(amx, refY, rY)
-	writeMemFloat(amx, refZ, rZ)
-	return true
-end
-
-function GetVehicleColor(amx, vehicle, refColor1, refColor2)
-	if not vehicle then
-		return false
-	end
-	local color1, color2 = getVehicleColor(vehicle, false)
-	amx.memDAT[refColor1] = color1
-	amx.memDAT[refColor2] = color2
-	return true
-end
-
-function GetVehiclePaintjob(amx, vehicle)
-	return getVehiclePaintjob(vehicle)
-end
-
 GetVehicleInterior = GetPlayerInterior
 IsVehicleInWater = IsPlayerInWater
 IsVehicleOnGround = IsPlayerOnGround
 -----------------------------------------------------
 -- Water
+
+function GetWaterColor(amx)
+	local r, g, b, a = getWaterColor()
+	return color2cell(r, g, b, a)
+end
+
+function SetWaterColor(amx, r, g, b, a)
+	return setWaterColor(r, g, b, a)
+end
 
 function GetWaveHeight(amx)
 	return float2cell(getWaveHeight())
@@ -775,8 +781,8 @@ function SetObjectBreakable(amx, object, breakable)
 	return setObjectBreakable(object, breakable)
 end
 
-function ToggleObjectRespawn(amx, object, respawn)
-	return toggleObjectRespawn(object, respawn)
+function SetObjectRespawnable(amx, object, respawnable)
+	return toggleObjectRespawn(object, respawnable)
 end
 
 function IsObjectBreakable(amx, object)
@@ -800,6 +806,32 @@ end
 
 function SetObjectScale(amx, object, sX, sY, sZ)
 	return setObjectScale(object, sX, sY, sZ)
+end
+-----------------------------------------------------
+-- Buildings
+
+function RemoveBuilding(amx, model, x, y, z, radius)
+	for i, player in pairs(g_Players) do
+		clientCall(player.elem, 'RemoveBuildingForPlayer', model, x, y, z, radius)
+	end
+	return true
+end
+
+-- RestoreBuildingForPlayer client
+-- RestoreAllBuildingsForPlayer client
+
+function RestoreBuilding(amx, model, x, y, z, radius)
+	for i, player in pairs(g_Players) do
+		clientCall(player.elem, 'RestoreBuildingForPlayer', model, x, y, z, radius)
+	end
+	return true
+end
+
+function RestoreAllBuildings(amx)
+	for i, player in pairs(g_Players) do
+		clientCall(player.elem, 'RestoreAllBuildingsForPlayer')
+	end
+	return true
 end
 
 -----------------------------------------------------
@@ -852,10 +884,6 @@ function SetRainLevel(amx, level)
 	return setRainLevel(level)
 end
 
-function ResetRainLevel(amx)
-	return resetRainLevel()
-end
-
 function GetSkyGradient(amx, refTopColor, refBtmColor)
 	local topRed, topGreen, topBlue, btmRed, btmGreen, btmBlue = getSkyGradient()
 
@@ -879,10 +907,6 @@ function SetSkyGradient(amx, topColor, btmColor)
 	return setSkyGradient(topRed, topGreen, topBlue, btmRed, btmGreen, btmBlue)
 end
 
-function ResetSkyGradient(amx)
-	return resetSkyGradient()
-end
-
 function GetWindVelocity(amx, refVX, refVY, refVZ)
 	local vx, vy, vz = getWindVelocity()
 	if not vx then
@@ -898,10 +922,6 @@ function SetWindVelocity(amx, vx, vy, vz)
 	return setWindVelocity(vx, vy, vz)
 end
 
-function ResetWindVelocity(amx)
-	return resetWindVelocity()
-end
-
 function GetFogDistance(amx)
 	local fogDist = getFogDistance() or 0
 	return float2cell(fogDist)
@@ -909,10 +929,6 @@ end
 
 function SetFogDistance(amx, distance)
 	return setFogDistance(distance)
-end
-
-function ResetFogDistance(amx)
-	return resetFogDistance()
 end
 
 function SetWeatherBlended(amx, weather)
@@ -998,30 +1014,6 @@ end
 function SetAircraftMaxHeight(amx, height)
 	return setAircraftMaxHeight(height)
 end
-
-function GetPlayerIDFromName(amx, name)
-	local player = getPlayerFromName(name)
-	if not player then
-		return INVALID_PLAYER_ID
-	end
-	return getElemID(player)
-end
-
-function GetWeaponSlot(amx, weapon)
-	return getSlotFromWeapon(weapon) or -1
-end
-
-function GetRandomPlayer(amx)
-	local player = getRandomPlayer()
-	if not player then
-		return INVALID_PLAYER_ID
-	end
-	return getElemID(player)
-end
-
-function GetPlayerCount(amx)
-	return getPlayerCount(amx)
-end
 -----------------------------------------------------
 -- Rules
 
@@ -1083,6 +1075,10 @@ end
 -----------------------------------------------------
 -- Misc
 
+function GetWeaponSlot(amx, weapon)
+	return getSlotFromWeapon(weapon) or -1
+end
+
 function AddEventHandler(amx, event, func)
 	if g_EventNames[event] then
 		g_Events[func] = event
@@ -1095,4 +1091,24 @@ end
 
 function IsPluginLoaded(amx, pluginName)
 	return amxIsPluginLoaded(pluginName)
+end
+
+function GetPlayerIDFromName(amx, name)
+	local player = getPlayerFromName(name)
+	if not player then
+		return INVALID_PLAYER_ID
+	end
+	return getElemID(player)
+end
+
+function GetRandomPlayer(amx)
+	local player = getRandomPlayer()
+	if not player then
+		return INVALID_PLAYER_ID
+	end
+	return getElemID(player)
+end
+
+function GetPlayerCount(amx)
+	return getPlayerCount(amx)
 end
