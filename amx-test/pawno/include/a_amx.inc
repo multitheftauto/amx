@@ -109,10 +109,10 @@ native IsBotInMarker(markerid, botid);
 
 // Objects
 native BreakObject(objectid);
-native RespawnObject(objectid);
 native SetObjectBreakable(objectid, bool:breakable);
-native SetObjectRespawnable(objectid, bool:respawnable);
 native IsObjectBreakable(objectid);
+native RespawnObject(objectid);
+native SetObjectRespawnable(objectid, bool:respawnable);
 native IsObjectRespawnable(objectid);
 native GetObjectScale(objectid, &Float:X, &Float:Y, &Float:Z);
 native SetObjectScale(objectid, Float:X, Float:Y, Float:Z);

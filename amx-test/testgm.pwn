@@ -47,11 +47,6 @@ public OnGameModeInit()
 	return 1;
 }
 
-public OnGameModeExit()
-{
-	return 1;
-}
-
 public OnPlayerRequestClass(playerid, classid)
 {
 	SetPlayerPos(playerid, 1958.3783, 1343.1572, 15.3746);
@@ -68,6 +63,64 @@ public OnPlayerConnect(playerid)
 	new listitems[] = "1\tDeagle\n2\tSawnoff\n3\tPistol\n4\tGrenade\n5\tParachute\n6\tLorikeet";
  	ShowPlayerDialog(playerid, 2, DIALOG_STYLE_LIST, "List of weapons:", listitems, "Select", "Cancel");
 	// ShowPlayerDialog(playerid, 1, DIALOG_STYLE_LIST, "testcapt", "info", "Ok", "Cancel");
+	return 1;
+}
+
+public OnPlayerSpawn(playerid)
+{
+	new Float:x, Float:y, Float:z;
+	GetPlayerPos(playerid, x, y, z);
+	CreateMarker(x, y, z, "checkpoint", 3.0, 0xFF0000FA);
+
+	SetBotPos(bot, x, y, z);
+	SetBotHealth(bot, 100.0);
+	SetBotArmour(bot, 5.0);
+
+	SetPlayerHealth(playerid, 50.0);
+	GivePlayerWeapon(playerid, 32, 500);
+	return 1;
+}
+
+public OnMarkerCreate(markerid)
+{
+	printf("OnMarkerCreate(%d)", markerid);
+	return 1;
+}
+
+public OnMarkerHit(markerid, type[], id, worldid)
+{
+	printf("OnMarkerHit(%d, %s, %d)", markerid, type, id);
+	return 1;
+}
+
+public OnBotCreate(botid, name[])
+{
+	bots++;
+	printf("Bot created: %d [%s]", botid, name);
+	return 1;
+}
+
+public OnBotStateChange(botid, newstate, oldstate)
+{
+	printf("OnBotStateChange(%d, %d, %d)", botid, newstate, oldstate);
+	return 1;
+}
+
+public OnBotDeath(botid, killerid, reason, bodypart)
+{
+	printf("OnBotDeath(%d, %d, %d, %d)", botid, killerid, reason, bodypart);
+	return 1;
+}
+
+public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY, Float:fZ)
+{
+	printf("OnPlayerWeaponShot(%d, %d, %d, %d, %f, %f, %f)", playerid, weaponid, hittype, hitid, Float:fX, Float:fY, Float:fZ);
+	return 1;
+}
+
+public OnPlayerWeaponSwitch(playerid, newweaponid, oldweaponid)
+{
+	printf("OnPlayerWeaponSwitch(%d, %d, %d)", playerid, newweaponid, oldweaponid);
 	return 1;
 }
 
@@ -125,84 +178,6 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 	}
 
 	return 0; // we didn't handle anything
-}
-
-public OnPlayerDisconnect(playerid, reason)
-{
-	return 1;
-}
-
-public OnMarkerCreate(markerid)
-{
-	printf("OnMarkerCreate(%d)", markerid);
-	return 1;
-}
-
-public OnMarkerHit(markerid, type[], id, worldid)
-{
-	printf("OnMarkerHit(%d, %s, %d)", markerid, type, id);
-	return 1;
-}
-
-public OnPlayerSpawn(playerid)
-{
-	new Float:x, Float:y, Float:z;
-	GetPlayerPos(playerid, x, y, z);
-	CreateMarker(x, y, z, "checkpoint", 3.0, 0xFF0000FA);
-
-	SetBotPos(bot, x, y, z);
-	SetBotHealth(bot, 100.0);
-	SetBotArmour(bot, 5.0);
-
-	SetPlayerHealth(playerid, 50.0);
-	GivePlayerWeapon(playerid, 32, 500);
-	return 1;
-}
-
-public OnBotCreate(botid, name[])
-{
-	bots++;
-	printf("Bot created: %d [%s]", botid, name);
-	return 1;
-}
-
-public OnBotEnterVehicle(botid, vehicleid, ispassenger)
-{
-	return 1;
-}
-
-public OnBotExitVehicle(botid, vehicleid)
-{
-	return 1;
-}
-
-public OnBotDeath(botid, killerid, reason, bodypart)
-{
-	printf("OnBotDeath(%d, %d, %d, %d)", botid, killerid, reason, bodypart);
-	return 1;
-}
-
-public OnBotStateChange(botid, newstate, oldstate)
-{
-	return 1;
-}
-
-public OnPlayerWeaponSwitch(playerid, newweaponid, oldweaponid)
-{
-	printf("OnPlayerWeaponSwitch(%d, %d, %d)", playerid, newweaponid, oldweaponid);
-	return 1;
-}
-
-public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY, Float:fZ)
-{
-	printf("OnPlayerWeaponShot(%d, %d, %d, %d, %f, %f, %f)", playerid, weaponid, hittype, hitid, Float:fX, Float:fY, Float:fZ);
-	return 1;
-}
-
-public OnVehicleDamageStatusUpdate(vehicleid, playerid)
-{
-	printf("OnVehicleDamageStatusUpdate(%d, %d)", vehicleid, playerid);
-	return 1;
 }
 
 public OnPlayerCommandText(playerid, cmdtext[])
