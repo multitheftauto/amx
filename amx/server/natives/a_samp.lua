@@ -13,13 +13,14 @@ function SendClientMessage(amx, player, r, g, b, a, message)
 end
 
 function SendClientMessageToAll(amx, r, g, b, a, message)
-	-- replace colors
-	message = colorizeString(message)
-
-	for i, data in pairs(g_Players) do
-		SendClientMessage(amx, data.elem, r, g, b, a, message)
+	--[[
+	for mta, samp in pairs(g_CommandMapping) do
+		message = message:gsub('/' .. samp, '/' .. mta)
 	end
-	return true
+	]] -- This replaces any part of a string, causing commands such as '/quitfaction' to display as '/outfaction'
+
+	-- replace colors
+	return outputChatBox(colorizeString(message), root, r, g, b, true)
 end
 
 function SendPlayerMessageToAll(amx, sender, message)
