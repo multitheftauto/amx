@@ -23,16 +23,18 @@ end
 
 function attachElementToBone(element, ped, bone, offx, offy, offz, offrx, offry, offrz)
 	if elm(element) and elm(ped) and tonr(bone) then
-		if isElementAttachedToBone(element) then return false end
-		local offrx = offrx or 0
-		local offry = offry or 0
-		local offrz = offrz or 0
+		if Attachemenets[element] then return false end
+		offrx = tonr(offrx) or 0
+		offry = tonr(offry) or 0
+		offrz = tonr(offrz) or 0
 		local rotMat = calculateMatrix(offrx, offry, offrz)
-		local table = { ped, bone, tonr(offx) or 0, tonr(offy) or 0, tonr(offz) or 0, rotMat }
+		local tableSynch = { ped, bone, tonr(offx) or 0, tonr(offy) or 0, tonr(offz) or 0, rotMat }
 		setElementCollisionsEnabled(element, false)
-		Attachemenets[element] = table
-		triggerClientEvent(root, 'sync_attachements', resourceRoot, element, table)
+		Attachemenets[element] = tableSynch
+		triggerClientEvent(root, 'sync_attachements', resourceRoot, element, tableSynch)
+		return true
 	end
+	return false
 end
 
 function detachElementFromBone(element)
@@ -40,8 +42,10 @@ function detachElementFromBone(element)
 		if Attachemenets[element] then
 			Attachemenets[element] = nil
 			triggerClientEvent(root, 'sync_detachements', resourceRoot, element)
+			return true
 		end
 	end
+	return false
 end
 
 addEventHandler('onElementDestroy', root, function()
@@ -79,9 +83,7 @@ function setElementBonePositionOffset(element, offsetx, offsety, offsetz)
 	if elm(element) then
 		local elmT = Attachemenets[element] or nil
 		if elmT then
-			local ped = elmT[1]
-			local bone = elmT[2]
-			local mat = elmT[6]
+			local ped, bone, mat = elmT[1], elmT[2], elmT[6]
 			local tableSynch = { ped, bone, offsetx, offsety, offsetz, mat }
 			Attachemenets[element] = tableSynch
 			triggerClientEvent(root, 'sync_pos_attachements', resourceRoot, element, tableSynch)
@@ -95,11 +97,8 @@ function setElementBoneRotationOffset(element, offsetrx, offsetry, offsetrz)
 	if elm(element) then
 		local elmT = Attachemenets[element] or nil
 		if elmT then
-			local ped = elmT[1]
-			local bone = elmT[2]
-			local ox = elmT[3]
-			local oy = elmT[4]
-			local oz = elmT[5]
+			local ped, bone = elmT[1], elmT[2]
+			local ox, oy, oz = elmT[3], elmT[4], elmT[5]
 			local rotMat = calculateMatrix(offsetrx, offsetry, offsetrz)
 			local tableSynch = { ped, bone, ox, oy, oz, rotMat }
 			Attachemenets[element] = tableSynch

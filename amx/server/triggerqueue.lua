@@ -55,8 +55,11 @@ local function addToQueue(player, name, source, args)
 	table.insert(playerData[player].pending, { name = name, source = source, args = args })
 end
 
-
 function triggerClientEvent(...)
+	if not playerData then
+		return
+	end
+
 	local args = { ... }
 	local triggerFor, name, source
 	if type(args[1]) == 'userdata' then
@@ -66,8 +69,6 @@ function triggerClientEvent(...)
 	end
 	name = table.remove(args, 1)
 	source = table.remove(args, 1)
-
-	if not playerData then return end
 
 	if triggerFor == root then
 		-- trigger for everyone
