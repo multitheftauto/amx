@@ -52,12 +52,11 @@ addEvent('sync_pos_attachements', true)
 local function calculateMatrix(orx, ory, orz)
 	if tonr(orx) and tonr(ory) and tonr(orz) then
 		local sroll, croll, spitch, cpitch, syaw, cyaw = m_sin(m_rad(orz)), m_cos(m_rad(orz)), m_sin(m_rad(ory)), m_cos(m_rad(ory)), m_sin(m_rad(orx)), m_cos(m_rad(orx))
-		local rotm = {
-			{ sroll * spitch * syaw + croll * cyaw, sroll * cpitch, sroll * spitch * cyaw - croll * syaw },
-			{ croll * spitch * syaw - sroll * cyaw, croll * cpitch, croll * spitch * cyaw + sroll * syaw },
-			{ cpitch * syaw, -spitch, cpitch * cyaw }
+		return {
+			{ cpitch * croll - spitch * syaw * sroll, cpitch * sroll + spitch * syaw * croll, -spitch * cyaw },
+			{ -cyaw * sroll, cyaw * croll, syaw },
+			{ spitch * croll + cpitch * syaw * sroll, spitch * sroll - cpitch * syaw * croll, cpitch * cyaw }
 		}
-		return rotm
 	end
 	return false
 end
@@ -133,18 +132,18 @@ addEventHandler('onClientPedsProcessed', root, function()
 			FOR = data[4]
 			FIVE = data[5]
 			finalMatrix = {
-				{ boneMatTwoOne * rotMatOneTwo + boneMatOneOne * rotMatOneOne + rotMatOneTree * boneMatTreeOne,
-				boneMatTreeTwo * rotMatOneTree + boneMatOneTwo * rotMatOneOne + boneMatTwoTwo * rotMatOneTwo,
-				boneMatTwoTree * rotMatOneTwo + boneMatTreeTree * rotMatOneTree + rotMatOneOne * boneMatOneTree, 0 },
-				{ rotMatTwoTree * boneMatTreeOne + boneMatTwoOne * rotMatTwoTwo + rotMatTwoOne * boneMatOneOne,
-				boneMatTreeTwo * rotMatTwoTree + boneMatTwoTwo * rotMatTwoTwo + boneMatOneTwo * rotMatTwoOne,
-				rotMatTwoOne * boneMatOneTree + boneMatTreeTree * rotMatTwoTree + boneMatTwoTree * rotMatTwoTwo, 0 },
-				{ boneMatTwoOne * rotMatTreeTwo + rotMatTreeTree * boneMatTreeOne + rotMatTreeOne * boneMatOneOne,
-				boneMatTreeTwo * rotMatTreeTree + boneMatTwoTwo * rotMatTreeTwo + rotMatTreeOne * boneMatOneTwo,
-				rotMatTreeOne * boneMatOneTree + boneMatTreeTree * rotMatTreeTree + boneMatTwoTree * rotMatTreeTwo, 0 },
-				{ TREE * boneMatOneOne + FOR * boneMatTwoOne + FIVE * boneMatTreeOne + boneMatForOne,
-				TREE * boneMatOneTwo + FOR * boneMatTwoTwo + FIVE * boneMatTreeTwo + boneMatForTwo,
-				TREE * boneMatOneTree + FOR * boneMatTwoTree + FIVE * boneMatTreeTree + boneMatForTree, 1 }
+				{ rotMatOneOne * boneMatOneOne + rotMatOneTwo * boneMatTwoOne + rotMatOneTree * boneMatTreeOne,
+				rotMatOneOne * boneMatOneTwo + rotMatOneTwo * boneMatTwoTwo + rotMatOneTree * boneMatTreeTwo,
+				rotMatOneOne * boneMatOneTree + rotMatOneTwo * boneMatTwoTree + rotMatOneTree * boneMatTreeTree, 0 },
+				{ rotMatTwoOne * boneMatOneOne + rotMatTwoTwo * boneMatTwoOne + rotMatTwoTree * boneMatTreeOne,
+				rotMatTwoOne * boneMatOneTwo + rotMatTwoTwo * boneMatTwoTwo + rotMatTwoTree * boneMatTreeTwo,
+				rotMatTwoOne * boneMatOneTree + rotMatTwoTwo * boneMatTwoTree + rotMatTwoTree * boneMatTreeTree, 0 },
+				{ rotMatTreeOne * boneMatOneOne + rotMatTreeTwo * boneMatTwoOne + rotMatTreeTree * boneMatTreeOne,
+				rotMatTreeOne * boneMatOneTwo + rotMatTreeTwo * boneMatTwoTwo + rotMatTreeTree * boneMatTreeTwo,
+				rotMatTreeOne * boneMatOneTree + rotMatTreeTwo * boneMatTwoTree + rotMatTreeTree * boneMatTreeTree, 0 },
+				{ boneMatForOne + TREE * boneMatOneOne + FOR * boneMatTwoOne + FIVE * boneMatTreeOne,
+				boneMatForTwo + TREE * boneMatOneTwo + FOR * boneMatTwoTwo + FIVE * boneMatTreeTwo,
+				boneMatForTree + TREE * boneMatOneTree + FOR * boneMatTwoTree + FIVE * boneMatTreeTree, 1 }
 			}
 			_setElementMatrix(element, finalMatrix)
 		else

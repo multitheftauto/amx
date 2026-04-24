@@ -11,12 +11,11 @@ addEvent('sync_newcomeplayer', true)
 local function calculateMatrix(orx, ory, orz)
 	if tonr(orx) and tonr(ory) and tonr(orz) then
 		local sroll, croll, spitch, cpitch, syaw, cyaw = m_sin(m_rad(orz)), m_cos(m_rad(orz)), m_sin(m_rad(ory)), m_cos(m_rad(ory)), m_sin(m_rad(orx)), m_cos(m_rad(orx))
-		local rotMat = {
-			{ sroll * spitch * syaw + croll * cyaw, sroll * cpitch, sroll * spitch * cyaw - croll * syaw },
-			{ croll * spitch * syaw - sroll * cyaw, croll * cpitch, croll * spitch * cyaw + sroll * syaw },
-			{ cpitch * syaw, -spitch, cpitch * cyaw }
+		return {
+			{ cpitch * croll - spitch * syaw * sroll, cpitch * sroll + spitch * syaw * croll, -spitch * cyaw },
+			{ -cyaw * sroll, cyaw * croll, syaw },
+			{ spitch * croll + cpitch * syaw * sroll, spitch * sroll - cpitch * syaw * croll, cpitch * cyaw }
 		}
-		return rotMat
 	end
 	return false
 end

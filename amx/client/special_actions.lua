@@ -283,7 +283,7 @@ function handleSpecialAction(action)
 		-- how could we do without a strong jet?
 		jetEffect = createEffect('petrolcan', 0.0, 0.0, 0.0)
 		if jetEffect then
-			attachElementToBone(jetEffect, localPlayer, 2, -0.1, 0.2, 0.0, 0.0, 270.0, 0.0)
+			attachElementToBone(jetEffect, localPlayer, 2, -0.1, 0.2, 0.0, 270.0, 0.0, 0.0)
 		end
 	end
 	currentAction = action
