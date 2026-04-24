@@ -9,7 +9,7 @@ local function setMarkerZ(marker, angle)
 		return
 	end
 	local baseX, baseY, baseZ
-	if info.attachedTo then
+	if isElement(info.attachedTo) then
 		baseX, baseY, baseZ = getElementPosition(info.attachedTo)
 		baseX, baseY, baseZ = baseX + info[1], baseY + info[2], baseZ + info[3]
 	else
@@ -42,7 +42,7 @@ addEventHandler('onClientElementStreamOut', root,
 			return
 		end
 		local info = streamedMarkers[source]
-		if info.attachedTo then
+		if isElement(info.attachedTo) then
 			attachElements(source, info.attachedTo, unpack(info))
 		else
 			setElementPosition(source, unpack(info))
