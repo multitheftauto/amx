@@ -836,6 +836,8 @@ end
 function TextDrawCreate(amx, x, y, text)
 	--outputDebugString('TextDrawCreate called with args ' .. x .. ' ' .. y .. ' ' .. text)
 
+	if #g_TextDraws + 1 >= 2048 then return 65535 end
+
 	local textdraw = { x = x, y = y, shadow = { align = 1, outlinesize = 0, shade = 2, text = text, font = 1, lwidth = 0.48, lheight = 1.12 } }
 	textdraw.visible = false
 
