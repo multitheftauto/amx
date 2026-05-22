@@ -1159,7 +1159,7 @@ local gameText = {}
 local gIndex = 1
 
 function destroyAllGameTexts()
-	for i = 1, gIndex do
+	for i = 1, 100 do
 		if gameText[i] then
 			destroyGameText(i)
 		end
@@ -1167,7 +1167,7 @@ function destroyAllGameTexts()
 end
 
 function destroyAllGameTextsWithStyle(stylePassed)
-	for i = 1, gIndex do
+	for i = 1, 100 do
 		if gameText[i] and gameText[i].style == stylePassed then
 			destroyGameText(i)
 		end
