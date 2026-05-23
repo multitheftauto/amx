@@ -1,7 +1,9 @@
 local showNameTags = true
 local nameTagsRadius = 70
 local nameTagsLOS = true
+
 local nameTagShowing = {}
+local chatBubble = {}
 
 local font = 'arial' -- default font
 
@@ -10,6 +12,34 @@ local borderHeight = 6
 
 local innerWidth = 38
 local innerHeight = 4
+
+function drawChatBubble(x, y, z, text, r, g, b, a, distance)
+	if not r or not g or not b or not a then
+		r, g, b, a = 255, 255, 255, 255
+	end
+
+	z = (distance * 0.025) + z + 0.4
+
+	local screenCoordsX, screenCoordsY = getScreenFromWorldPosition(x, y, z)
+	if not screenCoordsX then return end
+
+	-- Chat bubble outline
+	local outlinecolor = tocolor(0, 0, 0, a)
+	local rect = {
+		left = screenCoordsX - (dxGetTextSize(text, 0, 1, 1, font) / 2),
+		top = screenCoordsY,
+		right = screenCoordsX + 1,
+		bottom = screenCoordsY + 1
+	}
+
+	dxDrawText(text, rect.left + 1, rect.top, rect.right, rect.bottom, outlinecolor, 1, font)
+	dxDrawText(text, rect.left - 1, rect.top, rect.right, rect.bottom, outlinecolor, 1, font)
+	dxDrawText(text, rect.left, rect.top - 1, rect.right, rect.bottom, outlinecolor, 1, font)
+	dxDrawText(text, rect.left, rect.top + 1, rect.right, rect.bottom, outlinecolor, 1, font)
+
+	-- Chat bubble text
+	dxDrawText(text, rect.left, rect.top, rect.right, rect.bottom, tocolor(r, g, b, a), 1, font)
+end
 
 function drawNameTag(x, y, z, nameText, r, g, b, a, health, armor, distance)
 	if not r or not g or not b or not a then
@@ -91,6 +121,23 @@ addEventHandler('onClientRender', root,
 							getElementHealth(player), getPedArmor(player),
 							distance
 						)
+
+						if chatBubble[player] and distance < chatBubble[player].drawdist then
+							if getTickCount() <= chatBubble[player].exptime then
+								if chatBubble[player].a < a then
+									a = chatBubble[player].a
+								end
+
+								drawChatBubble(
+									fPosX, fPosY, fPosZ,
+									chatBubble[player].text,
+									chatBubble[player].r, chatBubble[player].g, chatBubble[player].b, a,
+									distance
+								)
+							else
+								chatBubble[player] = nil
+							end
+						end
 					end
 				end
 			end
@@ -126,6 +173,23 @@ addEventHandler('onClientRender', root,
 		end
 	end
 )
+
+function updateChatBubble(player, msg, color, dist, time)
+	if not isElement(player) then return end
+
+	local red, green, blue, alpha
+	red = bitExtract(color, 24, 8)
+	green = bitExtract(color, 16, 8)
+	blue = bitExtract(color, 8, 8)
+	alpha = bitExtract(color, 0, 8)
+
+	chatBubble[player] = {
+		text = msg,
+		r = red, g = green, b = blue, a = alpha,
+		drawdist = dist,
+		exptime = getTickCount() + time
+	}
+end
 
 function updateNameTagGlobals(settings)
 	if settings.status ~= nil then

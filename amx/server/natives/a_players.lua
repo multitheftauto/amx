@@ -822,8 +822,12 @@ function GetPVarType(amx, player, varname)
 end
 
 function SetPlayerChatBubble(amx, player, text, color, dist, exptime)
-	notImplemented('SetPlayerChatBubble')
-	return false
+	if not player or not text or text:len() < 1 then
+		return false
+	end
+	text = text:sub(1, 144)
+	clientCall(root, 'updateChatBubble', player, text, color, dist, exptime)
+	return true
 end
 
 function PutPlayerInVehicle(amx, player, vehicle, seat)
