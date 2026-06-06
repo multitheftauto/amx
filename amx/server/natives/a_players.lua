@@ -984,8 +984,9 @@ function SetPlayerSpecialAction(amx, player, actionID)
 end
 
 function DisableRemoteVehicleCollisions(amx, player, disable)
-	notImplemented('DisableRemoteVehicleCollisions')
-	return false
+	g_Players[getElemID(player)].remoteCollision = disable
+	clientCall(player, 'updateRemoteCollision', disable)
+	return true
 end
 
 function SetPlayerCheckpoint(amx, player, x, y, z, size)

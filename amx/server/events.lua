@@ -44,6 +44,7 @@ function gameModeInit(player)
 	g_Players[playerID].streamedPlayers = {}
 	g_Players[playerID].attachedObjects = {}
 	g_Players[playerID].streamedBots = {}
+	g_Players[playerID].remoteCollision = {}
 	g_Players[playerID].shotVect = {
 		oX = 0.0, oY = 0.0, oZ = 0.0,
 		hX = 0.0, hY = 0.0, hZ = 0.0

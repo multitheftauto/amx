@@ -777,6 +777,9 @@ function dropVehicle(vehicle)
 	end
 end
 
+local localVehicle = false
+local remoteCollisionDisabled = false
+
 addEventHandler('onClientElementStreamIn', root,
 	function()
 		if getElementType(source) == 'vehicle' then
@@ -800,6 +803,11 @@ addEventHandler('onClientElementStreamIn', root,
 			setVehicleWindowOpen(source, 3, not getElementData(source, 'WindowRearRight'))
 			setVehicleWindowOpen(source, 4, not getElementData(source, 'WindowFrontLeft'))
 			setVehicleWindowOpen(source, 5, not getElementData(source, 'WindowRearLeft'))
+
+			if localVehicle and source ~= localVehicle then
+				local collide = not (remoteCollisionDisabled and getVehicleOccupant(source))
+				setElementCollidableWith(localVehicle, source, collide)
+			end
 
 			if getVehicleType(source) == 'Train' and getVehicleTowingVehicle(source) then
 				-- if it's a train carriage, don't call stream event
@@ -907,8 +915,65 @@ addEventHandler('onClientVehicleStartEnter', root,
 	end
 )
 
+-- apply DisableRemoteVehicleCollisions effect between occupied vehicles
+addEventHandler('onClientVehicleEnter', root,
+	function(player, seat)
+		if seat == 0 then
+			if player == localPlayer then
+				localVehicle = source
+				for _, veh in ipairs(getElementsByType('vehicle', root, true)) do
+					if veh ~= source then
+						local collide = not (remoteCollisionDisabled and getVehicleOccupant(veh))
+						setElementCollidableWith(source, veh, collide)
+					end
+				end
+			elseif remoteCollisionDisabled then
+				if localVehicle and source ~= localVehicle then
+					setElementCollidableWith(localVehicle, source, false)
+				end
+			end
+		end
+	end
+)
+
+-- reset DisableRemoteVehicleCollisions effect between unoccupied vehicles
+addEventHandler('onClientVehicleExit', root,
+	function(player, seat)
+		if seat == 0 then
+			if player == localPlayer then
+				localVehicle = false
+				for _, veh in ipairs(getElementsByType('vehicle', root, true)) do
+					if veh ~= source then
+						setElementCollidableWith(source, veh, true)
+					end
+				end
+			elseif remoteCollisionDisabled then
+				if localVehicle and source ~= localVehicle then
+					setElementCollidableWith(localVehicle, source, true)
+				end
+			end
+		end
+	end
+)
+
 function DestroyVehicle(vehID)
 	g_Vehicles[vehID] = nil
+end
+
+function updateRemoteCollision(disable)
+	remoteCollisionDisabled = disable
+
+	localVehicle = getPedOccupiedVehicle(localPlayer)
+	if localVehicle and getVehicleOccupant(localVehicle) == localPlayer then
+		for _, veh in ipairs(getElementsByType('vehicle', root, true)) do
+			if veh ~= localVehicle then
+				local collide = not (disable and getVehicleOccupant(veh))
+				setElementCollidableWith(localVehicle, veh, collide)
+			end
+		end
+	else
+		localVehicle = false
+	end
 end
 
 function updateFriendlyFire(enable)
