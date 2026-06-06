@@ -705,12 +705,12 @@ function SetVehicleParamsForPlayer(vehicle, isObjective, doorsLocked)
 	if not vehID then
 		return
 	end
-	local vehInfo = g_Vehicles[vehID]
-	if isElement(vehInfo.blip) then
-		destroyElement(vehInfo.blip)
-		vehInfo.blip = nil
-	end
 	if isObjective then
+		local vehInfo = g_Vehicles[vehID]
+		if isElement(vehInfo.blip) then
+			destroyElement(vehInfo.blip)
+		end
+
 		vehInfo.blip = createBlipAttachedTo(vehicle, 0, 2, 226, 192, 99)
 		setBlipOrdering(vehInfo.blip, 1)
 		vehInfo.blippersistent = true
@@ -794,7 +794,7 @@ addEventHandler('onClientElementStreamIn', root,
 			local vehID = getElemID(source)
 			local vehInfo = vehID and g_Vehicles[vehID]
 
-			if vehInfo and not vehInfo.blip then
+			if vehInfo and not vehInfo.blip and not getVehicleOccupant(source) then
 				vehInfo.blip = createBlipAttachedTo(source, 0, 1, 136, 136, 136, 150, 0, 500.0)
 				setElementParent(vehInfo.blip, source)
 			end
@@ -858,6 +858,19 @@ addEventHandler('onClientElementStreamOut', root,
 	end
 )
 
+local function clientPlayerQuit(reason)
+	local vehicle = getPedOccupiedVehicle(source)
+	if vehicle then
+		local vehInfo = g_Vehicles[getElemID(vehicle)]
+
+		if vehInfo and not vehInfo.blip then
+			vehInfo.blip = createBlipAttachedTo(vehicle, 0, 1, 136, 136, 136, 150, 0, 500.0)
+			setElementParent(vehInfo.blip, vehicle)
+		end
+	end
+end
+addEventHandler('onClientPlayerQuit', root, clientPlayerQuit)
+
 local function clientPlayerStuntFinish(stuntType, stuntTime, stuntDistance)
 	local vehicle = getPedOccupiedVehicle(localPlayer)
 	if not vehicle then return cancelEvent() end
@@ -915,10 +928,18 @@ addEventHandler('onClientVehicleStartEnter', root,
 	end
 )
 
--- apply DisableRemoteVehicleCollisions effect between occupied vehicles
 addEventHandler('onClientVehicleEnter', root,
 	function(player, seat)
 		if seat == 0 then
+			local vehInfo = g_Vehicles[getElemID(source)]
+
+			if vehInfo and vehInfo.blip and not vehInfo.blippersistent then
+				if isElement(vehInfo.blip) then
+					destroyElement(vehInfo.blip)
+				end
+				vehInfo.blip = nil
+			end
+
 			if player == localPlayer then
 				localVehicle = source
 				for _, veh in ipairs(getElementsByType('vehicle', root, true)) do
@@ -936,10 +957,16 @@ addEventHandler('onClientVehicleEnter', root,
 	end
 )
 
--- reset DisableRemoteVehicleCollisions effect between unoccupied vehicles
 addEventHandler('onClientVehicleExit', root,
 	function(player, seat)
 		if seat == 0 then
+			local vehInfo = g_Vehicles[getElemID(source)]
+
+			if vehInfo and not vehInfo.blip then
+				vehInfo.blip = createBlipAttachedTo(source, 0, 1, 136, 136, 136, 150, 0, 500.0)
+				setElementParent(vehInfo.blip, source)
+			end
+
 			if player == localPlayer then
 				localVehicle = false
 				for _, veh in ipairs(getElementsByType('vehicle', root, true)) do
