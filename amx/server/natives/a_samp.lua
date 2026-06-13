@@ -938,8 +938,8 @@ function TextDrawFont(amx, textdraw, font)
 end
 
 function TextDrawSetSelectable(amx, textdraw, selectable)
-	notImplemented('TextDrawSetSelectable')
-	return false
+	textdraw.selectable = selectable
+	return true
 end
 
 function TextDrawShowForPlayer(amx, player, textdrawID)

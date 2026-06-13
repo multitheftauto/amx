@@ -1052,6 +1052,25 @@ addEventHandler('onDialogResponse_Ev', root,
 	end
 )
 
+addEvent('onPlayerClickTextDraw_Ev', true)
+addEventHandler('onPlayerClickTextDraw_Ev', root,
+	function(clientTDId)
+		local playerID = getElemID(client)
+		if not playerID then return end
+
+		if clientTDId == 65535 then -- cancel selection
+			procCallOnAll('OnPlayerClickTextDraw', playerID, 65535)
+		elseif clientTDId >= 2048 then -- player textdraw
+			local serverTDId = clientTDId - 2048
+			if g_PlayerTextDraws[client] and g_PlayerTextDraws[client][serverTDId] then
+				procCallOnAll('OnPlayerClickPlayerTextDraw', playerID, serverTDId)
+			end
+		elseif g_TextDraws[clientTDId] then -- global
+			procCallOnAll('OnPlayerClickTextDraw', playerID, clientTDId)
+		end
+	end
+)
+
 addEvent('onPlayerClickMap_Ev', true)
 addEventHandler('onPlayerClickMap_Ev', root,
 	function(clickX, clickY, clickZ)

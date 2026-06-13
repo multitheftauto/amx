@@ -201,6 +201,7 @@ addEventHandler('onClientResourceStop', resourceRoot,
 		TogglePlayerClock(true)
 		removeEventHandler('onClientRender', root, renderTextDraws)
 		removeEventHandler('onClientRender', root, renderMenu)
+		cancelSelectTextDraw()
 	end
 )
 -----------------------------
@@ -1167,8 +1168,65 @@ function initTextDraw(textdraw)
 	end
 end
 
+g_TextDrawSelectMode = false
+g_TextDrawHoverColor = nil
+
+function getTextDrawClickBounds(textdraw)
+	local sourceX = posStretchX(textdraw.x or 0)
+	local sourceY = posStretchY(textdraw.y or 0)
+	local x, w, h
+
+	if textdraw.boxsize then
+		w = posStretchX(textdraw.boxsize[1]) - sourceX
+	else
+		w = posStretchX(textdraw.width or 0)
+	end
+
+	h = posStretchY(textdraw.absheight or 0)
+	x = sourceX -- left by default
+
+	if textdraw.align == 2 then -- center
+		if textdraw.boxsize then
+			w = posStretchX(textdraw.boxsize[2])
+		end
+		x = sourceX - (w / 2)
+	elseif textdraw.align == 3 then -- right
+		x = sourceX - w
+	end
+
+	return x, sourceY, w, h
+end
+
+function getHoveredTextDraw()
+	if not g_TextDrawSelectMode then
+		return nil
+	end
+
+	local cursorX, cursorY = getCursorPosition()
+	if not cursorX then
+		return nil
+	end
+	cursorX = cursorX * screenWidth
+	cursorY = cursorY * screenHeight
+
+	local hovered
+	for id, textdraw in pairs(g_TextDraws) do
+		if textdraw.visible and textdraw.selectable then
+			local x, y, w, h = getTextDrawClickBounds(textdraw)
+			if w > 0 and h > 0 and cursorX >= x and cursorX <= x + w and cursorY >= y and cursorY <= y + h then
+				if not hovered or textdraw.clientTDId > hovered.clientTDId then
+					hovered = textdraw
+				end
+			end
+		end
+	end
+	return hovered
+end
+
 function renderTextDraws()
 	if isPlayerMapVisible() then return end
+
+	local hoveredTextDraw = getHoveredTextDraw()
 
 	for id, textdraw in pairs(g_TextDraws) do
 		if textdraw.visible and textdraw.parts and not (textdraw.text:match('^%s*$')) then
@@ -1229,8 +1287,13 @@ function renderTextDraws()
 				end
 
 				-- Draw the actual text
+				local partColor = part.color
+				if textdraw == hoveredTextDraw and g_TextDrawHoverColor then
+					-- highlighted when hovered in selection mode
+					partColor = g_TextDrawHoverColor
+				end
 				drawBorderText(
-					part.text, sourceX, sourceY, part.color, scalex, scaley,
+					part.text, sourceX, sourceY, partColor, scalex, scaley,
 					font, textdraw.outlinesize, textdraw.outlinecolor
 				)
 			end
@@ -1477,6 +1540,43 @@ function TextDrawShowForPlayer(id)
 	if textdraw then
 		--outputConsole(string.format('TextDrawShowForPlayer trying to show textdraw with text %s', textdraw.text))
 		showTextDraw(textdraw)
+	end
+end
+
+function textDrawSelectClickHandler(button, state)
+	if button ~= 'left' or state ~= 'down' or not g_TextDrawSelectMode then
+		return
+	end
+
+	local hovered = getHoveredTextDraw()
+	if hovered then
+		triggerServerEvent('onPlayerClickTextDraw_Ev', localPlayer, hovered.clientTDId)
+	end
+end
+
+function selectTextDraw(r, g, b, a)
+	g_TextDrawHoverColor = tocolor(r, g, b, a)
+
+	if not g_TextDrawSelectMode then
+		g_TextDrawSelectMode = true
+		addEventHandler('onClientClick', root, textDrawSelectClickHandler)
+		showCursor(true)
+	end
+end
+
+function cancelSelectTextDraw()
+	if not g_TextDrawSelectMode then
+		return
+	end
+
+	g_TextDrawSelectMode = false
+	g_TextDrawHoverColor = nil
+	removeEventHandler('onClientClick', root, textDrawSelectClickHandler)
+
+	if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
+		showCursor(true)
+	else
+		showCursor(false)
 	end
 end
 -----------------------------

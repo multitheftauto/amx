@@ -680,8 +680,11 @@ function PlayerTextDrawFont(amx, player, textdrawID, font)
 end
 
 function PlayerTextDrawSetSelectable(amx, player, textdrawID, selectable)
-	notImplemented('PlayerTextDrawSetSelectable')
-	return false
+	if not isPlayerTextDrawValid(player, textdrawID) then
+		return false
+	end
+	g_PlayerTextDraws[player][textdrawID].selectable = selectable
+	return true
 end
 
 function PlayerTextDrawShow(amx, player, textdrawID)
@@ -1269,12 +1272,12 @@ function StopRecordingPlayerData(amx, player)
 	return false
 end
 
-function SelectTextDraw(amx, player, hovercolor)
-	notImplemented('SelectTextDraw')
-	return false
+function SelectTextDraw(amx, player, r, g, b, a)
+	clientCall(player, 'selectTextDraw', r, g, b, a)
+	return true
 end
 
 function CancelSelectTextDraw(amx, player)
-	notImplemented('CancelSelectTextDraw')
-	return false
+	clientCall(player, 'cancelSelectTextDraw')
+	return true
 end
