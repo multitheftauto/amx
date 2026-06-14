@@ -153,6 +153,7 @@ end
 
 function applyRemoteDrinkAnim(player)
 	local currentAction = playerAction[player] or SPECIAL_ACTION_NONE
+	if currentAction < SPECIAL_ACTION_DRINK_BEER or currentAction > SPECIAL_ACTION_DRINK_SPRUNK then return end
 
 	if currentAction == SPECIAL_ACTION_SMOKE_CIGGY then
 		setPedAnimation(player, 'gangs', 'smkcig_prtl', -1, false, true, false, false, 250, true)
@@ -249,6 +250,7 @@ end
 
 function applyRemoteDanceMove(player, move)
 	local currentAction = playerAction[player] or SPECIAL_ACTION_NONE
+	if currentAction < SPECIAL_ACTION_DANCE1 or currentAction > SPECIAL_ACTION_DANCE4 then return end
 
 	if not move then
 		local anim = danceStyles[currentAction]
