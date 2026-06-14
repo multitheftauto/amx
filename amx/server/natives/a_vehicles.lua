@@ -443,15 +443,15 @@ function UpdateVehicleDamageStatus(amx, vehicle, panels, doors, lights, tires)
 	setVehiclePanelState(vehicle, 5, bitAnd(bitRShift(panels, 20), 15))
 	setVehiclePanelState(vehicle, 6, bitAnd(bitRShift(panels, 24), 15))
 
-	setVehicleDoorState(vehicle, 0, bitAnd(panels, 7))
-	setVehicleDoorState(vehicle, 1, bitAnd(bitRShift(panels, 8), 7))
-	setVehicleDoorState(vehicle, 2, bitAnd(bitRShift(panels, 16), 7))
-	setVehicleDoorState(vehicle, 3, bitAnd(bitRShift(panels, 24), 7))
+	setVehicleDoorState(vehicle, 0, bitAnd(doors, 7))
+	setVehicleDoorState(vehicle, 1, bitAnd(bitRShift(doors, 8), 7))
+	setVehicleDoorState(vehicle, 2, bitAnd(bitRShift(doors, 16), 7))
+	setVehicleDoorState(vehicle, 3, bitAnd(bitRShift(doors, 24), 7))
 
 	setVehicleLightState(vehicle, 0, bitAnd(lights, 1))
-	setVehicleLightState(vehicle, 2, bitAnd(bitRShift(lights, 2), 1))
-	setVehicleLightState(vehicle, 3, bitAnd(bitRShift(lights, 4), 1))
-	setVehicleLightState(vehicle, 4, bitAnd(bitRShift(lights, 6), 1))
+	setVehicleLightState(vehicle, 1, bitAnd(bitRShift(lights, 2), 1))
+	setVehicleLightState(vehicle, 2, bitAnd(bitRShift(lights, 4), 1))
+	setVehicleLightState(vehicle, 3, bitAnd(bitRShift(lights, 6), 1))
 
 	setVehicleWheelStates(vehicle, bitAnd(bitRShift(tires, 3), 1), bitAnd(bitRShift(tires, 2), 1), bitAnd(bitRShift(tires, 1), 1), bitAnd(tires, 1))
 

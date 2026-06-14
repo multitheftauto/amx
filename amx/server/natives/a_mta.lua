@@ -26,7 +26,7 @@ RemoveBotClothes = RemovePlayerClothes
 -- Alpha funcs
 
 function GetAlpha(amx, elem)
-	return getElementAlpha(alpha)
+	return getElementAlpha(elem)
 end
 
 function SetAlpha(amx, elem, alpha)
@@ -61,11 +61,11 @@ function IsPlayerDucked(amx, player)
 end
 
 function IsPlayerOnGround(amx, player)
-	return isPedOnGround(amx, player)
+	return isPedOnGround(player)
 end
 
 function IsPlayerChoking(amx, player)
-	return isPedChoking(amx, player)
+	return isPedChoking(player)
 end
 
 function SetPlayerChoking(amx, player, choking)
@@ -444,7 +444,7 @@ function SetMarkerIcon(amx, marker, icon)
 	elseif icon == 2 then icon = 'finish'
 	else return false end
 
-	return setMarkerIcon(amx, marker, icon)
+	return setMarkerIcon(marker, icon)
 end
 
 function SetMarkerSize(amx, marker, size)
@@ -980,7 +980,7 @@ function IsGlitchEnabled(amx, glitch)
 end
 
 function SetGlitchEnabled(amx, glitch, enable)
-	return setGlitchEnabled(amx, glitch, enable)
+	return setGlitchEnabled(glitch, enable)
 end
 
 function IsJetpackWeaponEnabled(amx, weapon)

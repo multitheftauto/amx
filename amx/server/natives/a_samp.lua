@@ -743,9 +743,9 @@ function GetServerVarAsString(amx, varname, buf, buflen)
 	local rawVal = g_ServerVars[varname] or get('amx.' .. varname)
 	local valStr = (type(rawVal) == 'string') and rawVal or ''
 
-	local copyLen = math.min(#valStr, buflen - 1)
+	local copyLen = math.min(#valStr, buflen)
 	writeMemString(amx, buf, valStr:sub(1, copyLen))
-	return #valStr
+	return copyLen
 end
 
 GetConsoleVarAsBool = GetServerVarAsBool
