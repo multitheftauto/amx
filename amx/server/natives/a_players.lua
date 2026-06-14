@@ -981,6 +981,7 @@ function SetPlayerSpecialAction(amx, player, actionID)
 
 	setPedWearingJetpack(player, false)
 	setElementData(player, 'SpecialAction', actionID)
+	setElementData(player, 'DanceMove', nil)
 	playerdata.specialaction = actionID
 
 	return true

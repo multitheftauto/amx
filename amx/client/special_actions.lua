@@ -239,9 +239,11 @@ function processDance()
 
 			if group ~= lastDanceAnim[localPlayer].group or name ~= lastDanceAnim[localPlayer].name then
 				local anim = danceStyles[currentAction]
-				setPedAnimation(localPlayer, anim.group, anim.idle, -1, true, false, false, false, 250, false)
 
+				setPedAnimation(localPlayer, anim.group, anim.idle, -1, true, false, false, false, 250, false)
 				lastDanceAnim[localPlayer] = nil
+
+				triggerServerEvent('onDanceMoveRequest', localPlayer, nil)
 			end
 		end
 		lastDanceMove[localPlayer] = move
