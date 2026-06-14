@@ -249,7 +249,8 @@ extern "C" char* getScriptFilePath(AMX *amx, char *dest, const char *filename, s
 
 	string path = getScriptFilePath(amx, filename);
 	if(!path.empty() && path.size() < destsize) {
-		strcpy(dest, path.c_str());
+		strncpy(dest, path.c_str(), destsize - 1);
+		dest[destsize - 1] = '\0';
 		return dest;
 	} else {
 		return 0;
