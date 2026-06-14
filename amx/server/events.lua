@@ -793,6 +793,11 @@ addEventHandler('onVehicleStartExit', root,
 			return
 		end
 
+		-- copies SA-MP behavior here
+		if getVehicleType(source) == 'Train' then
+			return
+		end
+
 		if isPed(player) then
 			local botID = getElemID(player)
 			procCallOnAll('OnBotExitVehicle', botID, vehID)
