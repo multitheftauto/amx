@@ -1081,15 +1081,35 @@ addEventHandler('onPlayerClickMap_Ev', root,
 	end
 )
 
-addEvent('onDrunkLevelRequested', true)
-addEventHandler('onDrunkLevelRequested', root,
+addEvent('onDanceMoveRequest', true)
+addEventHandler('onDanceMoveRequest', root,
+	function(move)
+		local playerdata = g_Players[getElemID(client)]
+
+		-- check if player is actually dancing
+		if playerdata.specialaction >= SPECIAL_ACTION_DANCE1 and
+		   playerdata.specialaction <= SPECIAL_ACTION_DANCE4 then
+			setElementData(client, 'DanceMove', move)
+		end
+	end
+)
+
+addEvent('onDrunkLevelRequest', true)
+addEventHandler('onDrunkLevelRequest', root,
 	function()
 		local playerdata = g_Players[getElemID(client)]
 
-		-- do not increase it from sprunk or cigar
-		if playerdata.specialaction == SPECIAL_ACTION_DRINK_BEER or
-		   playerdata.specialaction == SPECIAL_ACTION_DRINK_WINE then
-			playerdata.drunklevel = playerdata.drunklevel + 1350
+		-- check if player is actually drinking
+		if playerdata.specialaction >= SPECIAL_ACTION_DRINK_BEER and
+		   playerdata.specialaction <= SPECIAL_ACTION_DRINK_SPRUNK then
+			-- value must change each sip to call the client event
+			setElementData(client, 'DrinkAnim', getTickCount())
+
+			-- do not increase it from sprunk or cigar
+			if playerdata.specialaction == SPECIAL_ACTION_DRINK_BEER or
+			   playerdata.specialaction == SPECIAL_ACTION_DRINK_WINE then
+				playerdata.drunklevel = playerdata.drunklevel + 1350
+			end
 		end
 	end
 )
