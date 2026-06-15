@@ -79,6 +79,13 @@ function gameModeInit(player)
 	)
 end
 
+function connectHandler(nick, ip)
+	if ip and isIpBlocked(ip) then
+		cancelEvent(true, 'You are banned from this server.')
+	end
+end
+addEventHandler('onPlayerConnect', root, connectHandler)
+
 function joinHandler(player)
 	local playerJoined = not player
 	if playerJoined then

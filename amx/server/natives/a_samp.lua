@@ -679,13 +679,28 @@ function GetPlayerVersion(amx, player, nameBuf, bufSize)
 end
 
 function BlockIpAddress(amx, ip, time)
-	notImplemented('BlockIpAddress')
-	return false
+	if ip == '' then return false end
+
+	local match = ipMaskToPattern(ip)
+	local expires = (time > 0) and (getTickCount() + time) or false
+	g_BlockedIPs[ip] = { match = match, expires = expires }
+
+	local toKick = {}
+	for id, data in pairs(g_Players) do
+		if data.elem and isElement(data.elem) and getPlayerIP(data.elem):match(match) then
+			toKick[#toKick + 1] = data.elem
+		end
+	end
+	for i = 1, #toKick do
+		kickPlayer(toKick[i], 'You are banned from this server.')
+	end
+	return true
 end
 
 function UnBlockIpAddress(amx, ip)
-	notImplemented('UnBlockIpAddress')
-	return false
+	if ip == '' then return false end
+	g_BlockedIPs[ip] = nil
+	return true
 end
 
 function GetServerVarAsBool(amx, varname)

@@ -470,6 +470,28 @@ function resetSpecialAction(player)
 	end
 end
 
+function ipMaskToPattern(mask)
+	-- escape Lua pattern magic chars, leaving '*' alone
+	local pattern = mask:gsub('([%(%)%.%%%+%-%?%[%]%^%$])', '%%%1')
+
+	-- '*' wildcard -> one or more digits
+	pattern = pattern:gsub('%*', '%%d+')
+	return '^' .. pattern .. '$'
+end
+
+function isIpBlocked(ip)
+	local now = getTickCount()
+	for mask, entry in pairs(g_BlockedIPs) do
+		if entry.expires and now >= entry.expires then
+			-- timed block has expired
+			g_BlockedIPs[mask] = nil
+		elseif ip:match(entry.match) then
+			return true
+		end
+	end
+	return false
+end
+
 -- Clamping values
 function clamp(n, min, max)
 	return math.max(min, math.min(max, n))

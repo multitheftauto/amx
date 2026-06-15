@@ -16,6 +16,7 @@ g_Menus = {}
 g_TextDraws = {}
 g_PlayerTextDraws = {}
 g_TextLabels = {}
+g_BlockedIPs = {}
 g_SVars = {}
 
 function initGameModeGlobals()
