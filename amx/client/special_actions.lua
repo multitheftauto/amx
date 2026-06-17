@@ -370,6 +370,21 @@ addEventHandler('onClientElementDataChange', root,
 	end
 )
 
+addEventHandler('onClientElementStreamIn', root,
+	function()
+		if getElementType(source) ~= 'player' or source == localPlayer then return end
+		local action = getElementData(source, 'SpecialAction') or SPECIAL_ACTION_NONE
+		if action == SPECIAL_ACTION_NONE then return end
+
+		handleSpecialAction(source, action)
+
+		if action >= SPECIAL_ACTION_DANCE1 and action <= SPECIAL_ACTION_DANCE4 then
+			local move = getElementData(source, 'DanceMove')
+			if move then applyRemoteDanceMove(source, move) end
+		end
+	end
+)
+
 -- unbind keys, destroy temp objects
 addEventHandler('onClientPlayerSpawn', root,
 	function()

@@ -817,6 +817,7 @@ addEventHandler('onClientElementStreamIn', root,
 
 			triggerServerEvent('onVehicleStream_Ev', localPlayer, source, true)
 		elseif getElementType(source) == 'player' then
+			if source == localPlayer then return end
 			triggerServerEvent('onPlayerStream_Ev', localPlayer, source, true)
 		elseif getElementType(source) == 'ped' then
 			if getElementData(source, 'ActorPed') then
@@ -848,6 +849,7 @@ addEventHandler('onClientElementStreamOut', root,
 
 			triggerServerEvent('onVehicleStream_Ev', localPlayer, source, false)
 		elseif getElementType(source) == 'player' then
+			if source == localPlayer then return end
 			triggerServerEvent('onPlayerStream_Ev', localPlayer, source, false)
 		elseif getElementType(source) == 'ped' then
 			if getElementData(source, 'ActorPed') then
@@ -1474,6 +1476,12 @@ function Attach3DTextLabel(textlabel)
 	local id = textlabel.id
 	--outputConsole('Attaching text label with id ' .. textlabel.id)
 	textlabel.enabled = true
+	g_TextLabels[id] = textlabel
+end
+
+function Update3DTextLabel(textlabel)
+	local id = textlabel.id
+	--outputConsole('Updating text label with id ' .. textlabel.id)
 	g_TextLabels[id] = textlabel
 end
 

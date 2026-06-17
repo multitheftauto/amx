@@ -1136,14 +1136,16 @@ function Attach3DTextLabelToVehicle(amx, textlabel, vehicle, offX, offY, offZ)
 end
 
 function Update3DTextLabelText(amx, textlabel, r, g, b, a, text)
-	textlabel.text = text
+	textlabel.text = colorizeString(text)
 	textlabel.color = { r = r, g = g, b = b, a = a }
+	clientCall(root, 'Update3DTextLabel', textlabel)
 	return true
 end
 
-function UpdatePlayer3DTextLabelText(amx, textlabel, r, g, b, a, text)
-	textlabel.text = text
+function UpdatePlayer3DTextLabelText(amx, player, textlabel, r, g, b, a, text)
+	textlabel.text = colorizeString(text)
 	textlabel.color = { r = r, g = g, b = b, a = a }
+	clientCall(player, 'Update3DTextLabel', textlabel)
 	return true
 end
 
