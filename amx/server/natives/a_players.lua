@@ -913,7 +913,9 @@ function ClearAnimations(amx, player, forcesync)
 	elseif playerdata.specialaction ~= SPECIAL_ACTION_USECELLPHONE and
 	       playerdata.specialaction ~= SPECIAL_ACTION_CARRY then
 		playerdata.specialaction = SPECIAL_ACTION_NONE
+
 		setElementData(player, 'SpecialAction', nil)
+		setElementData(player, 'DanceMove', nil)
 	end
 	return true
 end

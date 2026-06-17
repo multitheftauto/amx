@@ -389,6 +389,7 @@ function handlePlayerSpawn(player)
 	playerdata.vehicle = nil
 	playerdata.specialaction = SPECIAL_ACTION_NONE
 	setElementData(player, 'SpecialAction', nil)
+	setElementData(player, 'DanceMove', nil)
 	playerdata.drunklevel = 0
 
 	procCallOnAll('OnPlayerSpawn', playerID)
@@ -548,6 +549,7 @@ addEventHandler('onPlayerWasted', root,
 		g_Players[playerID].vehicle = nil
 		g_Players[playerID].specialaction = SPECIAL_ACTION_NONE
 		setElementData(source, 'SpecialAction', nil)
+		setElementData(source, 'DanceMove', nil)
 		clientCall(source, 'setCameraDrunkLevel', 0)
 		g_Players[playerID].drunklevel = 0
 	end

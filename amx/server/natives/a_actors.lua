@@ -11,6 +11,7 @@ function DestroyActor(amx, actor)
 		local actorID = getElemID(actor)
 		for i, playerdata in pairs(g_Players) do
 			if playerdata.streamedActors[actorID] then
+				playerdata.streamedActors[actorID] = nil
 				procCallOnAll('OnActorStreamOut', actorID, i)
 			end
 		end

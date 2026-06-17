@@ -101,6 +101,7 @@ addEventHandler('onClientRender', root,
 	function()
 		if not showNameTags then return end
 		local playerPosX, playerPosY, playerPosZ = getElementPosition(localPlayer)
+		local cx, cy, cz = getCameraMatrix()
 
 		for k, player in pairs(getElementsByType('player')) do
 			if player ~= localPlayer and isElementOnScreen(player) and nameTagShowing[player] ~= false then
@@ -109,8 +110,6 @@ addEventHandler('onClientRender', root,
 				local a = getElementAlpha(player)
 
 				if distance < nameTagsRadius and a > 0 then
-					local cx, cy, cz = getCameraMatrix()
-
 					if not nameTagsLOS or isLineOfSightClear(cx, cy, cz, fPosX, fPosY, fPosZ, true, false, false, true, true) then
 						local r, g, b = getPlayerNametagColor(player)
 
@@ -150,8 +149,6 @@ addEventHandler('onClientRender', root,
 				local a = getElementAlpha(bot)
 
 				if distance < nameTagsRadius and a > 0 then
-					local cx, cy, cz = getCameraMatrix()
-
 					if not nameTagsLOS or isLineOfSightClear(cx, cy, cz, fPosX, fPosY, fPosZ, true, false, false, true, true) then
 						local botName = getElementData(bot, 'BotName')
 						if not botName or botName:len() < 1 then botName = 'Bot' end

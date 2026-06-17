@@ -51,16 +51,16 @@ function gamemodeLoad()
 end
 
 function destroyGlobalElements()
-	for id, data in pairs(g_Vehicles) do
+	for id, vehicle in pairs(g_Vehicles) do
 		g_Vehicles[id] = nil
 	end
 
-	for id, data in pairs(g_Menus) do
+	for id, menu in pairs(g_Menus) do
 		DestroyMenu(id)
 	end
 
 	for id, textlabel in pairs(g_TextLabels) do
-		Delete3DTextLabel(textlabel)
+		Delete3DTextLabel(id)
 	end
 
 	for id, textdraw in pairs(g_TextDraws) do
@@ -1467,8 +1467,7 @@ function Create3DTextLabel(id, textlabel)
 end
 
 function Delete3DTextLabel(id)
-	textlabel = g_TextLabels[id]
-	table.removevalue(g_TextLabels, textlabel)
+	g_TextLabels[id] = nil
 end
 
 function Attach3DTextLabel(textlabel)

@@ -25,6 +25,7 @@ function DestroyVehicle(amx, vehicle)
 
 		for i, playerdata in pairs(g_Players) do
 			if playerdata.streamedVehicles[vehID] then
+				playerdata.streamedVehicles[vehID] = nil
 				procCallOnAll('OnVehicleStreamOut', vehID, i)
 			end
 		end
@@ -146,14 +147,13 @@ end
 function SetVehicleParamsEx(amx, vehicle, engine, lights, alarm, doors, bonnet, boot, objective)
 	setVehicleEngineState(vehicle, engine)
 	setVehicleOverrideLights(vehicle, lights and 2 or 1)
+
 	-- TODO: Implement alarm
 	setVehicleLocked(vehicle, doors)
 	setVehicleDoorOpenRatio(vehicle, 0, bonnet and 1 or 0) -- bonnet
 	setVehicleDoorOpenRatio(vehicle, 1, boot and 1 or 0) -- boot
 
-	for i, playerdata in pairs(g_Players) do
-		clientCall(playerdata.elem, 'SetVehicleParamsForPlayer', vehicle, objective, doors)
-	end
+	clientCall(root, 'SetVehicleParamsForPlayer', vehicle, objective, doors)
 
 	local vehID = getElemID(vehicle)
 	g_Vehicles[vehID].alarm = alarm

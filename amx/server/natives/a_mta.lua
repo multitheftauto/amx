@@ -222,6 +222,7 @@ function DestroyBot(amx, bot)
 		local botID = getElemID(bot)
 		for i, playerdata in pairs(g_Players) do
 			if playerdata.streamedBots[botID] then
+				playerdata.streamedBots[botID] = nil
 				procCallOnAll('OnBotStreamOut', botID, i)
 			end
 		end
@@ -811,9 +812,7 @@ end
 -- Buildings
 
 function RemoveBuilding(amx, model, x, y, z, radius)
-	for i, player in pairs(g_Players) do
-		clientCall(player.elem, 'RemoveBuildingForPlayer', model, x, y, z, radius)
-	end
+	clientCall(root, 'RemoveBuildingForPlayer', model, x, y, z, radius)
 	return true
 end
 
@@ -821,16 +820,12 @@ end
 -- RestoreAllBuildingsForPlayer client
 
 function RestoreBuilding(amx, model, x, y, z, radius)
-	for i, player in pairs(g_Players) do
-		clientCall(player.elem, 'RestoreBuildingForPlayer', model, x, y, z, radius)
-	end
+	clientCall(root, 'RestoreBuildingForPlayer', model, x, y, z, radius)
 	return true
 end
 
 function RestoreAllBuildings(amx)
-	for i, player in pairs(g_Players) do
-		clientCall(player.elem, 'RestoreAllBuildingsForPlayer')
-	end
+	clientCall(root, 'RestoreAllBuildingsForPlayer')
 	return true
 end
 

@@ -432,11 +432,13 @@ function setElemID(elem, id)
 end
 
 function getPlayerState(player)
-	return g_Players[getElemID(player)] and g_Players[getElemID(player)].state or PLAYER_STATE_NONE
+	local playerID = getElemID(player)
+	return g_Players[playerID] and g_Players[playerID].state or PLAYER_STATE_NONE
 end
 
 function getBotState(bot)
-	return g_Bots[getElemID(bot)] and g_Bots[getElemID(bot)].state or PLAYER_STATE_NONE
+	local botID = getElemID(bot)
+	return g_Bots[botID] and g_Bots[botID].state or PLAYER_STATE_NONE
 end
 
 function setPlayerState(player, state)
@@ -466,7 +468,9 @@ function resetSpecialAction(player)
 	if playerdata.specialaction ~= SPECIAL_ACTION_USECELLPHONE and
 	   playerdata.specialaction ~= SPECIAL_ACTION_CARRY then
 		playerdata.specialaction = SPECIAL_ACTION_NONE
+
 		setElementData(player, 'SpecialAction', nil)
+		setElementData(player, 'DanceMove', nil)
 	end
 end
 
