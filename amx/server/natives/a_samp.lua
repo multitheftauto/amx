@@ -1157,38 +1157,60 @@ end
 
 function format(amx, outBuf, outBufSize, fmt, ...)
 	local args = { ... }
-	local i = 0
+	local argIndex = 0
 
-	fmt = fmt:gsub('[^%%]%%$', '%%%%'):gsub('%%i', '%%d')
-	for c in fmt:gmatch('%%[%-%d%.]*(%*?%a)') do
-		i = i + 1
-		if i > #args then break end
-		if c:match('^%*') then
-			c = c:sub(2)
-			table.remove(args, i)
+	local function nextArg(kind)
+		argIndex = argIndex + 1
+		local addr = args[argIndex]
+		if addr == nil then
+			return kind == 'string' and '' or 0
+		elseif kind == 'string' then
+			return readMemString(amx, addr) or ''
+		elseif kind == 'float' then
+			return cell2float(amx.memDAT[addr] or 0)
 		end
-		if c == 'd' or c == 'c' or c == 'x' then
-			args[i] = amx.memDAT[args[i]] or 0
-		elseif c == 'f' then
-			args[i] = cell2float(amx.memDAT[args[i]] or 0)
-		elseif c == 's' or c == 'q' then
-			args[i] = readMemString(amx, args[i]) or ''
-		else
-			i = i - 1
-		end
+		return amx.memDAT[addr] or 0
 	end
 
-	fmt = fmt:gsub('(%%[%-%d%.]*)%*(%a)', '%1%2')
+	local result = fmt:gsub('%%(%-?)(%*?%d*)(%.?%*?%d*)([%a%%])',
+		function(flag, width, precision, conv)
+			if conv == '%' then
+				return '%' -- %% to literal percent sign
+			end
 
-	local valid = { d = true, c = true, x = true, f = true, s = true, q = true }
-	fmt = fmt:gsub('%%([%-%d%.%*]*)(%a)',
-		function(flags, letter)
-			if valid[letter] then return '%' .. flags .. letter
-			else return letter end
+			local kind
+			if conv == 'd' or conv == 'i' or conv == 'x' or conv == 'c' then
+				kind = 'int'
+			elseif conv == 'f' then
+				kind = 'float'
+			elseif conv == 's' or conv == 'q' then
+				kind = 'string'
+			else
+				-- leave unknown specifiers untouched
+				return '%' .. flag .. width .. precision .. conv
+			end
+
+			if width:find('*', 1, true) then
+				width = width:gsub('%*', tostring(nextArg('int')))
+			end
+			if precision:find('*', 1, true) then
+				precision = precision:gsub('%*', tostring(nextArg('int')))
+			end
+
+			local value = nextArg(kind)
+			if conv == 'i' then
+				conv = 'd' -- string.format has no %i
+			elseif conv == 'c' then
+				value = value % 256 -- wrap to a byte
+			elseif conv == 'q' then
+				return ('%q'):format(value) -- no width/precision
+			end
+
+			local spec = '%' .. flag .. width .. precision .. conv
+			local ok, formatted = pcall(string.format, spec, value)
+			return ok and formatted or spec
 		end
 	)
-
-	local result = fmt:format(unpack(args))
 
 	local copyLen = math.min(#result, outBufSize)
 	writeMemString(amx, outBuf, result:sub(1, copyLen))
