@@ -394,6 +394,7 @@ function handlePlayerSpawn(player)
 	setElementData(player, 'SpecialAction', nil)
 	setElementData(player, 'DanceMove', nil)
 	playerdata.drunklevel = 0
+	playerdata.animindex = 0
 
 	procCallOnAll('OnPlayerSpawn', playerID)
 	if playerdata.oldint then
@@ -555,6 +556,7 @@ addEventHandler('onPlayerWasted', root,
 		setElementData(source, 'DanceMove', nil)
 		clientCall(source, 'setCameraDrunkLevel', 0)
 		g_Players[playerID].drunklevel = 0
+		g_Players[playerID].animindex = 0
 	end
 )
 

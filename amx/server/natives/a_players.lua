@@ -902,6 +902,10 @@ function ApplyAnimation(amx, player, animlib, animname, fDelta, loop, lockx, loc
 	if time == 0 then
 		loop = true
 	end
+
+	local playerdata = g_Players[getElemID(player)]
+	playerdata.animindex = SAMP_Animation_ID[(animlib .. ':' .. animname):upper()] or 0
+
 	setPedAnimation(player, animlib, animname, time, loop, lockx or locky, false, freeze)
 	setPedAnimationSpeed(player, animname, fDelta)
 	return true
@@ -912,6 +916,8 @@ function ClearAnimations(amx, player, forcesync)
 	setPedWearingJetpack(player, false)
 
 	local playerdata = g_Players[getElemID(player)]
+	playerdata.animindex = 0
+
 	if playerdata.specialaction == SPECIAL_ACTION_NONE then
 		setPedAnimation(player, false)
 	elseif playerdata.specialaction ~= SPECIAL_ACTION_USECELLPHONE and
@@ -925,8 +931,8 @@ function ClearAnimations(amx, player, forcesync)
 end
 
 function GetPlayerAnimationIndex(amx, player)
-	notImplemented('GetPlayerAnimationIndex')
-	return 0
+	local playerdata = g_Players[getElemID(player)]
+	return playerdata and playerdata.animindex or 0
 end
 
 function GetAnimationName(amx, index, animLib, libLen, animName, nameLen)
