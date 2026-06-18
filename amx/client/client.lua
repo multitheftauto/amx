@@ -1419,6 +1419,11 @@ function destroyGameText(index)
 end
 
 function renderTextLabels()
+	if not next(g_TextLabels) then return end
+
+	local vw = getElementDimension(localPlayer)
+	local pX, pY, pZ = getCameraMatrix() --getElementPosition(localPlayer)
+
 	for id, textlabel in pairs(g_TextLabels) do
 		if textlabel.enabled then
 			if textlabel.attached and isElement(textlabel.attachedTo) then
@@ -1435,9 +1440,7 @@ function renderTextLabels()
 			end
 
 			local screenX, screenY = getScreenFromWorldPosition(textlabel.X, textlabel.Y, textlabel.Z, textlabel.dist, false)
-			local pX, pY, pZ, _, _, _ = getCameraMatrix() --getElementPosition(localPlayer)
 			local dist = getDistanceBetweenPoints3D(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z)
-			local vw = getElementDimension(localPlayer)
 
 			if screenX and dist <= textlabel.dist and (vw == textlabel.vw or textlabel.vw == -1) then -- Because player textlabels don't have VW's, since we're processing both here
 				if not textlabel.los or isLineOfSightClear(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z, true, false, false) then
@@ -1494,10 +1497,6 @@ function TextDrawCreate(id, textdraw)
 	--outputConsole('Got TextDrawCreate, textdraw id ' .. id)
 
 	g_TextDraws[id] = textdraw
-	if textdraw.x then
-		textdraw.x = textdraw.x
-		textdraw.y = textdraw.y
-	end
 	for prop, val in pairs(textdraw) do
 		TextDrawPropertyChanged(id, prop, val, true)
 	end
@@ -1790,8 +1789,8 @@ function renderMenu()
 
 	-- menu items
 	for column = 0, 1 do
+		local x = menu.x + MENU_SIDE_PADDING + column * menu.leftColumnWidth
 		for i, text in pairs(menu.items[column]) do
-			local x = menu.x + MENU_SIDE_PADDING + column * menu.leftColumnWidth
 			local y, color, scale
 			if i < 13 then
 				-- regular item

@@ -41,7 +41,7 @@ function GetPlayerPos(amx, player, refX, refY, refZ)
 end
 
 function SetPlayerFacingAngle(amx, player, angle)
-	local rotX, rotY, rotZ = getElementRotation(player)
+	local rotX, rotY = getElementRotation(player)
 	return setElementRotation(player, rotX, rotY, angle)
 end
 

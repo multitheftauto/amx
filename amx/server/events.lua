@@ -260,11 +260,11 @@ function requestClass(player, btn, state, dir)
 		data.selectedclass = #g_PlayerClasses
 	end
 	local skin = 0
-	local x, y, z = getElementPosition(player)
 	if g_PlayerClasses[0] then
 		skin = g_PlayerClasses[data.selectedclass][5]
 	end
 	if isPedDead(player) then
+		local x, y, z = getElementPosition(player)
 		spawnPlayer(player, x, y, z, getElementRotation(player), skin, getElementInterior(player), playerID)
 	else
 		setElementModel(player, skin)
@@ -440,16 +440,17 @@ addEventHandler('onPlayerChat', root,
 		end
 
 		local r, g, b = getPlayerNametagColor(source)
+		local fullMsg = getPlayerName(source) .. ':#FFFFFF ' .. msg
 
 		if g_GlobalChatRadius then
 			local x, y, z = getElementPosition(source)
 			for i, data in pairs(g_Players) do
 				if getDistanceBetweenPoints3D(x, y, z, getElementPosition(data.elem)) <= g_GlobalChatRadius then
-					outputChatBox(getPlayerName(source) .. ':#FFFFFF ' .. msg, data.elem, r, g, b, true)
+					outputChatBox(fullMsg, data.elem, r, g, b, true)
 				end
 			end
 		else
-			outputChatBox(getPlayerName(source) .. ':#FFFFFF ' .. msg, root, r, g, b, true)
+			outputChatBox(fullMsg, root, r, g, b, true)
 		end
 	end
 )
