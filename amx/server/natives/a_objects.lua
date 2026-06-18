@@ -72,6 +72,12 @@ end
 
 function DestroyObject(amx, object)
 	if object then
+		local objdata = g_Objects[getElemID(object)]
+		if objdata and objdata.moving then
+			if isTimer(objdata.moving.timer) then
+				killTimer(objdata.moving.timer)
+			end
+		end
 		removeElem(g_Objects, object)
 		destroyElement(object)
 	end
@@ -98,11 +104,29 @@ function MoveObject(amx, object, x, y, z, speed, rX, rY, rZ)
 	if rZ <= -1000.0 then cRotZ = 0.0 end
 
 	moveObject(object, time, x, y, z, cRotX, cRotY, cRotZ)
-	setTimer(procCallOnAll, time, 1, 'OnObjectMoved', getElemID(object))
+
+	local objID = getElemID(object)
+	local objdata = g_Objects[objID]
+
+	if objdata then
+		if objdata.moving and isTimer(objdata.moving.timer) then
+			killTimer(objdata.moving.timer)
+		end
+		local timer = setTimer(procCallOnAll, time, 1, 'OnObjectMoved', objID)
+		objdata.moving = { timer = timer }
+	end
+
 	return math.floor(time)
 end
 
 function StopObject(amx, object)
+	local objdata = g_Objects[getElemID(object)]
+	if objdata and objdata.moving then
+		if isTimer(objdata.moving.timer) then
+			killTimer(objdata.moving.timer)
+		end
+		objdata.moving = nil
+	end
 	return stopObject(object)
 end
 
