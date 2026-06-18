@@ -438,7 +438,9 @@ function SetPlayerSkillLevel(amx, player, skill, level)
 end
 
 function GetPlayerSurfingVehicleID(amx, player)
-	if not player then return end
+	if not player then
+		return INVALID_VEHICLE_ID
+	end
 	local surfElement = getPedContactElement(player)
 	if surfElement and getElementType(surfElement) == 'vehicle' then
 		if getVehicleOccupant(surfElement) then
@@ -449,7 +451,9 @@ function GetPlayerSurfingVehicleID(amx, player)
 end
 
 function GetPlayerSurfingObjectID(amx, player)
-	if not player then return end
+	if not player then
+		return INVALID_OBJECT_ID
+	end
 	local surfElement = getPedContactElement(player)
 	if surfElement and getElementType(surfElement) == 'object' then
 		if isObjectMoving(surfElement) then
@@ -809,7 +813,7 @@ function GetPVarNameAtIndex(amx, player, index, outbuf, length)
 	end
 
 	if index >= #varNames then return 0 end
-	local varName = string.upper(varNames[index + 1])
+	local varName = varNames[index + 1]
 
 	local copyLen = math.min(#varName, length)
 	writeMemString(amx, outbuf, varName:sub(1, copyLen))

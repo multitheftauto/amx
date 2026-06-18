@@ -443,6 +443,8 @@ end
 
 function setPlayerState(player, state)
 	local playerID = getElemID(player)
+	if not g_Players[playerID] then return end
+
 	local oldState = g_Players[playerID].state or PLAYER_STATE_NONE
 	g_Players[playerID].state = state
 	if state ~= oldState then
@@ -452,6 +454,8 @@ end
 
 function setBotState(bot, state)
 	local botID = getElemID(bot)
+	if not g_Bots[botID] then return end
+
 	local oldState = g_Bots[botID].state or PLAYER_STATE_NONE
 	g_Bots[botID].state = state
 	if state ~= oldState then

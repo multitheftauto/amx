@@ -276,7 +276,7 @@ function GetSVarNameAtIndex(amx, index, outbuf, length)
 	end
 
 	if index >= #varNames then return 0 end
-	local varName = string.upper(varNames[index + 1])
+	local varName = varNames[index + 1]
 
 	local copyLen = math.min(#varName, length)
 	writeMemString(amx, outbuf, varName:sub(1, copyLen))

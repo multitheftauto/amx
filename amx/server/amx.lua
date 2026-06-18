@@ -310,7 +310,7 @@ function readPrefixTable(hFile, offset, length, nameAsKey)
 	local result = {}
 	for i = 0, length / 8 - 1 do
 		entryOffset = readDWORDAt(hFile, offset)
-		entryName = readString(hFile, readDWORD(hFile))
+		local entryName = readString(hFile, readDWORD(hFile))
 		if nameAsKey then
 			result[entryName] = entryOffset
 		else

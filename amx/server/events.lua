@@ -274,6 +274,9 @@ function requestClass(player, btn, state, dir)
 end
 
 function requestSpawn(player, btn, state)
+	if not isElement(player) then
+		return
+	end
 	local playerID = getElemID(player)
 	if procCallOnAll('OnPlayerRequestSpawn', playerID) then
 		unbindKey(player, 'arrow_l', 'down', requestClass)
@@ -566,11 +569,19 @@ addEventHandler('onPlayerQuit', root,
 		if isElement(vehicle) then
 			triggerEvent('onVehicleExit', vehicle, source)
 		end
-		g_PlayerObjects[source] = nil
-		g_PlayerTextDraws[source] = nil
 
 		local playerID = getElemID(source)
 		procCallOnAll('OnPlayerDisconnect', playerID, quitReasons[reason] or 0)
+
+		if g_PlayerObjects[source] then
+			for objID, obj in pairs(g_PlayerObjects[source]) do
+				if obj.moving and isTimer(obj.moving.timer) then
+					killTimer(obj.moving.timer)
+				end
+			end
+		end
+		g_PlayerObjects[source] = nil
+		g_PlayerTextDraws[source] = nil
 
 		for i = 0, 9 do
 			local obj = g_Players[playerID].attachedObjects[i]
@@ -712,8 +723,10 @@ addEventHandler('onVehicleEnter', root,
 
 		if isPed(player) then
 			local botID = getElemID(player)
-			g_Bots[botID].vehicle = source
-			setBotState(player, seat == 0 and PLAYER_STATE_DRIVER or PLAYER_STATE_PASSENGER)
+			if g_Bots[botID] then
+				g_Bots[botID].vehicle = source
+				setBotState(player, seat == 0 and PLAYER_STATE_DRIVER or PLAYER_STATE_PASSENGER)
+			end
 		else
 			local playerID = getElemID(player)
 			g_Players[playerID].vehicle = source
@@ -764,8 +777,10 @@ addEventHandler('onVehicleExit', root,
 
 		if isPed(player) then
 			local botID = getElemID(player)
-			g_Bots[botID].vehicle = nil
-			setBotState(player, PLAYER_STATE_ONFOOT)
+			if g_Bots[botID] then
+				g_Bots[botID].vehicle = nil
+				setBotState(player, PLAYER_STATE_ONFOOT)
+			end
 		else
 			local playerID = getElemID(player)
 			g_Players[playerID].vehicle = nil

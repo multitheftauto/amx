@@ -79,7 +79,7 @@ function DestroyObject(amx, object)
 end
 
 function MoveObject(amx, object, x, y, z, speed, rX, rY, rZ)
-	if not object then
+	if not object or speed <= 0.0 then
 		return 0
 	end
 
@@ -212,7 +212,11 @@ function IsValidPlayerObject(amx, player, objID)
 end
 
 function DestroyPlayerObject(amx, player, objID)
-	if g_PlayerObjects[player] and g_PlayerObjects[player][objID] then
+	local obj = g_PlayerObjects[player] and g_PlayerObjects[player][objID]
+	if obj then
+		if obj.moving and isTimer(obj.moving.timer) then
+			killTimer(obj.moving.timer)
+		end
 		g_PlayerObjects[player][objID] = nil
 		clientCall(player, 'DestroyPlayerObject', objID)
 	end
@@ -221,7 +225,7 @@ end
 
 function MovePlayerObject(amx, player, objID, x, y, z, speed, rX, rY, rZ)
 	local obj = g_PlayerObjects[player] and g_PlayerObjects[player][objID]
-	if not obj then
+	if not obj or speed <= 0.0 then
 		return 0
 	end
 	local curX, curY, curZ = getPlayerObjectPos(amx, player, objID)

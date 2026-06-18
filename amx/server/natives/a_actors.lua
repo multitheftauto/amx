@@ -80,7 +80,7 @@ function GetPlayerCameraTargetActor(amx, player)
 end
 
 GetActorHealth = GetPlayerHealth
-SetActorHealth = SetPlayerHealth
+SetActorHealth = SetVehicleHealth
 GetActorVirtualWorld = GetPlayerVirtualWorld
 SetActorVirtualWorld = SetPlayerVirtualWorld
 GetActorFacingAngle = GetPlayerFacingAngle

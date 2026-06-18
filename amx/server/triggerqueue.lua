@@ -83,7 +83,11 @@ function triggerClientEvent(...)
 			_triggerClientEvent(root, name, source, unpack(args))
 		else
 			for player, data in pairs(playerData) do
-				addToQueue(player, name, source, args)
+				if data.loaded then
+					_triggerClientEvent(player, name, source, unpack(args))
+				else
+					addToQueue(player, name, source, args)
+				end
 			end
 		end
 	elseif playerData[triggerFor] then

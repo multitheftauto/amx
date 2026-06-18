@@ -103,7 +103,7 @@ addEventHandler('onClientRender', root,
 		local playerPosX, playerPosY, playerPosZ = getElementPosition(localPlayer)
 		local cx, cy, cz = getCameraMatrix()
 
-		for k, player in pairs(getElementsByType('player')) do
+		for k, player in pairs(getElementsByType('player', root, true)) do
 			if player ~= localPlayer and isElementOnScreen(player) and nameTagShowing[player] ~= false then
 				local fPosX, fPosY, fPosZ = getPedBonePosition(player, 8)
 				local distance = getDistanceBetweenPoints3D(playerPosX, playerPosY, playerPosZ, fPosX, fPosY, fPosZ)
@@ -142,7 +142,7 @@ addEventHandler('onClientRender', root,
 			end
 		end
 
-		for k, bot in pairs(getElementsByType('ped')) do
+		for k, bot in pairs(getElementsByType('ped', root, true)) do
 			if isElementOnScreen(bot) and getElementData(bot, 'ShowNameTag') then
 				local fPosX, fPosY, fPosZ = getPedBonePosition(bot, 8)
 				local distance = getDistanceBetweenPoints3D(playerPosX, playerPosY, playerPosZ, fPosX, fPosY, fPosZ)

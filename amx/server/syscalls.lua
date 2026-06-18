@@ -12,7 +12,7 @@ function argsToMTA(amx, prototype, ...)
 	local argMissing = false
 	local colorArgs
 	for i, val in ipairs(args) do
-		vartype = prototype[i]
+		local vartype = prototype[i]
 		if vartype == 'b' then			-- boolean
 			val = val ~= 0
 		elseif vartype == 'c' then		-- color

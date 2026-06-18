@@ -117,7 +117,7 @@ g_ServerVars = {
 			return string.format('%02d:00', h)
 		end,
 		set = function(str)
-			local h = str:match('^(%d+):$')
+			local h = str:match('^(%d+)')
 			if h then
 				setTime(tonumber(h), 0)
 			end

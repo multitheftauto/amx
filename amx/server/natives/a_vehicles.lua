@@ -116,7 +116,11 @@ function GetVehicleRotationQuat(amx, vehicle, refW, refX, refY, refZ)
 	return true
 end
 
-GetVehicleDistanceFromPoint = GetPlayerDistanceFromPoint
+function GetVehicleDistanceFromPoint(amx, vehicle, vX, vY, vZ)
+	local cX, cY, cZ = getElementPosition(vehicle)
+	if not cX then return float2cell(0) end
+	return float2cell(getDistanceBetweenPoints3D(vX, vY, vZ, cX, cY, cZ))
+end
 
 function SetVehicleZAngle(amx, vehicle, rZ)
 	local rX, rY = getElementRotation(vehicle)
@@ -165,6 +169,7 @@ end
 -- Siren
 function GetVehicleParamsSirenState(amx, vehicle)
 	local sirenParams = getVehicleSirenParams(vehicle)
+	if not sirenParams then return 0 end
 
 	-- in SA-MP this native returns 3 states
 	-- 1 - siren on

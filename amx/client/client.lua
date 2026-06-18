@@ -1403,7 +1403,7 @@ function GameTextForPlayer(text, time, style)
 	initTextDraw(gameText[gIndex])
 	showTextDraw(gameText[gIndex])
 	gameText[gIndex].timer = setTimer(destroyGameText, time, 1, gIndex)
-	gIndex = gIndex > 100 and 1 or gIndex + 1 -- Limit to 100
+	gIndex = gIndex >= 100 and 1 or gIndex + 1 -- Limit to 100
 end
 
 function destroyGameText(index)
@@ -1421,7 +1421,7 @@ end
 function renderTextLabels()
 	for id, textlabel in pairs(g_TextLabels) do
 		if textlabel.enabled then
-			if textlabel.attached then
+			if textlabel.attached and isElement(textlabel.attachedTo) then
 				local oX, oY, oZ = getElementPosition(textlabel.attachedTo)
 				oX = oX + textlabel.offX
 				oY = oY + textlabel.offY
@@ -1429,6 +1429,9 @@ function renderTextLabels()
 				textlabel.X = oX
 				textlabel.Y = oY
 				textlabel.Z = oZ
+			else
+				textlabel.attached = false
+				textlabel.attachedTo = nil
 			end
 
 			local screenX, screenY = getScreenFromWorldPosition(textlabel.X, textlabel.Y, textlabel.Z, textlabel.dist, false)
