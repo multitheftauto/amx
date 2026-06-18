@@ -319,8 +319,8 @@ function GetVehicleModelInfo(amx, model, type, refX, refY, refZ)
 		[5] = { start = 13, count = 3 },  -- VEHICLE_MODEL_INFO_WHEELSFRONT
 		[6] = { start = 16, count = 3 },  -- VEHICLE_MODEL_INFO_WHEELSREAR
 		[7] = { start = 19, count = 3 },  -- VEHICLE_MODEL_INFO_WHEELSMID
-		[8] = { start = 22, count = 1 },  -- VEHICLE_MODEL_INFO_FRONT_BUMPER_Z
-		[9] = { start = 25, count = 1 }   -- VEHICLE_MODEL_INFO_REAR_BUMPER_Z
+		[8] = { start = 22, count = 3 },  -- VEHICLE_MODEL_INFO_FRONT_BUMPER_Z
+		[9] = { start = 25, count = 3 }   -- VEHICLE_MODEL_INFO_REAR_BUMPER_Z
 	}
 
 	local spec = offsets[type]

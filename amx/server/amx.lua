@@ -221,12 +221,6 @@ function unloadAMX(amx, notifyClient)
 
 	table.each(amx.timers, killTimer)
 
-	if amx.boundkeys then
-		for i, key in ipairs(amx.boundkeys) do
-			table.each(g_Players, 'elem', unbindKey, g_ControlMapping[key], 'down', procCallInternal)
-		end
-	end
-
 	g_LoadedAMXs[amx.name] = nil
 	if not isWeaponSyncingNeeded() then
 		clientCall(root, 'enableWeaponSyncing', false)

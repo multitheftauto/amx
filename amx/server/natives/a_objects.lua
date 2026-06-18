@@ -199,7 +199,7 @@ function GetPlayerObjectModel(amx, player, objID)
 	local obj = g_PlayerObjects[player] and g_PlayerObjects[player][objID]
 	if not obj then return -1 end
 
-	return g_PlayerObjects[player][objID].model
+	return obj.model
 end
 
 function SetPlayerObjectNoCameraCol(amx, player, objID)
