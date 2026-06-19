@@ -123,7 +123,6 @@ function GetVehicleDistanceFromPoint(amx, vehicle, vX, vY, vZ)
 end
 
 function SetVehicleZAngle(amx, vehicle, rZ)
-	local rX, rY = getElementRotation(vehicle)
 	return setElementRotation(vehicle, 0, 0, rZ)
 end
 
