@@ -77,13 +77,13 @@ end
 
 function db_get_field(amx, dbResultID, fieldIndex, outbuf, maxlength)
 	local dbresult, idx = g_DBResults[dbResultID], fieldIndex + 1
-	if not dbresult or not dbresult[dbresult.row] then
+	if not dbresult or not dbresult.columns or not dbresult[dbresult.row] then
 		return false
 	end
-	if idx < 1 or idx > #dbresult[dbresult.row] then
+	if idx < 1 or idx > #dbresult.columns then
 		return false
 	end
-	local data = dbresult[dbresult.row][idx]
+	local data = tostring(dbresult[dbresult.row][idx] or '')
 	local len = math.min(#data, maxlength)
 	writeMemString(amx, outbuf, string.sub(data, 1, len))
 	return true
@@ -91,10 +91,10 @@ end
 
 function db_get_field_int(amx, dbResultID, fieldIndex)
 	local dbresult, idx = g_DBResults[dbResultID], fieldIndex + 1
-	if not dbresult or not dbresult[dbresult.row] then
+	if not dbresult or not dbresult.columns or not dbresult[dbresult.row] then
 		return 0
 	end
-	if idx < 1 or idx > #dbresult[dbresult.row] then
+	if idx < 1 or idx > #dbresult.columns then
 		return 0
 	end
 	local data = dbresult[dbresult.row][idx]
@@ -103,10 +103,10 @@ end
 
 function db_get_field_float(amx, dbResultID, fieldIndex)
 	local dbresult, idx = g_DBResults[dbResultID], fieldIndex + 1
-	if not dbresult or not dbresult[dbresult.row] then
+	if not dbresult or not dbresult.columns or not dbresult[dbresult.row] then
 		return float2cell(0)
 	end
-	if idx < 1 or idx > #dbresult[dbresult.row] then
+	if idx < 1 or idx > #dbresult.columns then
 		return float2cell(0)
 	end
 	local data = dbresult[dbresult.row][idx]
