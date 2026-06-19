@@ -274,6 +274,7 @@ function GetSVarNameAtIndex(amx, index, outbuf, length)
 	for name in pairs(g_SVars) do
 		table.insert(varNames, name)
 	end
+	table.sort(varNames)
 
 	if index >= #varNames then return 0 end
 	local varName = varNames[index + 1]

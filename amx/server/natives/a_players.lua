@@ -822,6 +822,7 @@ function GetPVarNameAtIndex(amx, player, index, outbuf, length)
 	for name in pairs(g_Players[playerID].pvars) do
 		table.insert(varNames, name)
 	end
+	table.sort(varNames)
 
 	if index >= #varNames then return 0 end
 	local varName = varNames[index + 1]
