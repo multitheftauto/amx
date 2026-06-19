@@ -195,11 +195,13 @@ function SetPlayerTeam(amx, player, team)
 end
 
 function GetPlayerTeam(amx, player)
-	local team = getPlayerTeam(player)
 	local data = g_Players[getElemID(player)]
+	if not data then return 255 end
 
+	local team = getPlayerTeam(player)
 	if data.doingclasssel then
-		team = g_PlayerClasses[data.selectedclass][8]
+		local class = g_PlayerClasses[data.selectedclass]
+		team = class and class[8]
 	end
 
 	if not team then return 255 end

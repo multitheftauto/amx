@@ -864,7 +864,8 @@ addEventHandler('onClientElementStreamOut', root,
 local function clientPlayerQuit(reason)
 	local vehicle = getPedOccupiedVehicle(source)
 	if vehicle then
-		local vehInfo = g_Vehicles[getElemID(vehicle)]
+		local vehID = getElemID(vehicle)
+		local vehInfo = vehID and g_Vehicles[vehID]
 
 		if vehInfo and not vehInfo.blip then
 			vehInfo.blip = createBlipAttachedTo(vehicle, 0, 1, 136, 136, 136, 150, 0, 500.0)
@@ -934,7 +935,8 @@ addEventHandler('onClientVehicleStartEnter', root,
 addEventHandler('onClientVehicleEnter', root,
 	function(player, seat)
 		if seat == 0 then
-			local vehInfo = g_Vehicles[getElemID(source)]
+			local vehID = getElemID(source)
+			local vehInfo = vehID and g_Vehicles[vehID]
 
 			if vehInfo and vehInfo.blip and not vehInfo.blippersistent then
 				if isElement(vehInfo.blip) then
@@ -963,7 +965,8 @@ addEventHandler('onClientVehicleEnter', root,
 addEventHandler('onClientVehicleExit', root,
 	function(player, seat)
 		if seat == 0 then
-			local vehInfo = g_Vehicles[getElemID(source)]
+			local vehID = getElemID(source)
+			local vehInfo = vehID and g_Vehicles[vehID]
 
 			if vehInfo and not vehInfo.blip then
 				vehInfo.blip = createBlipAttachedTo(source, 0, 1, 136, 136, 136, 150, 0, 500.0)

@@ -42,6 +42,9 @@ addEventHandler('onClientElementStreamOut', root,
 			return
 		end
 		local info = streamedMarkers[source]
+		if not info then
+			return
+		end
 		if isElement(info.attachedTo) then
 			attachElements(source, info.attachedTo, unpack(info))
 		else
