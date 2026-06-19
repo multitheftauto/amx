@@ -486,12 +486,23 @@ function GetPlayerLastShotVectors(amx, player, refOrigX, refOrigY, refOrigZ, ref
 end
 
 function SetPlayerAttachedObject(amx, player, index, modelid, bone, fOffsetX, fOffsetY, fOffsetZ, fRotX, fRotY, fRotZ, fScaleX, fScaleY, fScaleZ, materialcolor1, materialcolor2)
+	if index < 0 or index > 9 then
+		return false
+	end
+
 	local x, y, z = getElementPosition(player)
 	local mtaBone = g_BoneMapping[bone]
 	local obj = createObject(modelid, x, y, z)
 
 	if obj then
 		local playerID = getElemID(player)
+		local oldObj = g_Players[playerID].attachedObjects[index]
+
+		if oldObj then
+			detachElementFromBone(oldObj)
+			destroyElement(oldObj)
+		end
+
 		g_Players[playerID].attachedObjects[index] = obj
 		setElementCollisionsEnabled(obj, false)
 		setObjectScale(obj, fScaleX, fScaleY, fScaleZ)

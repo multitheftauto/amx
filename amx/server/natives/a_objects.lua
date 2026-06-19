@@ -285,6 +285,13 @@ function IsPlayerObjectMoving(amx, player, objID)
 	if not obj or not obj.moving then
 		return false
 	end
+
+	local curtick = getTickCount()
+	if curtick >= obj.moving.starttick + obj.moving.duration then
+		obj.moving = nil
+		return false
+	end
+
 	return true
 end
 
