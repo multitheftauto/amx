@@ -171,6 +171,13 @@ addEventHandler('onClientRender', root,
 	end
 )
 
+addEventHandler('onClientPlayerQuit', root,
+	function()
+		chatBubble[source] = nil
+		nameTagShowing[source] = nil
+	end
+)
+
 function updateChatBubble(player, msg, color, dist, time)
 	if not isElement(player) then return end
 
