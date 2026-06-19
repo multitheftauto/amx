@@ -1689,11 +1689,14 @@ function ShowMenuForPlayer(menuID)
 		addEventHandler('onClientClick', root, menuClickHandler)
 		showCursor(true)
 	else
-		g_CurrentMenu.closebtn = prevMenu.closebtn
-		prevMenu.closebtn = nil
+		if prevMenu ~= g_CurrentMenu then
+			g_CurrentMenu.closebtn = prevMenu.closebtn
+			prevMenu.closebtn = nil
+			g_CurrentMenu.closebtnhover = prevMenu.closebtnhover
+			prevMenu.closebtnhover = nil
+		end
+
 		guiSetPosition(g_CurrentMenu.closebtn, g_CurrentMenu.x + g_CurrentMenu.width - closebtnSide, g_CurrentMenu.y, false)
-		g_CurrentMenu.closebtnhover = prevMenu.closebtnhover
-		prevMenu.closebtnhover = nil
 		guiSetPosition(g_CurrentMenu.closebtnhover, g_CurrentMenu.x + g_CurrentMenu.width - closebtnSide, g_CurrentMenu.y, false)
 		setMenuAlpha(g_CurrentMenu, 1)
 	end
