@@ -51,10 +51,6 @@ function gamemodeLoad()
 end
 
 function destroyGlobalElements()
-	for id, vehicle in pairs(g_Vehicles) do
-		g_Vehicles[id] = nil
-	end
-
 	for id, menu in pairs(g_Menus) do
 		DestroyMenu(id)
 	end
@@ -65,6 +61,18 @@ function destroyGlobalElements()
 
 	for id, textdraw in pairs(g_TextDraws) do
 		destroyTextDraw(textdraw)
+	end
+
+	for id, vehicle in pairs(g_Vehicles) do
+		if isElement(vehicle.blip) then
+			destroyElement(vehicle.blip)
+		end
+
+		if isElement(vehicle.marker) then
+			destroyElement(vehicle.marker)
+		end
+
+		g_Vehicles[id] = nil
 	end
 
 	table.each(g_Blips, destroyElement)
