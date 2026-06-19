@@ -326,7 +326,7 @@ IsBotOnGround = IsPlayerOnGround
 IsBotChoking = IsPlayerChoking
 SetBotChoking = SetPlayerChoking
 GetBotHealth = GetPlayerHealth
-SetBotHealth = SetPlayerHealth
+SetBotHealth = SetVehicleHealth
 GetBotArmour = GetPlayerArmour
 SetBotArmour = SetPlayerArmour
 GetBotPos = GetVehiclePos
@@ -519,6 +519,10 @@ function HasPlayerData(amx, player, key)
 end
 -----------------------------------------------------
 -- Vehicles
+
+function IsVehicleOnGround(amx, vehicle)
+	return isVehicleOnGround(vehicle)
+end
 
 function SetVehicleModel(amx, vehicle, model)
 	return setElementModel(vehicle, model)
@@ -725,7 +729,6 @@ end
 
 GetVehicleInterior = GetPlayerInterior
 IsVehicleInWater = IsPlayerInWater
-IsVehicleOnGround = IsPlayerOnGround
 -----------------------------------------------------
 -- Water
 
