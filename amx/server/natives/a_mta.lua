@@ -203,9 +203,9 @@ function CreateBot(amx, model, x, y, z, name)
 		setElementData(bot, 'BotName', name)
 	end
 	local botID = addElem(g_Bots, bot)
-	procCallOnAll('OnBotCreate', botID, name)
 	g_Bots[botID].state = PLAYER_STATE_ONFOOT
 	g_Bots[botID].vehicle = nil
+	procCallOnAll('OnBotCreate', botID, name)
 	return botID
 end
 
