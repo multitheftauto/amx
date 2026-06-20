@@ -280,7 +280,8 @@ function SetPlayerSkin(amx, player, skin)
 end
 
 function GetPlayerSkin(amx, player)
-	return getElementModel(player)
+	local model = getElementModel(player)
+	return g_SkinRevert[model] or model
 end
 
 function GivePlayerWeapon(amx, player, weaponID, ammo)

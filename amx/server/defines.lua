@@ -196,6 +196,14 @@ g_SkinReplace = {
 	[311] = 288	-- dsher
 }
 
+g_SkinRevert = {}
+
+for sampSkin, mtaModel in pairs(g_SkinReplace) do
+	if g_SkinReplace[mtaModel] ~= nil then
+		g_SkinRevert[mtaModel] = sampSkin
+	end
+end
+
 -- Left is SA-MP, right is MTA
 g_BoneMapping = setmetatable({
 	[1] = 3,	-- Spine
