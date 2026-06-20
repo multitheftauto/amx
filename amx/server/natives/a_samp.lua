@@ -274,7 +274,6 @@ function GetSVarNameAtIndex(amx, index, outbuf, length)
 	for name in pairs(g_SVars) do
 		table.insert(varNames, name)
 	end
-	table.sort(varNames)
 
 	if index >= #varNames then return 0 end
 	local varName = varNames[index + 1]
@@ -567,7 +566,7 @@ function DisableInteriorEnterExits(amx)
 	local interiors = getResourceFromName('interiors')
 
 	-- as we want to disable it, stop this resource
-	if getResourceState(interiors) == 'running' then
+	if interiors and getResourceState(interiors) == 'running' then
 		stopResource(interiors)
 	end
 	return true
@@ -789,16 +788,16 @@ end
 
 function AddMenuItem(amx, menu, column, caption)
 	if not menu or not menu.items[column] then
-		return
+		return 0
 	end
-	table.insert(menu.items[column], caption)
+	local index = table.insert(menu.items[column], caption)
 	clientCall(root, 'AddMenuItem', menu.id, column, caption)
-	return true
+	return index - 1
 end
 
 function SetMenuColumnHeader(amx, menu, column, text)
 	if not menu or not menu.items[column] then
-		return
+		return false
 	end
 	menu.items[column][13] = text
 	clientCall(root, 'SetMenuColumnHeader', menu.id, column, text)

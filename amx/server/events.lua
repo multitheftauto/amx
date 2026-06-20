@@ -44,7 +44,6 @@ function gameModeInit(player)
 	g_Players[playerID].streamedPlayers = {}
 	g_Players[playerID].attachedObjects = {}
 	g_Players[playerID].streamedBots = {}
-	g_Players[playerID].remoteCollision = {}
 	g_Players[playerID].shotVect = {
 		oX = 0.0, oY = 0.0, oZ = 0.0,
 		hX = 0.0, hY = 0.0, hZ = 0.0
@@ -265,7 +264,8 @@ function requestClass(player, btn, state, dir)
 	end
 	if isPedDead(player) then
 		local x, y, z = getElementPosition(player)
-		spawnPlayer(player, x, y, z, getElementRotation(player), skin, getElementInterior(player), playerID)
+		local _, _, rz = getElementRotation(player)
+		spawnPlayer(player, x, y, z, rz, skin, getElementInterior(player), playerID)
 	else
 		setElementModel(player, skin)
 	end
@@ -1116,7 +1116,10 @@ addEventHandler('onPlayerClickMap_Ev', root,
 addEvent('onDanceMoveRequest', true)
 addEventHandler('onDanceMoveRequest', root,
 	function(move)
-		local playerdata = g_Players[getElemID(client)]
+		local playerID = getElemID(client)
+		if not playerID then return end
+
+		local playerdata = g_Players[playerID]
 
 		-- check if player is actually dancing
 		if playerdata.specialaction >= SPECIAL_ACTION_DANCE1 and
@@ -1129,7 +1132,10 @@ addEventHandler('onDanceMoveRequest', root,
 addEvent('onDrunkLevelRequest', true)
 addEventHandler('onDrunkLevelRequest', root,
 	function()
-		local playerdata = g_Players[getElemID(client)]
+		local playerID = getElemID(client)
+		if not playerID then return end
+
+		local playerdata = g_Players[playerID]
 
 		-- check if player is actually drinking
 		if playerdata.specialaction >= SPECIAL_ACTION_DRINK_BEER and

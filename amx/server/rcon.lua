@@ -437,7 +437,7 @@ addCommandHandler('rcon',
 		if result then
 			local lines = result:split('\n')
 			for i, line in ipairs(lines) do
-				outputConsole(line)
+				outputConsole(line, player)
 			end
 		end
 	end

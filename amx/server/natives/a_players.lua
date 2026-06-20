@@ -302,6 +302,8 @@ function GetPlayerWeaponData(amx, player, slot, refWeapon, refAmmo)
 	local weapon = playerdata.weapons and playerdata.weapons[slot]
 	if weapon then
 		amx.memDAT[refWeapon], amx.memDAT[refAmmo] = weapon.id, weapon.ammo
+	else
+		amx.memDAT[refWeapon], amx.memDAT[refAmmo] = 0, 0
 	end
 	return true
 end
@@ -824,7 +826,6 @@ function GetPVarNameAtIndex(amx, player, index, outbuf, length)
 	for name in pairs(g_Players[playerID].pvars) do
 		table.insert(varNames, name)
 	end
-	table.sort(varNames)
 
 	if index >= #varNames then return 0 end
 	local varName = varNames[index + 1]
@@ -879,7 +880,11 @@ function GetPlayerVirtualWorld(amx, player)
 end
 
 function GetPlayerVehicleSeat(amx, player)
-	return getPedOccupiedVehicleSeat(player)
+	local seat = getPedOccupiedVehicleSeat(player)
+	if not seat then
+		return -1
+	end
+	return seat
 end
 
 function RemovePlayerFromVehicle(amx, player)
@@ -1014,7 +1019,6 @@ function SetPlayerSpecialAction(amx, player, actionID)
 end
 
 function DisableRemoteVehicleCollisions(amx, player, disable)
-	g_Players[getElemID(player)].remoteCollision = disable
 	clientCall(player, 'updateRemoteCollision', disable)
 	return true
 end
