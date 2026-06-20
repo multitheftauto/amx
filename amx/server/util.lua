@@ -431,6 +431,26 @@ function setElemID(elem, id)
 	end
 end
 
+function initPlayerData(playerID)
+	local data = g_Players[playerID]
+	if not data then return end
+
+	data.keys = data.keys or {}
+	data.specialaction = SPECIAL_ACTION_NONE
+	data.state = PLAYER_STATE_NONE
+
+	data.pvars = {}
+	data.streamedActors = {}
+	data.streamedVehicles = {}
+	data.streamedPlayers = {}
+	data.attachedObjects = {}
+	data.streamedBots = {}
+	data.shotVect = {
+		oX = 0.0, oY = 0.0, oZ = 0.0,
+		hX = 0.0, hY = 0.0, hZ = 0.0
+	}
+end
+
 function getPlayerState(player)
 	local playerID = getElemID(player)
 	return g_Players[playerID] and g_Players[playerID].state or PLAYER_STATE_NONE

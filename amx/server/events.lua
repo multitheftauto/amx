@@ -38,20 +38,9 @@ function gameModeInit(player)
 		radius = g_NameTagsRadius,
 		los = g_NameTagsLOS
 	})
-	g_Players[playerID].pvars = {}
-	g_Players[playerID].streamedActors = {}
-	g_Players[playerID].streamedVehicles = {}
-	g_Players[playerID].streamedPlayers = {}
-	g_Players[playerID].attachedObjects = {}
-	g_Players[playerID].streamedBots = {}
-	g_Players[playerID].shotVect = {
-		oX = 0.0, oY = 0.0, oZ = 0.0,
-		hX = 0.0, hY = 0.0, hZ = 0.0
-	}
+	initPlayerData(playerID)
 	g_Players[playerID].conntick = getTickCount()
-	g_Players[playerID].specialaction = SPECIAL_ACTION_NONE
 	g_Players[playerID].viewingintro = true
-	g_Players[playerID].state = PLAYER_STATE_NONE
 	g_Players[playerID].doingclasssel = nil
 
 	fadeCamera(player, true)
@@ -93,13 +82,13 @@ function joinHandler(player)
 
 	local playerID = addElem(g_Players, player)
 	setElementData(player, 'ID', playerID)
+	initPlayerData(playerID)
 
 	clientCall(player, 'setAMXVersion', amxVersionString())
 
 	-- Keybinds
 	bindKey(player, 'F4', 'down', 'changeclass')
 	bindKey(player, 'enter_exit', 'down', resetSpecialAction)
-	g_Players[playerID].keys = {}
 	local function bindControls(player, t)
 		for samp, mta in pairs(t) do
 			bindKey(player, mta, 'down', keyStateChange)

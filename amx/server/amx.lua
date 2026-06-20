@@ -174,6 +174,7 @@ function destroyGlobalElements()
 			killTimer(playerdata.updatetimer)
 		end
 		playerdata.updatetimer = nil
+		playerdata.menu = nil
 	end
 
 	for i, vehinfo in pairs(g_Vehicles) do
@@ -183,7 +184,16 @@ function destroyGlobalElements()
 		vehinfo.respawntimer = nil
 	end
 
-	for i, elemtype in ipairs({ g_TextDraws, g_TextLabels }) do
+	for player, objects in pairs(g_PlayerObjects) do
+		for objID, obj in pairs(objects) do
+			if obj.moving and isTimer(obj.moving.timer) then
+				killTimer(obj.moving.timer)
+			end
+		end
+		g_PlayerObjects[player] = nil
+	end
+
+	for i, elemtype in ipairs({ g_Menus, g_TextLabels, g_TextDraws, g_PlayerTextDraws }) do
 		for id, data in pairs(elemtype) do
 			elemtype[id] = nil
 		end
