@@ -1049,25 +1049,27 @@ function initTextDraw(textdraw)
 	textdraw.clientTDId = textdraw.clientTDId or (#g_TextDraws + 1)
 	g_TextDraws[textdraw.clientTDId] = textdraw
 
+	local text = textdraw.text
 	if textdraw.font then
 		-- GTA replaces such brackets with stars on these fonts
 		if textdraw.font == 0 or textdraw.font == 2 then
-			textdraw.text = textdraw.text:gsub(']', '★')
+			text = text:gsub(']', '★')
 		end
 
 		-- and also makes chars in same case on these fonts
 		if textdraw.font == 2 then
-			textdraw.text = textdraw.text:upper()
+			text = text:upper()
 		elseif textdraw.font == 3 then
-			textdraw.text = textdraw.text:lower()
+			text = text:lower()
 		end
 	end
 
-	local tWidth, tHeight = dxGetTextSize(textdraw.text, textdraw.lwidth, textdraw.lheight)
+	local tWidth, tHeight = dxGetTextSize(text, textdraw.lwidth, textdraw.lheight)
 	local lineHeight = (tHeight or 0.25) / 2 -- space between lines (vertical) also used to calculate size of the box if any
 	local lineWidth = (tWidth or 0.25) -- space between words (horizontal)
 
-	local text = textdraw.text:gsub('~k~~(.-)~', getSAMPBoundKey)
+	text = text:gsub('~k~~(.-)~', getSAMPBoundKey)
+
 	local lines = {}
 	local pos, stop, c
 
@@ -1411,6 +1413,10 @@ function GameTextForPlayer(text, time, style)
 		gameText[gIndex].font = 2
 	end
 	gameText[gIndex].style = style
+
+	-- hacky way to prevent ID collisions
+	gameText[gIndex].clientTDId = -gIndex
+
 	initTextDraw(gameText[gIndex])
 	showTextDraw(gameText[gIndex])
 	gameText[gIndex].timer = setTimer(destroyGameText, time, 1, gIndex)
@@ -1437,23 +1443,25 @@ function renderTextLabels()
 
 	for id, textlabel in pairs(g_TextLabels) do
 		if textlabel.enabled then
-			if textlabel.attached and isElement(textlabel.attachedTo) then
-				local oX, oY, oZ = getElementPosition(textlabel.attachedTo)
-				oX = oX + textlabel.offX
-				oY = oY + textlabel.offY
-				oZ = oZ + textlabel.offZ
-				textlabel.X = oX
-				textlabel.Y = oY
-				textlabel.Z = oZ
-			else
-				textlabel.attached = false
-				textlabel.attachedTo = nil
+			if textlabel.attached then
+				if isElement(textlabel.attachedTo) then
+					local oX, oY, oZ = getElementPosition(textlabel.attachedTo)
+					oX = oX + textlabel.offX
+					oY = oY + textlabel.offY
+					oZ = oZ + textlabel.offZ
+					textlabel.X = oX
+					textlabel.Y = oY
+					textlabel.Z = oZ
+				else
+					textlabel.attached = false
+					textlabel.attachedTo = nil
+				end
 			end
 
 			local screenX, screenY = getScreenFromWorldPosition(textlabel.X, textlabel.Y, textlabel.Z, textlabel.dist, false)
 			local dist = getDistanceBetweenPoints3D(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z)
 
-			if screenX and dist <= textlabel.dist and (vw == textlabel.vw or textlabel.vw == -1) then -- Because player textlabels don't have VW's, since we're processing both here
+			if screenX and dist <= textlabel.dist and (vw == textlabel.vw or textlabel.vw == -1) then -- Since player textlabels don't have VW's, we're processing both here
 				if not textlabel.los or isLineOfSightClear(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z, true, false, false) then
 					dxDrawText(textlabel.text, screenX, screenY, screenX, screenY, tocolor(textlabel.color.r, textlabel.color.g, textlabel.color.b, textlabel.color.a), 1.0, 'default-bold', 'center', 'top', false, false, false, true)
 				end
@@ -1465,6 +1473,20 @@ addEventHandler('onClientRender', root, renderTextLabels)
 
 function checkTextLabels()
 	for id, textlabel in pairs(g_TextLabels) do
+		if not textlabel.enabled and textlabel.attached then
+			if isElement(textlabel.attachedTo) then
+				local oX, oY, oZ = getElementPosition(textlabel.attachedTo)
+				oX = oX + textlabel.offX
+				oY = oY + textlabel.offY
+				oZ = oZ + textlabel.offZ
+				textlabel.X = oX
+				textlabel.Y = oY
+				textlabel.Z = oZ
+			else
+				textlabel.attached = false
+				textlabel.attachedTo = nil
+			end
+		end
 
 		local pX, pY, pZ = getElementPosition(localPlayer)
 		local dist = getDistanceBetweenPoints3D(pX, pY, pZ, textlabel.X, textlabel.Y, textlabel.Z)
