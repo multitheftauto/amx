@@ -280,11 +280,19 @@ function getPedOccupiedVehicle(player)
 
 	if getElementType(player) == 'player' then
 		local data = g_Players[getElemID(player)]
-		return data and data.vehicle
+		if data and isElement(data.vehicle) then
+			return data.vehicle
+		else
+			return false
+		end
 	end
 
 	local data = g_Bots[getElemID(player)]
-	return data and data.vehicle
+	if data and isElement(data.vehicle) then
+		return data.vehicle
+	else
+		return false
+	end
 end
 
 local _warpPedIntoVehicle = warpPedIntoVehicle

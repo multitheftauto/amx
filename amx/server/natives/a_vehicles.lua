@@ -126,7 +126,10 @@ function SetVehicleZAngle(amx, vehicle, rZ)
 	return setElementRotation(vehicle, 0, 0, rZ)
 end
 
--- SetVehicleParamsForPlayer client
+function SetVehicleParamsForPlayer(amx, vehicle, player, objective, doors)
+	clientCall(player, 'SetVehicleParamsForPlayer', vehicle, objective, doors)
+	return true
+end
 
 function ManualVehicleEngineAndLights()
 	ManualVehEngineAndLights = true

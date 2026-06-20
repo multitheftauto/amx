@@ -447,7 +447,7 @@ g_SAMPSyscallPrototypes = {
 	SetVehicleParamsCarDoors = {'v', 'b', 'b', 'b', 'b'},
 	SetVehicleParamsCarWindows = {'v', 'b', 'b', 'b', 'b'},
 	SetVehicleParamsEx = {'v', 'b', 'b', 'b', 'b', 'b', 'b', 'b'},
-	SetVehicleParamsForPlayer = {'v', 'p', 'b', 'b', client = true},
+	SetVehicleParamsForPlayer = {'v', 'p', 'b', 'b'},
 	SetVehiclePos = {'v', 'f', 'f', 'f'},
 	SetVehicleToRespawn = {'v'},
 	SetVehicleVelocity = {'v', 'f', 'f', 'f'},

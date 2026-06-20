@@ -792,7 +792,11 @@ addEventHandler('onVehicleExit', root,
 			if isTimer(g_Vehicles[vehID].respawntimer) then
 				killTimer(g_Vehicles[vehID].respawntimer)
 			end
-			g_Vehicles[vehID].respawntimer = setTimer(respawnStaticVehicle, g_Vehicles[vehID].respawndelay, 1, source)
+
+			local delay = g_Vehicles[vehID].respawndelay
+			if delay then
+				g_Vehicles[vehID].respawntimer = setTimer(respawnStaticVehicle, delay, 1, source)
+			end
 		end
 	end
 )
