@@ -70,7 +70,7 @@ function db_field_name(amx, dbResultID, fieldIndex, outbuf, maxlength)
 		return false
 	end
 	local colname = dbresult.columns[idx]
-	local len = math.min(#colname, maxlength)
+	local len = utf8ByteLimit(colname, maxlength)
 	writeMemString(amx, outbuf, string.sub(colname, 1, len))
 	return true
 end
@@ -84,7 +84,7 @@ function db_get_field(amx, dbResultID, fieldIndex, outbuf, maxlength)
 		return false
 	end
 	local data = tostring(dbresult[dbresult.row][idx] or '')
-	local len = math.min(#data, maxlength)
+	local len = utf8ByteLimit(data, maxlength)
 	writeMemString(amx, outbuf, string.sub(data, 1, len))
 	return true
 end

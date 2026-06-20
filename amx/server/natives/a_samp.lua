@@ -218,7 +218,7 @@ function GetSVarInt(amx, varname)
 end
 
 function SetSVarInt(amx, varname, value)
-	g_SVars[varname] = {SERVER_VARTYPE_INT, value}
+	g_SVars[varname] = { SERVER_VARTYPE_INT, value }
 	return true
 end
 
@@ -230,13 +230,13 @@ function GetSVarString(amx, varname, outbuf, length)
 		return 0
 	end
 
-	local copyLen = math.min(#value[2], length)
+	local copyLen = utf8ByteLimit(value[2], length)
 	writeMemString(amx, outbuf, string.sub(value[2], 1, copyLen))
 	return copyLen
 end
 
 function SetSVarString(amx, varname, value)
-	g_SVars[varname] = {SERVER_VARTYPE_STRING, value}
+	g_SVars[varname] = { SERVER_VARTYPE_STRING, value }
 	return true
 end
 
@@ -249,7 +249,7 @@ function GetSVarFloat(amx, varname)
 end
 
 function SetSVarFloat(amx, varname, value)
-	g_SVars[varname] = {SERVER_VARTYPE_FLOAT, value}
+	g_SVars[varname] = { SERVER_VARTYPE_FLOAT, value }
 	return true
 end
 
@@ -278,7 +278,7 @@ function GetSVarNameAtIndex(amx, index, outbuf, length)
 	if index >= #varNames then return 0 end
 	local varName = varNames[index + 1]
 
-	local copyLen = math.min(#varName, length)
+	local copyLen = utf8ByteLimit(varName, length)
 	writeMemString(amx, outbuf, varName:sub(1, copyLen))
 	return copyLen
 end
@@ -1212,7 +1212,7 @@ function format(amx, outBuf, outBufSize, fmt, ...)
 		end
 	)
 
-	local copyLen = math.min(#result, outBufSize)
+	local copyLen = utf8ByteLimit(result, outBufSize)
 	writeMemString(amx, outBuf, result:sub(1, copyLen))
 	return true
 end

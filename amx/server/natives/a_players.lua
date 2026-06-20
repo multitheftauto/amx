@@ -764,7 +764,7 @@ function GetPVarInt(amx, player, varname)
 end
 
 function SetPVarInt(amx, player, varname, value)
-	g_Players[getElemID(player)].pvars[varname] = {PLAYER_VARTYPE_INT, value}
+	g_Players[getElemID(player)].pvars[varname] = { PLAYER_VARTYPE_INT, value }
 	return true
 end
 
@@ -776,13 +776,13 @@ function GetPVarString(amx, player, varname, outbuf, length)
 		return 0
 	end
 
-	local copyLen = math.min(#value[2], length)
+	local copyLen = utf8ByteLimit(value[2], length)
 	writeMemString(amx, outbuf, string.sub(value[2], 1, copyLen))
 	return copyLen
 end
 
 function SetPVarString(amx, player, varname, value)
-	g_Players[getElemID(player)].pvars[varname] = {PLAYER_VARTYPE_STRING, value}
+	g_Players[getElemID(player)].pvars[varname] = { PLAYER_VARTYPE_STRING, value }
 	return true
 end
 
@@ -795,7 +795,7 @@ function GetPVarFloat(amx, player, varname)
 end
 
 function SetPVarFloat(amx, player, varname, value)
-	g_Players[getElemID(player)].pvars[varname] = {PLAYER_VARTYPE_FLOAT, value}
+	g_Players[getElemID(player)].pvars[varname] = { PLAYER_VARTYPE_FLOAT, value }
 	return true
 end
 
@@ -830,7 +830,7 @@ function GetPVarNameAtIndex(amx, player, index, outbuf, length)
 	if index >= #varNames then return 0 end
 	local varName = varNames[index + 1]
 
-	local copyLen = math.min(#varName, length)
+	local copyLen = utf8ByteLimit(varName, length)
 	writeMemString(amx, outbuf, varName:sub(1, copyLen))
 	return copyLen
 end

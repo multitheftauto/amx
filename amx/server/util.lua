@@ -498,6 +498,16 @@ function resetSpecialAction(player)
 	end
 end
 
+function utf8ByteLimit(s, maxChars)
+	local i, chars, len = 1, 0, #s
+	while i <= len and chars < maxChars do
+		local b = s:byte(i)
+		i = i + (b < 0x80 and 1 or b < 0xE0 and 2 or b < 0xF0 and 3 or 4)
+		chars = chars + 1
+	end
+	return math.min(i - 1, len)
+end
+
 function ipMaskToPattern(mask)
 	-- escape Lua pattern magic chars, leaving '*' alone
 	local pattern = mask:gsub('([%(%)%.%%%+%-%?%[%]%^%$])', '%%%1')

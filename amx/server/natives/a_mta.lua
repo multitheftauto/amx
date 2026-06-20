@@ -308,7 +308,7 @@ function GetBotName(amx, bot, nameBuf, bufSize)
 	local name = getElementData(bot, 'BotName')
 	if not name then name = 'Bot' end
 
-	local copyLen = math.min(#name, bufSize)
+	local copyLen = utf8ByteLimit(name, bufSize)
 	writeMemString(amx, nameBuf, name:sub(1, copyLen))
 	return copyLen
 end
@@ -505,7 +505,7 @@ function GetPlayerStringData(amx, player, key, buf, len)
 	local data = getElementData(player, key)
 	if not data then return 0 end
 
-	local copyLen = math.min(#data, len)
+	local copyLen = utf8ByteLimit(data, len)
 	writeMemString(amx, buf, data:sub(1, copyLen))
 	return copyLen
 end
@@ -677,7 +677,7 @@ function GetVehicleNumberPlate(amx, vehicle, buf, len)
 
 	local plate = getVehiclePlateText(vehicle)
 
-	local copyLen = math.min(#plate, len)
+	local copyLen = utf8ByteLimit(plate, len)
 	writeMemString(amx, buf, plate:sub(1, copyLen))
 	return copyLen
 end
@@ -1054,7 +1054,7 @@ function GetPlayerScoreBoardData(amx, player, column, buf, len)
 	local data = getElementData(player, column)
 	if not data then return 0 end
 
-	local copyLen = math.min(#data, len)
+	local copyLen = utf8ByteLimit(data, len)
 	writeMemString(amx, buf, data:sub(1, copyLen))
 	return copyLen
 end
