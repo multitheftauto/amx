@@ -94,9 +94,9 @@ function MoveObject(amx, object, x, y, z, speed, rX, rY, rZ)
 
 	-- We need relative rotation
 	local cRotX, cRotY, cRotZ = getElementRotation(object)
-	cRotX = cRotX - rX
-	cRotY = cRotY - rY
-	cRotZ = cRotZ - rZ
+	cRotX = rX - cRotX
+	cRotY = rY - cRotY
+	cRotZ = rZ - cRotZ
 
 	-- -1000 or less means no rotation change, so set it to 0.0
 	if rX <= -1000.0 then cRotX = 0.0 end
