@@ -1189,7 +1189,7 @@ g_TextDrawHoverColor = nil
 function getTextDrawClickBounds(textdraw)
 	local sourceX = posStretchX(textdraw.x or 0)
 	local sourceY = posStretchY(textdraw.y or 0)
-	local x, w, h
+	local x, y, w, h
 
 	if textdraw.boxsize then
 		w = posStretchX(textdraw.boxsize[1]) - sourceX
@@ -1199,6 +1199,7 @@ function getTextDrawClickBounds(textdraw)
 
 	h = posStretchY(textdraw.absheight or 0)
 	x = sourceX -- left by default
+	y = sourceY -- top by default
 
 	if textdraw.align == 2 then -- center
 		if textdraw.boxsize then
@@ -1209,7 +1210,17 @@ function getTextDrawClickBounds(textdraw)
 		x = sourceX - w
 	end
 
-	return x, sourceY, w, h
+	if w < 0 then
+		x = x + w -- shift X to the true left edge
+		w = -w -- make width positive
+	end
+
+	if h < 0 then
+		y = y + h -- shift Y to the true top edge
+		h = -h -- make height positive
+	end
+
+	return x, y, w, h
 end
 
 function getHoveredTextDraw()
