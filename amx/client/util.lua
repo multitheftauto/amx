@@ -173,54 +173,45 @@ function guiCreateColoredLabel(ax, ay, bx, by, str, parent, relative) -- x, y, w
 
 	local pat = '(.-)#(%x%x%x%x%x%x)'
 	local s, e, cap, col = str:find(pat, 1)
-	local last = 1
 	local labels = {}
-	local incy = 0
-	local incx = 0
+	local r, g, b = 255, 255, 255
+	local incx, incy = 0, 0
+	local last = 1
+
 	while s do
-		if cap == '' and col then
+		if cap == '' then
 			r, g, b = tonumber('0x' .. col:sub(1, 2)), tonumber('0x' .. col:sub(3, 4)), tonumber('0x' .. col:sub(5, 6))
 		end
 		if (s ~= 1) or cap ~= '' then
 			--outputConsole('guiCreateColoredLabel: ' .. cap)
 
-			lbl = guiCreateLabel(ax + incx, ay + incy, bx, by, cap, relative, scrollpane)
+			local lbl = guiCreateLabel(ax + incx, ay + incy, bx, by, cap, relative, scrollpane)
 			guiLabelSetHorizontalAlign(lbl, 'left')
 			table.insert(labels, lbl)
-			if not r then r = 255 end
-			if not g then g = 255 end
-			if not b then b = 255 end
 			guiLabelSetColor(lbl, r, g, b)
 			r, g, b = tonumber('0x' .. col:sub(1, 2)), tonumber('0x' .. col:sub(3, 4)), tonumber('0x' .. col:sub(5, 6))
 
-			local match = cap:find('\n')
-			if match then
+			if cap:find('\n') then
 				local xtxtsize, ytxtsize = guiGetSize(lbl, true) -- not relative
-				incy = incy + (ytxtsize / 8) -- We found a /n so send it further down on the next line
+				incy = incy + (ytxtsize / 8) -- We found a \n so send it further down on the next line
 				incx = 0 -- Don't add spaces on new lines
 				--outputConsole('found a new line')
+			elseif r ~= 255 or g ~= 255 or b ~= 255 then -- It's colored so separate it
+				incy = 0
+				local xsize, ysize = guiGetSize(scrollpane, false) -- not relative
+				incx = incx + (guiLabelGetTextExtent(lbl) / xsize) -- Make space for the next word, relative to the parent width
+				--outputConsole('Separating string')
 			else
-				if r ~= 255 or g ~= 255 or b ~= 255 then -- It's colored so separate it
-					incy = 0
-					local xsize, ysize = guiGetSize(scrollpane, false) -- not relative
-					incx = incx + (guiLabelGetTextExtent(lbl) / xsize) -- Make space for the next word, relative to the parent width
-					--outputConsole('Separating string')
-				else
-					incy = 0
-					incx = 0
-				end
+				incx = 0
+				incy = 0
 			end
 		end
 		last = e + 1
 		s, e, cap, col = str:find(pat, last)
 	end
-	if (last <= #str) then
-		cap = str:sub(last)
-		lbl2 = guiCreateLabel(ax + incx, ay + incy, bx, by, cap, relative, scrollpane)
+	if last <= #str then
+		local lbl2 = guiCreateLabel(ax + incx, ay + incy, bx, by, str:sub(last), relative, scrollpane)
 		table.insert(labels, lbl2)
-		if not r then r = 255 end
-		if not g then g = 255 end
-		if not b then b = 255 end
 		guiLabelSetColor(lbl2, r, g, b)
 	end
 	return labels
@@ -330,13 +321,17 @@ function table.random(t)
 end
 
 function table.each(t, index, callback, ...)
+	local args = { ... }
 	if type(index) == 'function' then
-		table.insert(arg, 1, callback)
+		table.insert(args, 1, callback)
 		callback = index
 		index = false
 	end
 	for k, v in pairs(t) do
-		callback(index and v[index] or v, unpack(arg))
+		if index then
+			v = v[index]
+		end
+		callback(v, unpack(args))
 	end
 	return t
 end
