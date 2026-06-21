@@ -1061,7 +1061,7 @@ function GangZoneStopFlashForAll(amx, zone)
 end
 
 function Create3DTextLabel(amx, text, r, g, b, a, x, y, z, dist, vw, los)
-	local textlabel = { text = colorizeString(text), color = {r = r, g = g, b = b, a = a}, X = x, Y = y, Z = z, dist = dist, vw = vw, los = los }
+	local textlabel = { text = colorizeString(text), color = { r = r, g = g, b = b, a = a }, X = x, Y = y, Z = z, dist = dist, vw = vw, los = los, global = true }
 	local id = table.insert(g_TextLabels, textlabel)
 
 	textlabel.id = id
@@ -1071,7 +1071,7 @@ function Create3DTextLabel(amx, text, r, g, b, a, x, y, z, dist, vw, los)
 end
 
 function CreatePlayer3DTextLabel(amx, player, text, r, g, b, a, x, y, z, dist, attachedplayer, attachedvehicle, los)
-	local textlabel = { text = colorizeString(text), color = {r = r, g = g, b = b, a = a}, X = x, Y = y, Z = z, dist = dist, vw = -1, los = los, attached = false }
+	local textlabel = { text = colorizeString(text), color = { r = r, g = g, b = b, a = a }, X = x, Y = y, Z = z, dist = dist, vw = -1, los = los, attached = false }
 	local id = table.insert(g_TextLabels, textlabel)
 
 	textlabel.id = id

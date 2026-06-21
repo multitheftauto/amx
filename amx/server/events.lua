@@ -122,7 +122,9 @@ function joinHandler(player)
 
 		-- send 3d text labels
 		for i, label in pairs(g_TextLabels) do
-			clientCall(player, 'Create3DTextLabel', i, label)
+			if label.global then
+				clientCall(player, 'Create3DTextLabel', i, label)
+			end
 		end
 
 		procCallOnAll('OnPlayerConnect', playerID)
