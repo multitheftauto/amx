@@ -196,7 +196,7 @@ end
 
 function GetPlayerTeam(amx, player)
 	local data = g_Players[getElemID(player)]
-	if not data then return 255 end
+	if not data then return -1 end
 
 	local team = getPlayerTeam(player)
 	if data.doingclasssel then
@@ -205,7 +205,7 @@ function GetPlayerTeam(amx, player)
 	end
 
 	if not team then return 255 end
-	return table.find(g_Teams, team)
+	return table.find(g_Teams, team) or 255
 end
 
 function SetPlayerScore(amx, player, score)
@@ -247,14 +247,14 @@ function SetPlayerDrunkLevel(amx, player, level)
 	return true
 end
 
-function SetPlayerColor(amx, player, r, g, b)
+function SetPlayerColor(amx, player, r, g, b, a)
 	local playerdata = g_Players[getElemID(player)]
 	if not playerdata then return false end
 
 	setPlayerNametagColor(player, r, g, b)
 
 	if g_PlayerMarkersMode ~= 0 and playerdata.blip then
-		setBlipColor(playerdata.blip, r, g, b, 255)
+		setBlipColor(playerdata.blip, r, g, b, a)
 	end
 	return true
 end

@@ -184,6 +184,13 @@ function destroyGlobalElements()
 		vehinfo.respawntimer = nil
 	end
 
+	for id, objdata in pairs(g_Objects) do
+		if objdata.moving and isTimer(objdata.moving.timer) then
+			killTimer(objdata.moving.timer)
+		end
+		objdata.moving = nil
+	end
+
 	for player, objects in pairs(g_PlayerObjects) do
 		for objID, obj in pairs(objects) do
 			if obj.moving and isTimer(obj.moving.timer) then
@@ -207,6 +214,13 @@ function destroyGlobalElements()
 				destroyElement(data.elem)
 			end
 		end
+	end
+
+	for teamID, team in pairs(g_Teams) do
+		if isElement(team) then
+			destroyElement(team)
+		end
+		g_Teams[teamID] = nil
 	end
 end
 

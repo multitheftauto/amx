@@ -1108,5 +1108,5 @@ function GetRandomPlayer(amx)
 end
 
 function GetPlayerCount(amx)
-	return getPlayerCount(amx)
+	return getPlayerCount()
 end

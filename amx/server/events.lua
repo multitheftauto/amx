@@ -27,7 +27,7 @@ function gameModeInit(player)
 	setPlayerNametagShowing(player, false)
 	local r, g, b = math.random(50, 255), math.random(50, 255), math.random(50, 255)
 	ShowPlayerMarker(nil, player, g_PlayerMarkersMode)
-	SetPlayerColor(nil, player, r, g, b)
+	SetPlayerColor(nil, player, r, g, b, 255)
 	setElementData(player, 'Score', 0)
 	toggleAllControls(player, false, true, false)
 	clientCall(player, 'showIntroScene')
@@ -785,7 +785,7 @@ addEventHandler('onVehicleExit', root,
 		end
 
 		local occupants = getVehicleOccupants(source)
-		local _, occupant = occupants and next(occupants)
+		local _, occupant = next(occupants or {})
 		if occupant or getVehicleType(source) == 'Train' then return end
 
 		if g_Vehicles[vehID] and g_Vehicles[vehID].vehicleIsAlive then
@@ -794,9 +794,9 @@ addEventHandler('onVehicleExit', root,
 			end
 
 			local delay = g_Vehicles[vehID].respawndelay
-			if delay then
-				g_Vehicles[vehID].respawntimer = setTimer(respawnStaticVehicle, delay, 1, source)
-			end
+			if not delay then return end
+
+			g_Vehicles[vehID].respawntimer = setTimer(respawnStaticVehicle, delay, 1, source)
 		end
 	end
 )

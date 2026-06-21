@@ -225,7 +225,7 @@ local function cmdChangeMode(mode)
 	if not newRes then
 		return 'Unable to load gamemode \'' .. mode .. '\'.'
 	end
-	local amx = getRunningGameMode(mode)
+	local amx = getRunningGameMode()
 	if amx then
 		unloadAMX(amx)
 	end
