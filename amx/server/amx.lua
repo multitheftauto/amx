@@ -147,6 +147,8 @@ function loadAMX(fileName, res)
 	if amx.type == 'gamemode' then
 		clientCall(root, 'gamemodeLoad')
 		setWeather(10)
+		toggleSpecialProperties()
+		toggleGlitches()
 		initGameModeGlobals()
 		ShowPlayerMarkers(amx, g_PlayerMarkersMode)
 		procCallOnAll('OnGameModeInit')
