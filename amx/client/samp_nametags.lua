@@ -111,12 +111,16 @@ addEventHandler('onClientRender', root,
 
 				if distance < nameTagsRadius and a > 0 then
 					if not nameTagsLOS or isLineOfSightClear(cx, cy, cz, fPosX, fPosY, fPosZ, true, false, false, true, true) then
+						local playerName = getPlayerName(player)
 						local r, g, b = getPlayerNametagColor(player)
 
+						local playerID = getElemID(player)
+						if playerID then
+							playerName = playerName .. ' (' .. playerID .. ')'
+						end
+
 						drawNameTag(
-							fPosX, fPosY, fPosZ,
-							getPlayerName(player) .. ' (' .. getElemID(player) .. ')',
-							r, g, b, a,
+							fPosX, fPosY, fPosZ, playerName, r, g, b, a,
 							getElementHealth(player), getPedArmor(player),
 							distance
 						)
@@ -157,10 +161,13 @@ addEventHandler('onClientRender', root,
 						local g = getElementData(bot, 'BotColorG') or 255
 						local b = getElementData(bot, 'BotColorB') or 255
 
+						local botID = getElemID(bot)
+						if botID then
+							botName = botName .. ' (' .. botID .. ')'
+						end
+
 						drawNameTag(
-							fPosX, fPosY, fPosZ,
-							botName .. ' (' .. getElemID(bot) .. ')',
-							r, g, b, a,
+							fPosX, fPosY, fPosZ, botName, r, g, b, a,
 							getElementHealth(bot), getPedArmor(bot),
 							distance
 						)
