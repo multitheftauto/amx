@@ -371,10 +371,22 @@ function procCallInternal(amx, nameOrOffset, ...)
 	return ret or 0
 end
 
+local g_CallbackStopValue = {
+	OnDialogResponse = true,
+	OnPlayerCommandText = true,
+	OnPlayerText = false,
+	OnPlayerRequestClass = false,
+	OnPlayerRequestSpawn = false
+}
+
 function procCallOnAll(fnName, ...)
+	local stopVal = g_CallbackStopValue[fnName]
 	for name, amx in pairs(g_LoadedAMXs) do
-		if amx.type == 'filterscript' and procCallInternal(amx, fnName, ...) ~= 0 and fnName == 'OnPlayerCommandText' then
-			return true
+		if amx.type == 'filterscript' then
+			local ret = procCallInternal(amx, fnName, ...)
+			if stopVal ~= nil and amx.publics[fnName] and (ret ~= 0) == stopVal then
+				return stopVal
+			end
 		end
 	end
 	local gamemode = getRunningGameMode()
