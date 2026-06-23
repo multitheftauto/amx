@@ -826,11 +826,7 @@ function DisableMenu(amx, menuID)
 		return false
 	end
 	menu.disabled = true
-	for id, player in pairs(g_Players) do
-		if GetPlayerMenu(amx, player.elem) == menuID then
-			clientCall(player.elem, 'HideMenuForPlayer', menuID)
-		end
-	end
+	clientCall(root, 'DisableMenu', menuID)
 	return true
 end
 
@@ -839,6 +835,8 @@ function DisableMenuRow(amx, menuID, rowID)
 	if not menu then
 		return false
 	end
+	menu.disabledrows = menu.disabledrows or {}
+	table.insert(menu.disabledrows, rowID)
 	clientCall(root, 'DisableMenuRow', menuID, rowID)
 	return true
 end

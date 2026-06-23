@@ -1662,6 +1662,13 @@ function CreateMenu(menuID, menu)
 	updateMenuSize(menu)
 end
 
+function DisableMenu(menuID)
+	local menu = g_Menus[menuID]
+	if not menu then return end
+
+	menu.disabled = true
+end
+
 function DisableMenuRow(menuID, rowID)
 	local menu = g_Menus[menuID]
 	if not menu then return end
@@ -1728,7 +1735,9 @@ function ShowMenuForPlayer(menuID)
 
 		addEventHandler('onClientRender', root, renderMenu)
 		addEventHandler('onClientClick', root, menuClickHandler)
-		showCursor(true)
+		if not g_CurrentMenu.disabled then
+			showCursor(true)
+		end
 	else
 		if prevMenu ~= g_CurrentMenu then
 			g_CurrentMenu.closebtn = prevMenu.closebtn
@@ -1820,18 +1829,16 @@ function renderMenu()
 	end
 
 	local cursorX, cursorY = getCursorPosition()
-
-	if not cursorX then
-		closeMenu()
-		return
-	end
-
-	cursorY = screenHeight * cursorY
-	-- selected row
 	local selectedRow
-	if cursorY >= menu.y + MENU_TOP_PADDING and cursorY < menu.y + menu.height - MENU_BOTTOM_PADDING then
-		selectedRow = math.floor((cursorY - menu.y - MENU_TOP_PADDING) / MENU_ITEM_HEIGHT)
-		dxDrawRectangle(menu.x, menu.y + MENU_TOP_PADDING + selectedRow * MENU_ITEM_HEIGHT, menu.width, MENU_ITEM_HEIGHT, tocolor(98, 152, 219, 192 * menu.alpha))
+
+	if cursorX and not menu.disabled then
+		-- selected row
+		cursorY = screenHeight * cursorY
+
+		if cursorY >= menu.y + MENU_TOP_PADDING and cursorY < menu.y + menu.height - MENU_BOTTOM_PADDING then
+			selectedRow = math.floor((cursorY - menu.y - MENU_TOP_PADDING) / MENU_ITEM_HEIGHT)
+			dxDrawRectangle(menu.x, menu.y + MENU_TOP_PADDING + selectedRow * MENU_ITEM_HEIGHT, menu.width, MENU_ITEM_HEIGHT, tocolor(98, 152, 219, 192 * menu.alpha))
+		end
 	end
 
 	-- menu items
@@ -1864,7 +1871,7 @@ function menuClickHandler(button, state, clickX, clickY)
 		return
 	end
 
-	if not g_CurrentMenu then
+	if not g_CurrentMenu or g_CurrentMenu.disabled then
 		return
 	end
 
@@ -1886,7 +1893,9 @@ end
 
 function menuHideHandler()
 	if not g_CurrentMenu.anim then
-		playSoundFrontEnd(2)
+		if not g_CurrentMenu.disabled then
+			playSoundFrontEnd(2)
+		end
 		HideMenuForPlayer()
 	end
 end
