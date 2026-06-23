@@ -54,3 +54,16 @@ addEventHandler('onClientElementStreamOut', root,
 		streamedMarkers[source] = nil
 	end
 )
+
+addEventHandler('onClientElementDestroy', root,
+	function()
+		local info = streamedMarkers[source]
+		if not info then
+			return
+		end
+		if info.anim then
+			info.anim:remove()
+		end
+		streamedMarkers[source] = nil
+	end
+)
