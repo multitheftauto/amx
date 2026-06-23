@@ -2254,17 +2254,15 @@ function createMessageDialog(titleText, message, button1txt, button2txt)
 end
 
 function clearListItem()
-	if listColumn then
-		guiGridListRemoveColumn(listGrid, listColumn) -- First remove the default column
-	end
 	local colAmount = guiGridListGetColumnCount(listGrid)
-	for i = 1, colAmount do -- Column indexes appear to start from 1
+	for i = colAmount, 1, -1 do -- Column indexes appear to start from 1
 		if not guiGridListRemoveColumn(listGrid, i) then -- Always clean up all columns
 			outputConsole('[ShowPlayerDialog] Error: Couldn\'t remove column: ' .. 'idx: ' .. i)
 		end
 		--outputConsole('vals: ' .. 'idx: ' .. i)
 	end
 	guiGridListClear(listGrid)
+	listColumn = nil
 end
 
 function OnListDialogButton1Click(button, state)
