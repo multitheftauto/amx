@@ -145,7 +145,7 @@ function GetVehicleParamsEx(amx, vehicle, refEngine, refLights, refAlarm, refDoo
 	amx.memDAT[refDoors] = isVehicleLocked(vehicle) and 1 or 0
 	amx.memDAT[refBonnet] = getVehicleDoorOpenRatio(vehicle, 0) > 0 and 1 or 0
 	amx.memDAT[refBoot] = getVehicleDoorOpenRatio(vehicle, 1) > 0 and 1 or 0
-	amx.memDAT[refObjective] = g_Vehicles[vehID].objective or 0
+	amx.memDAT[refObjective] = g_Vehicles[vehID].objective and 1 or 0
 
 	return true
 end

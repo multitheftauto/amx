@@ -258,6 +258,7 @@ function MovePlayerObject(amx, player, objID, x, y, z, speed, rX, rY, rZ)
 	if obj.moving and isTimer(obj.moving.timer) then
 		killTimer(obj.moving.timer)
 	end
+	obj.x, obj.y, obj.z = curX, curY, curZ
 	local timer = setTimer(procCallOnAll, duration, 1, 'OnPlayerObjectMoved', getElemID(player), objID)
 	obj.moving = { x = x, y = y, z = z, starttick = getTickCount(), duration = duration, timer = timer }
 	clientCall(player, 'MovePlayerObject', objID, x, y, z, speed, rX, rY, rZ)
