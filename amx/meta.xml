@@ -7,6 +7,7 @@
     <script src="shared/ped_anim.lua" type="shared" />
     <script src="shared/sound_offset.lua" type="shared" />
     <script src="shared/vehicle_info.lua" type="shared" />
+    <script src="shared/extra_colors.lua" type="shared" />
     <script src="server/util.lua" type="server" />
     <script src="server/triggerqueue.lua" type="server" />
     <script src="server/rcon.lua" type="server" />

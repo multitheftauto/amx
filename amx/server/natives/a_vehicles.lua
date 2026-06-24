@@ -243,9 +243,16 @@ function ChangeVehicleColor(amx, vehicle, color1, color2)
 end
 
 function setVehicleColorClamped(vehicle, color1, color2)
-	color1 = clamp(color1, 0, 126)
-	color2 = clamp(color2, 0, 126)
-	return setVehicleColor(vehicle, color1, color2, 0, 0)
+	color1 = clamp(color1, 0, 255)
+	color2 = clamp(color2, 0, 255)
+
+	if color1 <= 126 and color2 <= 126 then
+		return setVehicleColor(vehicle, color1, color2, 0, 0)
+	end
+
+	local r1, g1, b1 = unpack(Vehicle_RGBColors[color1])
+	local r2, g2, b2 = unpack(Vehicle_RGBColors[color2])
+	return setVehicleColor(vehicle, r1, g1, b1, r2, g2, b2, 0, 0, 0, 0, 0, 0)
 end
 
 function ChangeVehiclePaintjob(amx, vehicle, paintjob)
