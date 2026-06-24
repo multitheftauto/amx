@@ -372,11 +372,10 @@ function procCallInternal(amx, nameOrOffset, ...)
 end
 
 local g_CallbackStopValue = {
-	OnDialogResponse = true,
-	OnPlayerCommandText = true,
 	OnPlayerText = false,
 	OnPlayerRequestClass = false,
-	OnPlayerRequestSpawn = false
+	OnPlayerRequestSpawn = false,
+	OnPlayerCommandText = true
 }
 
 function procCallOnAll(fnName, ...)
