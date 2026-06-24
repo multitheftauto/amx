@@ -854,6 +854,7 @@ addEventHandler('onVehicleDamageStatusUpdate_Ev', root,
 		local playerID, vehID = getElemID(client), getElemID(vehicle)
 		if not playerID or not g_Vehicles[vehID] then return end
 
+		if getPedOccupiedVehicle(client) ~= vehicle then return end
 		procCallOnAll('OnVehicleDamageStatusUpdate', vehID, playerID)
 	end
 )
@@ -864,6 +865,7 @@ addEventHandler('onPlayerStunt_Ev', root,
 		local playerID, vehID = getElemID(client), getElemID(vehicle)
 		if not playerID or not g_Vehicles[vehID] then return end
 
+		if getPedOccupiedVehicle(client) ~= vehicle then return end
 		procCallOnAll('OnPlayerStunt', playerID, vehID, stuntType, stuntTime, float2cell(stuntDistance))
 	end
 )
