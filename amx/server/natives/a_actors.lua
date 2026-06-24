@@ -27,9 +27,10 @@ end
 
 function ApplyActorAnimation(amx, actor, animlib, animname, fDelta, loop, lockx, locky, freeze, time)
 	-- time = Timer in ms. For a never-ending loop it should be 0.
-	if time == 0 then
-		loop = true
+	if time <= 0 then
+		time = -1
 	end
+
 	setPedAnimation(actor, animlib, animname, time, loop, lockx or locky, false, freeze)
 	setPedAnimationSpeed(actor, animname, fDelta)
 	return true

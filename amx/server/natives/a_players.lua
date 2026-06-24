@@ -919,8 +919,8 @@ end
 
 function ApplyAnimation(amx, player, animlib, animname, fDelta, loop, lockx, locky, freeze, time, forcesync)
 	-- time = Timer in ms. For a never-ending loop it should be 0.
-	if time == 0 then
-		loop = true
+	if time <= 0 then
+		time = -1
 	end
 
 	local playerdata = g_Players[getElemID(player)]
