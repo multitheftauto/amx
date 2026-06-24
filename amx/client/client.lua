@@ -1628,7 +1628,8 @@ function cancelSelectTextDraw()
 
 	if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
 		showCursor(true)
-	else
+	elseif (not g_CurrentMenu or g_CurrentMenu.disabled)
+	   and (not msgDialog) and (not inputDialog) and (not listDialog) then
 		showCursor(false)
 	end
 end
@@ -1803,7 +1804,8 @@ function closeMenu()
 	unbindKey('enter', 'down', menuHideHandler)
 	if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
 		showCursor(true)
-	else
+	elseif not g_TextDrawSelectMode
+	   and not msgDialog and not inputDialog and not listDialog then
 		showCursor(false)
 	end
 end
@@ -2273,7 +2275,7 @@ function OnListDialogButton1Click(button, state)
 		guiSetVisible(listWindow, false)
 		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
 			showCursor(true)
-		else
+		elseif not g_TextDrawSelectMode and (not g_CurrentMenu or g_CurrentMenu.disabled) then
 			showCursor(false)
 		end
 		listDialog = nil
@@ -2289,7 +2291,7 @@ function OnListDialogButton2Click(button, state)
 		guiSetVisible(listWindow, false)
 		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
 			showCursor(true)
-		else
+		elseif not g_TextDrawSelectMode and (not g_CurrentMenu or g_CurrentMenu.disabled) then
 			showCursor(false)
 		end
 		listDialog = nil
@@ -2303,7 +2305,7 @@ function OnInputDialogButton1Click(button, state)
 		guiSetVisible(inputWindow, false)
 		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
 			showCursor(true)
-		else
+		elseif not g_TextDrawSelectMode and (not g_CurrentMenu or g_CurrentMenu.disabled) then
 			showCursor(false)
 		end
 		inputDialog = nil
@@ -2316,7 +2318,7 @@ function OnInputDialogButton2Click(button, state)
 		guiSetVisible(inputWindow, false)
 		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
 			showCursor(true)
-		else
+		elseif not g_TextDrawSelectMode and (not g_CurrentMenu or g_CurrentMenu.disabled) then
 			showCursor(false)
 		end
 		inputDialog = nil
@@ -2329,7 +2331,7 @@ function OnMessageDialogButton1Click(button, state)
 		guiSetVisible(msgWindow, false)
 		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
 			showCursor(true)
-		else
+		elseif not g_TextDrawSelectMode and (not g_CurrentMenu or g_CurrentMenu.disabled) then
 			showCursor(false)
 		end
 		msgDialog = nil
@@ -2342,7 +2344,7 @@ function OnMessageDialogButton2Click(button, state)
 		guiSetVisible(msgWindow, false)
 		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
 			showCursor(true)
-		else
+		elseif not g_TextDrawSelectMode and (not g_CurrentMenu or g_CurrentMenu.disabled) then
 			showCursor(false)
 		end
 		msgDialog = nil
@@ -2367,7 +2369,7 @@ function ShowPlayerDialog(dialogid, dialogtype, caption, info, button1, button2)
 	if dialogid == -1 then
 		if g_ClassSelectionInfo and g_ClassSelectionInfo.gui then
 			showCursor(true)
-		else
+		elseif not g_TextDrawSelectMode and (not g_CurrentMenu or g_CurrentMenu.disabled) then
 			showCursor(false)
 		end
 		return true
