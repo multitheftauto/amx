@@ -757,7 +757,7 @@ function PlayerTextDrawSetPreviewVehCol(amx, player, textdrawID, color1, color2)
 end
 
 function GetPVarInt(amx, player, varname)
-	local value = g_Players[getElemID(player)].pvars[varname]
+	local value = g_Players[getElemID(player)].pvars[varname:upper()]
 	if not value or value[1] ~= PLAYER_VARTYPE_INT then
 		return 0
 	end
@@ -765,14 +765,14 @@ function GetPVarInt(amx, player, varname)
 end
 
 function SetPVarInt(amx, player, varname, value)
-	g_Players[getElemID(player)].pvars[varname] = { PLAYER_VARTYPE_INT, value }
+	g_Players[getElemID(player)].pvars[varname:upper()] = { PLAYER_VARTYPE_INT, value }
 	return true
 end
 
 function GetPVarString(amx, player, varname, outbuf, length)
 	if length <= 0 then return 0 end
 
-	local value = g_Players[getElemID(player)].pvars[varname]
+	local value = g_Players[getElemID(player)].pvars[varname:upper()]
 	if not value or value[1] ~= PLAYER_VARTYPE_STRING then
 		return 0
 	end
@@ -783,12 +783,12 @@ function GetPVarString(amx, player, varname, outbuf, length)
 end
 
 function SetPVarString(amx, player, varname, value)
-	g_Players[getElemID(player)].pvars[varname] = { PLAYER_VARTYPE_STRING, value }
+	g_Players[getElemID(player)].pvars[varname:upper()] = { PLAYER_VARTYPE_STRING, value }
 	return true
 end
 
 function GetPVarFloat(amx, player, varname)
-	local value = g_Players[getElemID(player)].pvars[varname]
+	local value = g_Players[getElemID(player)].pvars[varname:upper()]
 	if not value or value[1] ~= PLAYER_VARTYPE_FLOAT then
 		return float2cell(0)
 	end
@@ -796,12 +796,12 @@ function GetPVarFloat(amx, player, varname)
 end
 
 function SetPVarFloat(amx, player, varname, value)
-	g_Players[getElemID(player)].pvars[varname] = { PLAYER_VARTYPE_FLOAT, value }
+	g_Players[getElemID(player)].pvars[varname:upper()] = { PLAYER_VARTYPE_FLOAT, value }
 	return true
 end
 
 function DeletePVar(amx, player, varname)
-	g_Players[getElemID(player)].pvars[varname] = nil
+	g_Players[getElemID(player)].pvars[varname:upper()] = nil
 	return true
 end
 
@@ -837,7 +837,7 @@ function GetPVarNameAtIndex(amx, player, index, outbuf, length)
 end
 
 function GetPVarType(amx, player, varname)
-	local value = g_Players[getElemID(player)].pvars[varname]
+	local value = g_Players[getElemID(player)].pvars[varname:upper()]
 	if value then
 		return value[1]
 	end
