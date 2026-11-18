@@ -568,7 +568,7 @@ function CreatePlayerTextDraw(amx, player, x, y, text)
 			__index = textdraw.shadow,
 			__newindex = function(t, k, v)
 				local different
-				if not t.shadow[k] then
+				if t.shadow[k] == nil then
 					different = true
 				else
 					if type(v) == 'table' then

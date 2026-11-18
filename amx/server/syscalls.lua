@@ -155,14 +155,14 @@ function Dummy(amx, text)
 end
 Broadcast = Dummy
 
-function toggleUninmplementedErrors(playerSource, commandName)
+function toggleUnimplementedErrors(playerSource, commandName)
 	if not isPlayerInACLGroup(playerSource, 'Console') then
 		return
 	end
 	ShowUnimplementedErrors = not ShowUnimplementedErrors
 	outputDebugString('[INFO]: ShowUnimplementedErrors is now ' .. (ShowUnimplementedErrors and 'Enabled' or 'Disabled'))
 end
-addCommandHandler('showunimplementederrors', toggleUninmplementedErrors)
+addCommandHandler('showunimplementederrors', toggleUnimplementedErrors)
 -----------------------------------------------------
 -- List of the functions and their argument types
 

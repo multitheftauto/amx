@@ -635,7 +635,7 @@ function checkAndUpdatePlayers()
 		end
 
 		if g_Players[i].drunklevel and g_Players[i].drunklevel > 0 then
-			g_Players[i].drunklevel = g_Players[i].drunklevel - 50
+			g_Players[i].drunklevel = math.max(0, g_Players[i].drunklevel - 50)
 			if g_Players[i].drunklevel < 2250 then
 				clientCall(data.elem, 'setCameraDrunkLevel', 0)
 			elseif g_Players[i].drunklevel <= 12500 then
